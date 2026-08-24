@@ -5,6 +5,9 @@ working prototypes of the Hyunsoo-side bridge and page so the whole loop can
 be exercised today. Everything runs standalone on `ocudu-gpu-channel` — no
 Sionna, no Docker, no core network.
 
+Machine prerequisites (GPU/CUDA, Python deps, native-workspace builds,
+ports): see [`ENVIRONMENT.md`](ENVIRONMENT.md).
+
 ## Quick start (on the 5090 box, inside tmux)
 
 ```bash
