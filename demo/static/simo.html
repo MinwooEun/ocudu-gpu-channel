@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OCUDU GPU Channel — rank-1 SIMO steering</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --edge: #30363d; --text: #e6edf3;
+    --dim: #8b949e; --accent: #58a6ff; --good: #3fb950; --warn: #d29922;
+    --hot: #f78166;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--text);
+         font: 15px/1.45 "Segoe UI", system-ui, sans-serif; padding: 1.2rem 2rem 3rem; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .8rem 1.4rem;
+           border-bottom: 1px solid var(--edge); padding-bottom: .8rem; }
+  h1 { font-size: 1.5rem; font-weight: 600; }
+  h1 small { color: var(--dim); font-weight: 400; font-size: 1rem; }
+  .names { color: var(--dim); font-size: .9rem; }
+  section { background: var(--panel); border: 1px solid var(--edge); border-radius: 8px;
+            padding: 1rem 1.2rem; margin-top: 1rem; }
+  section h2 { font-size: 1.05rem; margin-bottom: .6rem; }
+  section h2 .st { font-size: .8rem; font-weight: 400; color: var(--dim); margin-left: .6rem; }
+  .layout { display: grid; grid-template-columns: 1fr 220px; gap: 1.4rem; }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+  .bars { height: 300px; }
+  canvas { width: 100%; height: 100%; display: block; }
+  .btns button { background: #21262d; color: var(--text); border: 1px solid var(--edge);
+                 border-radius: 6px; padding: .6rem .9rem; font-size: .95rem; cursor: pointer;
+                 width: 100%; margin-bottom: .6rem; }
+  .btns button:hover { border-color: var(--accent); }
+  .btns button.on { border-color: var(--good); color: var(--good); }
+  .badge { display: inline-block; border-radius: 999px; padding: .1rem .6rem;
+           font-size: .75rem; margin-left: .6rem; }
+  .badge.swap { background: #3a2d10; color: var(--warn); }
+  .foot { color: var(--dim); font-size: .82rem; margin-top: .6rem; }
+  details.exp { margin-top: .6rem; border-top: 1px dashed var(--edge); padding-top: .4rem; }
+  details.exp summary { color: var(--accent); font-size: .8rem; cursor: pointer;
+                        user-select: none; }
+  details.exp p { color: var(--dim); font-size: .82rem; margin: .4rem 0 0;
+                  max-width: 68rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Rank-1 SIMO — 1×4 receive steering <small>— deterministic fixed_mimo, live re-steer</small></h1>
+  <div class="names">Minwoo Eun · Hyunsoo Lee · Zhouyou (Charles) Gu · Prof. Park</div>
+</header>
+
+<section>
+  <h2>Per-port RX power vs the declared steering pattern
+    <span id="swap-badge" class="badge swap" style="display:none">re-steering…</span>
+    <span class="st">bars = measured; ticks = analytic |a<sub>r</sub>|²</span>
+  </h2>
+  <div class="layout">
+    <div class="bars"><canvas id="bars"></canvas></div>
+    <div class="btns">
+      <button id="b-A">Steering A (0.9 → 0.2)</button>
+      <button id="b-B">Steering B (0.2 → 0.9)</button>
+      <div class="foot" id="ctl-status"></div>
+      <div class="foot">One UE TX port into four gNB RX ports through a
+        declared rank-1 vector <b>a</b>. The channel is deterministic (single
+        0 dB tap, no fading), so each bar sits exactly on |a<sub>r</sub>|².
+        Re-steering re-renders the topology and restarts the broker —
+        the ~2 s gap is the restart drill.</div>
+    </div>
+  </div>
+  <details class="exp"><summary>What am I looking at?</summary>
+    <p>This is <b>receive beamforming geometry made visible</b>. One transmitter, four
+    receive antennas, and a declared rank-1 steering vector <b>a</b>: each antenna
+    hears the same signal weighted by its own coefficient, so the four bars ARE the
+    vector, drawn as |a<sub>r</sub>|². Green bars = measured power; orange ticks = the
+    declared values — they match to the third decimal because this channel is
+    deterministic (no fading), which is exactly how you verify a MIMO
+    implementation before adding randomness. Pressing the other steering button
+    points the vector the other way and the bars mirror — the same reordering a
+    real system's beam management would produce as a user walks across a cell.
+    This 1×4 rank-1 declaration is the repo's rank-1 MISO/SIMO contribution.</p>
+  </details>
+</section>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+let latest = null;
+
+function drawBars(state) {
+  const cv = $("bars"), ctx = cv.getContext("2d");
+  const dpr = devicePixelRatio;
+  const W = cv.width = cv.clientWidth * dpr;
+  const H = cv.height = cv.clientHeight * dpr;
+  ctx.clearRect(0, 0, W, H);
+  const ports = ["gnb_rx0", "gnb_rx1", "gnb_rx2", "gnb_rx3"];
+  const maxP = 1.0, pad = 46 * dpr, bw = (W - pad * 2) / ports.length;
+  const y = p => H - 26 * dpr - (Math.min(p, maxP) / maxP) * (H - 64 * dpr);
+  const exp = (state.steering && state.steering.expected) || {};
+  ports.forEach((p, i) => {
+    const f = state.power[p];
+    const x = pad + i * bw + bw * 0.18;
+    const stale = !f || f.age_s > 2;
+    const v = f ? f.avg_power : 0;
+    ctx.fillStyle = stale ? "#30363d" : "#3fb950";
+    ctx.fillRect(x, y(v), bw * 0.64, H - 26 * dpr - y(v));
+    if (exp[p] !== undefined) {           // analytic |a_r|^2 tick
+      ctx.strokeStyle = "#f78166"; ctx.lineWidth = 2 * dpr;
+      ctx.beginPath();
+      ctx.moveTo(x - 6 * dpr, y(exp[p])); ctx.lineTo(x + bw * 0.64 + 6 * dpr, y(exp[p]));
+      ctx.stroke();
+      ctx.fillStyle = "#f78166"; ctx.font = `${11 * dpr}px sans-serif`;
+      ctx.fillText(exp[p].toFixed(2), x + bw * 0.64 + 8 * dpr, y(exp[p]) + 4 * dpr);
+    }
+    ctx.fillStyle = "#e6edf3"; ctx.font = `${12 * dpr}px sans-serif`;
+    ctx.fillText(v.toFixed(3), x, y(v) - 6 * dpr);
+    ctx.fillStyle = "#8b949e";
+    ctx.fillText(p + (stale ? " (restarting)" : ""), x, H - 8 * dpr);
+  });
+}
+
+async function steer(pattern) {
+  $("ctl-status").textContent = "re-steering (broker restart)…";
+  $("swap-badge").style.display = "";
+  try {
+    const r = await fetch("/api/control", {method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({action: "steering", pattern})});
+    const j = await r.json();
+    $("ctl-status").textContent = j.ok
+      ? `steering ${pattern} live (restart ${j.replies[0].restart_s}s)`
+      : "failed: " + JSON.stringify(j.replies || j.error);
+  } catch (e) { $("ctl-status").textContent = "bridge unreachable: " + e; }
+}
+$("b-A").onclick = () => steer("A");
+$("b-B").onclick = () => steer("B");
+
+function apply(state) {
+  latest = state;
+  const st = state.steering || {};
+  $("b-A").classList.toggle("on", st.pattern === "A");
+  $("b-B").classList.toggle("on", st.pattern === "B");
+  const swapping = st.swapped_t && (state.t - st.swapped_t) < 2.5;
+  $("swap-badge").style.display = swapping ? "" : "none";
+  drawBars(state);
+}
+function connect() {
+  const es = new EventSource("/events");
+  es.onmessage = e => apply(JSON.parse(e.data));
+  es.onerror = () => { es.close(); setTimeout(connect, 1500); };
+}
+connect();
+addEventListener("resize", () => { if (latest) drawBars(latest); });
+</script>
+</body>
+</html>

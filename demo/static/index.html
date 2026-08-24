@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OCUDU GPU Channel — MIMO Live</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --edge: #30363d; --text: #e6edf3;
+    --dim: #8b949e; --accent: #58a6ff; --good: #3fb950; --warn: #d29922;
+    --corr: #f78166; --iid: #58a6ff;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--text);
+         font: 15px/1.45 "Segoe UI", system-ui, sans-serif; padding: 1.2rem 2rem 3rem; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .8rem 1.4rem;
+           border-bottom: 1px solid var(--edge); padding-bottom: .8rem; }
+  h1 { font-size: 1.5rem; font-weight: 600; }
+  h1 small { color: var(--dim); font-weight: 400; font-size: 1rem; }
+  .names { color: var(--dim); font-size: .9rem; }
+  .chip { background: var(--panel); border: 1px solid var(--edge); border-radius: 999px;
+          padding: .15rem .7rem; font-size: .8rem; color: var(--accent); margin-left: auto; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+           gap: .8rem; margin: 1rem 0; }
+  .card { background: var(--panel); border: 1px solid var(--edge); border-radius: 8px;
+          padding: .7rem .9rem; }
+  .card .v { font-size: 1.6rem; font-weight: 600; }
+  .card .l { color: var(--dim); font-size: .78rem; text-transform: uppercase;
+             letter-spacing: .05em; }
+  section { background: var(--panel); border: 1px solid var(--edge); border-radius: 8px;
+            padding: 1rem 1.2rem; margin-bottom: 1rem; }
+  section h2 { font-size: 1.05rem; margin-bottom: .6rem; }
+  section h2 .st { font-size: .8rem; font-weight: 400; color: var(--dim); margin-left: .6rem; }
+  .mimo { display: grid; grid-template-columns: 240px 1fr 210px; gap: 1.4rem; align-items: start; }
+  @media (max-width: 900px) { .mimo { grid-template-columns: 1fr; } }
+  .hgrid { display: grid; grid-template-columns: repeat(2, 96px); gap: 6px; }
+  .hcell { width: 96px; height: 96px; border-radius: 6px; display: flex; flex-direction: column;
+           align-items: center; justify-content: center; font-size: .85rem;
+           color: #04121f; font-weight: 600; transition: background .4s; }
+  .hcell span { font-size: .7rem; font-weight: 400; opacity: .75; }
+  .hnote { color: var(--dim); font-size: .78rem; margin-top: .5rem; max-width: 220px; }
+  .bars { height: 240px; }
+  .btns button { background: #21262d; color: var(--text); border: 1px solid var(--edge);
+                 border-radius: 6px; padding: .5rem .9rem; font-size: .9rem; cursor: pointer;
+                 width: 100%; margin-bottom: .5rem; }
+  .btns button:hover { border-color: var(--accent); }
+  .btns button.on { border-color: var(--corr); color: var(--corr); }
+  .btns label { color: var(--dim); font-size: .8rem; display: block; margin-top: .6rem; }
+  .btns input[type=range] { width: 100%; }
+  .badge { display: inline-block; border-radius: 999px; padding: .1rem .6rem;
+           font-size: .75rem; margin-left: .6rem; }
+  .badge.warm { background: #3a2d10; color: var(--warn); }
+  .badge.corr { background: #3d1f16; color: var(--corr); }
+  .badge.iid  { background: #12283f; color: var(--iid); }
+  canvas { width: 100%; height: 100%; display: block; }
+  details.exp { margin-top: .6rem; border-top: 1px dashed var(--edge); padding-top: .4rem; }
+  details.exp summary { color: var(--accent); font-size: .8rem; cursor: pointer;
+                        user-select: none; }
+  details.exp p { color: var(--dim); font-size: .82rem; margin: .4rem 0 0;
+                  max-width: 68rem; }
+  .spark { height: 120px; }
+  .scale { height: 200px; }
+  .foot { color: var(--dim); font-size: .8rem; }
+  .stale { color: var(--warn); }
+</style>
+</head>
+<body>
+<header>
+  <h1>OCUDU GPU Channel <small>— real-time MIMO channel emulation on one RTX 5090</small></h1>
+  <div class="names">Minwoo Eun · Hyunsoo Lee · Zhouyou (Charles) Gu · Prof. Park</div>
+  <div class="chip" id="urlchip">…</div>
+</header>
+
+<div class="cards">
+  <div class="card"><div class="v" id="c-kernel">–</div><div class="l">CUDA kernel / slot</div></div>
+  <div class="card"><div class="v" id="c-budget">–</div><div class="l">of 500 µs slot budget</div></div>
+  <div class="card"><div class="v">183×</div><div class="l">vs CPU (58,430 → 319 µs)</div></div>
+  <div class="card"><div class="v" id="c-hz">–</div><div class="l">telemetry rate (measured)</div></div>
+</div>
+<details class="exp"><summary>What are these numbers?</summary>
+  <p>One CUDA kernel launch computes ALL channel lanes for one 5G slot:
+  <b>97 µs</b> measured at 16 edges, against the <b>500 µs</b> slot budget at 30 kHz
+  subcarrier spacing — i.e. the emulator uses ~19 % of real time and the rest is
+  headroom. <b>183×</b> is the same workload against the CPU implementation
+  (58,430 µs → 319 µs end-to-end). The telemetry rate is measured live off the
+  broker's ZMQ PUB feed — this page is a consumer of it.</p>
+</details>
+
+<section>
+  <h2>2×2 MIMO — spatial correlation, live
+    <span id="corr-badge" class="badge iid">iid</span>
+    <span id="warm-badge" class="badge warm" style="display:none">warming up</span>
+    <span class="st">measured |h_rc|² via TX pilot alternation (L2), beside per-port RX power</span>
+  </h2>
+  <div class="mimo">
+    <div>
+      <div class="hgrid" id="hgrid"></div>
+      <div class="hnote" id="hnote">Waiting for pilot sync…</div>
+    </div>
+    <div class="bars"><canvas id="bars"></canvas></div>
+    <div class="btns">
+      <button id="b-corr">Correlation ON (R<sub>tx</sub> = 0.4)</button>
+      <button id="b-iid">IID (independent lanes)</button>
+      <label>path loss <span id="pl-val">0</span> dB
+        <input type="range" id="pl" min="0" max="20" step="1" value="0"></label>
+      <div class="foot" id="ctl-status"></div>
+    </div>
+  </div>
+  <details class="exp"><summary>What am I looking at?</summary>
+    <p><b>Left — measured |h<sub>rc</sub>|²:</b> the four spatial channel coefficients of a
+    2×2 MIMO link, measured live by alternating TX pilots (each cell = the power one
+    RX port receives while only one TX port is on air). They fade continuously —
+    Rayleigh mean ≈ 3.47 per lane — because the channel model is TR 38.901 TDL-A
+    with Jakes Doppler at 10 Hz.
+    <b>Middle — the correlation experiment:</b> all TX ports send the same
+    unit-power tone, so each bar's expected height is exactly computable:
+    <b>6.94</b> when the antennas fade independently (iid), <b>9.71</b> when TX
+    correlation 0.4 is on — correlated channels combine more coherently. The bars
+    are live measurements; the dashed lines are that math. Bars sitting on the
+    line = the GPU emulator is provably correct.
+    <b>Right — the buttons</b> change the running channel through its ZMQ control
+    plane, applied at a slot boundary — no restart, no rebuild. Watch the bars
+    migrate from one dashed line to the other within a few seconds of fading.</p>
+  </details>
+</section>
+
+<section>
+  <h2>Fading envelope <span class="st">TDL-A, Jakes spectrum, f<sub>d</sub> = 10 Hz —
+    mean windowed RX power over 4 ports</span></h2>
+  <div class="spark"><canvas id="spark"></canvas></div>
+  <details class="exp"><summary>What am I looking at?</summary>
+    <p>The green line is total received power breathing under multipath fading —
+    this is what a moving receiver experiences, generated in real time on the GPU.
+    The Doppler is set to 10 Hz (~pedestrian speed) so the envelope is visible to
+    the eye; at highway speeds it would look like noise at this refresh rate.
+    Dashed lines are the analytic iid/correlated levels; amber markers stamp the
+    moment each control action (correlation swap, path loss) was applied — cause
+    and effect on one timeline.</p>
+  </details>
+</section>
+
+<section>
+  <h2>Scaling toward massive MIMO <span class="st">projection anchored at measured
+    16-edge kernel = 97 µs; the 500 µs line is the SCS-30 slot budget</span></h2>
+  <div class="scale"><canvas id="scale"></canvas></div>
+  <div class="foot">Nt·Nr lane expansion is quadratic — the research direction is a low-rank
+    decomposition (L spatial components instead of Nt·Nr lanes) to stay under the
+    real-time budget at massive-MIMO scale.</div>
+  <details class="exp"><summary>Why this matters</summary>
+    <p>The green bar is measured; the rest are linear-in-lanes projections. A naive
+    scale-up crosses the 500 µs real-time line somewhere before 128 edges — so
+    massive-MIMO-scale emulation cannot be brute-forced even on this GPU. That gap
+    is the research pitch: exploit spatial correlation to emulate L dominant
+    components instead of all Nt·Nr lanes, trading a provable approximation error
+    for staying inside the slot budget.</p>
+  </details>
+</section>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+$("urlchip").textContent = location.host || "localhost:8080";
+
+const powerHist = [];           // {t, mean} for the sparkline
+let latest = null;
+
+/* ---------- heatmap (declared R_tx, L1) ---------- */
+function heat(v) {                       // 0..1 -> blue..orange scale
+  const c0 = [88, 166, 255], c1 = [247, 129, 102];
+  const m = c0.map((a, i) => Math.round(a + (c1[i] - a) * v));
+  return `rgb(${m[0]},${m[1]},${m[2]})`;
+}
+function drawH(txRe) {
+  // Fallback (no pilot measurements yet): declared R_tx.
+  const g = $("hgrid"); g.innerHTML = "";
+  const vals = [[1, txRe], [txRe, 1]];
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 2; c++) {
+    const d = document.createElement("div");
+    d.className = "hcell";
+    d.style.background = heat(Math.abs(vals[r][c]));
+    d.innerHTML = `${vals[r][c].toFixed(1)}<span>t${c} → t${r}</span>`;
+    g.appendChild(d);
+  }
+  $("hnote").textContent = "Declared TX-side correlation matrix R_tx (L1 view: " +
+    "no pilot measurements yet). Analytic RX power: 3.468·(2+2·Re Rtx01).";
+}
+function drawHMeasured(state) {
+  // L2: per-lane |h_rc|^2 measured by TX pilot alternation, gnb→ue link:
+  // rows = ue RX ports, columns = which gnb TX was alone on air.
+  const g = $("hgrid"); g.innerHTML = "";
+  const rows = ["ue_rx0", "ue_rx1"];
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 2; c++) {
+    const f = state.power[rows[r]];
+    const v = f ? f[`h${c}_power`] : undefined;
+    const d = document.createElement("div");
+    d.className = "hcell";
+    if (v === undefined) {
+      d.style.background = "#30363d";
+      d.innerHTML = `–<span>t${c} → r${r}</span>`;
+    } else {
+      d.style.background = heat(Math.min(v / 7.0, 1));
+      d.innerHTML = `${v.toFixed(2)}<span>t${c} → r${r}</span>`;
+    }
+    g.appendChild(d);
+  }
+  $("hnote").textContent = "MEASURED per-lane RX power |h_rc|² (gnb→ue, TX pilot " +
+    "alternation, 2 s window). Rayleigh mean ≈ 3.47 per lane; correlation makes " +
+    "the two columns of a row move together.";
+}
+
+/* ---------- power bars ---------- */
+function drawBars(state) {
+  const cv = $("bars"), ctx = cv.getContext("2d");
+  const W = cv.width = cv.clientWidth * devicePixelRatio;
+  const H = cv.height = cv.clientHeight * devicePixelRatio;
+  ctx.clearRect(0, 0, W, H);
+  const ports = Object.keys(state.power).sort();
+  if (!ports.length) { return; }
+  const maxP = 14, pad = 40 * devicePixelRatio, bw = (W - pad * 2) / ports.length;
+  const y = p => H - 24 * devicePixelRatio - (p / maxP) * (H - 60 * devicePixelRatio);
+  // analytic lines
+  for (const [key, color] of [["iid", "#58a6ff"], ["correlated", "#f78166"]]) {
+    const yy = y(state.expected[key]);
+    ctx.strokeStyle = color; ctx.setLineDash([6, 6]); ctx.lineWidth = devicePixelRatio;
+    ctx.beginPath(); ctx.moveTo(pad, yy); ctx.lineTo(W - pad, yy); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = color; ctx.font = `${11 * devicePixelRatio}px sans-serif`;
+    ctx.fillText(`${key} ${state.expected[key]}`, W - pad - 90 * devicePixelRatio,
+                 yy - 4 * devicePixelRatio);
+  }
+  ports.forEach((p, i) => {
+    const f = state.power[p];
+    const stale = f.age_s > 2;
+    const x = pad + i * bw + bw * 0.18;
+    ctx.fillStyle = stale ? "#30363d" :
+      (state.correlation.state === "correlated" ? "#f78166" : "#58a6ff");
+    const h = Math.max(2, (H - 60 * devicePixelRatio) * Math.min(f.avg_power, maxP) / maxP);
+    ctx.fillRect(x, y(Math.min(f.avg_power, maxP)), bw * 0.64, h);
+    ctx.fillStyle = "#e6edf3"; ctx.font = `${12 * devicePixelRatio}px sans-serif`;
+    ctx.fillText(f.avg_power.toFixed(2), x, y(Math.min(f.avg_power, maxP)) - 6 * devicePixelRatio);
+    ctx.fillStyle = "#8b949e";
+    ctx.fillText(p + (stale ? " (stale)" : ""), x, H - 8 * devicePixelRatio);
+  });
+}
+
+/* ---------- fading sparkline ---------- */
+function drawSpark() {
+  const cv = $("spark"), ctx = cv.getContext("2d");
+  const W = cv.width = cv.clientWidth * devicePixelRatio;
+  const H = cv.height = cv.clientHeight * devicePixelRatio;
+  ctx.clearRect(0, 0, W, H);
+  if (powerHist.length < 2) return;
+  const span = 60, now = Date.now() / 1000;
+  const pts = powerHist.filter(p => p.t > now - span);
+  const maxP = 14, dpr = devicePixelRatio;
+  const y = p => H - 4 * dpr - (Math.min(p, maxP) / maxP) * (H - 20 * dpr);
+  const x = t => W * (1 - (now - t) / span);
+  // analytic reference lines, same colors as the bars panel
+  const exp = latest ? latest.expected : {iid: 6.94, correlated: 9.71};
+  for (const [key, color] of [["iid", "#58a6ff"], ["correlated", "#f78166"]]) {
+    ctx.strokeStyle = color; ctx.setLineDash([6, 6]); ctx.lineWidth = dpr;
+    ctx.beginPath(); ctx.moveTo(0, y(exp[key])); ctx.lineTo(W, y(exp[key])); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = color; ctx.font = `${10 * dpr}px sans-serif`;
+    ctx.fillText(`${exp[key]}`, 4 * dpr, y(exp[key]) - 3 * dpr);
+  }
+  // control-action markers: vertical line + label at the moment a swap applied
+  for (const ev of (latest && latest.events) || []) {
+    if (ev.t < now - span) continue;
+    const xx = x(ev.t);
+    ctx.strokeStyle = "#d29922"; ctx.lineWidth = dpr;
+    ctx.beginPath(); ctx.moveTo(xx, 12 * dpr); ctx.lineTo(xx, H); ctx.stroke();
+    ctx.fillStyle = "#d29922"; ctx.font = `${10 * dpr}px sans-serif`;
+    ctx.fillText(ev.label, xx + 3 * dpr, 10 * dpr);
+  }
+  ctx.strokeStyle = "#3fb950"; ctx.lineWidth = 1.5 * dpr;
+  ctx.beginPath();
+  pts.forEach((p, i) => {
+    i ? ctx.lineTo(x(p.t), y(p.mean)) : ctx.moveTo(x(p.t), y(p.mean));
+  });
+  ctx.stroke();
+}
+
+/* ---------- scaling projection ---------- */
+function drawScale() {
+  const cv = $("scale"), ctx = cv.getContext("2d");
+  const W = cv.width = cv.clientWidth * devicePixelRatio;
+  const H = cv.height = cv.clientHeight * devicePixelRatio;
+  ctx.clearRect(0, 0, W, H);
+  // measured anchor: 16 edges = 97 µs; linear-in-lanes projection beyond
+  const rows = [[16, 97, "measured"], [64, 388, "projected"],
+                [128, 776, "projected"], [256, 1552, "projected"]];
+  const maxUs = 1700, pad = 60 * devicePixelRatio, bw = (W - pad * 2) / rows.length;
+  const y = u => H - 26 * devicePixelRatio - (u / maxUs) * (H - 60 * devicePixelRatio);
+  const yb = y(500);
+  ctx.strokeStyle = "#d29922"; ctx.setLineDash([6, 6]); ctx.lineWidth = devicePixelRatio;
+  ctx.beginPath(); ctx.moveTo(pad, yb); ctx.lineTo(W - pad, yb); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#d29922"; ctx.font = `${11 * devicePixelRatio}px sans-serif`;
+  ctx.fillText("500 µs slot budget", pad + 4 * devicePixelRatio, yb - 5 * devicePixelRatio);
+  rows.forEach(([lanes, us, kind], i) => {
+    const x = pad + i * bw + bw * 0.2;
+    ctx.fillStyle = kind === "measured" ? "#3fb950" : (us > 500 ? "#f78166" : "#58a6ff");
+    ctx.fillRect(x, y(us), bw * 0.6, H - 26 * devicePixelRatio - y(us));
+    ctx.fillStyle = "#e6edf3"; ctx.font = `${12 * devicePixelRatio}px sans-serif`;
+    ctx.fillText(`${us} µs`, x, y(us) - 6 * devicePixelRatio);
+    ctx.fillStyle = "#8b949e";
+    ctx.fillText(`${lanes} edges${kind === "measured" ? " ✓" : ""}`, x, H - 8 * devicePixelRatio);
+  });
+}
+
+/* ---------- control buttons ---------- */
+async function act(body) {
+  $("ctl-status").textContent = "sending…";
+  try {
+    const r = await fetch("/api/control", {method: "POST",
+      headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+    const j = await r.json();
+    $("ctl-status").textContent = j.ok ? "applied at next slot boundary"
+                                       : "rejected: " + JSON.stringify(j.replies || j.error);
+  } catch (e) { $("ctl-status").textContent = "bridge unreachable: " + e; }
+}
+$("b-corr").onclick = () => act({action: "correlate", tx_re: 0.4});
+$("b-iid").onclick = () => act({action: "iid"});
+$("pl").oninput = e => $("pl-val").textContent = e.target.value;
+$("pl").onchange = e => act({action: "path_loss", value: +e.target.value});
+
+/* ---------- state feed ---------- */
+function apply(state) {
+  latest = state;
+  $("c-kernel").textContent = state.gpu.kernel_us + " µs";
+  $("c-budget").textContent =
+    Math.round(100 * state.gpu.kernel_us / state.gpu.slot_budget_us) + " %";
+  $("c-hz").textContent = state.telemetry_hz + " Hz";
+  const corr = state.correlation.state === "correlated";
+  $("corr-badge").textContent = corr ? `correlated (0.4)` : "iid";
+  $("corr-badge").className = "badge " + (corr ? "corr" : "iid");
+  $("b-corr").classList.toggle("on", corr);
+  // warmup contract: grey lanes while any link is inside its warmup window
+  const warming = Object.values(state.channel)
+    .some(c => c.warmup_until_slot > c.slot);
+  $("warm-badge").style.display = warming ? "" : "none";
+  const pilotLive = ["ue_rx0", "ue_rx1"].some(p => {
+    const f = state.power[p];
+    return f && f.age_s < 2 && (f.h0_power !== undefined || f.h1_power !== undefined);
+  });
+  if (pilotLive) drawHMeasured(state);
+  else drawH(corr ? state.correlation.tx_re : 0.0);
+  drawBars(state);
+  const powers = Object.values(state.power).filter(p => p.age_s < 2);
+  if (powers.length) {
+    powerHist.push({t: state.t,
+      mean: powers.reduce((a, p) => a + p.avg_power, 0) / powers.length});
+    if (powerHist.length > 1200) powerHist.shift();
+  }
+  drawSpark();
+}
+function connect() {
+  const es = new EventSource("/events");
+  es.onmessage = e => apply(JSON.parse(e.data));
+  es.onerror = () => { es.close(); setTimeout(connect, 1500); };
+}
+connect();
+drawH(0); drawScale();
+addEventListener("resize", () => { if (latest) { drawBars(latest); drawScale(); } });
+</script>
+</body>
+</html>

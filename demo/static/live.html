@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OCUDU GPU Channel — live radio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --edge: #30363d; --text: #e6edf3;
+    --dim: #8b949e; --accent: #58a6ff; --good: #3fb950; --warn: #d29922;
+    --hot: #f78166;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--text);
+         font: 15px/1.45 "Segoe UI", system-ui, sans-serif; padding: 1.2rem 2rem 3rem; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .8rem 1.4rem;
+           border-bottom: 1px solid var(--edge); padding-bottom: .8rem; }
+  h1 { font-size: 1.5rem; font-weight: 600; }
+  h1 small { color: var(--dim); font-weight: 400; font-size: 1rem; }
+  .names { color: var(--dim); font-size: .9rem; }
+  .badges { margin-left: auto; display: flex; gap: .5rem; }
+  .badge { border-radius: 999px; padding: .15rem .7rem; font-size: .8rem;
+           background: #21262d; color: var(--dim); border: 1px solid var(--edge); }
+  .badge.ok { background: #12351c; color: var(--good); border-color: #1f6f34; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+           gap: .8rem; margin: 1rem 0; }
+  .card { background: var(--panel); border: 1px solid var(--edge); border-radius: 8px;
+          padding: .7rem .9rem; }
+  .card .v { font-size: 1.5rem; font-weight: 600; }
+  .card .l { color: var(--dim); font-size: .76rem; text-transform: uppercase;
+             letter-spacing: .05em; }
+  section { background: var(--panel); border: 1px solid var(--edge); border-radius: 8px;
+            padding: 1rem 1.2rem; margin-bottom: 1rem; }
+  section h2 { font-size: 1.05rem; margin-bottom: .6rem; }
+  section h2 .st { font-size: .8rem; font-weight: 400; color: var(--dim); margin-left: .6rem; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 800px) { .grid2 { grid-template-columns: 1fr; } }
+  .spark { height: 130px; }
+  canvas { width: 100%; height: 100%; display: block; }
+  .ctl { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .ctl input[type=range] { flex: 1; min-width: 200px; }
+  .ctl label { color: var(--dim); font-size: .85rem; }
+  .foot { color: var(--dim); font-size: .8rem; margin-top: .5rem; }
+  details.exp { margin-top: .6rem; border-top: 1px dashed var(--edge); padding-top: .4rem; }
+  details.exp summary { color: var(--accent); font-size: .8rem; cursor: pointer;
+                        user-select: none; }
+  details.exp p { color: var(--dim); font-size: .82rem; margin: .4rem 0 0;
+                  max-width: 68rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Live radio <small>— real srsUE + OCUDU gNB attached through the GPU channel</small></h1>
+  <div class="names">Minwoo Eun · Hyunsoo Lee · Zhouyou (Charles) Gu · Prof. Park</div>
+  <div class="badges">
+    <span class="badge" id="b-phase">phase: …</span>
+    <span class="badge" id="b-rrc">RRC</span>
+    <span class="badge" id="b-pdu">PDU session</span>
+    <span class="badge" id="b-ping">ping</span>
+  </div>
+</header>
+
+<div class="cards">
+  <div class="card"><div class="v" id="c-rsrp">–</div><div class="l">RSRP (dBm)</div></div>
+  <div class="card"><div class="v" id="c-pl">–</div><div class="l">UE pathloss est. (dB)</div></div>
+  <div class="card"><div class="v" id="c-snr">–</div><div class="l">DL SNR (dB)</div></div>
+  <div class="card"><div class="v" id="c-dl">–</div><div class="l">DL bitrate</div></div>
+  <div class="card"><div class="v" id="c-ul">–</div><div class="l">UL bitrate</div></div>
+  <div class="card"><div class="v" id="c-rtt">–</div><div class="l">ping RTT (ms)</div></div>
+</div>
+<details class="exp"><summary>What are these numbers?</summary>
+  <p>Everything here is reported by a REAL 5G stack — srsUE attached to an OCUDU
+  gNB through an Open5GS core — whose radio waveform passes through the GPU
+  channel emulator instead of antennas. <b>RSRP</b> is the downlink reference-signal
+  power the UE measures (drops exactly when the emulated channel attenuates),
+  <b>DL SNR</b> is the UE's demodulation SNR, <b>DL/UL bitrate</b> is actual MAC-layer
+  user traffic, and <b>ping RTT</b> is a live ICMP round-trip from the UE's network
+  namespace through the whole stack — radio, gNB, core — and back. If the channel
+  knob below moves these numbers, the entire 5G protocol stack felt it.</p>
+</details>
+
+<section>
+  <h2>Channel control <span class="st">scalar path_loss_db over the broker control
+    plane — the real UE reacts</span></h2>
+  <div class="ctl">
+    <label>extra path loss <b id="pl-val">0</b> dB</label>
+    <input type="range" id="pl" min="0" max="30" step="1" value="0">
+    <label><input type="checkbox" id="pl-ul"> apply to uplink too</label>
+    <span class="foot" id="ctl-status"></span>
+  </div>
+  <div class="foot">Broker telemetry: <span id="tele"></span></div>
+  <details class="exp"><summary>What does this slider do?</summary>
+    <p>It sends a <code>scalar path_loss_db</code> message to the emulator's ZMQ
+    control plane; the CUDA kernel applies the attenuation at the next slot
+    boundary (&lt;1 ms granularity, no restart). 12 dB visibly drops RSRP and
+    raises RTT; ~25 dB and the UE starts losing the link — that is a real
+    radio-link failure, induced in software. The telemetry line above is the
+    emulator's own report of what it is currently applying, so you can compare
+    "commanded" against "measured by the UE".</p>
+  </details>
+</section>
+
+<section>
+  <h2>DL SNR <span class="st">srsUE-reported, 0.5 s metrics period</span></h2>
+  <div class="spark"><canvas id="spark-snr"></canvas></div>
+</section>
+<div class="grid2">
+  <section>
+    <h2>DL bitrate <span class="st">Mbit/s</span></h2>
+    <div class="spark"><canvas id="spark-dl"></canvas></div>
+  </section>
+  <section>
+    <h2>Ping RTT <span class="st">UE netns → core gateway, 2 Hz</span></h2>
+    <div class="spark"><canvas id="spark-rtt"></canvas></div>
+  </section>
+</div>
+<details class="exp"><summary>How to read the three time-series</summary>
+  <p><b>DL SNR</b> reacts within one metrics period (0.5 s) of a channel change —
+  it is the most direct radio-quality view. <b>DL bitrate</b> is bursty because it
+  tracks actual scheduled traffic, not channel quality alone. <b>Ping RTT</b>
+  rises before the link breaks: as SNR falls, HARQ retransmissions add
+  milliseconds — protocol-level stress made visible.</p>
+</details>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const hist = {snr: [], dl: [], rtt: []};
+let latest = null;
+
+function pushHist(list, t, v, cap = 600) {
+  list.push({t, v});
+  if (list.length > cap) list.shift();
+}
+
+function spark(canvasId, list, color, fmt) {
+  const cv = $(canvasId), ctx = cv.getContext("2d");
+  const dpr = devicePixelRatio;
+  const W = cv.width = cv.clientWidth * dpr;
+  const H = cv.height = cv.clientHeight * dpr;
+  ctx.clearRect(0, 0, W, H);
+  if (list.length < 2) return;
+  const span = 90, now = Date.now() / 1000;
+  const pts = list.filter(p => p.t > now - span);
+  if (pts.length < 2) return;
+  let lo = Math.min(...pts.map(p => p.v)), hi = Math.max(...pts.map(p => p.v));
+  if (hi - lo < 1e-6) { hi = lo + 1; }
+  const pad = 8 * dpr;
+  const y = v => H - pad - ((v - lo) / (hi - lo)) * (H - 2 * pad);
+  const x = t => W * (1 - (now - t) / span);
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5 * dpr;
+  ctx.beginPath();
+  pts.forEach((p, i) => i ? ctx.lineTo(x(p.t), y(p.v)) : ctx.moveTo(x(p.t), y(p.v)));
+  ctx.stroke();
+  ctx.fillStyle = "#8b949e"; ctx.font = `${10 * dpr}px sans-serif`;
+  ctx.fillText(fmt(hi), 4 * dpr, 12 * dpr);
+  ctx.fillText(fmt(lo), 4 * dpr, H - 4 * dpr);
+}
+
+function mbps(bps) {
+  return bps >= 1e6 ? (bps / 1e6).toFixed(2) + " Mb/s"
+       : bps >= 1e3 ? (bps / 1e3).toFixed(1) + " kb/s"
+       : bps.toFixed(0) + " b/s";
+}
+
+async function setPathLoss(db) {
+  // Link ids come from live telemetry so the same page serves the 2x1 and
+  // 4x1 stacks (dl_miso_2x1/ul_simo_1x2 vs dl_miso_4x1/ul_simo_1x4).
+  const keys = Object.keys((latest && latest.channel) || {});
+  const dl = keys.find(k => k.startsWith("gnb0>")) || "gnb0>ue0:dl_miso_2x1";
+  const ul = keys.find(k => k.startsWith("ue0>")) || "ue0>gnb0:ul_simo_1x2";
+  const links = [dl];
+  if ($("pl-ul").checked) links.push(ul);
+  $("ctl-status").textContent = "applying…";
+  try {
+    const r = await fetch("/api/control", {method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({action: "path_loss", value: db, links})});
+    const j = await r.json();
+    $("ctl-status").textContent = j.ok ? `applied ${db} dB at next slot`
+                                       : "rejected: " + JSON.stringify(j.replies || j.error);
+  } catch (e) { $("ctl-status").textContent = "bridge unreachable: " + e; }
+}
+$("pl").oninput = e => $("pl-val").textContent = e.target.value;
+$("pl").onchange = e => setPathLoss(+e.target.value);
+
+function badge(id, on, text) {
+  const b = $(id);
+  b.className = "badge" + (on ? " ok" : "");
+  if (text !== undefined) b.textContent = text;
+}
+
+function apply(state) {
+  latest = state;
+  const P = state.power || {};
+  const m = P.ue_metrics, ping = P.ping, stack = P.stack;
+  if (stack) {
+    badge("b-phase", stack.phase === "attached", "phase: " + stack.phase);
+    badge("b-rrc", stack.rrc === 1);
+    badge("b-pdu", stack.pdu === 1);
+  }
+  badge("b-ping", !!(ping && ping.age_s < 3));
+  if (m && m.age_s < 3) {
+    $("c-rsrp").textContent = m.rsrp !== undefined ? m.rsrp.toFixed(1) : "–";
+    $("c-pl").textContent = m.pl !== undefined ? m.pl.toFixed(1) : "–";
+    // dl_snr is dropped by the tailer while srsUE reports nan (no recent
+    // DL grants) — keep the last value on screen rather than plotting 0.
+    $("c-snr").textContent = m.dl_snr !== undefined ? m.dl_snr.toFixed(1)
+                                                    : $("c-snr").textContent;
+    $("c-dl").textContent = mbps(m.dl_brate ?? 0);
+    $("c-ul").textContent = mbps(m.ul_brate ?? 0);
+    if (m.dl_snr !== undefined) pushHist(hist.snr, state.t, m.dl_snr);
+    pushHist(hist.dl, state.t, (m.dl_brate ?? 0) / 1e6);
+  }
+  if (ping && ping.age_s < 3) {
+    $("c-rtt").textContent = ping.rtt_ms.toFixed(1);
+    pushHist(hist.rtt, state.t, ping.rtt_ms);
+  }
+  const tele = Object.entries(state.channel || {}).map(([link, c]) =>
+    `${link}: path_loss=${c.live ? c.live.path_loss_db : "?"} dB (slot ${c.slot})`);
+  $("tele").textContent = tele.join("  ·  ") || "no telemetry yet";
+  spark("spark-snr", hist.snr, "#3fb950", v => v.toFixed(0));
+  spark("spark-dl", hist.dl, "#58a6ff", v => v.toFixed(1));
+  spark("spark-rtt", hist.rtt, "#d29922", v => v.toFixed(0));
+}
+function connect() {
+  const es = new EventSource("/events");
+  es.onmessage = e => apply(JSON.parse(e.data));
+  es.onerror = () => { es.close(); setTimeout(connect, 1500); };
+}
+connect();
+</script>
+</body>
+</html>

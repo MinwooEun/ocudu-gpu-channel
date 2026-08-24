@@ -14,6 +14,9 @@
 /tmp/
 *.log
 *.pcap
+
+# Live-demo runtime output (rendered configs, netns dirs, metrics, captures).
+/demo/run-logs/
 *.pcapng
 
 # External source checkouts kept outside the tracked project.

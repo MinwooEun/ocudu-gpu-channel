@@ -1,0 +1,95 @@
+{
+  "endpoint": "tcp://localhost:5560",
+  "captured": 99,
+  "seconds": 5.0,
+  "topics": {
+    "ue>gnb:tdl_a_corr ": 50,
+    "gnb>ue:tdl_a_corr ": 49
+  },
+  "samples": [
+    {
+      "topic": "gnb>ue:tdl_a_corr ",
+      "parts": 1,
+      "frame": {
+        "event": "telemetry",
+        "link_id": "gnb>ue:tdl_a_corr",
+        "slot": 0,
+        "seqno": 0,
+        "live": {
+          "path_loss_db": 0,
+          "awgn_snr_db": 60,
+          "cfo_hz": 0,
+          "tap0_delay_samples": 0,
+          "tap0_gain_db": -13.4,
+          "tap0_phase_rad": 0,
+          "los_k_db": 0
+        },
+        "profile_active": false,
+        "warmup_until_slot": 0
+      }
+    },
+    {
+      "topic": "ue>gnb:tdl_a_corr ",
+      "parts": 1,
+      "frame": {
+        "event": "telemetry",
+        "link_id": "ue>gnb:tdl_a_corr",
+        "slot": 0,
+        "seqno": 0,
+        "live": {
+          "path_loss_db": 0,
+          "awgn_snr_db": 60,
+          "cfo_hz": 0,
+          "tap0_delay_samples": 0,
+          "tap0_gain_db": -13.4,
+          "tap0_phase_rad": 0,
+          "los_k_db": 0
+        },
+        "profile_active": false,
+        "warmup_until_slot": 0
+      }
+    },
+    {
+      "topic": "gnb>ue:tdl_a_corr ",
+      "parts": 1,
+      "frame": {
+        "event": "telemetry",
+        "link_id": "gnb>ue:tdl_a_corr",
+        "slot": 0,
+        "seqno": 0,
+        "live": {
+          "path_loss_db": 0,
+          "awgn_snr_db": 60,
+          "cfo_hz": 0,
+          "tap0_delay_samples": 0,
+          "tap0_gain_db": -13.4,
+          "tap0_phase_rad": 0,
+          "los_k_db": 0
+        },
+        "profile_active": false,
+        "warmup_until_slot": 0
+      }
+    },
+    {
+      "topic": "ue>gnb:tdl_a_corr ",
+      "parts": 1,
+      "frame": {
+        "event": "telemetry",
+        "link_id": "ue>gnb:tdl_a_corr",
+        "slot": 0,
+        "seqno": 0,
+        "live": {
+          "path_loss_db": 0,
+          "awgn_snr_db": 60,
+          "cfo_hz": 0,
+          "tap0_delay_samples": 0,
+          "tap0_gain_db": -13.4,
+          "tap0_phase_rad": 0,
+          "los_k_db": 0
+        },
+        "profile_active": false,
+        "warmup_until_slot": 0
+      }
+    }
+  ]
+}
