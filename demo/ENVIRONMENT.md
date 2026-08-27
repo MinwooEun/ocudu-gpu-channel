@@ -5,6 +5,14 @@ Everything the three demos (`run-demo.sh` :8080, `run-simo-demo.sh` :8081,
 Recorded from the working setup on 2026-08-24; the version numbers are what
 was actually measured there, not minimums.
 
+**Not all of this is a supported path.** `:8080` and `:8081` need only this
+repository plus a CUDA build of the broker and two Python packages. `:8082`
+needs a `~/ocudu-native-workspace` that this repository cannot provision — the
+native harness the 2026-08 review classified as a record of the original run,
+not a reproducible one. The per-tier breakdown is in
+[`README.md`](README.md#what-is-reproducible-from-this-repository); everything
+below is the union of what all three need.
+
 ## Hardware / OS
 
 - NVIDIA GPU with a current driver — working setup: **RTX 5090 (sm_120),

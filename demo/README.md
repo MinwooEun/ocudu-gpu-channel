@@ -8,6 +8,31 @@ Sionna, no Docker, no core network.
 Machine prerequisites (GPU/CUDA, Python deps, native-workspace builds,
 ports): see [`ENVIRONMENT.md`](ENVIRONMENT.md).
 
+## What is reproducible from this repository
+
+The 2026-08 review's first finding was that results had been reported from a
+harness nobody receiving the branch could run. That finding applies to one of
+the three tiers here, and it is stated per tier rather than left for a reader
+to discover:
+
+| Tier | Needs | Reproducible from this repo alone |
+|---|---|---|
+| `:8080` 2×2 correlation (`run-demo.sh`) | `build-cuda/ocudu-gpu-channel`, Python with pyzmq + numpy | **Yes** |
+| `:8081` 1×4 SIMO steering (`run-simo-demo.sh`) | the same | **Yes** |
+| `:8082` live radio (`native/run-live-demo.sh`) | the whole `~/ocudu-native-workspace` — OCUDU gNB, srsUE, Open5GS and mongod builds, provisioned outside this repo | **No** |
+
+The live tier runs on the native harness, which the review classified as a
+record of the original run rather than a supported path:
+`scripts/native/bootstrap-workspace.sh` deliberately disables provisioning and
+`/home/ubuntu` and `/opt/conda` are hardcoded. Anyone without that workspace
+already built cannot start `:8082`, and no error message will explain why
+beyond a missing-binary line.
+
+Porting the live tier onto the containerised harness in `scripts/remote/` —
+which provisions its own network and 5GC — is tracked as V5 in
+[`../RANK1_REVIEW_MILESTONES.md`](../RANK1_REVIEW_MILESTONES.md). Until that is
+done, quote `:8082` results with the same caveat the native gates carry.
+
 ## Quick start (on the 5090 box, inside tmux)
 
 ```bash

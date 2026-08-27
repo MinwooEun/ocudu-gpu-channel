@@ -28,6 +28,13 @@ concurrently (disjoint ports); each tears down cleanly on Ctrl-C.
   windows; reproduces the step-8 analytics: correlated **9.53** (~9.71),
   iid **7.01** (~6.94), inside the ±1.5 gate tolerance. Rides through broker
   restarts (REQ socket recreate after 1 s).
+
+  Label for those two figures: each is a **single observation of one 0.5 s
+  window** (`window_s` and `batches` in every emitted sample carry the window
+  and the sample count it averaged), not a percentile and not an average over
+  runs. They are judged the way a stochastic quantity has to be — against the
+  analytic value that draw predicts, with a tolerance sized to the spread —
+  which is why the comparison is to 9.71 / 6.94 rather than to a previous run.
 - **C2 bridge / S2** — DONE (prototype for Hyunsoo). Single stdlib+pyzmq
   file: telemetry SUB + meter PULL + control REQ, page served with 10 Hz
   Server-Sent Events push. Second-machine access verified via one port.
