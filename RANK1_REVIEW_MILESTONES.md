@@ -6,6 +6,22 @@ rank-1 로드맵 본체는 [`RANK1_MILESTONES.md`](RANK1_MILESTONES.md), 실행 
 [`docs/live-gate-results.md`](docs/live-gate-results.md), 대외 보고서는
 [`docs/rank1-feasibility-report.md`](docs/rank1-feasibility-report.md).
 
+## 현재 상태 (2026-08-27)
+
+| | 항목 | 상태 |
+|---|---|---|
+| V0 | 문서를 현재 코드와 일치 | **완료** |
+| V1 | 5 ms 이상치 귀속 | **계측 완료 · 라이브 재실행 대기** — 규명 도중 `max_us`가 상수였음이 드러나 이상치 주장 자체를 철회 |
+| V2 | 라이브 DL 다중 branch | **미착수** — 결함 3건을 소스에서 특정, srsUE 패치 + 라이브 실행 필요 |
+| V3 | 브로커 lifecycle | **미착수** (설계 결정 필요) |
+| V3.1 | `rx_headroom()` 자기 교착 | **완료** |
+| V4 | 게이트 바이너리 출처 | **완료** — 라이브 실행으로 산출물 1회 확인 필요 |
+| V5 | demo 지원 경로 | **경로 B 완료** (티어별 재현 가능성 명시) · 경로 A 미착수 |
+| V6 | 측정 라벨 규칙 | **완료** |
+
+남은 것은 전부 **GPU 워크스테이션에서의 라이브 실행**이 필요하다. 여기까지는 저장소 안에서
+빌드·테스트로 닫을 수 있는 것만 닫았고, `ctest 8/8`로 확인했다.
+
 ## 리뷰가 지적한 것 (커밋 `9eb2658`)
 
 > *"결과가 이 브랜치를 받은 누구도 실행할 수 없는 하네스에서 보고됐고, 공개된 주장 중 두 개는
@@ -97,22 +113,49 @@ port 0에 싣는다. PDSCH의 포트 수는 물리 안테나 수가 아니라 **
 2포트가 안 되는 이유도 규명되어 있다 — TS 38.211 표 7.4.1.5.3-1에서 2포트는 row 3(주파수 할당 6비트
 → ASN.1 `other`)이라 srsUE 화이트리스트에 없고, 4포트는 row 4(3비트 → `row4`, FD-CDM2)로 srsUE가 아는 형태다.
 
-**막고 있는 것 (단일 결함, 위치 특정됨).** srsUE의 CSI-RS 측정이 PRB당 RE 1개를 가정한다
-(`csi_rs.c:649`, `csi_rs.c:991` — 기대치 `csi_rs_count(density, RB수)` vs 실제 `RB수 × nof_k`).
-row 4는 CDM 그룹 안에 RE가 2개라 `Unmatched number of RE (212 != 106)`가 뜨고 srsUE가
-**그 슬롯의 DL을 통째로 폐기**한다(`Error measuring, aborting work DL`) → PDSCH 복호 0건 →
-`UE did not request a PDU session after 3000ms` → release. 두 실행 모두
-`attach-summary.json: "status": "ue_stack_blocker_no_attach"`.
+**막고 있는 것 — 결함은 하나가 아니라 셋이다 (소스에서 직접 확인,
+`~/ocudu-native-workspace/src/srsRAN_4G`, `lib/src/phy/ch_estimation/csi_rs.c`).**
+초판 기술은 "PRB당 RE 1개 가정 한 줄"이었으나, 소스를 읽으면 row 4가 걸리는 지점이 세 곳이다.
+
+1. **기대 RE 수가 density만으로 유도된다** (`csi_rs.c:611` NZP, `:962` ZP).
+   `nof_re = csi_rs_count(density, rb_end - rb_begin)`인데 `csi_rs_count`는 density만 본다 —
+   `density_three → 3·nprb`, `density_one → nprb`. 그런데 추출 루프는 row의 k-list 길이만큼
+   뽑는다(`for k_idx < nof_k`). row 1은 density_three ↔ `nof_k = 3`으로 우연히 일치하고,
+   row 2는 density_one ↔ `nof_k = 1`로 일치한다. **row 4만 density_one ↔ `nof_k = 2`(FD-CDM2)로
+   어긋난다** → `count_re = 2·106 = 212`, `nof_re = 106` → `Unmatched number of RE (212 != 106)`.
+   이것이 실제로 뜨는 오류다.
+2. **스크램블 시퀀스 정렬도 같은 가정을 쓴다** (`csi_rs.c:631`).
+   `srsran_sequence_state_advance(&sequence_state, 2 * csi_rs_count(density, rb_begin))` —
+   rb_begin 아래 PRB들의 r(m)을 건너뛰는 코드인데, row 4는 PRB당 r 값이 2개이므로
+   `2 · rb_begin · nof_k`만큼 넘겨야 한다. **기대 개수만 고쳐도 시퀀스가 절반 어긋난 채
+   역확산되어 LSE가 무의미해진다.** 1번만 고치고 "통과했다"고 판단하면 안 되는 이유다.
+3. **CDM 그룹이 0으로 고정되어 있다** (`csi_rs.c:577`, `:928` — `// Force CDM group to 0`).
+   row 4의 4포트는 CDM 그룹 2개(j=0: 포트 0/1, j=1: 포트 2/3)에 나뉘어 있으므로, 1·2를 고쳐도
+   srsUE의 CSI 측정은 **배열의 절반만** 본다. attach를 막지는 않지만, 그 실행에서 나오는 CSI
+   리포트의 의미에 경계를 긋는다 — 리포트를 "4포트 측정"이라 부르면 안 된다.
+
+**증상 재확인.** 위 1번 때문에 srsUE가 `Error measuring, aborting work DL`로 **그 슬롯의 DL을
+통째로 폐기**한다 → PDSCH 복호 0건 → DL NAS 미수신 → `UE did not request a PDU session after
+3000ms` → release. 두 실행 모두 `attach-summary.json`의 `"status": "ue_stack_blocker_no_attach"`.
 
 CSI-RS 주기를 규격 최댓값 80 ms로 늘리면 폐기 681→170, PDSCH 복호 0→3으로 NAS가 인증 응답까지
 진행하지만 포트 1~3의 에너지도 같은 비율로 얇아져 share가 **0.046376으로 기준 미달**
-(`20260818T071217Z`, `status: failed`). **증거와 완주가 배타적**이다.
+(`20260818T071217Z`, `matrix-report.csi80.no-waiver.json` → `status: failed`).
+**증거와 완주가 배타적**이다.
 
 **경로 A (권장) — srsUE를 고친다.** 이전 판단은 *"통합 상대는 패치하지 않는다"*였다.
 **그 전제는 리뷰가 이미 깼다**: `6a6e136`이 preamble index 때문에 srsUE를 `release_23_11`에서
 `zhouyou-gu/srsRAN_4G` master로 옮기고 `SRSUE_PRACH_PREAMBLE_INDEX`·`SRSRAN_4G_REPO`/`SRSRAN_4G_REF`
 override를 도입했다. 즉 **패치 가능한 fork와 그 주입 경로가 이미 브랜치 안에 있다.**
-`csi_rs.c`의 RE 카운트를 CDM 그룹당 `nof_k`를 반영하도록 수정하면 두 결과가 배타적일 이유가 사라진다.
+수정 범위는 위 1·2 (`nof_re`를 루프가 실제로 방문하는 PRB 수 × `nof_k`로, 시퀀스 advance를
+`2 · rb_begin · nof_k`로) 이며, 3은 **고치지 않고 경계로 기록**한다 — attach를 막지 않고, 손대면
+포트 2/3용 두 번째 CDM 그룹 측정 경로를 새로 만드는 일이 된다.
+
+**검증 순서 (이 순서를 지킬 것).** 통합 상대를 패치하므로 게이트 통과만으로 판단하지 않는다:
+(a) srsRAN 자체 단위테스트 `lib/src/phy/ch_estimation/test/csi_rs_test.c`가 row 1·row 2에서
+**회귀 없이** 통과 — 우연히 맞던 두 row를 깨뜨리지 않았는지 먼저 확인,
+(b) row 4에서 `Unmatched number of RE`가 사라지고 `epre`가 유한하며 선언 전력과 일치,
+(c) 그 다음에야 라이브 게이트.
 
 **경로 B (A가 막히면).** CSI-on 실행을 **별도의 증거 전용 게이트**로 고정하고
 (attach 완주를 요구하지 않되 그 사실을 게이트 이름과 산출물에 박아둔다), 판정표는 리뷰가 정한
@@ -223,19 +266,19 @@ n 없는 백분위가 0건이다.
 
 ---
 
-## 권장 순서
+## 남은 순서
 
 ```
-V0 (문서 정합)  ─┐
-V3.1 (자기 교착) ─┼─→ 독립·저비용, 먼저 닫는다
-V6 (라벨 규칙)  ─┘
-
-V2 (DL 다중 branch)  ← 최우선. 리뷰가 축소한 유일한 과학적 주장이고 근거가 이미 있다
-V1 (5 ms 이상치)     ← V2와 병행 가능 (둘 다 브로커 계측 작업)
-V5 (demo 지원 경로)  ← 다음 제출 전에 A 또는 B 중 하나는 반드시
-V4 (바이너리 출처)
-V3 (브로커 lifecycle) ← 가장 크고, 설계 결정이 필요하다. 추측으로 네 번째 시도를 하지 말 것
+V2 (DL 다중 branch)   ← 최우선. 근거는 이미 있고, 막는 결함 3건의 위치가 특정되어 있다
+V1 (재실행)           ← 게이트 1회 재실행이면 최대값이 채워진다. V2 실행에 얹어도 된다
+V4 (산출물 확인)      ← 같은 실행에서 source-evidence.json이 나오는지 보면 끝
+V5 경로 A (demo 이식) ← 다음 제출 전에
+V3 (브로커 lifecycle) ← 가장 크고 설계 결정이 필요하다. 추측으로 네 번째 시도를 하지 말 것
 ```
+
+**한 번의 라이브 실행으로 V1·V4가 함께 닫힌다.** 4T4R 게이트를 한 번 돌리면
+`event=process_latency_summary`의 실제 최대값과 `overflow_n`, 그리고 `source-evidence.json`이
+동시에 생성된다. V2를 시도한다면 그 실행에 얹는 것이 가장 싸다.
 
 ## 주장 경계 (변경 없음)
 
