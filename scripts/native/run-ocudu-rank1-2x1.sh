@@ -155,6 +155,9 @@ channel_diff_sha256="$(git -C "${repo_root}" diff --binary -- . | sha256sum | aw
   >"${log_dir}/gnb-dryrun.log" 2>&1
 
 channel_build="${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release"
+# The inner script runs the broker from here, so the SHA-256 recorded in
+# source-evidence.json below is the binary that actually runs.
+export OCUDU_CHANNEL_BUILD="${channel_build}"
 cmake -S "${repo_root}" -B "${channel_build}" -DCMAKE_BUILD_TYPE=Release \
   -DOCUDU_GPU_CHANNEL_ENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER="${cuda_compiler}" \
   -DOCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES=120 >"${log_dir}/cmake-configure.log" 2>&1

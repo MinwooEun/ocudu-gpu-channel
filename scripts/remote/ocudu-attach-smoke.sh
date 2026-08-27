@@ -147,12 +147,92 @@ write_summary() {
   "matrix_status": ${matrix_status:-0},
   "gate": "${gate_name}",
   "log_dir": "${log_dir}",
-  "report_dir": "${report_dir}"
+  "report_dir": "${report_dir}",
+  "source_evidence": "${report_dir}/source-evidence.json"
 }
 JSON
   printf 'summary=%s\n' "${summary_path}"
   printf 'status=%s\n' "${status}"
   exit "${exit_code}"
+}
+
+# Provenance for the run that is about to happen.
+#
+# The native gate wrote a source-evidence.json and the report's evidence index
+# cites it; porting the gates onto this harness did not bring it along, so the
+# supported path produced no provenance at all. Worse, the native gate hashed
+# builds/ocudu-gpu-channel-rank1-cuda-release while its inner script executed
+# builds/ocudu-gpu-channel-cuda-release, so what it recorded was not what it
+# ran. Both problems have the same fix: hash the artefact that is about to be
+# executed, immediately before executing it, and refuse to run if the thing
+# built is not the thing about to run.
+write_source_evidence() {
+  local evidence="${report_dir}/source-evidence.json"
+  local broker_mode broker_ref broker_sha
+  if [[ -z "${broker_image}" ]]; then
+    broker_mode="native"
+    broker_ref="${cuda_build}/ocudu-gpu-channel"
+    # The gate builds and ctests ${cuda_build} and runs from it. Assert that
+    # rather than trusting it: a future edit that splits the two would
+    # otherwise reproduce the native gate's defect silently.
+    if [[ ! -x "${broker_ref}" ]]; then
+      echo "broker binary absent from the build dir that was built: ${broker_ref}" >&2
+      return 1
+    fi
+    broker_sha="$(sha256sum "${broker_ref}" | awk '{print $1}')"
+  else
+    broker_mode="container"
+    broker_ref="${broker_image}"
+    # Image ID, not the tag: a tag is mutable and says nothing about what ran.
+    broker_sha="$(docker image inspect --format '{{.Id}}' "${broker_image}" 2>/dev/null || echo "unknown")"
+  fi
+
+  local channel_head channel_diff
+  channel_head="$(git -C "${project_root}" rev-parse HEAD 2>/dev/null || echo unknown)"
+  channel_diff="$(git -C "${project_root}" diff --binary -- . 2>/dev/null | sha256sum | awk '{print $1}')"
+
+  local config_entries=""
+  local path name sha
+  for path in "${gnb_config}" "${srsue_config}" "${project_root}/${topology_rel}" \
+              "${compose_override}" "${ocudu_dockerfile}" "${srsue_dockerfile}"; do
+    [[ -f "${path}" ]] || continue
+    name="$(basename "${path}")"
+    sha="$(sha256sum "${path}" | awk '{print $1}')"
+    [[ -n "${config_entries}" ]] && config_entries+=","
+    config_entries+="
+    \"${name}\": \"${sha}\""
+  done
+
+  local srsue_image_id
+  srsue_image_id="$(docker image inspect --format '{{.Id}}' "${srsue_image}" 2>/dev/null || echo unknown)"
+
+  cat >"${evidence}" <<JSON
+{
+  "schema": "ocudu-remote-gate-source-evidence/v1",
+  "gate": "${gate_name}",
+  "timestamp": "${timestamp}",
+  "docker_used": true,
+  "channel_head": "${channel_head}",
+  "channel_tracked_diff_sha256": "${channel_diff}",
+  "broker": {
+    "mode": "${broker_mode}",
+    "ref": "${broker_ref}",
+    "sha256": "${broker_sha}",
+    "build_dir": "${cuda_build}",
+    "built_and_run_from_same_dir": $([[ "${broker_mode}" == "native" ]] && echo true || echo false)
+  },
+  "srsue_image": {
+    "tag": "${srsue_image}",
+    "id": "${srsue_image_id}",
+    "srsran_ref": "${srsran_ref}"
+  },
+  "topology": "${topology_rel}",
+  "gnb_config": "${gnb_config_rel}",
+  "config_sha256": {${config_entries}
+  }
+}
+JSON
+  printf 'source_evidence=%s\n' "${evidence}"
 }
 
 wait_for_open5gs() {
@@ -524,6 +604,8 @@ if [[ "${matrix_enabled}" == "1" ]]; then
                 --wire-capture-samples "${OCUDU_ATTACH_CAPTURE_SAMPLES:-4608000}"
                 --wire-capture-skip "${OCUDU_ATTACH_CAPTURE_SKIP:-460800000}")
 fi
+
+write_source_evidence
 
 if [[ -z "${broker_image}" ]]; then
   "${cuda_build}/ocudu-gpu-channel" \

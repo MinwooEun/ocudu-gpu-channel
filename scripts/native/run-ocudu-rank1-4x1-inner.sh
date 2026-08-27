@@ -301,7 +301,18 @@ run_stack()
   local srsue="${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue"
   local fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
   local mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
-  local broker="${native_root}/builds/ocudu-gpu-channel-cuda-release/ocudu-gpu-channel"
+  # Build directory the OUTER gate built, ctested and hashed into
+  # source-evidence.json. It used to be hardcoded to
+  # builds/ocudu-gpu-channel-cuda-release while every outer gate built
+  # builds/ocudu-gpu-channel-rank1-cuda-release, so the recorded SHA-256 was
+  # not the binary that ran. The outer gate exports this; the default matches
+  # what it builds so a direct invocation cannot silently diverge either.
+  local channel_build="${OCUDU_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release}"
+  local broker="${channel_build}/ocudu-gpu-channel"
+  if [[ ! -x "${broker}" ]]; then
+    echo "broker binary missing from the build the gate hashed: ${broker}" >&2
+    return 1
+  fi
   local add_users="${native_root}/src/ocudu/docker/open5gs/add_users.py"
   local subscriber_verify="${repo_root}/scripts/native/verify-open5gs-subscriber.py"
   for binary in "${gnb}" "${srsue}" "${fivegc}" "${mongod}" "${broker}"; do
