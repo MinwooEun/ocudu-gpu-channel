@@ -45,6 +45,14 @@ if [[ -z "${branch}" ]]; then
   exit 1
 fi
 
+# Provenance is computed HERE, not on the remote. The rsync below excludes
+# .git, so the synced tree is not a git repository and `git rev-parse` on the
+# remote would record "unknown" -- which is most of what source-evidence.json
+# exists to say. The diff digest covers the working tree, which in sync mode is
+# exactly what gets shipped, uncommitted changes included.
+local_channel_head="$(git -C "${repo_root}" rev-parse HEAD 2>/dev/null || echo unknown)"
+local_channel_diff="$(git -C "${repo_root}" diff --binary -- . 2>/dev/null | sha256sum | awk '{print $1}')"
+
 # By default, rsync the local working tree to the remote so the test exercises
 # the current (possibly uncommitted) code. Set OCUDU_ATTACH_SYNC_WORKTREE=0 to
 # instead use whatever is already on the remote.
@@ -80,7 +88,9 @@ remote_sh bash -s -- \
   "${matrix_enabled}" \
   "$(printf '%s' "${matrix_allow_silent}" | base64 | tr -d '\n'):-" \
   "${ping_count}" \
-  "${gate_name}" <<'REMOTE'
+  "${gate_name}" \
+  "${local_channel_head}" \
+  "${local_channel_diff}" <<'REMOTE'
 set -euo pipefail
 
 workspace="$1"
@@ -109,6 +119,9 @@ if [[ -n "${matrix_allow_silent_b64}" ]]; then
 fi
 ping_count="${18}"
 gate_name="${19}"
+# Computed on the driver, where .git exists: the rsync excludes it.
+local_channel_head="${20:-unknown}"
+local_channel_diff="${21:-unknown}"
 
 expand_remote_path() {
   case "$1" in
@@ -187,9 +200,15 @@ write_source_evidence() {
     broker_sha="$(docker image inspect --format '{{.Id}}' "${broker_image}" 2>/dev/null || echo "unknown")"
   fi
 
+  # Prefer what the driver measured; fall back to the remote clone when the
+  # gate was told to use whatever is already there (SYNC_WORKTREE=0).
   local channel_head channel_diff
-  channel_head="$(git -C "${project_root}" rev-parse HEAD 2>/dev/null || echo unknown)"
-  channel_diff="$(git -C "${project_root}" diff --binary -- . 2>/dev/null | sha256sum | awk '{print $1}')"
+  channel_head="${local_channel_head}"
+  channel_diff="${local_channel_diff}"
+  if [[ "${channel_head}" == "unknown" ]]; then
+    channel_head="$(git -C "${project_root}" rev-parse HEAD 2>/dev/null || echo unknown)"
+    channel_diff="$(git -C "${project_root}" diff --binary -- . 2>/dev/null | sha256sum | awk '{print $1}')"
+  fi
 
   local config_entries=""
   local path name sha
@@ -214,6 +233,7 @@ write_source_evidence() {
   "docker_used": true,
   "channel_head": "${channel_head}",
   "channel_tracked_diff_sha256": "${channel_diff}",
+  "tree_source": "$([[ "${skip_remote_pull}" == "1" ]] && echo rsynced_working_tree || echo remote_checkout)",
   "broker": {
     "mode": "${broker_mode}",
     "ref": "${broker_ref}",
