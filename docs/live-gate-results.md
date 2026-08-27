@@ -352,6 +352,39 @@ slot index and full stage breakdown for the first 32 overflow slots. A
 regression test in `test_broker` rejects a summary line whose percentiles are
 not monotone, or which claims a 5 ms maximum with an empty overflow bucket.
 
-The gates have **not** been re-run since. Until they are, this table's maxima
-are unknown and no statement should be made about the tail beyond p99.9.
-Tracked as V1 in [`../RANK1_REVIEW_MILESTONES.md`](../RANK1_REVIEW_MILESTONES.md).
+### Re-measured with the corrected summary (2026-08-27)
+
+Two runs of the **native** 4x1 gate on the rank-1 workstation (5x RTX 5090,
+unprivileged LXC), with the fixed `max_us` and the per-slot overflow reporting.
+Both runs' attach gates passed; the first one's matrix check failed on the
+capture window, which does not affect these figures.
+
+| Run | Node | n (slots) | p50 | p95 | p99 | p99.9 | max | overflow_n |
+|---|---|---|---|---|---|---|---|---|
+| `20260827T101334Z` | gnb0 | 13,909 | 210 µs | 270 µs | 505 µs | 855 µs | ≥5000 µs | **3** |
+| `20260827T101334Z` | ue0 | 12,576 | 195 µs | 270 µs | 385 µs | 750 µs | ≥5000 µs | **1** |
+| `20260827T102900Z` | gnb0 | 13,077 | 215 µs | 270 µs | 385 µs | 805 µs | **2855 µs** | 0 |
+| `20260827T102900Z` | ue0 | 12,462 | 195 µs | 260 µs | 360 µs | 800 µs | **1860 µs** | 0 |
+
+Three things follow, and only these three:
+
+- **p50 through p99.9 sit inside the 1 ms slot budget** in both runs, consistent
+  with the 2026-08-19 remote-gate table above.
+- **The maximum does not.** Even the run with an empty overflow bucket peaked at
+  2855 µs, nearly three slots. The budget holds through p99.9 and not beyond it.
+- **The tail is run-dependent.** One run put four slots past 5 ms; the next, on
+  the same host minutes later, put none. So "the observed maximum lands in the
+  5 ms bucket" was never a property of the system — it is a property of a run.
+
+The slot indices refute the guess that went with the retracted claim. The
+overflow slots in `20260827T101334Z` were 3699, 3927, 5211 and 6956 out of
+~13,900 — between 27% and 50% of the way through the run, not at start-up or
+teardown. Three of the four spent their time inside the processor with the
+sibling stages normal; the fourth (`slot=6956`) had `read_us=5793` and
+`push_us=2458` alongside `process_us=6859`, which is a stalled thread rather
+than a slow processor.
+
+No cause is attributed. `nvidia-smi` showed no other compute process on any of
+the five GPUs, so GPU contention is not the explanation, and nothing else was
+measured. Attribution is still open, but it is now a question about four
+identified slots rather than about a constant.

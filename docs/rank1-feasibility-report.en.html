@@ -293,8 +293,14 @@
   edge as documented, printing <code>overflow_n</code> alongside, and emitting
   <code>event=process_overflow</code> with the slot index and stage breakdown for the first 32 overflow slots; a
   <code>test_broker</code> regression test rejects a non-monotone summary or a 5 ms maximum with an empty overflow
-  bucket. <b>The gates have not been re-run since</b>, so the maxima are unmeasured and nothing is claimed about
-  the tail beyond p99.9. Re-measuring before any 8-port+ extension remains an open item.</p>
+  bucket. <b>Re-measured 2026-08-27</b> over two runs of the native 4&times;1 gate: p50 through p99.9 stay inside
+  the 1 ms budget in both (gnb0 215/270/385/805 µs at n=13,077), but <b>the maximum does not</b> — even the
+  run with an empty overflow bucket peaked at 2855 µs. And <b>the tail is run-dependent</b>: one run put four
+  slots past 5 ms, the next on the same host minutes later put none, so "the observed maximum lands in the
+  5 ms bucket" was a property of a run rather than of the system. The guess that accompanied it is refuted
+  too — the overflow slots were 3699, 3927, 5211 and 6956 of ~13,900, between 27% and 50% through the run,
+  not at start-up or teardown. No cause is attributed; no other compute process was on any of the five GPUs.
+  Re-measuring before any 8-port+ extension remains an open item.</p>
 
   <h3>The oracle-precoding study — "gain exists only where the phases match", proven live</h3>
   <p>Precoding belongs to the gNB/RU, but srsRAN offers no injection knob — so the emulator declares the
