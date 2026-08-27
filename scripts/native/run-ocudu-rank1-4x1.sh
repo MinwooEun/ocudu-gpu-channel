@@ -182,14 +182,30 @@ export OCUDU_CHANNEL_BUILD="${channel_build}"
 # run, 11520000 samples = 0.5 s of it. Kept as the default because every
 # published matrix figure was measured with it.
 #
-# It is a fixed window, and whether it overlaps uplink activity depends on how
-# fast the UE attaches. Measured 2026-08-27: a run whose attach gate PASSED
-# (RRC, PDU session, ping, every strict counter zero) scored
-# matrix_capture_status=failed with "source port 0 captured only zeros",
-# because RA completed roughly 6 s in and the window closed before the UE's
-# first sustained uplink. The downlink row verified in the same capture at
-# 4.771e-08. Raise the skip to move the window into the ping traffic that
-# follows attach, e.g. OCUDU_NATIVE_CAPTURE_SKIP=230400000 for 10.0 s.
+# The window is counted in SAMPLE time, per port. The uplink it has to overlap
+# is the ping, which is scheduled in WALL time after attach. Those two clocks
+# do not share an origin, and the offset between them is what makes this gate
+# flaky.
+#
+# Measured 2026-08-27 from event=heartbeat acquired= counters. Every port sits
+# at zero samples until wall t=7 s, because the lock-step broker cannot advance
+# a node until every incoming lane has data and the srsUE radio is the last to
+# connect. So sample time starts ~7 s into the 20 s run, and the run reaches
+# only ~10.6 s of sample time in total -- it is running below real time. The UE
+# established its PDU session at essentially sample time 0 and pinged for 5.9 s,
+# so the uplink lives in sample time 0-6 s.
+#
+# The 138240000 default therefore opens at sample time 6.00 s, immediately
+# AFTER the ping ends, and a run at 230400000 opens at 10.00 s, near the end of
+# the run. Both captured 11520000 consecutive zero samples from a UE that had
+# nothing left to send, on runs whose attach gate passed with 0% ping loss and
+# a downlink row verified at 5.585e-08 in the same capture.
+#
+# So move the window EARLIER, not later: OCUDU_NATIVE_CAPTURE_SKIP=69120000 is
+# sample time 3.0-3.5 s, in the middle of the ping with margin on both sides.
+# The default is kept because the published figures were measured with it, and
+# because on an unloaded host the broker keeps closer to real time and 6.00 s
+# still lands inside the ping -- which is why the 2026-08-17 run passed with it.
 export OCUDU_NATIVE_CAPTURE_SAMPLES="${OCUDU_NATIVE_CAPTURE_SAMPLES:-11520000}"
 export OCUDU_NATIVE_CAPTURE_SKIP="${OCUDU_NATIVE_CAPTURE_SKIP:-138240000}"
 cmake -S "${repo_root}" -B "${channel_build}" -DCMAKE_BUILD_TYPE=Release \
