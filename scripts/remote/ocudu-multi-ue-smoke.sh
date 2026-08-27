@@ -20,11 +20,14 @@ build_docker="${OCUDU_MUE_BUILD_DOCKER:-1}"
 # Non-empty = run the broker as this Docker image (docker run --gpus all
 # --network host) instead of the native build. Default = native binary.
 broker_image="${OCUDU_MUE_BROKER_IMAGE:-}"
-# srsUE launch stagger: srsRAN ZMQ radios share the broker's lock-step virtual
-# time, so two UEs started together transmit the identical RACH preamble on the
-# identical PRACH occasion and the gNB merges them onto one C-RNTI. Starting ue1
-# after ue0 is RRC-connected makes ue1 RACH on a later occasion -> distinct
-# C-RNTIs. 0 disables the stagger (the both-at-once collision repro).
+# srsUE launch stagger. What makes several UEs separable is the distinct
+# preamble index each one is given below, NOT the stagger -- an earlier comment
+# here claimed the gNB merges simultaneous UEs onto one C-RNTI, which is wrong
+# (it allocates a fresh C-RNTI per detected preamble). srsRAN ZMQ radios share
+# the broker's lock-step virtual time, so UEs started together land in the same
+# PRACH occasion and contend for the same msg3 grants; staggering them makes
+# that contention rarer and the gate more reliable. 0 disables the stagger (the
+# both-at-once repro).
 ue_stagger_seconds="${OCUDU_MUE_UE_STAGGER_SECONDS:-10}"
 # srsUE base: latest zhouyou-gu/srsRAN_4G master. release_23_11 cannot run more
 # than one UE on a cell -- a UE that loses RACH contention reports a successful

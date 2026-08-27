@@ -6,11 +6,14 @@ that a script exists.
 
 **Host**: Intel Core Ultra 9 285K, one RTX 5090 (32 GB), driver 580.173.02,
 CUDA 12.8.93, Ubuntu 24.04.
-**Date**: 2026-08-19.
+**Date**: 2026-08-19, with the multi-UE rows re-measured through `d00e84e`.
 **Branch**: `minwooeun-rank1-miso-simo-review-fixes`.
-**Stack**: OCUDU gNB + Open5GS 5GC + srsRAN_4G srsUE `release_23_11`, all
-containerised, driven through the CUDA broker. Every gate was run from a clean
-`git clone` of the branch with only `.config` added.
+**Stack**: OCUDU gNB + Open5GS 5GC + srsRAN_4G srsUE, all containerised, driven
+through the CUDA broker. Every gate was run from a clean `git clone` of the
+branch with only `.config` added.
+**srsUE base**: single-UE gates run `release_23_11`. Multi-UE gates run the
+latest `zhouyou-gu/srsRAN_4G` master (`SRSRAN_4G_REPO` / `SRSRAN_4G_REF`), which
+is what `release_23_11` needed to be replaced by — see the root cause below.
 
 Every srsUE keeps `nof_antennas = 1`. All claims are rank-1 MISO/SIMO.
 
@@ -41,65 +44,64 @@ to break.
 | `ocudu-multi-ue-smoke.sh` (1T1R) | 2 | **pass** |
 | `ocudu-rank1-2x1-multi-ue-smoke.sh` (2T2R) | 2 | **pass** — rows 4.54e-05 / 4.53e-05; removing either UE breaks the match by 91.3 to 236.9 |
 | `ocudu-rank1-4x1-multi-ue-smoke.sh` (4T4R) | 2 | **pass** — rows 6.76 / 5.33 / 2.91 / 3.99 e-05 |
-| `ocudu-rank1-2x1-triple-ue-smoke.sh` (2T2R) | 3 | **blocked** — 1 of 3 truly attaches; two share a C-RNTI |
-| `ocudu-rank1-2x1-quad-ue-smoke.sh` (2T2R) | 4 | **blocked** — 1 of 4 truly attaches; three share a C-RNTI |
+| `ocudu-rank1-2x1-triple-ue-smoke.sh` (2T2R) | 3 | **unrecorded** — the blocker below is fixed, but this gate has not been re-run since |
+| `ocudu-rank1-2x1-quad-ue-smoke.sh` (2T2R) | 4 | **unrecorded** — fixture reset in `6a6e136`, not re-run since |
+| `ocudu-rank1-4x1-quad-ue-smoke.sh` (4T4R) | 4 | **pass** — 4/4 attach on the first RA attempt; rows 7.9 / 6.7 / 5.1 / 5.4 e-05, every leave-one-out breaks by ~1e+02 |
 
 Control experiments used for the diagnosis below, not gates:
 `examples/topology.ocudu-docker.multi-ue-quad.cuda.yaml` (stock single-antenna
 cell, four UEs) and `examples/ocudu/gnb_zmq_b210_fdd_1t1r_mimo_settings_bisect.yaml`
 (single antenna carrying the MIMO cell settings).
 
-The three- and four-UE gates are committed as reproducible investigations, not
-as passing gates. Do not cite them as demonstrated capability.
+The 2×1 three- and four-UE gates are committed as reproducible investigations.
+Their blocker is fixed (below), but neither has been re-run since, so they carry
+no recorded result. Do not cite them as demonstrated capability until they do.
 
-## Why three and four UEs do not attach
+## Why three and four UEs did not attach
 
-**Root cause: every UE sat at the same propagation delay, so the gNB could not
-tell their preambles apart.**
+**Root cause: srsUE `release_23_11` transmits preamble index 0 no matter what,
+and does not enforce contention resolution.** Every UE therefore derived the
+same RA-RNTI, decoded the same random access response, and the UEs that lost
+contention reported a successful attach and stopped retrying. Three processes
+logged `RRC Connected` on one identity while only one held a PDU session.
 
-srsUE always transmits preamble index 0. When several UEs share a PRACH
-occasion, the only thing that separates them at the receiver is timing advance —
-exactly as in a real cell, where UEs at different distances produce correlation
-peaks at different offsets. Every link in the multi-UE fixtures declared
-`delay_samples: 0.0`, so four identical preambles arrived at the identical
-instant and summed into ONE correlation peak.
+**Fix** (`6a6e136`): build srsUE from the latest `zhouyou-gu/srsRAN_4G` master,
+which corrects the false-attach behaviour and adds a `SRSUE_PRACH_PREAMBLE_INDEX`
+override, and give each UE its own contention-based preamble.
+`SRSRAN_4G_REPO` / `SRSRAN_4G_REF` make the base overridable. Every UE then
+attaches on its **first** attempt with its own C-RNTI, PDU session and IP, on
+the stock fixtures with no raised `preamble_trans_max`.
 
-The gNB's own detector output says it plainly:
+Two further defects were removed on the way, both in the harness:
 
-```
-detected_preambles=[{idx=0 ta=0.00us detection_metric=86.9 power_dB=15.13}]
-```
+- **Malformed IMEI from the second UE onward** (`23244a0`). The N-UE
+  generalisation built each IMEI as `printf '35349006987331%d'` with `(9 + i)`,
+  giving 16 digits from `ue1` on. Zero-padded back to 15. Measured, this was
+  *not* the blocker — with correct IMEIs the result was unchanged at one UE of
+  four — but a malformed IMEI presents exactly like a contention failure, so it
+  is worth not having in the picture.
+- **A per-UE wait for a PDU session in the launch loop** (`6a6e136`). A
+  destination cannot advance until every incoming edge has data, so the cell
+  produces nothing until the LAST UE's radio is running; the earlier UEs cannot
+  attach yet by construction and each wait burned its full timeout. At four UEs
+  with a 40 s wait the last UE launched at ~156 s against the gate's own 150 s
+  duration: the broker stopped with `tx_pulls=9`, having relayed nothing, and no
+  UE ever transmitted a preamble.
 
-One peak, `ta=0.00us`, for the whole run. The gNB was not ignoring the other
-UEs; it could not see them. Only one RA procedure ever existed, so only one
-TC-RNTI was ever allocated, and the remaining UEs decoded that RAR — its
-RA-RNTI is derived from the PRACH occasion position and its RAPID matched their
-preamble 0 — and adopted its TC-RNTI. Three processes then reported
-`RRC Connected` on one identity while only one held a PDU session.
+**What this does not fix.** The lifecycle defects the investigation uncovered
+are real and still unfixed — the cell cannot run until every declared peer's
+radio is live, and a late-joining lane replays its peer's backlog. The preamble
+fix means multi-UE gates no longer *depend* on them, not that they are solved.
+They are documented from "Why the cell waits at all" onward, and tracked as V3
+in [`../RANK1_REVIEW_MILESTONES.md`](../RANK1_REVIEW_MILESTONES.md).
 
-Giving each UE a distinct delay (0 / 16 / 32 / 48 samples) changes the gNB's
-view completely:
+### The investigation, and what it cost to get here
 
-| | identical delays | distinct delays |
-|---|---|---|
-| PRACH detections | 1 (whole run) | **204** |
-| TC-RNTIs allocated | 1 (`0x4601`) | **204** (`0x4601`…`0x46cc`) |
-
-So the detection collapse is fixed and the diagnosis is settled. Attach still
-does not complete — the detections are weak (`detection_metric` 86.9 → 3.6) and
-still report `ta=0.00us` where a 16-sample delay should read ≈0.69 µs — so
-something downstream of preamble detection remains. That is the open item.
-
-The emulator's delay itself is **not** the problem, and this was checked rather
-than assumed. A synthetic capture with a declared 16-sample delay reproduces it
-exactly:
-
-```
-lag=0    max|y - h*x[n-lag]| = 1.86e-02
-lag=15   max|y - h*x[n-lag]| = 1.16e-03
-lag=16   max|y - h*x[n-lag]| = 1.31e-07   <- declared value
-lag=17   max|y - h*x[n-lag]| = 1.16e-03
-```
+The narrative below is kept because four of its conclusions were wrong and each
+was disproved by a specific measurement. Read it as history plus a description
+of the two open lifecycle defects, not as current status. The delay-based
+explanation in particular has been **reverted** — see
+"Corrections to earlier explanations".
 
 ### The three defects, separated
 
@@ -236,24 +238,37 @@ detectable preamble, and it stopped retrying because it believed it had
 attached. Any fix for multi-UE has to bound that staleness as well as the
 stall.
 
-### What is confirmed to work
+### What was confirmed to work at the time
 
-- **Distinct propagation delay separates UEs.** With identical delays the gNB
-  detects one preamble for a whole run; with distinct delays it detects
-  hundreds, at the right timing advances (`ta` 0.00 / 1.56 / 3.91 us for
-  0 / 16 / 48-sample links, matching the symmetric round trip).
-- **Equal transmit power matters once delays separate them.** An earlier near/far
-  spread of 16 dB pushed the far UEs to `power_dB -3.61` and
-  `detection_metric 3.9`, against 15.14 and 86.8 for the near UE.
-- **Simultaneous launch with distinct delays attaches a UE that is not the
+Both items below were measured, and both were **superseded** by the preamble
+fix. They are kept because they bound what the delay experiment did and did not
+show.
+
+- **Equal transmit power matters once delays separate the UEs.** An earlier
+  near/far spread of 16 dB pushed the far UEs to `power_dB -3.61` and
+  `detection_metric 3.9`, against 15.14 and 86.8 for the near UE. The spread was
+  removed in `aedf56d` and has not been reinstated.
+- **Simultaneous launch with distinct delays attached a UE that was not the
   first**: ue3 reached `c-rnti=0x4603`, a PDU session and IP 10.45.1.5, which no
-  earlier configuration achieved. It does not attach all four, because all four
-  then RACH continuously and depress each other's detection metric.
+  earlier configuration achieved. It still did not attach all four.
 
 ### Corrections to earlier explanations
 
-Three explanations were published in this branch before this one and are all
+Four explanations were published in this branch before this one and are all
 wrong. They are recorded because each was disproved by a specific measurement:
+
+- *"Identical propagation delay is why the gNB saw one preamble, and distinct
+  delays are what separates UEs."* Published in `7c97b33`. The premise was that
+  srsUE always sends preamble index 0, so timing advance is the only thing that
+  separates UEs at the receiver. `6a6e136` removed that premise: with a
+  per-UE preamble index every UE attaches on its first attempt at identical
+  delay. The distinct delays were then **reverted to identity in the quad
+  fixture**, because they actively broke the matrix gate — a delayed carrier is
+  not an identity carrier, so three of four users could not be reconstructed and
+  their signal appeared as residual (`max |y - Hx| = 4.4e+02` against a 1e-04
+  tolerance). Distinct delays did change the gNB's view (PRACH detections
+  1 -> 204), which is why the explanation survived as long as it did; it was a
+  real effect on the wrong variable.
 
 - *"The gNB merges the preambles onto one C-RNTI."* It issues a fresh C-RNTI per
   detected preamble; `rnti_manager::allocate()` increments until it finds a free

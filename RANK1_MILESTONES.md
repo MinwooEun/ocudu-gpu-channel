@@ -44,7 +44,27 @@
 - 4T4R + 2 UE: 두 UE 전부 attach+PDU+ping, 행 4개 = 6.76e-05 / 5.33e-05 / 2.91e-05 / 3.99e-05,
   링크 제거 시 오차 91.3~236.9
 
-주장 경계: 시간축을 공유하는 단일 레이어 사용자 2명이며 **동일-PRB MU-MIMO가 아니다**. 에뮬레이터는
+**3 UE 이상 (2026-08-19~, 커밋 `7c97b33`…`d00e84e`)**: 3대 이상이 붙지 않던 원인은 브로커도 채널도
+다중안테나 셀도 아닌 **srsUE**였다. `release_23_11`은 `proc_ra_nr.cc`에서 `preamble_index = 0`을
+하드코딩하므로 모든 UE가 같은 RA-RNTI를 유도해 같은 RAR을 복호하고, contention resolution을 강제하지
+않아 **진 UE가 attach 성공으로 오보고하고 재시도를 멈춘다**. srsUE 베이스를 최신
+`zhouyou-gu/srsRAN_4G` master로 옮기고(`SRSRAN_4G_REPO`/`SRSRAN_4G_REF`) `SRSUE_PRACH_PREAMBLE_INDEX`로
+UE마다 다른 preamble을 주면 **전원이 첫 시도에 자기 C-RNTI·PDU·IP로 attach**한다
+(`preamble_trans_max` 상향 없이 stock fixture 그대로).
+
+- 4T4R + 4 UE (`ocudu-rank1-4x1-quad-ue-smoke.sh`, 첫 실행): **4/4 attach**, 행 4개
+  max|y−ΣHx| = 7.9e-05 / 6.7e-05 / 5.1e-05 / 5.4e-05 (허용 1e-04), 모든 leave-one-out이 ~1e+02로 깨짐,
+  사용자별 최대 오차는 그 사용자가 가중된 포트에서 나온다. DL 행은 ~1e-08(포트 1~3 silent 선언,
+  srsRAN의 `[1,0,0,0]` rank-1 프리코딩과 일치).
+- 2T2R + 3 UE / 2T2R + 4 UE: 위 수정으로 블로커는 해소됐으나 **수정 이후 재실행 기록이 없다**.
+  결과를 인용하기 전에 재실행할 것 (V0, `RANK1_REVIEW_MILESTONES.md`).
+
+폐기된 설명 하나를 남긴다: 한때 "동일 전파지연이 원인이고 지연을 다르게 주면 UE가 분리된다"고
+기술했으나(`7c97b33`), 그 전제(srsUE가 항상 preamble 0을 보낸다)가 위 수정으로 사라졌고, 지연 분리는
+**행렬 게이트를 깨뜨려**(지연된 carrier는 identity carrier가 아니다 — `max|y−Hx| = 4.4e+02`)
+quad fixture에서 identity로 되돌려졌다.
+
+주장 경계: 시간축을 공유하는 단일 레이어 사용자들이며 **동일-PRB MU-MIMO가 아니다**. 에뮬레이터는
 스케줄러가 실제로 보낸 것을 중첩할 뿐, gNB가 같은 자원에 두 사용자를 싣게 만들지 않는다.
 
 **주장 경계 (보고서 writing-requirements 준용)**: 모든 결과는 "2×1/4×1 DL MISO, 1×2/1×4 UL SIMO"로 기술한다. "end-to-end 4×4 MIMO", rank>1, UE 수신 빔포밍, PMI 폐루프, MU-MIMO를 주장하지 않는다. 고정 DL 가중치의 이득은 위상이 채널과 정합할 때만 성립하므로, 검증된 프리코더 메타데이터 없이 "diversity"라 부르지 않는다.
