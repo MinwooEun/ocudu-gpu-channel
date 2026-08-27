@@ -83,6 +83,16 @@ else
   printf 'matrix_venv=absent (created on first matrix-scoring gate run)\n'
 fi
 
+printf '\ndocker compose\n'
+if docker compose version >/dev/null 2>&1; then
+  printf 'docker_compose=%s\n' "$(docker compose version --short 2>/dev/null || echo present)"
+else
+  # The live gates bring up Open5GS and the OCUDU gNB with `docker compose`.
+  # Reporting only that `docker` exists is what let a run get four minutes in
+  # before failing on it.
+  printf 'docker_compose=MISSING (live gates cannot run; install the Compose v2 CLI plugin)\n'
+fi
+
 printf '\ndocker network pools\n'
 # The containerised gates need a free /24 for their RAN network. A workstation
 # hosting another 5G stack usually holds 10.53.1.0/24 already, which is why the

@@ -138,6 +138,26 @@ if [[ ! -d "${ocudu_root}/docker" ]]; then
   exit 1
 fi
 
+# Docker Compose v2 must be reachable as `docker compose`. Without it the gate
+# gets several minutes into a CUDA build and a ctest run before the first
+# compose call fails, and it fails in a way that reads like nothing to do with
+# compose: `docker` treats the unknown subcommand's flag as its own and prints
+#
+#   unknown shorthand flag: 'f' in -f
+#
+# into docker-preclean.log, docker-build.log and docker-compose.log, after
+# which the container waits time out on "No such container". Measured on the
+# loopback host, where the CLI plugin is absent and only docker-trust is
+# installed. Fail here instead, in the second rather than the fourth minute.
+if ! docker compose version >/dev/null 2>&1; then
+  echo "docker compose (Compose v2 CLI plugin) is not available to this docker client" >&2
+  echo "the gate brings up Open5GS and the OCUDU gNB with it, so it cannot run" >&2
+  echo "install the plugin into a cli-plugins directory the client reads, e.g." >&2
+  echo "  /usr/libexec/docker/cli-plugins/docker-compose  (system, root-visible)" >&2
+  echo "  ~/.docker/cli-plugins/docker-compose            (per-user)" >&2
+  exit 1
+fi
+
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 log_dir="${results_root}/logs/${gate_name}/${timestamp}"
 report_dir="${results_root}/reports/${gate_name}/${timestamp}"
