@@ -33,18 +33,31 @@ def load_legacy_renderer():
 legacy = load_legacy_renderer()
 
 
-def render_gnb_4t4r(source: str, log_dir: Path) -> str:
+# The only two 4T4R gNB fixtures this gate will render. Anything else is
+# refused by name rather than by shape, so a fixture cannot be smuggled in by
+# happening to carry the right tokens.
+BASELINE_FIXTURE = "examples/native/ocudu/gnb_zmq_b210_fdd_4t4r_rank1_srsue.yaml"
+CSI_ON_FIXTURE = "examples/native/ocudu/gnb_zmq_b210_fdd_4t4r_rank1_csi_srsue.yaml"
+
+
+def render_gnb_4t4r(source: str, log_dir: Path, csi_on: bool = False) -> str:
     # The three R2 adaptations are load-bearing (see the fixture header);
     # requiring their exact tokens keeps a drifted fixture from silently
     # running a different experiment.
+    #
+    # The two CSI lines are the ONE difference the CSI-on experiment is allowed
+    # to make, and they are still pinned exactly -- to the values that variant
+    # must carry, chosen by which fixture was asked for rather than by reading
+    # whatever the file happens to say. A fixture that drifts to some third
+    # combination still fails.
     invariants = {
         "  device_args: tx_port0=tcp://127.0.0.1:2000,tx_port1=tcp://127.0.0.1:2002,tx_port2=tcp://127.0.0.1:2004,tx_port3=tcp://127.0.0.1:2006,rx_port0=tcp://127.0.0.1:2001,rx_port1=tcp://127.0.0.1:2003,rx_port2=tcp://127.0.0.1:2005,rx_port3=tcp://127.0.0.1:2007,base_srate=23.04e6\n": 1,
         "  nof_antennas_dl: 4\n": 1,
         "  nof_antennas_ul: 4\n": 1,
         "      ss2_type: ue_dedicated\n": 1,
         "      dci_format_0_1_and_1_1: true\n": 1,
-        "    csi_rs_enabled: false\n": 1,
-        "    nof_cell_csi_res: 0\n": 1,
+        ("    csi_rs_enabled: true\n" if csi_on else "    csi_rs_enabled: false\n"): 1,
+        ("    nof_cell_csi_res: 8\n" if csi_on else "    nof_cell_csi_res: 0\n"): 1,
         "  mac_enable: disable\n": 1,
         "    max_ue_mcs: 9\n": 1,
     }
@@ -94,6 +107,24 @@ def self_test() -> None:
     )
     rendered = render_gnb_4t4r(sample, Path("/tmp/x"))
     assert "@GNB" not in rendered
+
+    # The CSI-on variant differs in exactly two lines and is pinned just as
+    # exactly. The cross checks below are the point: the baseline fixture must
+    # be refused when the CSI-on variant is expected, and the reverse, so the
+    # two cannot be swapped without the render failing.
+    csi_sample = sample.replace(
+        "    csi_rs_enabled: false\n    nof_cell_csi_res: 0\n",
+        "    csi_rs_enabled: true\n    nof_cell_csi_res: 8\n",
+    )
+    assert "@GNB" not in render_gnb_4t4r(csi_sample, Path("/tmp/x"), True)
+    for bad_source, bad_csi in ((sample, True), (csi_sample, False)):
+        try:
+            render_gnb_4t4r(bad_source, Path("/tmp/x"), bad_csi)
+        except (ValueError, SystemExit):
+            # legacy.fail raises ValueError; SystemExit is tolerated in case a
+            # future legacy module exits instead.
+            continue
+        raise AssertionError("a mismatched CSI fixture was accepted")
     try:
         validate_topology_rank1("nothing")
     except ValueError:
@@ -130,12 +161,13 @@ def main() -> int:
     # experiment needs gnb_zmq_b210_fdd_4t4r_rank1_csi_srsue.yaml, which differs
     # in exactly two lines (csi_rs_enabled, nof_cell_csi_res); every published
     # figure was measured with the default and the default is unchanged.
-    gnb_fixture = os.environ.get(
-        "OCUDU_NATIVE_GNB_FIXTURE",
-        "examples/native/ocudu/gnb_zmq_b210_fdd_4t4r_rank1_srsue.yaml",
-    )
-    if "/" in gnb_fixture and not gnb_fixture.startswith("examples/native/ocudu/"):
-        legacy.fail("gNB fixture must live under examples/native/ocudu/")
+    gnb_fixture = os.environ.get("OCUDU_NATIVE_GNB_FIXTURE", BASELINE_FIXTURE)
+    if gnb_fixture not in (BASELINE_FIXTURE, CSI_ON_FIXTURE):
+        legacy.fail(
+            "gNB fixture must be one of the two this gate knows: "
+            f"{BASELINE_FIXTURE} or {CSI_ON_FIXTURE}"
+        )
+    csi_on = gnb_fixture == CSI_ON_FIXTURE
     gnb_source = legacy.read_regular(repo_root / gnb_fixture, "rank-1 4T4R gNB fixture")
     topology_source = legacy.read_regular(
         repo_root / "examples/native/topology.ocudu.rank1-4x1.cuda.yaml",
@@ -155,7 +187,7 @@ def main() -> int:
     )
 
     rendered = {
-        "gnb.yaml": render_gnb_4t4r(gnb_source, log_dir),
+        "gnb.yaml": render_gnb_4t4r(gnb_source, log_dir, csi_on),
         "topology.yaml": validate_topology_rank1(topology_source),
         "open5gs.yaml": legacy.render_open5gs(open5gs_source, native_root),
         "srsue.conf": legacy.render_srsue(srsue_source, log_dir),
