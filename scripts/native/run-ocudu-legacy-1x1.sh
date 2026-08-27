@@ -77,11 +77,31 @@ done
 "/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
   --root "${native_root}" --repo-root "${repo_root}" \
   --lock "${script_dir}/native-workspace.lock.json"
+# The pre-MIMO legacy fixtures. These are the configuration the 1x1 baseline
+# was measured with, and they are still byte-identical to the pre-MIMO source,
+# so this half of the tripwire still means what it says.
 git -C "${repo_root}" diff --quiet bc88865 -- \
   examples/topology.ocudu-docker.cuda.yaml \
-  examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml \
+  examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml || \
+  usage_error "pre-MIMO legacy fixture changed"
+# The legacy container driver, re-pinned. It used to be pinned at bc88865 too,
+# on the premise that the pre-MIMO attach driver was untouched. 9eb2658 retired
+# that premise deliberately -- it rewrote ocudu-attach-smoke.sh into the
+# supported harness (+206 lines) and edited common.sh, and f28b51d changed the
+# file modes. Nobody re-pinned this line, so from that commit onward all three
+# native rank-1 gates aborted with "pre-MIMO legacy fixture or driver changed"
+# before doing any work. They were classified as record-only by then, so no run
+# surfaced it.
+#
+# What is lost by re-pinning, stated plainly: this no longer asserts the driver
+# is the PRE-MIMO one. It asserts the driver has not changed since the pin
+# below, which is what a tripwire can honestly claim once the thing it guards
+# has been rewritten on purpose. Re-pin deliberately when it fires; do not
+# delete it.
+legacy_driver_pin="df64e65"
+git -C "${repo_root}" diff --quiet "${legacy_driver_pin}" -- \
   scripts/remote/ocudu-attach-smoke.sh scripts/remote/common.sh || \
-  usage_error "pre-MIMO legacy fixture or driver changed"
+  usage_error "legacy container driver changed since ${legacy_driver_pin}; re-pin this gate deliberately"
 grep -qx 'ENABLE_ZEROMQ:BOOL=ON' "${native_root}/builds/ocudu-zmq-release/CMakeCache.txt" || usage_error "gNB lacks ZMQ"
 for binary in \
   "${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" \
