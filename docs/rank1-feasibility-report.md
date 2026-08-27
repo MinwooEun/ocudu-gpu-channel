@@ -120,6 +120,32 @@ ping 0% 손실 + strict counter 0, 행렬 판정 `passed`. UL 4행 = 4.656e-05 /
 | 1×1 srsUE 회귀 | 동일 일자 | **pass** | (기존 경로 무회귀) |
 | 상시 GPU 시퀀스 | 동일 일자 | **9/9 pass** | (합성 relay·AWGN·그래프·2셀·TDL-A 등) |
 
+**DL 다중 branch — 라이브 증명 (2026-08-27, `20260827T121130Z`, waiver 없음)**
+
+baseline 게이트의 DL이 단일 branch인 것은 CSI 설정에 종속된 사실이지 rank의 문제가 아니다.
+srsRAN은 PDSCH 포트 수를 물리 안테나가 아니라 CSI-MeasConfig에서 유도하므로(`ue_configuration.cpp:632`),
+CSI가 꺼져 있으면 셀을 1포트로 보고 `[1,0,0,0]`을 집는다. **CSI를 켜면 네 포트가 실제로 방사한다.**
+
+srsUE의 CSI-RS RE 회계 결함(`csi_rs.c:611`·`:962` — 기대 RE 수를 density만으로 유도해 row 4에서
+`Unmatched number of RE (212 != 106)`로 DL 슬롯을 통째로 폐기)을 수정한 뒤, CSI-on 4T4R 구성을
+**`--allow-silent-source` 하나도 없이** 채점한 결과:
+
+| | baseline (CSI-off) | CSI-on |
+|---|---|---|
+| DL tx0/tx1/tx2/tx3 RMS | 0.024 / **0.0** / **0.0** / **0.0** | 0.02406 / **0.00305** / **0.003076** / **0.00305** |
+| DL row0 max\|y−Hx\| | — | **5.268e-08** (허용 1e-04) |
+| off-diagonal share | — | **0.081014** (기준 0.05) |
+| 판정 | passed (waiver 有) | **passed (waiver 無)** |
+
+즉 gNB가 네 branch를 실제로 방사했고, 에뮬레이터가 선언 행렬대로 합성했으며, 그 행 진폭의 8.1%가
+대각 포트 밖에서 왔다. **라이브 DL 다중 branch 코히어런트 합성의 직접 증거다.**
+
+**다만 같은 실행에서 attach가 완주하지 않는다** — RRC는 연결되고 PDSCH 복호가 0→19건으로 살아나지만
+NAS가 `Sending Registration Request`에서 멈춘다(`pdu_session_established=0`). RE 카운트 결함은
+사라졌으므로 그 다음 단계의 다른 문제이며 아직 규명되지 않았다. **따라서 아래 판정표의 DL 행은
+"절차만 Yes"로 유지한다** — 채널 콘텐츠는 증명되었고, 절차 완주와 동시에 성립하지는 않는다.
+경계 하나 더: `csi_rs.c`가 CDM 그룹을 0으로 고정하므로 이 구성의 CSI 리포트는 배열의 절반만 본다.
+
 마지막 열이 이 표의 해석을 결정한다: 라이브 다중 branch 증거는 업링크에만 있다. 다운링크 행은 `--allow-silent-source`로 선언된 무방사 포트를 제외하므로 단일 branch 검사이며, 통과해도 다중 branch 합성을 증명하지 않는다(에뮬레이터가 무방사 포트를 정확히 0으로 기여시킨다는 것까지는 증명한다). UL 행별 RMS가 각 선언 계수 크기 |h_r|과 상대오차 ~6×10⁻⁷(fp32 바닥)로 일치한다 — 즉 **gNB의 2/4개 수신 포트 각각이 자신의 독립 branch를 정확히 받고 있으며, OCUDU가 그것을 실제로 결합해 복호한다.** 이것이 보고서가 "the strongest end-to-end diversity target"이라 부른 UL SIMO의 실증이다.
 
 ---
