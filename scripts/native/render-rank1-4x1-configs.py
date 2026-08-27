@@ -12,6 +12,7 @@ asymmetric 2x1/1x2 fixture, already loopback-addressed).
 from __future__ import annotations
 
 import argparse
+import os
 import importlib.util
 import sys
 from pathlib import Path
@@ -125,10 +126,17 @@ def main() -> int:
     if repo_root != args.repo_root or native_root != args.native_root:
         legacy.fail("repo and native roots must already be canonical")
 
-    gnb_source = legacy.read_regular(
-        repo_root / "examples/native/ocudu/gnb_zmq_b210_fdd_4t4r_rank1_srsue.yaml",
-        "rank-1 4T4R gNB fixture",
+    # The baseline fixture, unless the caller names another one. The CSI-on
+    # experiment needs gnb_zmq_b210_fdd_4t4r_rank1_csi_srsue.yaml, which differs
+    # in exactly two lines (csi_rs_enabled, nof_cell_csi_res); every published
+    # figure was measured with the default and the default is unchanged.
+    gnb_fixture = os.environ.get(
+        "OCUDU_NATIVE_GNB_FIXTURE",
+        "examples/native/ocudu/gnb_zmq_b210_fdd_4t4r_rank1_srsue.yaml",
     )
+    if "/" in gnb_fixture and not gnb_fixture.startswith("examples/native/ocudu/"):
+        legacy.fail("gNB fixture must live under examples/native/ocudu/")
+    gnb_source = legacy.read_regular(repo_root / gnb_fixture, "rank-1 4T4R gNB fixture")
     topology_source = legacy.read_regular(
         repo_root / "examples/native/topology.ocudu.rank1-4x1.cuda.yaml",
         "rank-1 asymmetric topology fixture",

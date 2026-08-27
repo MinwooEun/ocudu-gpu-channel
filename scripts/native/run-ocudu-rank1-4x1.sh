@@ -74,11 +74,21 @@ for path in "${inner}" "${renderer}" "${verifier}" \
 done
 [[ -c /dev/net/tun ]] || usage_error "/dev/net/tun is absent"
 [[ "$(git -C "${native_root}/src/ocudu" rev-parse HEAD)" == "${audited_ocudu}" ]] || usage_error "OCUDU revision mismatch"
-[[ "$(git -C "${native_root}/src/srsRAN_4G" rev-parse HEAD)" == "${audited_srsran}" ]] || usage_error "srsRAN revision mismatch"
+# srsRAN is pinned at the audited revision. OCUDU_NATIVE_SRSRAN_REF is the one
+# way past it, and it exists for the CSI-on experiment, which has to patch
+# srsUE's CSI-RS RE accounting before the UE will stop discarding the whole
+# downlink slot on a row-4 resource. A run that uses it is NOT the audited
+# baseline; it says so in source-evidence.json, and nothing defaults to it.
+expected_srsran="${OCUDU_NATIVE_SRSRAN_REF:-${audited_srsran}}"
+[[ "$(git -C "${native_root}/src/srsRAN_4G" rev-parse HEAD)" == "${expected_srsran}" ]] || usage_error "srsRAN revision mismatch"
 [[ "$(git -C "${native_root}/src/open5gs" rev-parse HEAD)" == "${audited_open5gs}" ]] || usage_error "Open5GS revision mismatch"
+lock_overrides=()
+if [[ "${expected_srsran}" != "${audited_srsran}" ]]; then
+  lock_overrides+=(--git-override "srsRAN_4G=${expected_srsran}")
+fi
 "/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
   --root "${native_root}" --repo-root "${repo_root}" \
-  --lock "${script_dir}/native-workspace.lock.json"
+  --lock "${script_dir}/native-workspace.lock.json" "${lock_overrides[@]}"
 # The pre-MIMO legacy fixtures. These are the configuration the 1x1 baseline
 # was measured with, and they are still byte-identical to the pre-MIMO source,
 # so this half of the tripwire still means what it says.
@@ -219,6 +229,8 @@ export OCUDU_NATIVE_CAPTURE_SKIP="${OCUDU_NATIVE_CAPTURE_SKIP:-138240000}"
 # fixed skip and switching the default would silently change what the numbers
 # describe.
 export OCUDU_NATIVE_CAPTURE_TRIGGER_PORT="${OCUDU_NATIVE_CAPTURE_TRIGGER_PORT:-}"
+# Selects the gNB fixture the renderer reads. Empty = the baseline 4T4R one.
+export OCUDU_NATIVE_GNB_FIXTURE="${OCUDU_NATIVE_GNB_FIXTURE:-examples/native/ocudu/gnb_zmq_b210_fdd_4t4r_rank1_srsue.yaml}"
 cmake -S "${repo_root}" -B "${channel_build}" -DCMAKE_BUILD_TYPE=Release \
   -DOCUDU_GPU_CHANNEL_ENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER="${cuda_compiler}" \
   -DOCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES=120 >"${log_dir}/cmake-configure.log" 2>&1
@@ -239,7 +251,7 @@ grep -Eq 'OCUDU 5G gNB version .*\(a1916edcd\)' "${report_dir}/gnb-version.txt" 
   usage_error "native gNB binary does not identify the audited revision"
 "/usr/bin/python3" - "${source_evidence}" "${native_root}" "${channel_build}" \
   "${source_manifest}" "${preserved_configs}" "${channel_head}" \
-  "${channel_diff_sha256}" "${audited_ocudu}" "${audited_srsran}" \
+  "${channel_diff_sha256}" "${audited_ocudu}" "${expected_srsran}" \
   "${audited_open5gs}" <<'PY'
 import hashlib
 import json
@@ -279,7 +291,11 @@ data = {
     "channel_source_manifest_sha256": digest(manifest_path),
     "source_commits": {
         "ocudu": ocudu_commit,
+        # The srsRAN revision that actually ran. It is the audited pin unless
+        # OCUDU_NATIVE_SRSRAN_REF asked for another, which the flag below
+        # records so no reader has to compare hashes to find out.
         "srsran4g": srsran_commit,
+        "srsran4g_is_audited_baseline": srsran_commit == "eea87b1d893ae58e0b08bc381730c502024ae71f",
         "open5gs": open5gs_commit,
     },
     "binary_sha256": {name: digest(path) for name, path in binary_paths.items()},
@@ -335,10 +351,22 @@ fi
 # common channels on port 0 only, CSI-RS is off, and rank-1 PDSCH is
 # precoded [1,0,...]; the DL multi-branch content proof is the synthetic
 # R0/R1 gates. The UL rows all carry the live srsUE signal.
+#
+# The waivers are a recorded measurement of the RAN stack's behaviour with
+# CSI-RS off, not a relaxation, and they are what the published figures were
+# scored with. With CSI-RS ON the same four ports DO radiate, and the point of
+# that run is to score the DL row WITHOUT any waiver -- set
+# OCUDU_NATIVE_MATRIX_NO_WAIVER=1 for it. Anything the waivers would have
+# excused then fails, which is the whole intent.
+matrix_waivers=(--allow-silent-source 'gnb0->ue0:1' --allow-silent-source 'gnb0->ue0:2'
+                --allow-silent-source 'gnb0->ue0:3')
+if [[ "${OCUDU_NATIVE_MATRIX_NO_WAIVER:-0}" == "1" ]]; then
+  matrix_waivers=()
+fi
 python3 "${script_dir}/verify-mimo-matrix-capture.py" \
   --capture-dir "${report_dir}/wire-capture" \
   --topology "${preserved_configs}/topology.yaml" \
-  --allow-silent-source 'gnb0->ue0:1' --allow-silent-source 'gnb0->ue0:2' --allow-silent-source 'gnb0->ue0:3' \
+  "${matrix_waivers[@]}" \
   --report "${report_dir}/matrix-report.json"
 # The raw capture is bulk evidence (hundreds of MB); once the matrix
 # judgement above has passed, the report carries the numbers and the

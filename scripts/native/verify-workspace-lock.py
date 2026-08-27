@@ -45,6 +45,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--lock", type=Path, required=True)
+    # Deliberate, recorded deviation from a pinned source, for an experiment
+    # that has to patch one. Repeatable: --git-override srsRAN_4G=<sha>. The
+    # run that uses it is not the audited baseline, and says so in its
+    # source-evidence.json; nothing defaults to it.
+    parser.add_argument("--git-override", action="append", default=[],
+                        metavar="NAME=COMMIT")
     parser.add_argument(
         "--allow-missing-cache",
         action="store_true",
@@ -123,12 +129,26 @@ def main() -> int:
                 require(sidecar_path.stat().st_size == sidecar["bytes"], "archive sidecar size mismatch")
                 require(sha256(sidecar_path) == sidecar["sha256"], "archive sidecar checksum mismatch")
 
+    overrides = {}
+    for item in args.git_override:
+        name, _, commit = item.partition("=")
+        require(bool(name) and bool(commit), f"malformed --git-override: {item}")
+        overrides[name] = commit
+    locked_names = {source["name"] for source in lock["git_sources"]}
+    for name in overrides:
+        require(name in locked_names, f"--git-override names an unpinned source: {name}")
+
     for source in lock["git_sources"]:
         path = root / source["path"]
         if not (path / ".git").exists():
             missing.append(source["path"])
             continue
-        require(command("git", "-C", str(path), "rev-parse", "HEAD") == source["commit"], f"Git revision mismatch: {source['name']}")
+        expected = overrides.get(source["name"], source["commit"])
+        if source["name"] in overrides:
+            print(f"git_source_override name={source['name']} locked={source['commit']} "
+                  f"running={expected}")
+        require(command("git", "-C", str(path), "rev-parse", "HEAD") == expected,
+                f"Git revision mismatch: {source['name']}")
         require(command("git", "-C", str(path), "status", "--porcelain") == "", f"Git checkout is dirty: {source['name']}")
         missing_objects = command(
             "git", "-C", str(path), "rev-list", "--objects", "--missing=print", "HEAD"
