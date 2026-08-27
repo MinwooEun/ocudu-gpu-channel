@@ -51,9 +51,27 @@ struct WireCaptureConfig {
   // transmit input arms the capture makes the window start from the first
   // sample that radio actually sent, on every run.
   //
-  // Empty = disabled, and skip_samples is used unchanged. All ports share the
-  // armed offset, so a captured output row still lines up sample-for-sample
-  // with the captured input columns.
+  // Empty = disabled, and skip_samples is used unchanged.
+  //
+  // ALIGNMENT IS NOT PROVEN FOR MULTI-PORT CAPTURES. Every port applies the one
+  // armed offset to its OWN sample counter, and those counters are not equal:
+  // measured on a live run, gnb0_p0 stood at 239,823,660 while ue0_p0 stood at
+  // 239,846,412 -- about one batch apart. A shared offset therefore preserves
+  // alignment only to the extent the counters already agree, which is an
+  // assumption, not a guarantee.
+  //
+  // Observed 2026-08-27 on the CSI-on 4T4R capture taken with a trigger on
+  // ue0_p0: the uplink rows verified (4.6e-05 against 1e-04) while the
+  // downlink row did not (max |y - Hx| = 0.93). 93.5% of samples matched
+  // exactly and the 6.5% that did not is the downlink duty cycle, i.e. exactly
+  // the samples carrying signal, and no lag from -8 to +8 batches collapsed
+  // it. The uplink pair involves the trigger port's own counter; the downlink
+  // pair does not. That is consistent with this offset being right for the port
+  // it was measured on and wrong for others, and it has not been isolated.
+  //
+  // test_broker's scenario_capture_trigger covers a SINGLE port only. Until a
+  // multi-port alignment test exists, score matrix captures with the fixed
+  // skip, not the trigger. Tracked as V8 in RANK1_REVIEW_MILESTONES.md.
   std::string trigger_port;
   // Samples to let past after the trigger fires. Sized to cover the skew
   // between ports so that none of them has already passed the armed offset
