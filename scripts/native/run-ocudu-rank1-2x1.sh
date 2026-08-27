@@ -208,6 +208,17 @@ export OCUDU_CHANNEL_BUILD="${channel_build}"
 # still lands inside the ping -- which is why the 2026-08-17 run passed with it.
 export OCUDU_NATIVE_CAPTURE_SAMPLES="${OCUDU_NATIVE_CAPTURE_SAMPLES:-11520000}"
 export OCUDU_NATIVE_CAPTURE_SKIP="${OCUDU_NATIVE_CAPTURE_SKIP:-138240000}"
+# The fix for the clock mismatch above: name the port whose first live sample
+# opens the window, and the constant stops mattering. The uplink port is the
+# one to arm on -- it is the direction that goes quiet, and the downlink is
+# radiating throughout.
+#
+#   OCUDU_NATIVE_CAPTURE_TRIGGER_PORT=ue0_p0
+#
+# Empty by default, because every published matrix figure was measured with the
+# fixed skip and switching the default would silently change what the numbers
+# describe.
+export OCUDU_NATIVE_CAPTURE_TRIGGER_PORT="${OCUDU_NATIVE_CAPTURE_TRIGGER_PORT:-}"
 cmake -S "${repo_root}" -B "${channel_build}" -DCMAKE_BUILD_TYPE=Release \
   -DOCUDU_GPU_CHANNEL_ENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER="${cuda_compiler}" \
   -DOCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES=120 >"${log_dir}/cmake-configure.log" 2>&1

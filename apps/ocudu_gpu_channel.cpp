@@ -19,7 +19,8 @@ void usage()
                "[--telemetry-endpoint tcp://*:5560 --telemetry-rate-hz 20] "
                "[--hardware-strict] [--control-warmup-cap-slots N] "
                "[--wire-capture-dir DIR --wire-capture-samples N "
-               "[--wire-capture-skip N]]\n";
+               "[--wire-capture-skip N] [--wire-capture-trigger-port ID] "
+               "[--wire-capture-trigger-margin N]]\n";
 }
 
 } // namespace
@@ -37,6 +38,11 @@ int main(int argc, char** argv)
   std::string wire_capture_dir;         // empty = wire capture disabled
   std::size_t wire_capture_samples = 0; // per port, per direction
   std::size_t wire_capture_skip = 0;    // samples let past before recording
+  // Anchor the window to the first live sample on this port instead of to
+  // wire_capture_skip. Empty = the fixed skip, which is the published default.
+  std::string wire_capture_trigger_port;
+  // One 1 ms slot at 23.04 MS/s, which covers the observed skew between ports.
+  std::size_t wire_capture_trigger_margin = 23040;
 
   for (int i = 1; i < argc; ++i) {
     std::string arg = argv[i];
@@ -64,6 +70,10 @@ int main(int argc, char** argv)
       wire_capture_dir = argv[++i];
     } else if (arg == "--wire-capture-samples" && i + 1 < argc) {
       wire_capture_samples = static_cast<std::size_t>(std::atoll(argv[++i]));
+    } else if (arg == "--wire-capture-trigger-port" && i + 1 < argc) {
+      wire_capture_trigger_port = argv[++i];
+    } else if (arg == "--wire-capture-trigger-margin" && i + 1 < argc) {
+      wire_capture_trigger_margin = static_cast<std::size_t>(std::atoll(argv[++i]));
     } else if (arg == "--wire-capture-skip" && i + 1 < argc) {
       wire_capture_skip = static_cast<std::size_t>(std::atoll(argv[++i]));
     } else {
@@ -136,7 +146,8 @@ int main(int argc, char** argv)
 
     ocg::Broker broker(std::move(config));
     if (!wire_capture_dir.empty() && wire_capture_samples > 0) {
-      broker.set_wire_capture({wire_capture_dir, wire_capture_samples, wire_capture_skip});
+      broker.set_wire_capture({wire_capture_dir, wire_capture_samples, wire_capture_skip,
+                               wire_capture_trigger_port, wire_capture_trigger_margin});
     } else if (!wire_capture_dir.empty() || wire_capture_samples > 0) {
       std::cerr << "--wire-capture-dir and --wire-capture-samples must be given together\n";
       return 2;

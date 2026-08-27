@@ -10,6 +10,7 @@
 #include <deque>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <span>
@@ -189,6 +190,37 @@ bool send_samples(void* socket, std::span<const IqSample> samples)
 // advanced here, so the recorded window is [skip, skip + limit) of the wire
 // stream itself -- the same absolute range on every port, which is what lets a
 // checker line an output row up against the input columns that produced it.
+// Sentinel for "the triggered capture has not been armed yet". Used as the
+// skip value so append_capture() records nothing until it is.
+inline constexpr std::uint64_t kCaptureUnarmed = std::numeric_limits<std::uint64_t>::max();
+
+// Skip this port should apply right now: the fixed one when the capture is not
+// triggered, otherwise the armed offset shared by every port -- or the
+// sentinel, which records nothing, while the trigger has not fired.
+inline std::size_t effective_capture_skip(std::size_t fixed_skip, bool triggered,
+                                          const std::atomic<std::uint64_t>& armed_at)
+{
+  if (!triggered) {
+    return fixed_skip;
+  }
+  const std::uint64_t at = armed_at.load(std::memory_order_acquire);
+  if (at == kCaptureUnarmed) {
+    return std::numeric_limits<std::size_t>::max();
+  }
+  return static_cast<std::size_t>(at);
+}
+
+// Index of the first sample carrying any energy, or count when there is none.
+inline std::size_t first_nonzero_sample(const IqSample* data, std::size_t count)
+{
+  for (std::size_t i = 0; i != count; ++i) {
+    if (data[i].i != 0.0F || data[i].q != 0.0F) {
+      return i;
+    }
+  }
+  return count;
+}
+
 void append_capture(IqBuffer& capture, std::size_t limit, std::size_t skip, std::uint64_t& seen,
                     const IqSample* data, std::size_t count)
 {
@@ -262,6 +294,9 @@ struct PortRuntime {
   // allocates. Read only after the workers are joined.
   std::size_t capture_limit = 0;
   std::size_t capture_skip = 0;
+  // This port's transmit input arms the triggered capture (see
+  // WireCaptureConfig::trigger_port). At most one port has it set.
+  bool capture_trigger = false;
   std::uint64_t tx_wire_samples = 0; // puller thread only
   std::uint64_t rx_wire_samples = 0; // REP worker thread only
   IqBuffer tx_capture;
@@ -590,6 +625,13 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   // Build per-port broker state (one transport port per configured Device).
   std::vector<std::unique_ptr<PortRuntime>> ports;
   ports.reserve(config_.devices.size());
+  // Triggered wire capture. Armed once, by the first sample carrying energy on
+  // the trigger port's transmit input, and then shared by every port so the
+  // captured rows stay aligned with the captured columns.
+  const bool capture_triggered = !capture_.directory.empty() && capture_.samples_per_port > 0 &&
+                                 !capture_.trigger_port.empty();
+  std::atomic<std::uint64_t> capture_armed_at{kCaptureUnarmed};
+
   for (const auto& device : config_.devices) {
     auto port = std::make_unique<PortRuntime>();
     port->config = &device;
@@ -598,6 +640,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
     if (!capture_.directory.empty() && capture_.samples_per_port > 0) {
       port->capture_limit = capture_.samples_per_port;
       port->capture_skip = capture_.skip_samples;
+      port->capture_trigger = !capture_.trigger_port.empty() && device.id == capture_.trigger_port;
       port->tx_capture.reserve(port->capture_limit);
       port->rx_capture.reserve(port->capture_limit);
     }
@@ -743,6 +786,16 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   // dead peer wedged the pre-MIMO server on wait_req, and inventing recovery
   // semantics for it is out of M0's scope.
   constexpr auto kStallReportInterval = std::chrono::milliseconds(2000);
+  if (capture_triggered) {
+    const bool armed_port_exists =
+        std::any_of(ports.begin(), ports.end(),
+                    [](const std::unique_ptr<PortRuntime>& p) { return p->capture_trigger; });
+    if (!armed_port_exists) {
+      throw std::runtime_error("wire capture trigger port not found in the topology: " +
+                               capture_.trigger_port);
+    }
+  }
+
   const auto report_node_stall = [&ports](const RadioNodeRuntime& node, const char* phase,
                                           std::chrono::steady_clock::duration waited) {
     std::string rings;
@@ -835,9 +888,29 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             pushed = dev.tx_ring.push(std::span<const IqSample>(recv_buf.data(), pending));
           }
           if (pushed) {
+            // Arm the triggered capture from this port's first live sample.
+            // Done before append_capture, which advances tx_wire_samples, so
+            // the offset published is this batch's own start plus the margin.
+            if (dev.capture_trigger &&
+                capture_armed_at.load(std::memory_order_acquire) == kCaptureUnarmed) {
+              const std::size_t at = first_nonzero_sample(recv_buf.data(), pending);
+              if (at != pending) {
+                std::uint64_t unarmed = kCaptureUnarmed;
+                const std::uint64_t offset =
+                    dev.tx_wire_samples + at + capture_.trigger_margin_samples;
+                if (capture_armed_at.compare_exchange_strong(unarmed, offset,
+                                                             std::memory_order_acq_rel)) {
+                  std::cout << "event=wire_capture_armed port=" << dev.config->id
+                            << " sample_offset=" << offset << '\n'
+                            << std::flush;
+                }
+              }
+            }
             // Wire capture, in ring order: this is what the peer's TX actually
             // put on the wire, before anything of ours reads it.
-            append_capture(dev.tx_capture, dev.capture_limit, dev.capture_skip,
+            append_capture(dev.tx_capture, dev.capture_limit,
+                           effective_capture_skip(dev.capture_skip, capture_triggered,
+                                                  capture_armed_at),
                            dev.tx_wire_samples, recv_buf.data(), pending);
             diag.state.store("push");
             diag.last_samples.store(pending);
@@ -1235,7 +1308,9 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         // Wire capture, in serve order: this is the processed row as it goes
         // out to the radio, so a checker sees the broker's output rather than
         // its intent.
-        append_capture(port.rx_capture, port.capture_limit, port.capture_skip,
+        append_capture(port.rx_capture, port.capture_limit,
+                       effective_capture_skip(port.capture_skip, capture_triggered,
+                                              capture_armed_at),
                        port.rx_wire_samples, reply_buf.data(), take);
 
         diag.state.store("send");
@@ -1438,6 +1513,12 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
     manifest << "{\n  \"schema\": \"ocudu-wire-capture/v1\",\n"
              << "  \"samples_per_port\": " << capture_.samples_per_port << ",\n"
              << "  \"skip_samples\": " << capture_.skip_samples << ",\n"
+             << "  \"trigger_port\": \"" << capture_.trigger_port << "\",\n"
+             << "  \"armed_at_sample\": "
+             << (capture_armed_at.load() == kCaptureUnarmed
+                     ? std::string("null")
+                     : std::to_string(capture_armed_at.load()))
+             << ",\n"
              << "  \"sample_format\": \"cf32_interleaved_le\",\n"
              << "  \"ports\": [\n";
     for (std::size_t d = 0; d != ports.size(); ++d) {

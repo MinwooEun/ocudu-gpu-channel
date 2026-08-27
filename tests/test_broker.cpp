@@ -21,6 +21,8 @@
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -48,6 +50,38 @@ void set_timeouts(void* socket)
 }
 
 // Synthetic device TX: a REP server that answers every pull with a batch of IQ.
+// A source that is SILENT for its first `silent_batches` replies and then
+// carries signal. This is what a radio looks like to the broker before its
+// stack is transmitting, and it is the case a fixed capture skip gets wrong:
+// sample time does not start when the run does, so a constant offset lands
+// somewhere different on every run.
+void run_source_delayed(void* context, std::string endpoint, std::size_t batch,
+                        std::size_t silent_batches, std::atomic<bool>& stop)
+{
+  void* socket = zmq_socket(context, ZMQ_REP);
+  set_timeouts(socket);
+  if (zmq_bind(socket, endpoint.c_str()) != 0) {
+    std::cerr << "FAIL: delayed source could not bind " << endpoint << "\n";
+    std::exit(1);
+  }
+  const ocg::IqBuffer silence(batch, ocg::IqSample{0.0F, 0.0F});
+  const ocg::IqBuffer signal(batch, ocg::IqSample{0.5F, 0.25F});
+  const std::size_t bytes = batch * sizeof(ocg::IqSample);
+  std::size_t served = 0;
+  while (!stop.load()) {
+    std::uint8_t dummy = 0;
+    if (zmq_recv(socket, &dummy, sizeof(dummy), 0) < 0) {
+      continue;
+    }
+    const ocg::IqBuffer& payload = served < silent_batches ? silence : signal;
+    ++served;
+    while (!stop.load() && zmq_send(socket, payload.data(), bytes, 0) < 0) {
+      // retry a timed-out send so the REP socket stays in a valid state
+    }
+  }
+  zmq_close(socket);
+}
+
 void run_source(void* context, std::string endpoint, std::size_t batch, std::atomic<bool>& stop)
 {
   void* socket = zmq_socket(context, ZMQ_REP);
@@ -476,11 +510,112 @@ void scenario_pacer_drops_unrecoverable_debt()
 
 } // namespace
 
+
+// A triggered wire capture must start at the trigger port's first live sample,
+// not at a constant offset.
+//
+// Measured on the live 4x1 gate 2026-08-27: every port holds at zero samples
+// until the last radio connects, so sample time starts several seconds into
+// the run and then advances below real time. A capture skip counted in sample
+// time therefore lands somewhere different on every run -- two runs of a gate
+// whose attach passed with 0% ping loss both recorded 11520000 consecutive
+// ZEROS from the uplink and failed the matrix check on "captured only zeros".
+//
+// This stands ue0 up as a source that is silent for its first 40 batches and
+// arms the capture on it. The window must contain signal, not the silence a
+// fixed skip of zero would have recorded.
+void scenario_capture_trigger()
+{
+  const std::size_t kSilentBatches = 40;
+  const std::size_t kCaptureSamples = 23040 * 4;
+
+  ocg::TopologyConfig config;
+  config.runtime.backend = ocg::Backend::Cpu;
+  config.runtime.batch_samples_auto = false;
+  config.runtime.batch_samples = 23040;
+  config.runtime.queue_samples = 131072;
+  config.devices = {
+      {.id = "gnb0",
+       .role = "gnb",
+       .sample_rate_hz = 23040000,
+       .tx_endpoint = "tcp://127.0.0.1:25520",
+       .rx_endpoint = "tcp://127.0.0.1:25521"},
+      {.id = "ue0",
+       .role = "ue",
+       .sample_rate_hz = 23040000,
+       .tx_endpoint = "tcp://127.0.0.1:25522",
+       .rx_endpoint = "tcp://127.0.0.1:25523"}};
+  config.links = {{.from = "gnb0", .to = "ue0", .model = "clean"},
+                  {.from = "ue0", .to = "gnb0", .model = "clean"}};
+  ocg::ModelConfig model;
+  model.id = "clean";
+  model.chain.push_back({.type = ocg::ModelStepType::Tdl,
+                         .params = {},
+                         .taps = {{.delay_samples = 0.0, .gain_db = 0.0, .phase_rad = 0.0}},
+                         .taps_declared = true});
+  config.models.emplace(model.id, model);
+
+  const std::string dir = "wire-capture-trigger-test";
+  std::filesystem::remove_all(dir);
+  std::filesystem::create_directories(dir);
+
+  void* context = zmq_ctx_new();
+  std::atomic<bool> stop{false};
+  std::atomic<std::uint64_t> gnb_received{0};
+  std::atomic<std::uint64_t> ue_received{0};
+
+  std::vector<std::thread> peers;
+  peers.emplace_back(run_source, context, config.devices[0].tx_endpoint,
+                     config.runtime.batch_samples, std::ref(stop));
+  peers.emplace_back(run_source_delayed, context, config.devices[1].tx_endpoint,
+                     config.runtime.batch_samples, kSilentBatches, std::ref(stop));
+  peers.emplace_back(run_sink, context, config.devices[0].rx_endpoint, std::ref(stop),
+                     std::ref(gnb_received));
+  peers.emplace_back(run_sink, context, config.devices[1].rx_endpoint, std::ref(stop),
+                     std::ref(ue_received));
+
+  ocg::Broker broker(config);
+  // skip_samples deliberately 0: without the trigger this would record the
+  // silence, which is the failure being guarded against.
+  broker.set_wire_capture({dir, kCaptureSamples, 0, "ue0", 23040});
+  broker.run(std::chrono::milliseconds(1500));
+
+  stop.store(true);
+  for (auto& peer : peers) {
+    peer.join();
+  }
+  zmq_ctx_shutdown(context);
+  zmq_ctx_destroy(context);
+
+  const std::string path = dir + "/ue0.tx_in.cf32";
+  std::ifstream capture(path, std::ios::binary);
+  require(capture.good(), "triggered capture wrote no ue0 tx_in file");
+  std::vector<ocg::IqSample> samples(kCaptureSamples);
+  capture.read(reinterpret_cast<char*>(samples.data()),
+               static_cast<std::streamsize>(kCaptureSamples * sizeof(ocg::IqSample)));
+  const auto got = static_cast<std::size_t>(capture.gcount()) / sizeof(ocg::IqSample);
+  require(got > 0, "triggered capture recorded nothing");
+
+  std::size_t nonzero = 0;
+  for (std::size_t i = 0; i != got; ++i) {
+    if (samples[i].i != 0.0F || samples[i].q != 0.0F) {
+      ++nonzero;
+    }
+  }
+  std::cout << "capture_trigger: captured=" << got << " nonzero=" << nonzero << "\n";
+  // The whole point: the window opened on signal. Every recorded sample is
+  // live, because the source never returns to silence once it starts.
+  require(nonzero == got, "triggered capture recorded silence: the window did not follow the trigger");
+  std::filesystem::remove_all(dir);
+  std::cout << "capture trigger OK\n";
+}
+
 int main()
 {
   scenario_pacer_drops_unrecoverable_debt();
   scenario_loopback();
   scenario_multi_ue_lockstep();
+  scenario_capture_trigger();
   std::cout << "test_broker OK\n";
   return 0;
 }

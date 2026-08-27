@@ -40,6 +40,25 @@ struct WireCaptureConfig {
   // Both directions skip the same count, so a captured output row still lines
   // up sample-for-sample with the captured input columns.
   std::size_t skip_samples = 0;
+  // Anchor the window to activity instead of to a constant.
+  //
+  // skip_samples is counted in SAMPLE time, but the traffic a live gate needs
+  // to observe is scheduled in WALL time after the UE attaches, and the two
+  // clocks do not share an origin: the broker cannot advance a node until
+  // every incoming lane has data, so sample time does not start until the last
+  // radio connects, and it then runs below real time under load. A constant
+  // therefore lands somewhere different on every run. Naming the port whose
+  // transmit input arms the capture makes the window start from the first
+  // sample that radio actually sent, on every run.
+  //
+  // Empty = disabled, and skip_samples is used unchanged. All ports share the
+  // armed offset, so a captured output row still lines up sample-for-sample
+  // with the captured input columns.
+  std::string trigger_port;
+  // Samples to let past after the trigger fires. Sized to cover the skew
+  // between ports so that none of them has already passed the armed offset
+  // when it is published.
+  std::size_t trigger_margin_samples = 0;
 };
 
 class Broker {
