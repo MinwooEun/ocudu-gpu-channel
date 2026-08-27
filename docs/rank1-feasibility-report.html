@@ -145,7 +145,7 @@
   <div class="stats">
     <div class="stat green"><div class="v">2 / 2 <span class="u">gates pass</span></div><div class="k">2×1 및 4×1 라이브 게이트 (attach+PDU+ping+행렬판정)</div></div>
     <div class="stat cyan"><div class="v">≤ 4.6e-05</div><div class="k">라이브 y=Hx 최대 오차 (UL 전 행, 허용 1e-04)</div></div>
-    <div class="stat blue"><div class="v">12.9 <span class="u">µs</span></div><div class="k">4×1 GPU 커널 p50 (1 ms 슬롯 예산)</div></div>
+    <div class="stat blue"><div class="v">12.9 <span class="u">µs</span></div><div class="k">4×1 GPU 커널 p50 (heartbeat 표본; 노드 process p99 285 µs @ n=54,439)</div></div>
     <div class="stat violet"><div class="v">0.01 <span class="u">dB</span></div><div class="k">oracle 프리코딩 실측-예측 정합 (MRT/복제/널 스윕)</div></div>
   </div>
 </section>
@@ -268,7 +268,7 @@
   4×1은 이상치 하나를 p99로 보고(619.1 → 285 µs).</div>
   <p class="mono" style="font-size:13px">Intel Core Ultra 9 285K · RTX 5090 ×1 · 23.04 MS/s · batch 23040 (= 1 ms 슬롯) · CUDA · fixed_mimo(1탭)+TDL 체인 · 라이브 컨테이너 게이트 60 s 런 · 전 슬롯 기록</p>
   <div class="tablewrap"><table>
-    <tr><th>구성</th><th>n (슬롯)</th><th>GPU kernel p50 (µs)</th><th>노드 process p50 / p99 / p99.9 (µs)</th><th>1 ms 슬롯 대비 (p99)</th></tr>
+    <tr><th>구성</th><th>n (슬롯)</th><th>GPU kernel p50 (µs, heartbeat 표본)</th><th>노드 process p50 / p99 / p99.9 (µs)</th><th>1 ms 슬롯 대비 (p99)</th></tr>
     <tr><td><b>2×1</b> gnb0</td><td>57,753</td><td>10.6</td><td>80 / 205 / 340</td><td class="ok">21%</td></tr>
     <tr><td><b>4×1</b> gnb0</td><td>54,439</td><td>12.9</td><td>115 / 285 / 675</td><td class="ok">31%</td></tr>
   </table></div>

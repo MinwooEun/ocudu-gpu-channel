@@ -147,7 +147,7 @@
   <div class="stats">
     <div class="stat green"><div class="v">2 / 2 <span class="u">gates pass</span></div><div class="k">2×1 and 4×1 live gates (attach + PDU + ping + matrix judgement), reproduced on a second host and harness</div></div>
     <div class="stat cyan"><div class="v">≤ 4.6e-05</div><div class="k">worst live y=Hx error (all UL rows; tolerance 1e-04)</div></div>
-    <div class="stat blue"><div class="v">12.9 <span class="u">µs</span></div><div class="k">4×1 GPU kernel p50 (1 ms slot budget)</div></div>
+    <div class="stat blue"><div class="v">12.9 <span class="u">µs</span></div><div class="k">4×1 GPU kernel p50 (heartbeat sample; node process p99 285 µs at n=54,439)</div></div>
     <div class="stat violet"><div class="v">0.01 <span class="u">dB</span></div><div class="k">oracle-precoding measurement vs prediction (MRT / duplication / null sweep)</div></div>
   </div>
 </section>
@@ -278,7 +278,7 @@
   (p99 131.9 → 205 µs) and 4×1 reported a single outlier as p99 (619.1 → 285 µs).</div>
   <p class="mono" style="font-size:13px">Intel Core Ultra 9 285K · one RTX 5090 · 23.04 MS/s · batch 23040 (= 1 ms slot) · CUDA backend · fixed_mimo (single tap) + TDL chain · live container gate, 60 s run · every slot recorded</p>
   <div class="tablewrap"><table>
-    <tr><th>Config</th><th>GPU h2d / kernel / d2h p50 (µs)</th><th>Node process p50 / p99 (µs)</th><th>Share of the 1 ms slot (p99)</th></tr>
+    <tr><th>Config</th><th>GPU h2d / kernel / d2h p50 (µs, heartbeat sample)</th><th>Node process p50 / p99 (µs)</th><th>Share of the 1 ms slot (p99)</th></tr>
     <tr><td><b>2×1</b> gnb0 (n=57,753 slots)</td><td>kernel 10.6</td><td>80 / 205 (p99.9 340)</td><td class="ok">21% at p99</td></tr><tr><td><b>4×1</b> gnb0 (n=54,439 slots)</td><td>kernel 12.9</td><td>115 / 285 (p99.9 675)</td><td class="ok">31% at p99</td></tr>
   </table></div>
   <p>Both configurations stay inside the 1 ms slot budget through p99.9.</p>

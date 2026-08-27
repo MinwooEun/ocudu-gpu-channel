@@ -326,8 +326,10 @@ from the live gates:
 | 4×1 | gnb0 | 54,439 | 115 µs | 200 µs | 285 µs | 675 µs |
 | 4×1 | ue0 | 54,284 | 120 µs | 210 µs | 310 µs | 650 µs |
 
-GPU kernel p50: 10.6 µs (2×1), 12.9 µs (4×1). Everything through p99.9 fits the
-1 ms slot budget.
+GPU kernel p50: 10.6 µs (2×1), 12.9 µs (4×1) — heartbeat samples, not whole-run
+percentiles; the kernel varies little between slots, which is why they are quoted
+at all. The `n` column above applies to the process percentiles only. Everything
+through p99.9 fits the 1 ms slot budget.
 
 **The maximum is not measured, and the earlier reading of it was an artefact.**
 An earlier edition of this section said the observed maximum in both

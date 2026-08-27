@@ -8,7 +8,7 @@
 
 ## 0. 한 문단 요약
 
-평가 보고서가 승인한 rank-1 목표 — **DL 2×1(→4×1) MISO + UL 1×2(→1×4) SIMO, srsUE는 1안테나 유지** — 를 실제 OCUDU gNB ↔ GPU 브로커 ↔ srsUE 5G의 **라이브 end-to-end로 전부 구현·통과**했다. 2포트와 4포트 구성 모두 attach + PDU 세션 + 사용자 평면 ping이 성립하고, **같은 게이트 실행 안에서 wire 캡처로 y = H·x를 재계산해 선언 채널 벡터와 ≤4.6×10⁻⁵ 오차로 일치함을 자동 판정**하며, GPU 처리 시간은 1 ms 슬롯 예산 안에 있다(4×1 kernel p50 12.9 µs). 평가 보고서가 "Not yet demonstrated" delivery gate로 지목했던 라이브 다중포트 증명이 닫혔고, 그 과정에서 발견된 통합 제약 4건은 모두 소스/실측 근거와 함께 해법이 fixture에 정착되었다.
+평가 보고서가 승인한 rank-1 목표 — **DL 2×1(→4×1) MISO + UL 1×2(→1×4) SIMO, srsUE는 1안테나 유지** — 를 실제 OCUDU gNB ↔ GPU 브로커 ↔ srsUE 5G의 **라이브 end-to-end로 전부 구현·통과**했다. 2포트와 4포트 구성 모두 attach + PDU 세션 + 사용자 평면 ping이 성립하고, **같은 게이트 실행 안에서 wire 캡처로 y = H·x를 재계산해 선언 채널 벡터와 ≤4.6×10⁻⁵ 오차로 일치함을 자동 판정**하며, GPU 처리 시간은 1 ms 슬롯 예산 안에 있다(4×1 노드 process p99 285 µs, n=54,439 슬롯; kernel p50 12.9 µs는 heartbeat 표본). 평가 보고서가 "Not yet demonstrated" delivery gate로 지목했던 라이브 다중포트 증명이 닫혔고, 그 과정에서 발견된 통합 제약 4건은 모두 소스/실측 근거와 함께 해법이 fixture에 정착되었다.
 
 ---
 
@@ -141,7 +141,7 @@ Feasibility의 1차 증거는 "실제 스택이 실제로 완주하는가"이다
 Intel Core Ultra 9 285K · RTX 5090 1기 · 23.04 MS/s · batch 23040(=1 ms 슬롯) · CUDA 백엔드 ·
 fixed_mimo(1탭)+TDL 체인 · 라이브 Docker 게이트 60 s 런:
 
-| 구성 | 노드 | n (슬롯) | process p50 | p95 | p99 | p99.9 | GPU kernel p50 |
+| 구성 | 노드 | n (슬롯) | process p50 | p95 | p99 | p99.9 | GPU kernel p50 (heartbeat 표본) |
 |---|---|---|---|---|---|---|---|
 | 2×1 | gnb0 | 57,753 | 80 µs | 135 µs | 205 µs | 340 µs | 10.6 µs |
 | 2×1 | ue0 | 54,794 | 75 µs | 150 µs | 230 µs | 380 µs | — |
