@@ -1,5 +1,7 @@
 # Rank-1 리뷰 대응 마일스톤 (V0–V6)
 
+**상사 대상 보고서**: [`docs/rank1-review-response.md`](docs/rank1-review-response.md) — 이 문서는 로드맵이고, 그쪽이 결과 보고다.
+
 리뷰 대상 브랜치: `zhouyou-gu/ocudu-gpu-channel` `minwooeun-rank1-miso-simo-review-fixes`
 (기준 HEAD `d00e84e`). 이 문서는 **상사 리뷰가 지적한 사항과 리뷰가 열어둔 항목만** 다룬다.
 rank-1 로드맵 본체는 [`RANK1_MILESTONES.md`](RANK1_MILESTONES.md), 실행 기록은

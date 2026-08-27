@@ -10,6 +10,8 @@
 
 **이 파일은 재개용 요약이다. 정본은 `AGENT_PROGRESS.md`이고, 둘이 어긋나면 `AGENT_PROGRESS.md`가 이긴다**(`AGENT.md`의 우선순위 규칙).
 
+리뷰 대응 결과 보고서: [`docs/rank1-review-response.md`](docs/rank1-review-response.md). 로드맵: [`RANK1_REVIEW_MILESTONES.md`](RANK1_REVIEW_MILESTONES.md).
+
 ## 0. 이 워크스페이스의 정체
 
 - **`/home/ubuntu/ocudu-gpu-channel-rank1` = `ocudu-gpu-channel-mimo-claude`의 2026-08-17 포크** (공개 브랜치 포크 기점 `34f669e`, 브랜치 `rank1-miso-simo`). 사용자 지시로 생성.
