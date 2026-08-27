@@ -297,6 +297,22 @@ struct PortRuntime {
   // This port's transmit input arms the triggered capture (see
   // WireCaptureConfig::trigger_port). At most one port has it set.
   bool capture_trigger = false;
+
+  // Lifecycle of the two halves of this port's radio, as opposed to their
+  // occupancy. The topology DECLARES every peer, but until a peer actually
+  // speaks the broker cannot tell "declared and not yet connected" from
+  // "connected and briefly idle" by looking at a ring: both read as zero. That
+  // ambiguity is what makes a node wait for a radio that has never existed,
+  // and it is the state these two flags name.
+  //
+  // tx_live: this port's peer has delivered at least one sample.
+  // rx_live: this port's radio has asked for at least one reply.
+  //
+  // Both are one-way. They are set by the puller and the REP worker
+  // respectively and read unlocked, so a stale false only costs one more
+  // iteration of a loop that was already waiting.
+  std::atomic<bool> tx_live{false};
+  std::atomic<bool> rx_live{false};
   std::uint64_t tx_wire_samples = 0; // puller thread only
   std::uint64_t rx_wire_samples = 0; // REP worker thread only
   IqBuffer tx_capture;
@@ -597,6 +613,11 @@ Broker::Broker(TopologyConfig config) : config_(std::move(config))
     throw std::runtime_error("invalid topology: " + errors.front());
   }
   processor_ = create_channel_processor(config_);
+}
+
+void Broker::set_admit_cold_sources(bool admit)
+{
+  admit_cold_sources_ = admit;
 }
 
 void Broker::set_wire_capture(WireCaptureConfig capture)
@@ -917,6 +938,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             diag.total_samples.fetch_add(pending);
             diag.progress.fetch_add(1);
             stats.tx_pulls.fetch_add(1);
+            dev.tx_live.store(true, std::memory_order_release);
             pending = 0;
             pending_counted = false;
           } else {
@@ -978,6 +1000,10 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
       const std::vector<std::size_t>& incoming = node.incoming;
 
       std::vector<IqBuffer> inputs(incoming.size(), IqBuffer(node.batch));
+      // Per-slot record of which lanes were treated as silence, decided once in
+      // the window loop and reused by the read and the commit so all three
+      // agree about the same slot.
+      std::vector<char> lane_cold(incoming.size(), 0);
       // One output row per RX port. M0 always has exactly one.
       std::vector<IqBuffer> row_storage(node.rx_ports.size(), IqBuffer(node.batch));
       std::vector<std::span<IqSample>> rows(node.rx_ports.size());
@@ -1086,9 +1112,22 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           auto next_data_report = wait_start + kStallReportInterval;
           while (!stop_requested.load()) {
             std::size_t common = node.batch;
+            std::size_t live_lanes = 0;
             for (std::size_t k = 0; k != incoming.size(); ++k) {
               auto& link = links[incoming[k]];
               PortRuntime& src = *ports[link.src_index];
+              // A declared lane whose peer has never spoken contributes
+              // silence rather than a zero that blocks every sibling. The flag
+              // is read here and remembered for this slot, so the read and the
+              // commit cannot disagree with the sizing about which lanes were
+              // live -- a lane going live mid-slot simply carries silence for
+              // one more slot.
+              if (admit_cold_sources_ && !src.tx_live.load(std::memory_order_acquire)) {
+                lane_cold[k] = 1;
+                continue;
+              }
+              lane_cold[k] = 0;
+              ++live_lanes;
               std::lock_guard<std::mutex> lk(src.ring_mutex);
               std::uint64_t cur = link.cursor.load();
               if (cur < src.tx_ring.earliest_sequence()) {
@@ -1098,6 +1137,12 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               }
               const std::uint64_t avail = src.tx_ring.next_sequence() - cur;
               common = std::min<std::size_t>(common, static_cast<std::size_t>(avail));
+            }
+            // Every lane cold: the node has nothing to sum, so it emits a
+            // paced batch of silence rather than waiting for a radio that may
+            // never arrive. Same shape as a node with no incoming lanes.
+            if (admit_cold_sources_ && live_lanes == 0) {
+              common = node.batch;
             }
             if (common > 0) {
               count = std::min(common, room);
@@ -1143,7 +1188,9 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           auto& link = links[incoming[k]];
           PortRuntime& src = *ports[link.src_index];
           const std::span<IqSample> window(inputs[k].data(), count);
-          {
+          if (lane_cold[k] != 0) {
+            std::fill(window.begin(), window.end(), IqSample{});
+          } else {
             std::lock_guard<std::mutex> lk(src.ring_mutex);
             if (!src.tx_ring.read(link.cursor.load(), window)) {
               throw std::runtime_error("broker serve window vanished from ring: " + link.key);
@@ -1173,7 +1220,12 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         // loop, in the one thread that owns them. This is the statement that
         // makes sibling-port alignment a structural invariant.
         for (std::size_t k = 0; k != incoming.size(); ++k) {
-          links[incoming[k]].cursor.fetch_add(count);
+          // A cold lane's cursor stays where it is, so when its peer finally
+          // speaks the node reads that peer from ITS first sample. Nothing the
+          // radio sent is skipped; only the silence before it existed is.
+          if (lane_cold[k] == 0) {
+            links[incoming[k]].cursor.fetch_add(count);
+          }
         }
 
         // (G) Throttle: cap the production cadence at the node sample rate so
@@ -1326,6 +1378,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         diag.last_samples.store(take);
         diag.progress.fetch_add(1);
         stats.rx_requests.fetch_add(1);
+        port.rx_live.store(true, std::memory_order_release);
       }
     } catch (const std::exception& e) {
       report_thread_error("rep_worker", e);
@@ -1379,7 +1432,10 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
       // device.
       const WorkerDiag& s = producer_diag[ports[d]->node_index];
       const WorkerDiag& r = rep_diag[d];
-      std::cout << "event=heartbeat t=" << elapsed_s << " dev=" << ports[d]->config->id << " ring="
+      std::cout << "event=heartbeat t=" << elapsed_s << " dev=" << ports[d]->config->id
+                << " live[tx=" << (ports[d]->tx_live.load(std::memory_order_acquire) ? 1 : 0)
+                << " rx=" << (ports[d]->rx_live.load(std::memory_order_acquire) ? 1 : 0) << "]"
+                << " ring="
                 << ring_size << "/" << ring_cap << " rx_ring=" << rx_size << "/" << rx_cap
                 << " puller[state=" << p.state.load()
                 << " pulls=" << p.progress.load() << " idle=" << p.idle_waits.load()

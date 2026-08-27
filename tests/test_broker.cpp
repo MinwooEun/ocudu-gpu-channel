@@ -610,12 +610,102 @@ void scenario_capture_trigger()
   std::cout << "capture trigger OK\n";
 }
 
+
+// A node must not be held hostage by a peer that has never existed.
+//
+// gnb0 has two incoming lanes, from ue0 and ue1. Only ue0's radio is brought
+// up; ue1 is DECLARED in the topology and never connects, which is exactly a
+// cell whose second UE has not been started yet. The window is sized as
+// min(available) over every incoming lane, and a lane whose peer has never
+// spoken reads as zero available -- indistinguishable from one that is briefly
+// caught up -- so gnb0 waits forever and ue0 cannot attach by construction.
+//
+// Measured on the live multi-UE gates: the cell produced nothing until the
+// LAST UE's radio was running, so each per-UE wait burned its full timeout and
+// the broker stopped having relayed nothing.
+//
+// This runs the same topology twice, changing only the flag, and requires the
+// flag to be what makes the difference.
+std::uint64_t cold_source_run(bool admit, int port_base)
+{
+  const auto ep = [port_base](int offset) {
+    return std::string("tcp://127.0.0.1:") + std::to_string(port_base + offset);
+  };
+
+  ocg::TopologyConfig config;
+  config.runtime.backend = ocg::Backend::Cpu;
+  config.runtime.batch_samples_auto = false;
+  config.runtime.batch_samples = 23040;
+  config.runtime.queue_samples = 131072;
+  config.devices = {
+      {.id = "gnb0", .role = "gnb", .sample_rate_hz = 23040000,
+       .tx_endpoint = ep(0), .rx_endpoint = ep(1)},
+      {.id = "ue0", .role = "ue", .sample_rate_hz = 23040000,
+       .tx_endpoint = ep(2), .rx_endpoint = ep(3)},
+      {.id = "ue1", .role = "ue", .sample_rate_hz = 23040000,
+       .tx_endpoint = ep(4), .rx_endpoint = ep(5)}};
+  config.links = {{.from = "gnb0", .to = "ue0", .model = "clean"},
+                  {.from = "gnb0", .to = "ue1", .model = "clean"},
+                  {.from = "ue0", .to = "gnb0", .model = "clean"},
+                  {.from = "ue1", .to = "gnb0", .model = "clean"}};
+  ocg::ModelConfig model;
+  model.id = "clean";
+  model.chain.push_back({.type = ocg::ModelStepType::Tdl,
+                         .params = {},
+                         .taps = {{.delay_samples = 0.0, .gain_db = 0.0, .phase_rad = 0.0}},
+                         .taps_declared = true});
+  config.models.emplace(model.id, model);
+
+  void* context = zmq_ctx_new();
+  std::atomic<bool> stop{false};
+  std::atomic<std::uint64_t> gnb_received{0};
+  std::atomic<std::uint64_t> ue0_received{0};
+
+  std::vector<std::thread> peers;
+  peers.emplace_back(run_source, context, config.devices[0].tx_endpoint,
+                     config.runtime.batch_samples, std::ref(stop));
+  peers.emplace_back(run_source, context, config.devices[1].tx_endpoint,
+                     config.runtime.batch_samples, std::ref(stop));
+  // ue1: no source and no sink. Declared, never connected.
+  peers.emplace_back(run_sink, context, config.devices[0].rx_endpoint, std::ref(stop),
+                     std::ref(gnb_received));
+  peers.emplace_back(run_sink, context, config.devices[1].rx_endpoint, std::ref(stop),
+                     std::ref(ue0_received));
+
+  ocg::Broker broker(config);
+  broker.set_admit_cold_sources(admit);
+  broker.run(std::chrono::milliseconds(1500));
+
+  stop.store(true);
+  for (auto& peer : peers) {
+    peer.join();
+  }
+  zmq_ctx_shutdown(context);
+  zmq_ctx_destroy(context);
+  return gnb_received.load();
+}
+
+void scenario_cold_source()
+{
+  const std::uint64_t without = cold_source_run(false, 25540);
+  const std::uint64_t with = cold_source_run(true, 25560);
+  std::cout << "cold_source: gnb0 received without=" << without << " with=" << with << "\n";
+
+  // Without admission the node cannot advance at all: a declared-but-absent
+  // lane pins min(available) at zero for the whole run.
+  require(without == 0, "gnb0 advanced with a declared lane that never connected");
+  // With it, the cell runs from the radios that ARE up.
+  require(with > 0, "cold-source admission did not let gnb0 advance");
+  std::cout << "cold source OK\n";
+}
+
 int main()
 {
   scenario_pacer_drops_unrecoverable_debt();
   scenario_loopback();
   scenario_multi_ue_lockstep();
   scenario_capture_trigger();
+  scenario_cold_source();
   std::cout << "test_broker OK\n";
   return 0;
 }

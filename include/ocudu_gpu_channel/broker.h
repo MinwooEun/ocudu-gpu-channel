@@ -67,6 +67,18 @@ public:
 
   // Must be called before run(); ignored once the workers are up.
   void set_wire_capture(WireCaptureConfig capture);
+  // Let a node advance while a DECLARED incoming lane has never delivered a
+  // sample, treating that lane as silence until its peer speaks.
+  //
+  // Off by default, and deliberately so. Without it a node waits on
+  // min(available) across every declared lane, and a peer that has never
+  // connected is indistinguishable from one that is briefly caught up -- so a
+  // cell cannot run until the LAST radio is up, and the radios that are
+  // already up cannot attach by construction. With it, the cell runs from the
+  // first radio. What it does NOT fix is the sink side, where a port whose
+  // radio has not connected still accumulates output; see V3 in
+  // RANK1_REVIEW_MILESTONES.md.
+  void set_admit_cold_sources(bool admit);
 
   BrokerStats run(std::chrono::milliseconds duration);
 
@@ -79,6 +91,7 @@ public:
 private:
   TopologyConfig config_;
   WireCaptureConfig capture_;
+  bool admit_cold_sources_ = false;
   std::unique_ptr<ChannelProcessor> processor_;
 };
 

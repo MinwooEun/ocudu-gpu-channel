@@ -18,6 +18,7 @@ void usage()
                "[--control-endpoint tcp://*:5559] "
                "[--telemetry-endpoint tcp://*:5560 --telemetry-rate-hz 20] "
                "[--hardware-strict] [--control-warmup-cap-slots N] "
+               "[--admit-cold-sources] "
                "[--wire-capture-dir DIR --wire-capture-samples N "
                "[--wire-capture-skip N] [--wire-capture-trigger-port ID] "
                "[--wire-capture-trigger-margin N]]\n";
@@ -37,6 +38,9 @@ int main(int argc, char** argv)
   int         warmup_cap_slots = 3;     // v2.2 follow-on; 0 = disabled
   std::string wire_capture_dir;         // empty = wire capture disabled
   std::size_t wire_capture_samples = 0; // per port, per direction
+  // Let a node advance while a declared incoming lane has never delivered.
+  // Off by default: it changes when a cell starts producing.
+  bool admit_cold_sources = false;
   std::size_t wire_capture_skip = 0;    // samples let past before recording
   // Anchor the window to the first live sample on this port instead of to
   // wire_capture_skip. Empty = the fixed skip, which is the published default.
@@ -62,6 +66,8 @@ int main(int argc, char** argv)
       telemetry_endpoint = argv[++i];
     } else if (arg == "--telemetry-rate-hz" && i + 1 < argc) {
       telemetry_rate_hz = std::atof(argv[++i]);
+    } else if (arg == "--admit-cold-sources") {
+      admit_cold_sources = true;
     } else if (arg == "--hardware-strict") {
       hardware_strict = true;
     } else if (arg == "--control-warmup-cap-slots" && i + 1 < argc) {
@@ -146,6 +152,7 @@ int main(int argc, char** argv)
 
     ocg::Broker broker(std::move(config));
     if (!wire_capture_dir.empty() && wire_capture_samples > 0) {
+      broker.set_admit_cold_sources(admit_cold_sources);
       broker.set_wire_capture({wire_capture_dir, wire_capture_samples, wire_capture_skip,
                                wire_capture_trigger_port, wire_capture_trigger_margin});
     } else if (!wire_capture_dir.empty() || wire_capture_samples > 0) {
