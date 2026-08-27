@@ -327,6 +327,29 @@ from the live gates:
 | 4×1 | ue0 | 54,284 | 120 µs | 210 µs | 310 µs | 650 µs |
 
 GPU kernel p50: 10.6 µs (2×1), 12.9 µs (4×1). Everything through p99.9 fits the
-1 ms slot budget. The observed maximum in both configurations lands in the 5 ms
-overflow bucket; those slots are under 0.1% of the run and appear to sit at run
-start and teardown, but that has not been attributed and is an open item.
+1 ms slot budget.
+
+**The maximum is not measured, and the earlier reading of it was an artefact.**
+An earlier edition of this section said the observed maximum in both
+configurations landed in the 5 ms overflow bucket. It did not. `max_us` was
+computed as `process_percentile_us(diag, 1.0)`, which asks the prefix sum for
+`cumulative > total` — a condition no prefix sum can satisfy — so the search ran
+off the end of the histogram and returned its fallback: the constant 5005 µs, on
+every run, whether or not a single slot had ever overflowed. Reproduced directly
+on this host: `test_broker` printed `max_us=5005 overflow_n=0`, a 5 ms maximum on
+a run with an empty overflow bucket.
+
+The percentiles are unaffected — p50/p95/p99/p99.9 were computed from a
+satisfiable rank and stand as published. Only the maximum was wrong, and it was
+wrong in the direction of alarm.
+
+Fixed: the rank is clamped to `total-1`, the overflow bucket reports its lower
+edge as documented, `overflow_n` is now printed alongside so the maximum can be
+read as "at least" when it is non-zero, and `event=process_overflow` names the
+slot index and full stage breakdown for the first 32 overflow slots. A
+regression test in `test_broker` rejects a summary line whose percentiles are
+not monotone, or which claims a 5 ms maximum with an empty overflow bucket.
+
+The gates have **not** been re-run since. Until they are, this table's maxima
+are unknown and no statement should be made about the tail beyond p99.9.
+Tracked as V1 in [`../RANK1_REVIEW_MILESTONES.md`](../RANK1_REVIEW_MILESTONES.md).

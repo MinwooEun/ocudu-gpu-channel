@@ -232,6 +232,12 @@ struct PortRuntime {
   // through the previous one.
   IqRing rx_ring;
   std::mutex rx_mutex;
+  // Token of the thread currently holding rx_mutex, 0 when free. Written under
+  // the lock by RxLock, read unlocked by rx_headroom() so that a re-entrant
+  // call aborts with a name instead of hanging. rx_mutex is not recursive, and
+  // a headroom check made while already holding it once hung a test_broker run
+  // for long enough to be mistaken for a broker dead-lock.
+  std::atomic<std::uint64_t> rx_mutex_owner{0};
   std::uint64_t rx_cursor = 0;   // PortRepWorker read cursor
   std::size_t rx_high_water = 0; // producer run-ahead bound, in samples
   // Serve boundaries, in ring order. The producer records the length of every
@@ -357,7 +363,18 @@ struct WorkerDiag {
   static constexpr std::size_t kProcessBuckets = 1001;
   static constexpr double kProcessBucketUs = 5.0;
   std::array<std::atomic<std::uint64_t>, kProcessBuckets> process_hist{};
+
+  // How many overflow slots (>= 5 ms) have been reported in full. The
+  // histogram counts them but says nothing about WHEN in the run they happened
+  // or which stage was slow, which is exactly what a budget discussion needs:
+  // a handful of slots at start-up is a warm-up artefact, the same count spread
+  // through the run is a defect. The first kProcessOverflowReports are emitted
+  // with their slot index and full stage breakdown; the rest are counted only,
+  // so a pathological run cannot flood the log.
+  std::atomic<std::uint64_t> process_overflow_seen{0};
 };
+
+inline constexpr std::uint64_t kProcessOverflowReports = 32;
 
 // Records one slot's process duration into the histogram above.
 inline void record_process_us(WorkerDiag& diag, double us)
@@ -372,9 +389,35 @@ inline void record_process_us(WorkerDiag& diag, double us)
   diag.process_hist[bucket].fetch_add(1, std::memory_order_relaxed);
 }
 
-// Percentile of the recorded distribution, reported at the upper edge of the
-// bucket the rank falls in. The overflow bucket reports its lower edge with the
-// caller expected to read it as "at least this".
+// True when this slot landed in the overflow bucket, i.e. it missed the 1 ms
+// budget by at least five times over.
+inline bool is_process_overflow(double us)
+{
+  return us >= static_cast<double>(WorkerDiag::kProcessBuckets - 1) * WorkerDiag::kProcessBucketUs;
+}
+
+// Upper edge of a bucket, except the overflow bucket, which is unbounded above
+// and so reports its LOWER edge -- every figure taken from it must be read as
+// "at least this".
+inline double process_bucket_us(std::size_t bucket)
+{
+  if (bucket >= WorkerDiag::kProcessBuckets - 1) {
+    return static_cast<double>(WorkerDiag::kProcessBuckets - 1) * WorkerDiag::kProcessBucketUs;
+  }
+  return static_cast<double>(bucket + 1) * WorkerDiag::kProcessBucketUs;
+}
+
+// Percentile of the recorded distribution, reported at the edge of the bucket
+// the rank falls in.
+//
+// `target` is clamped to total-1 deliberately. The rank of the maximum is
+// total-1, so an unclamped fraction of 1.0 asks for `seen > total`, which no
+// prefix sum can satisfy: the loop runs off the end and returns the fallback
+// -- a CONSTANT 5005 us, independent of the data. That is not a hypothetical.
+// `max_us` in event=process_latency_summary was computed this way and always
+// read 5005, including on runs whose overflow bucket was empty, which is where
+// the "observed maximum lands in the 5 ms bucket" reading came from. Any
+// figure quoted from the old max_us must be re-measured, not reinterpreted.
 inline double process_percentile_us(const WorkerDiag& diag, double fraction)
 {
   std::uint64_t total = 0;
@@ -384,15 +427,20 @@ inline double process_percentile_us(const WorkerDiag& diag, double fraction)
   if (total == 0) {
     return 0.0;
   }
-  const auto target = static_cast<std::uint64_t>(fraction * static_cast<double>(total));
+  auto target = static_cast<std::uint64_t>(fraction * static_cast<double>(total));
+  if (target >= total) {
+    target = total - 1;
+  }
   std::uint64_t seen = 0;
   for (std::size_t i = 0; i != WorkerDiag::kProcessBuckets; ++i) {
     seen += diag.process_hist[i].load(std::memory_order_relaxed);
     if (seen > target) {
-      return static_cast<double>(i + 1) * WorkerDiag::kProcessBucketUs;
+      return process_bucket_us(i);
     }
   }
-  return static_cast<double>(WorkerDiag::kProcessBuckets) * WorkerDiag::kProcessBucketUs;
+  // Unreachable once target < total, kept so a future change cannot fall
+  // through silently the way the old fallback did.
+  return process_bucket_us(WorkerDiag::kProcessBuckets - 1);
 }
 
 inline std::uint64_t process_sample_count(const WorkerDiag& diag)
@@ -429,17 +477,65 @@ enum : std::size_t {
   kRepStageSend,
 };
 
+// A cheap per-thread identity. std::thread::id is not storable in an atomic,
+// and this only has to be unique among live threads.
+inline std::uint64_t current_thread_token()
+{
+  static std::atomic<std::uint64_t> next{1};
+  thread_local const std::uint64_t token = next.fetch_add(1, std::memory_order_relaxed);
+  return token;
+}
+
+// Scoped lock for PortRuntime::rx_mutex that records which thread holds it.
+// Use this rather than a bare std::lock_guard on rx_mutex, so that a nested
+// rx_headroom() call is caught instead of deadlocking. One relaxed store per
+// acquisition, next to a mutex acquisition that costs far more.
+class RxLock {
+public:
+  explicit RxLock(PortRuntime& port) : port_(port), lock_(port.rx_mutex)
+  {
+    port_.rx_mutex_owner.store(current_thread_token(), std::memory_order_relaxed);
+  }
+  ~RxLock() { port_.rx_mutex_owner.store(0, std::memory_order_relaxed); }
+  RxLock(const RxLock&) = delete;
+  RxLock& operator=(const RxLock&) = delete;
+
+private:
+  PortRuntime& port_;
+  std::lock_guard<std::mutex> lock_;
+};
+
 // Samples the producer may still push into this port's RX ring. Bounded by the
 // run-ahead high-water mark rather than by raw capacity, so the steady-state
 // added latency is the high-water mark and not the whole ring.
-std::size_t rx_headroom(PortRuntime& port)
+//
+// The caller MUST already hold port.rx_mutex. This is the form to use from
+// inside a held lock; rx_headroom() below is the form to use from outside one.
+std::size_t rx_headroom_locked(const PortRuntime& port)
 {
-  std::lock_guard<std::mutex> lk(port.rx_mutex);
   const std::size_t occupancy = port.rx_ring.size();
   if (occupancy >= port.rx_high_water) {
     return 0;
   }
   return std::min(port.rx_high_water - occupancy, port.rx_ring.free_capacity());
+}
+
+// Locking form. NEVER call this while already holding port.rx_mutex -- the
+// mutex is not recursive, so it self-deadlocks, and the symptom is a silent
+// hang that reads exactly like a relay dead-lock. Call rx_headroom_locked()
+// from inside a held lock instead. The check below turns that mistake into a
+// named abort rather than a hang.
+std::size_t rx_headroom(PortRuntime& port)
+{
+  if (port.rx_mutex_owner.load(std::memory_order_relaxed) == current_thread_token()) {
+    std::cerr << "event=fatal reason=rx_headroom_reentrant node_index=" << port.node_index
+              << " rx_port=" << port.rx_port
+              << " hint=use_rx_headroom_locked_when_rx_mutex_is_already_held\n";
+    std::cerr.flush();
+    std::terminate();
+  }
+  RxLock lk(port);
+  return rx_headroom_locked(port);
 }
 
 inline void store_us(std::atomic<std::uint64_t>& slot, double us)
@@ -655,7 +751,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
       std::size_t size = 0;
       std::size_t cap = 0;
       {
-        std::lock_guard<std::mutex> lk(out.rx_mutex);
+        RxLock lk(out);
         size = out.rx_ring.size();
         cap = out.rx_ring.capacity();
       }
@@ -1028,7 +1124,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         diag.state.store("push");
         for (std::size_t r = 0; r != node.rx_ports.size(); ++r) {
           PortRuntime& out = *ports[node.rx_ports[r]];
-          std::lock_guard<std::mutex> lk(out.rx_mutex);
+          RxLock lk(out);
           if (!out.rx_ring.push(std::span<const IqSample>(rows[r].data(), count))) {
             throw std::runtime_error("RX output ring rejected a reserved push: " + out.config->id);
           }
@@ -1051,6 +1147,22 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         record_process_us(diag, process_us);
         store_us(diag.stage_us_bits[kProducerStageThrottle], throttle_us);
         store_us(diag.stage_us_bits[kProducerStagePush], push_us);
+        const std::uint64_t slot_index = diag.progress.load();
+        // Attribute the overflow slots the summary can only count. The sibling
+        // stages are printed alongside process because they are siblings, not
+        // children: process alone being slow points inside the processor, all
+        // of them being slow points at something that stopped the whole
+        // thread. Off the hot path by construction -- an overflow is a slot
+        // that already spent 5 ms.
+        if (is_process_overflow(process_us) &&
+            diag.process_overflow_seen.fetch_add(1, std::memory_order_relaxed) <
+                kProcessOverflowReports) {
+          std::cout << "event=process_overflow node=" << node.id << " slot=" << slot_index
+                    << " process_us=" << process_us << " room_us=" << room_us
+                    << " align_us=" << align_us << " data_us=" << data_us
+                    << " read_us=" << read_us << " throttle_us=" << throttle_us
+                    << " push_us=" << push_us << '\n';
+        }
         diag.last_samples.store(count);
         diag.progress.fetch_add(1);
       }
@@ -1093,7 +1205,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         std::size_t take = 0;
         while (!stop_requested.load()) {
           {
-            std::lock_guard<std::mutex> lk(port.rx_mutex);
+            RxLock lk(port);
             if (!port.rx_slots.empty()) {
               // One producer window, whole. Never two, and never part of one:
               // both would size this reply off this thread's arrival time
@@ -1182,7 +1294,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
       std::size_t rx_size = 0;
       std::size_t rx_cap = 0;
       {
-        std::lock_guard<std::mutex> lk(ports[d]->rx_mutex);
+        RxLock lk(*ports[d]);
         rx_size = ports[d]->rx_ring.size();
         rx_cap = ports[d]->rx_ring.capacity();
       }
@@ -1234,7 +1346,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
       std::size_t rx_size = 0;
       std::size_t rx_cap = 0;
       {
-        std::lock_guard<std::mutex> lk(ports[d]->rx_mutex);
+        RxLock lk(*ports[d]);
         rx_size = ports[d]->rx_ring.size();
         rx_cap = ports[d]->rx_ring.capacity();
       }
@@ -1306,7 +1418,14 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               << " p95_us=" << process_percentile_us(diag, 0.95)
               << " p99_us=" << process_percentile_us(diag, 0.99)
               << " p999_us=" << process_percentile_us(diag, 0.999)
-              << " max_us=" << process_percentile_us(diag, 1.0) << '\n';
+              << " max_us=" << process_percentile_us(diag, 1.0)
+              // Slots in the overflow bucket. max_us reports that bucket's
+              // lower edge, so when this is non-zero the maximum is "at least
+              // 5000 us" and must be quoted that way. event=process_overflow
+              // lines above give the first few with their slot index.
+              << " overflow_n=" << diag.process_hist[WorkerDiag::kProcessBuckets - 1].load(
+                                       std::memory_order_relaxed)
+              << '\n';
   }
   std::cout.flush();
 

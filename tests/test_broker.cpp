@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
@@ -103,6 +104,60 @@ void run_sink(void* context, std::string endpoint, std::atomic<bool>& stop, std:
   zmq_close(socket);
 }
 
+// event=process_latency_summary invariants.
+//
+// The percentiles in that line are what the feasibility report quotes, so a
+// silently wrong one is a reporting defect, not just a logging one. max_us was
+// exactly that: it was computed as percentile(1.0), which asks for
+// `cumulative > total` -- unsatisfiable -- so the search ran off the end and
+// returned the fallback constant 5005 us on every run, empty overflow bucket or
+// not. The "observed maximum lands in the 5 ms bucket" reading in the report
+// came from that constant.
+//
+// Two invariants catch it and anything like it:
+//   * the percentiles must be monotone, so max_us cannot sit below p999_us;
+//   * with an empty overflow bucket, max_us must be BELOW the overflow bucket's
+//     lower edge -- a run with no overflow slot cannot have a 5 ms maximum.
+void check_latency_summary(const std::string& captured)
+{
+  constexpr double kOverflowFloorUs = 5000.0;
+  const auto field = [](const std::string& line, const char* key) {
+    const std::string needle = std::string(" ") + key + "=";
+    const auto at = line.find(needle);
+    if (at == std::string::npos) {
+      const std::string message = std::string("process_latency_summary missing ") + key;
+      require(false, message.c_str());
+    }
+    return std::stod(line.substr(at + needle.size()));
+  };
+
+  std::istringstream stream(captured);
+  std::string line;
+  std::size_t lines_checked = 0;
+  while (std::getline(stream, line)) {
+    if (line.rfind("event=process_latency_summary", 0) != 0) {
+      continue;
+    }
+    ++lines_checked;
+    const double n = field(line, "n");
+    const double p50 = field(line, "p50_us");
+    const double p95 = field(line, "p95_us");
+    const double p99 = field(line, "p99_us");
+    const double p999 = field(line, "p999_us");
+    const double max_us = field(line, "max_us");
+    const double overflow_n = field(line, "overflow_n");
+
+    require(n > 0.0, "process_latency_summary reported no slots");
+    require(p50 <= p95 && p95 <= p99 && p99 <= p999 && p999 <= max_us,
+            "process_latency_summary percentiles are not monotone");
+    if (overflow_n == 0.0) {
+      require(max_us < kOverflowFloorUs,
+              "process_latency_summary reports a 5 ms maximum with an empty overflow bucket");
+    }
+  }
+  require(lines_checked > 0, "broker emitted no process_latency_summary line");
+}
+
 void scenario_loopback()
 {
   ocg::TopologyConfig config;
@@ -146,7 +201,21 @@ void scenario_loopback()
   peers.emplace_back(run_sink, context, config.devices[1].rx_endpoint, std::ref(stop), std::ref(ue_received));
 
   ocg::Broker broker(config);
-  const auto stats = broker.run(std::chrono::milliseconds(800));
+  // Capture the broker's own diagnostics so the summary line can be asserted
+  // on, then re-emit them: they are what a reader of a failing run looks at.
+  std::ostringstream broker_output;
+  std::streambuf* const saved_cout = std::cout.rdbuf(broker_output.rdbuf());
+  ocg::BrokerStats stats;
+  try {
+    stats = broker.run(std::chrono::milliseconds(800));
+  } catch (...) {
+    std::cout.rdbuf(saved_cout);
+    std::cout << broker_output.str();
+    throw;
+  }
+  std::cout.rdbuf(saved_cout);
+  std::cout << broker_output.str();
+  check_latency_summary(broker_output.str());
 
   stop.store(true);
   for (auto& peer : peers) {
