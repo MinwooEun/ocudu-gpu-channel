@@ -22,11 +22,30 @@ to discover:
 | `:8082` live radio (`native/run-live-demo.sh`) | the whole `~/ocudu-native-workspace` — OCUDU gNB, srsUE, Open5GS and mongod builds, provisioned outside this repo | **No** |
 
 The live tier runs on the native harness, which the review classified as a
-record of the original run rather than a supported path:
-`scripts/native/bootstrap-workspace.sh` deliberately disables provisioning and
-`/home/ubuntu` and `/opt/conda` are hardcoded. Anyone without that workspace
-already built cannot start `:8082`, and no error message will explain why
-beyond a missing-binary line.
+record of the original run rather than a supported path. Measured, the reason
+is narrower than that note said:
+
+`scripts/native/bootstrap-workspace.sh` cannot create the workspace: build mode
+exits at `die "build provisioning is intentionally disabled: use --verify-only"`
+(line 228), because the download, extract and build phases have not been
+implemented and audited against the committed lock. Only `--verify-only` works,
+which checks a workspace that already exists. That is the whole reason this
+path is not reproducible.
+
+The paths are **not** the reason, contrary to an earlier edition of this note.
+`OCUDU_NATIVE_ROOT` and `CUDACXX` already override the two defaults that look
+hardcoded, and `bootstrap-workspace.sh` takes `--root PATH`. The other
+`/home/ubuntu` occurrences in `scripts/native/` are refusals, not defaults --
+`[[ "${native_root}" != "/home/ubuntu" ]] || usage_error "invalid native root"`
+stops a gate that writes into its workspace from being pointed at a home
+directory. Removing those would make things worse, not more portable.
+
+Recreating the workspace means provisioning what the lock pins: 94 Debian
+packages, 3 archives and 8 git sources, each built and checked against
+`native-workspace.lock.json`.
+
+Anyone without that workspace already built cannot start `:8082`, and no error
+message will explain why beyond a missing-binary line.
 
 Porting the live tier onto the containerised harness in `scripts/remote/` —
 which provisions its own network and 5GC — is tracked as V5 in

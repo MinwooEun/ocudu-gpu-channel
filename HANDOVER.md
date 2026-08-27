@@ -42,8 +42,10 @@ bash scripts/remote/ocudu-rank1-4x1-smoke.sh      # R3: 라이브 4x1 DL MISO + 
 세 라이브 게이트는 자체 Docker 네트워크와 5GC를 띄우고, 이미 점유된 서브넷을 피해 빈 /24를 스스로 고르며,
 행렬 검증에 필요한 numpy/PyYAML을 전용 venv로 자체 프로비저닝한다.
 
-**원본 native 경로 (기록용, 이 저장소만으로는 실행 불가)** — `bootstrap-workspace.sh`가 프로비저닝을 의도적으로
-비활성화하고 있고 `/home/ubuntu`·`/opt/conda` 경로가 하드코딩되어 있다:
+**원본 native 경로 (기록용, 이 저장소만으로는 실행 불가)** — 이유는 `bootstrap-workspace.sh`의 build 모드가
+228행에서 종료해 **워크스페이스를 만들 수 없다는 것 하나**다(`--verify-only`만 동작). 경로가 아니다 —
+`OCUDU_NATIVE_ROOT`·`CUDACXX`·`--root`가 기본값을 덮고, 나머지 `/home/ubuntu` 출현은 게이트가 홈
+디렉터리에 쓰는 것을 막는 거부 조건이라 지우면 더 나빠진다:
 
 ```bash
 cd /home/ubuntu/ocudu-gpu-channel-rank1

@@ -61,10 +61,12 @@ having pymongo on the conda python is sufficient. The scripts also honor
 
 ## Native workspace (live tier, :8082)
 
-`OCUDU_NATIVE_ROOT` (default `/home/ubuntu/ocudu-native-workspace`) must be a
-bootstrapped workspace — `scripts/native/bootstrap-workspace.sh` provisions
-it and `scripts/native/native-workspace.lock.json` pins the toolchain. The
-live runner expects these to already exist:
+`OCUDU_NATIVE_ROOT` (default `/home/ubuntu/ocudu-native-workspace`, and the
+default is overridable) must be a workspace that **already exists**.
+`scripts/native/bootstrap-workspace.sh` does not create one: its build mode
+exits at line 228, so only `--verify-only` runs, against a tree provisioned
+some other way. `scripts/native/native-workspace.lock.json` pins what that tree
+must contain. The live runner expects these to already exist:
 
 - `builds/ocudu-zmq-release/apps/gnb/gnb` — OCUDU gNB, ZMQ radio ON
 - `builds/srsran4g-zmq-release/srsue/src/srsue` — srsUE (release_23_11)

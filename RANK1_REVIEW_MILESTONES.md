@@ -16,7 +16,7 @@ rank-1 로드맵 본체는 [`RANK1_MILESTONES.md`](RANK1_MILESTONES.md), 실행 
 | V3 | 브로커 lifecycle | **미착수** (설계 결정 필요) |
 | V3.1 | `rx_headroom()` 자기 교착 | **완료** |
 | V4 | 게이트 바이너리 출처 | **완료** — 라이브 실행에서 해시 독립 재계산 일치 확인 |
-| V5 | demo 지원 경로 | **경로 B 완료** · 경로 A 미착수 |
+| V5 | demo 지원 경로 | **경로 C 완료** (원인 정정·티어별 명시) · A는 규모 판단 필요 · B는 이 호스트에서 검증 불가 |
 | V6 | 측정 라벨 규칙 | **완료** |
 | V7 | 게이트 실행 차단 요인 5건 | **4건 수정 · 1건 환경 제약** (아래) |
 
@@ -275,21 +275,48 @@ V3 본체와 독립적으로 먼저 닫을 수 있다.
 
 ## V5 — demo 스택을 지원 경로로 올린다 *(지적 ①의 demo 판)*
 
-`demo/`(커밋 `858dcdb`, `d97ec52`, `a63088a` — 이 브랜치로 이식됨)는 `scripts/native/env.sh`와
-`scripts/native/render-rank1-*.py`에 의존한다. **그 경로가 바로 리뷰가 "재현 불가"로 분류한 경로다.**
-지금 상태로 상사에게 demo를 내면 지적 ①을 그대로 반복한다.
+`demo/`는 티어별로 사정이 다르다. 실측:
 
-**Exit 게이트 (택1, 정직하게 표시).**
-- **A**: `demo/native/run-live-demo.sh`를 `scripts/remote/` 컨테이너 하네스 위로 이식 —
-  저장소 + GPU 워크스테이션만으로 세 티어(:8080/:8081/:8082)가 뜬다.
-- **B**: 이식이 이번 범위 밖이면 `demo/README.md`와 `demo/ENVIRONMENT.md` 첫 줄에
-  **"지원 경로 아님 — native 워크스페이스 전제"**를 명시하고, 필요한 전제를 리뷰 기준
-  (저장소만으로 무엇이 부족한지)으로 열거한다.
+| 티어 | 필요한 것 | 이 저장소만으로 |
+|---|---|---|
+| `:8080` 2×2 correlation | `build-cuda/ocudu-gpu-channel` + pyzmq/numpy | **가능** |
+| `:8081` 1×4 SIMO steering | 위와 동일 | **가능** |
+| `:8082` 라이브 | `~/ocudu-native-workspace` 전체 | **불가** |
 
-**함께 처리할 것.**
-- demo가 표시하는 게이트 수치(S0/S1/S3: 9.53/7.01 vs 해석치 9.71/6.94 등)에 **n과 실행 ID를 병기**한다(V6).
-- SIMO 티어의 A↔B 재조향이 아직 브로커 재시작(~0.3 s)으로 되어 있다. 컨트롤 메시지 제안은
-  `docs/plans/fixed-mimo-swap.md`에 있고 **리뷰 대기 중**이다. 채택되면 재시작 없는 재조향으로 교체한다.
+**`:8082`가 불가인 진짜 이유 (정정)**. 초판은 리뷰 표현을 그대로 옮겨 "`/home/ubuntu`·`/opt/conda`가
+하드코딩되어 있다"고 적었다. 세어보니 **그렇지 않다**:
+
+- `OCUDU_NATIVE_ROOT`, `CUDACXX`는 이미 `${VAR:-기본값}` 형태이고 `bootstrap-workspace.sh`는
+  `--root PATH`를 받는다 → **override 가능한 기본값**이지 하드코딩이 아니다.
+- `scripts/native/`의 나머지 `/home/ubuntu` 출현은 **거부 조건**이다:
+  `[[ "${native_root}" != "/home/ubuntu" ]] || usage_error "invalid native root"`.
+  워크스페이스에 쓰고 지우는 게이트가 홈 디렉터리를 가리키는 것을 막는다. **지우면 이식성이 아니라
+  위험이 는다.**
+
+진짜 이유는 `scripts/native/bootstrap-workspace.sh:228` **한 줄**이다:
+
+```bash
+die "build provisioning is intentionally disabled: use --verify-only; no workspace changes were made"
+```
+
+usage가 왜인지도 적어둔다 — *"Build mode exits before mutation until every download/extract/build phase
+is implemented and audited against the committed lock."* 즉 **아무도 워크스페이스를 처음부터 만들 수
+없다.** 있는 것을 검증만 할 수 있다. lock이 핀하는 대상은 deb 94개 · 아카이브 3개 · git 소스 8개다.
+
+**선택지 (셋 다 성격이 다르다).**
+
+- **A — 프로비저닝을 구현한다.** 진짜 해결책이고 재현성을 실제로 만든다. 규모는 별도 프로젝트급:
+  94개 deb와 8개 git 소스의 다운로드·추출·빌드를 단계별로 구현하고 lock에 대조해야 한다.
+- **B — demo 라이브 티어를 컨테이너 하네스로 이식한다.** **이 호스트에서는 검증할 수 없다** —
+  unprivileged LXC라 `docker run hello-world`조차 실패한다(V7-3). 검증 못 한 이식본을 지원 경로라고
+  부르는 것은 리뷰가 지적한 그 문제의 반복이다. 다른 호스트가 있을 때의 선택지다.
+- **C — 기록을 실측대로 고친다.** 완료. `demo/README.md`, `demo/ENVIRONMENT.md`, `HANDOVER.md`,
+  보고서 §7이 이제 "경로 하드코딩"이 아니라 "프로비저닝 미구현"을 이유로 든다. 다음 사람이 경로를
+  손보는 데 시간을 쓰지 않게 하는 것이 이 항목의 값이다.
+
+**함께 처리한 것**: demo가 표시하는 S1 수치(9.53 / 7.01)에 창 크기와 단일 관측이라는 라벨을 붙였다.
+SIMO 티어의 A↔B 재조향은 아직 브로커 재시작(~0.3 s)이며, 컨트롤 메시지 제안은
+`docs/plans/fixed-mimo-swap.md`에 있고 리뷰 대기 중이다.
 
 ---
 

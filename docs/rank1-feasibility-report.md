@@ -248,7 +248,7 @@ Feasibility 평가에서 가장 중요한 부분은 "되긴 되는데, **어떤 
 | 증거 | 위치 |
 |---|---|
 | 라이브 게이트 (**재실행 가능, 지원 경로**) | `scripts/remote/ocudu-rank1-2x1-smoke.sh`, `ocudu-rank1-4x1-smoke.sh`, `ocudu-attach-smoke.sh` — 컨테이너 하네스. 자체 Docker 네트워크·5GC를 띄우고 빈 서브넷을 스스로 고르며 필요한 Python을 자체 프로비저닝하므로, 이 저장소 + GPU 워크스테이션만으로 재현된다. |
-| 라이브 게이트 (원본, 재현 불가) | `scripts/native/run-ocudu-rank1-{2x1,4x1}.sh`, `run-ocudu-legacy-1x1.sh` — 최초 실행 경로의 기록. `bootstrap-workspace.sh`가 프로비저닝을 의도적으로 비활성화하고 있고 `/home/ubuntu`·`/opt/conda` 경로가 하드코딩되어 있어, 이 저장소만으로는 실행할 수 없다. |
+| 라이브 게이트 (원본, 재현 불가) | `scripts/native/run-ocudu-rank1-{2x1,4x1}.sh`, `run-ocudu-legacy-1x1.sh` — 최초 실행 경로의 기록. `bootstrap-workspace.sh`의 build 모드가 228행에서 종료하므로(다운로드·추출·빌드 단계가 lock에 대해 구현·감사되지 않았다) **워크스페이스를 만들 수 없고** `--verify-only`만 동작한다 — 이 저장소만으로 실행할 수 없는 이유는 이것이다. 경로가 아니다: `OCUDU_NATIVE_ROOT`·`CUDACXX`·`--root`가 기본값을 덮으며, 나머지 `/home/ubuntu` 출현은 홈 디렉터리를 워크스페이스로 잡는 것을 막는 **거부 조건**이다. |
 | 게이트 실행 산출물 (요약 JSON·행렬 리포트·로그·소스 핀) | `~/ocudu-native-workspace/results/{reports,logs}/rank1-2x1/20260817T091805Z`, `rank1-4x1/20260817T091856Z` |
 | 채널/게이트 fixture (제약 근거 주석 포함) | `examples/native/ocudu/gnb_zmq_b210_fdd_{2t2r,4t4r}_rank1_srsue.yaml`, `examples/native/topology.ocudu.rank1-{2x1,4x1}.cuda.yaml`, `topology.ocudu.rank1-2x1-oracle-mrt.cuda.yaml` |
 | 독립 행렬 checker | `scripts/native/verify-mimo-matrix-capture.py` (H는 토폴로지에서 읽고 브로커 출력은 신뢰하지 않음) |
