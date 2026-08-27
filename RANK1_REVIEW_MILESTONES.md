@@ -12,7 +12,7 @@ rank-1 로드맵 본체는 [`RANK1_MILESTONES.md`](RANK1_MILESTONES.md), 실행 
 |---|---|---|
 | V0 | 문서를 현재 코드와 일치 | **완료** |
 | V1 | 5 ms 이상치 규명 | **완료** — 계측·재측정 끝. 규명 도중 `max_us`가 상수였음이 드러나 주장 자체를 정정 |
-| V2 | 라이브 DL 다중 branch | **미착수** — 결함 3건을 srsRAN 소스에서 특정, 패치 + 라이브 실행 필요 |
+| V2 | 라이브 DL 다중 branch | **srsUE 수정·단위검증 완료 · 라이브 실행 1회 남음** — CSI-on fixture·no-waiver·핀 우회 scaffolding 준비됨 |
 | V3 | 브로커 lifecycle | **소스 쪽 완료**(상태 명명 + cold-source admission, opt-in, 테스트) · **싱크 쪽 미해결** |
 | V3.1 | `rx_headroom()` 자기 교착 | **완료** |
 | V4 | 게이트 바이너리 출처 | **완료** — 라이브 실행에서 해시 독립 재계산 일치 확인 |
