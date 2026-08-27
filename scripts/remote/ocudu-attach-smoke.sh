@@ -249,6 +249,7 @@ write_source_evidence() {
   },
   "topology": "${topology_rel}",
   "gnb_config": "${gnb_config_rel}",
+  "matrix_python": "${matrix_python}",
   "config_sha256": {${config_entries}
   }
 }
@@ -307,18 +308,71 @@ matrix_status=0
 # Provision them once into a dedicated venv under the workspace tools dir, so
 # the gate is self-sufficient rather than depending on an operator having
 # installed them by hand.
+# Resolve an interpreter that can import numpy and PyYAML.
+#
+# This used to assume `/usr/bin/python3 -m venv` works. On a stock Ubuntu
+# without python3-venv, ensurepip is absent: venv leaves a directory holding
+# python symlinks and NO pip, the next line invokes a pip that does not exist,
+# and because both lines were silenced with `>/dev/null 2>&1` the shell's own
+# "No such file or directory" went to /dev/null with them. `set -e` then killed
+# the gate with an empty log directory and not one word of explanation --
+# measured on the loopback host, where the run left
+# results/logs/rank1-4x1/<ts>/ empty and the driver log ended after "syncing
+# working tree".
+#
+# So: every attempt is logged, and a failure names what was tried. The venv is
+# a convenience; what the gate actually needs is the two modules, from anywhere.
+resolve_matrix_python() {
+  local venv="${workspace}/tools/matrix-verify-venv"
+  local provision_log="${log_dir}/matrix-python-provision.log"
+  local candidate
+
+  # 1. An interpreter a previous run already provisioned.
+  if [[ -x "${venv}/bin/python" ]] && "${venv}/bin/python" -c 'import numpy, yaml' >/dev/null 2>&1; then
+    printf '%s\n' "${venv}/bin/python"
+    return 0
+  fi
+
+  # 2. Build it. Anything already there is broken or absent, so start clean.
+  rm -rf "${venv}"
+  {
+    echo "--- /usr/bin/python3 -m venv ${venv}"
+    /usr/bin/python3 -m venv "${venv}" 2>&1 || echo "venv creation failed (rc=$?)"
+    echo "--- pip install numpy PyYAML"
+    if [[ -x "${venv}/bin/pip" ]]; then
+      "${venv}/bin/pip" install --disable-pip-version-check numpy PyYAML 2>&1 || echo "pip install failed (rc=$?)"
+    else
+      echo "no pip in ${venv}: python3-venv is probably not installed (ensurepip unavailable)"
+    fi
+  } >>"${provision_log}" 2>&1 || true
+  if [[ -x "${venv}/bin/python" ]] && "${venv}/bin/python" -c 'import numpy, yaml' >/dev/null 2>&1; then
+    printf '%s\n' "${venv}/bin/python"
+    return 0
+  fi
+
+  # 3. Any interpreter on this host that already carries both. Recorded in the
+  #    provisioning log and in source-evidence, so a reader can tell which
+  #    Python scored the matrix.
+  for candidate in /usr/bin/python3 python3 /opt/conda/bin/python3 /opt/conda/bin/python; do
+    if "${candidate}" -c 'import numpy, yaml' >/dev/null 2>&1; then
+      echo "--- falling back to pre-existing interpreter: ${candidate}" >>"${provision_log}"
+      printf '%s\n' "${candidate}"
+      return 0
+    fi
+  done
+  return 1
+}
+
 matrix_python="/usr/bin/python3"
 if [[ "${matrix_enabled}" == "1" ]]; then
-  matrix_venv="${workspace}/tools/matrix-verify-venv"
-  if [[ ! -x "${matrix_venv}/bin/python" ]]; then
-    /usr/bin/python3 -m venv "${matrix_venv}" >/dev/null 2>&1
-    "${matrix_venv}/bin/pip" install --quiet --disable-pip-version-check numpy PyYAML >/dev/null 2>&1
-  fi
-  if ! "${matrix_venv}/bin/python" -c 'import numpy, yaml' >/dev/null 2>&1; then
-    echo "matrix verification needs numpy and PyYAML; provisioning ${matrix_venv} failed" >&2
+  if ! matrix_python="$(resolve_matrix_python)"; then
+    echo "matrix verification needs numpy and PyYAML, and nothing on this host provides them" >&2
+    echo "tried: the workspace venv, then /usr/bin/python3 -m venv, then any python3 already carrying both" >&2
+    echo "details: ${log_dir}/matrix-python-provision.log" >&2
+    echo "on Debian/Ubuntu the usual fix is: apt install python3-venv" >&2
     exit 1
   fi
-  matrix_python="${matrix_venv}/bin/python"
+  printf '%s\n' "${matrix_python}" >"${log_dir}/matrix-python.txt"
 fi
 
 if [[ "${skip_remote_pull}" == "1" ]]; then
