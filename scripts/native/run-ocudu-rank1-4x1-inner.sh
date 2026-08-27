@@ -377,7 +377,9 @@ raise SystemExit(2)
 PY
   mkdir -p "${report_dir}/wire-capture"
   start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${broker}" --config "${config_dir}/topology.yaml" --duration 20s \
-    --wire-capture-dir "${report_dir}/wire-capture" --wire-capture-samples 11520000 --wire-capture-skip 138240000
+    --wire-capture-dir "${report_dir}/wire-capture" \
+    --wire-capture-samples "${OCUDU_NATIVE_CAPTURE_SAMPLES:-11520000}" \
+    --wire-capture-skip "${OCUDU_NATIVE_CAPTURE_SKIP:-138240000}"
   broker_pid="${started_pid}"
   broker_index=$((${#process_pids[@]} - 1))
   # Absolute bound: the fixed 15-second run plus ten seconds for grouped

@@ -178,6 +178,20 @@ channel_build="${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release"
 # The inner script runs the broker from here, so the SHA-256 recorded in
 # source-evidence.json below is the binary that actually runs.
 export OCUDU_CHANNEL_BUILD="${channel_build}"
+# Wire-capture window, in samples at 23.04 MS/s: 138240000 skip = 6.0 s into the
+# run, 11520000 samples = 0.5 s of it. Kept as the default because every
+# published matrix figure was measured with it.
+#
+# It is a fixed window, and whether it overlaps uplink activity depends on how
+# fast the UE attaches. Measured 2026-08-27: a run whose attach gate PASSED
+# (RRC, PDU session, ping, every strict counter zero) scored
+# matrix_capture_status=failed with "source port 0 captured only zeros",
+# because RA completed roughly 6 s in and the window closed before the UE's
+# first sustained uplink. The downlink row verified in the same capture at
+# 4.771e-08. Raise the skip to move the window into the ping traffic that
+# follows attach, e.g. OCUDU_NATIVE_CAPTURE_SKIP=230400000 for 10.0 s.
+export OCUDU_NATIVE_CAPTURE_SAMPLES="${OCUDU_NATIVE_CAPTURE_SAMPLES:-11520000}"
+export OCUDU_NATIVE_CAPTURE_SKIP="${OCUDU_NATIVE_CAPTURE_SKIP:-138240000}"
 cmake -S "${repo_root}" -B "${channel_build}" -DCMAKE_BUILD_TYPE=Release \
   -DOCUDU_GPU_CHANNEL_ENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER="${cuda_compiler}" \
   -DOCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES=120 >"${log_dir}/cmake-configure.log" 2>&1
