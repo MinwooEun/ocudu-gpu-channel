@@ -56,6 +56,7 @@ esac
 echo "syncing working tree to ${REMOTE_USER}@${REMOTE_HOST}:${remote_dest}"
 rsync -az --delete \
   --exclude '.git' --exclude 'build*' --exclude '.config' \
+  --exclude 'demo/run-logs' \
   -e "ssh -i ${REMOTE_SSH_KEY} -o BatchMode=yes -o ConnectTimeout=8" \
   "${repo_root}/" "${REMOTE_USER}@${REMOTE_HOST}:${remote_dest}/"
 
