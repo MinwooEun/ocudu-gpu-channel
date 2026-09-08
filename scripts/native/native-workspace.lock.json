@@ -133,6 +133,30 @@
         "-DENABLE_EXPORT=ON"
       ],
       "install_prefix": "install/srsran4g"
+    },
+    "ocudu-cuda-zmq-release": {
+      "build_dir": "builds/ocudu-cuda-zmq-release",
+      "cmake": [
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DBUILD_TESTING=ON",
+        "-DENABLE_UHD=OFF",
+        "-DENABLE_SIDEKIQ=OFF",
+        "-DENABLE_MKL=OFF",
+        "-DENABLE_FFTZ=OFF",
+        "-DENABLE_ARMPL=OFF",
+        "-DENABLE_DPDK=OFF",
+        "-DENABLE_LIBNUMA=OFF",
+        "-DENABLE_PLUGINS=OFF",
+        "-DENABLE_BACKWARD=OFF",
+        "-DENABLE_ZEROMQ=ON",
+        "-DENABLE_FFTW=ON",
+        "-DENABLE_EXPORT=ON",
+        "-DENABLE_CUDA=ON",
+        "-DCMAKE_CUDA_ARCHITECTURES=120",
+        "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+      ],
+      "install_prefix": "install/ocudu-cuda",
+      "source": "src/ocudu-cuda"
     }
   },
   "claim_boundary": {
@@ -218,6 +242,20 @@
       "name": "oai",
       "path": "src/oai",
       "url": "https://github.com/OPENAIRINTERFACE/openairinterface5g.git"
+    },
+    {
+      "name": "ocudu-cuda",
+      "path": "src/ocudu-cuda",
+      "commit": "5830c9cb7813393b5d518dd5ee2b6641071be4ad",
+      "url": "https://gitlab.com/ocudu/work_groups/wg1_hw_accel/cuda_accelerated_ocudu.git",
+      "branch": "nvcuda_accel_02",
+      "gnb_profiles": [
+        "cuda"
+      ],
+      "patch": {
+        "path": "scripts/native/patches/ocudu-cuda-host-grid-compat.patch",
+        "sha256": "8188ae4c9eae9ba822607f74ea8c72bc1af7d57161140841c6571e0835c84d68"
+      }
     }
   ],
   "host_contract": {
@@ -264,5 +302,15 @@
     "os_id": "ubuntu",
     "version_id": "24.04"
   },
-  "schema": 1
+  "schema": 1,
+  "gnb_profiles": {
+    "cpu": {
+      "source": "ocudu",
+      "build": "ocudu"
+    },
+    "cuda": {
+      "source": "ocudu-cuda",
+      "build": "ocudu-cuda-zmq-release"
+    }
+  }
 }

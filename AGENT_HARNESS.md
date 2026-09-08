@@ -19,6 +19,11 @@ This workspace starts as a new repository for a GPU-backed channel-emulation lay
 
 ## Reusable Preferences
 
+- Before a multi-minute validation campaign, state its expected duration and acceptance checks. If defect diagnosis expands the work, update the estimate promptly. Distinguish targeted revalidation from complete milestone certification; avoid repeating unaffected expensive gates without a concrete concern.
+
+- When the task is to fix an accelerated path, a successful disabled/CPU run is a diagnostic control, not completion. Require successful execution with the requested accelerated backend confirmed in runtime evidence; trace shared configuration through factory boundaries and add a regression that fails when the identified defect is restored.
+
+- When the user requests a milestone, continue through failure diagnosis, authorized fixes, and complete gate reruns without asking them to supervise each step. A failed first run is a debugging task, not a completion point. Stop for user input only when a concrete missing decision or external constraint prevents further progress; report milestone completion only when its required checks have passed.
 - Separate source-backed OCUDU/ZMQ facts from project intent or inference; cite or record the source consulted when making durable claims about OCUDU behavior.
 - Do not assume a single-link topology when designing APIs, configuration, tests, or docs unless the active task explicitly narrows the scope.
 - Pair real-time data-path work with validation that checks timing, throughput, buffering, and IQ stream continuity.

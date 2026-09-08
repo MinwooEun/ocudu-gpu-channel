@@ -12,6 +12,8 @@ probe_broker=""
 runtime_broker=""
 probe_config=""
 native_root=""
+gnb_binary=""
+gnb_profile="cpu"
 repo_root=""
 config_dir=""
 log_dir=""
@@ -46,6 +48,8 @@ live_ready_event="native_sionna_1x1_live_ready"
 # periods in between with a truthful but useless row of zeros. Keep it well
 # under that period -- 0.2 s puts five packets in every report.
 ue_keepalive_seconds="0"
+qualification="${OCUDU_NATIVE_CUDA_QUALIFICATION:-0}"
+[[ "$qualification" == 0 || "$qualification" == 1 ]] || { echo "invalid qualification switch" >&2; exit 2; }
 
 usage_error()
 {
@@ -65,6 +69,8 @@ while [[ "$#" -gt 0 ]]; do
     --probe-broker) probe_broker="${2:-}"; shift 2 ;;
     --broker) runtime_broker="${2:-}"; shift 2 ;;
     --probe-config) probe_config="${2:-}"; shift 2 ;;
+    --gnb-profile) gnb_profile="${2:-}"; shift 2 ;;
+    --gnb-binary) gnb_binary="${2:-}"; shift 2 ;;
     --native-root) native_root="${2:-}"; shift 2 ;;
     --repo-root) repo_root="${2:-}"; shift 2 ;;
     --config-dir) config_dir="${2:-}"; shift 2 ;;
@@ -277,8 +283,18 @@ start_group()
   shift 2
   setsid stdbuf -oL -eL "$@" >"${output}" 2>&1 &
   local pid="$!"
-  local pgid
-  pgid="$(ps -o pgid= -p "${pid}" | tr -d '[:space:]')"
+  local pgid=""
+  # setsid() runs in the child, after the fork that $! names, so a single
+  # sample races it: the child can still carry this shell's process group
+  # when ps looks. Poll until it leads its own group, or until it dies --
+  # the invariant the caller needs is unchanged, only the sampling is.
+  local pgid_deadline=$((SECONDS + 5))
+  while [[ "${SECONDS}" -le "${pgid_deadline}" ]]; do
+    pgid="$(ps -o pgid= -p "${pid}" 2>/dev/null | tr -d '[:space:]')"
+    [[ "${pgid}" == "${pid}" ]] && break
+    kill -0 "${pid}" 2>/dev/null || break
+    sleep 0.05
+  done
   [[ "${pid}" =~ ^[1-9][0-9]*$ && "${pgid}" == "${pid}" ]] || usage_error "invalid process group for ${name}"
   process_names+=("${name}")
   process_pids+=("${pid}")
@@ -412,7 +428,7 @@ run_stack()
   for required in "${native_root}" "${repo_root}" "${config_dir}" "${log_dir}" "${report_dir}"; do
     [[ "${required}" == /* && -d "${required}" && ! -L "${required}" ]] || usage_error "invalid run directory: ${required}"
   done
-  local gnb="${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb"
+  local gnb="${gnb_binary:-${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb}"
   local srsue="${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue"
   local fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
   local mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
@@ -480,6 +496,17 @@ while time.monotonic() < deadline:
         time.sleep(.25)
 raise SystemExit(2)
 PY
+  # CUDA factory construction can exceed the entire 15-second broker run.
+  # Finish PHY initialization before starting that measurement clock. The
+  # radio factory announces its available drivers after upper-PHY creation,
+  # before ZMQ traffic is required. CPU startup order remains unchanged.
+  if [[ "${gnb_profile}" == "cuda" ]]; then
+    start_group gnb "${log_dir}/gnb-console.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" \
+      "${gnb}" -c "${config_dir}/gnb.yaml"
+    gnb_pid="${started_pid}"
+    wait_log "${log_dir}/gnb-console.log" 'Available radio types:' "${gnb_pid}" 120 || \
+      usage_error "CUDA gNB PHY initialization did not finish within 120 seconds"
+  fi
   local broker_args=(
     "${broker}" --config "${config_dir}/topology.yaml"
     --duration "${run_duration_seconds}s"
@@ -517,8 +544,10 @@ PY
       "${sionna_pid}" "${sionna_ready_seconds}" || \
       usage_error "Sionna RT did not publish its first matrix profile update"
   fi
-  start_group gnb "${log_dir}/gnb-console.log" "${gnb}" -c "${config_dir}/gnb.yaml"
-  gnb_pid="${started_pid}"
+  if [[ "${gnb_profile}" != "cuda" ]]; then
+    start_group gnb "${log_dir}/gnb-console.log" "${gnb}" -c "${config_dir}/gnb.yaml"
+    gnb_pid="${started_pid}"
+  fi
   wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" 15 || usage_error "gNB did not start"
   if [[ -n "${gnb_metrics_socket}" ]]; then
     # Runs inside this namespace so it can reach the gNB's loopback, and
@@ -532,6 +561,10 @@ PY
   start_group srsue "${log_dir}/srsue.log" "${srsue}" "${config_dir}/srsue.conf"
   srsue_pid="${started_pid}"
 
+  if [[ "$qualification" == 1 ]]; then
+    [[ "$channel_mode" == legacy && "$run_duration_seconds" == 90 ]] || usage_error "qualification requires 90-second legacy channel"
+    ue_keepalive_seconds=0.2
+  fi
   local attach_wait_seconds=20
   [[ "${channel_mode}" == "sionna" ]] && attach_wait_seconds=40
   local deadline=$((SECONDS + attach_wait_seconds))
@@ -549,14 +582,18 @@ PY
   fi
   if [[ "${rrc}" -eq 1 && "${pdu}" -eq 1 && "${ping_ok}" -eq 1 ]]; then
     write_live_ready "${rrc}" "${pdu}" "${ping_ok}"
-    # Started only after the verdict is written, and only for the unbounded
-    # live demo: the bounded gate keeps the exact traffic profile it was
-    # proven with, and ue-ping.log -- which the acceptance check reads --
-    # stays the acceptance ping alone.
-    if [[ "${ue_keepalive_seconds}" != "0" && "${run_duration_seconds}" -eq 0 ]]; then
+    # Extra traffic belongs to the unbounded demo or explicit 90-second KPI
+    # qualification. The 15-second regression and its three-ping evidence
+    # retain their original traffic profile.
+    if [[ "${ue_keepalive_seconds}" != "0" && "${run_duration_seconds}" -eq 0 || "$qualification" == 1 ]]; then
       start_group ue-keepalive "${log_dir}/ue-keepalive.log" \
         nsenter --net=/run/netns/ue1 -- \
         ping -I tun_srsue -i "${ue_keepalive_seconds}" 10.45.1.1
+    fi
+    if [[ "$qualification" == 1 ]]; then
+      start_group kpi-capture "${log_dir}/kpi-capture.log" \
+        /usr/bin/python3 "${repo_root}/scripts/native/capture-gnb-kpis.py" \
+        --output "${report_dir}/gnb-kpis.jsonl"
     fi
   elif [[ "${run_duration_seconds}" -eq 0 ]] && process_running "${broker_pid}"; then
     # An unbounded live demo must still return a useful failure if attach did

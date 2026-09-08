@@ -100,7 +100,9 @@ def stop_uint(counters: dict[str, str], key: str) -> int:
     return parsed
 
 
-def validate_artifacts(results_root: Path, summary_path: Path, now: float) -> dict[str, int]:
+def validate_artifacts(results_root: Path, summary_path: Path, now: float, *, qualification: bool = False) -> dict[str, int]:
+    family = "ocudu-cuda-kpi" if qualification else "ocudu-interop"
+    duration = 90 if qualification else 15
     require(results_root.is_absolute(), "results root is not absolute")
     require(summary_path.is_absolute(), "summary path is not absolute")
     require(results_root.is_dir() and not results_root.is_symlink(), "results root is invalid")
@@ -119,7 +121,7 @@ def validate_artifacts(results_root: Path, summary_path: Path, now: float) -> di
     )
     require(abs(now - summary_path.stat().st_mtime) <= 300, "summary file is not fresh")
     require(require_string(summary, "status") == "passed", "summary status is not passed")
-    require(require_uint(summary, "duration_seconds") == 15, "duration is not fixed to 15 seconds")
+    require(require_uint(summary, "duration_seconds") == duration, f"duration is not fixed to {duration} seconds")
     require(
         require_string(summary, "srsran_ref") == "release_23_11",
         "srsRAN reference is not pinned",
@@ -133,8 +135,8 @@ def validate_artifacts(results_root: Path, summary_path: Path, now: float) -> di
 
     log_dir = require_string(summary, "log_dir")
     report_dir = require_string(summary, "report_dir")
-    expected_log_dir = results_root / "logs/ocudu-interop" / timestamp
-    expected_report_dir = results_root / "reports/ocudu-interop" / timestamp
+    expected_log_dir = results_root / f"logs/{family}" / timestamp
+    expected_report_dir = results_root / f"reports/{family}" / timestamp
     require(log_dir == str(expected_log_dir), "summary log_dir is outside the run artifact root")
     require(report_dir == str(expected_report_dir), "summary report_dir is outside the run artifact root")
     require(summary_path == expected_report_dir / "attach-summary.json", "summary path/timestamp mismatch")
@@ -143,7 +145,7 @@ def validate_artifacts(results_root: Path, summary_path: Path, now: float) -> di
         "summary resolves outside the results root",
     )
     require(
-        summary_real == results_real / "reports/ocudu-interop" / timestamp / "attach-summary.json",
+        summary_real == results_real / f"reports/{family}" / timestamp / "attach-summary.json",
         "summary canonical path does not match its timestamp",
     )
 
@@ -155,7 +157,24 @@ def validate_artifacts(results_root: Path, summary_path: Path, now: float) -> di
         "source evidence schema mismatch",
     )
     require(evidence.get("docker_used") is False, "source evidence used Docker")
-    require(evidence.get("source_commits") == EXPECTED_SOURCE_COMMITS, "source commit evidence mismatch")
+    profile = evidence.get("gnb_profile", "cpu")
+    require(profile in ("cpu", "cuda"), "unknown gNB profile")
+    expected_commits = dict(EXPECTED_SOURCE_COMMITS)
+    if profile == "cuda":
+        lock = load_json(Path(__file__).with_name("native-workspace.lock.json"), "native lock")
+        source = next(s for s in lock["git_sources"] if s["name"] == "ocudu-cuda")
+        expected_commits["ocudu"] = source["commit"]
+        provenance = evidence.get("gnb_provenance", {})
+        require(provenance.get("patch") == source["patch"], "CUDA patch provenance mismatch")
+        require(provenance.get("cuda_architectures") == "120", "CUDA architecture mismatch")
+        require(type(provenance.get("cuda_runtime_version")) is int and provenance["cuda_runtime_version"] > 0, "missing CUDA runtime")
+        require(bool(provenance.get("gpu_driver_inventory")), "missing GPU driver evidence")
+        require(bool(provenance.get("cuda_compiler_version")), "missing CUDA compiler evidence")
+    if "gnb_profile" in evidence:
+        provenance = evidence.get("gnb_provenance", {})
+        require(provenance.get("profile") == profile and provenance.get("commit") == expected_commits["ocudu"], "gNB provenance identity mismatch")
+        require(provenance.get("binary_sha256") == evidence.get("binary_sha256", {}).get("gnb"), "gNB provenance binary mismatch")
+    require(evidence.get("source_commits") == expected_commits, "source commit evidence mismatch")
     require(
         type(evidence.get("channel_head")) is str
         and re.fullmatch(r"[0-9a-f]{40}", evidence["channel_head"]) is not None,
@@ -229,7 +248,7 @@ def validate_artifacts(results_root: Path, summary_path: Path, now: float) -> di
         "broker log resolves outside the results root",
     )
     require(
-        broker_real == results_real / "logs/ocudu-interop" / timestamp / "broker.log",
+        broker_real == results_real / f"logs/{family}" / timestamp / "broker.log",
         "broker log canonical path does not match its timestamp",
     )
     lines = broker_log.read_text(encoding="utf-8", errors="strict").splitlines()
@@ -421,6 +440,28 @@ def self_test() -> None:
         (report_dir / "source-evidence.json").write_text(json.dumps(evidence), encoding="utf-8")
         counters = validate_artifacts(root, summary_path, time.time())
         assert counters["tx_pulls"] == 10
+        lock = load_json(Path(__file__).with_name("native-workspace.lock.json"), "native lock")
+        cuda_source = next(s for s in lock["git_sources"] if s["name"] == "ocudu-cuda")
+        evidence["gnb_profile"] = "cuda"
+        evidence["source_commits"] = dict(EXPECTED_SOURCE_COMMITS, ocudu=cuda_source["commit"])
+        evidence["gnb_provenance"] = dict(profile="cuda", commit=cuda_source["commit"],
+            patch=cuda_source["patch"], binary_sha256="0" * 64, cuda_architectures="120",
+            cuda_runtime_version=12080, gpu_driver_inventory="fixture", cuda_compiler_version="fixture")
+        evidence_file = report_dir / "source-evidence.json"
+        evidence_file.write_text(json.dumps(evidence))
+        validate_artifacts(root, summary_path, time.time())
+        for key, bad in (("patch", None), ("cuda_architectures", "80"), ("cuda_runtime_version", None),
+                         ("binary_sha256", "1" * 64), ("profile", "cpu"), ("gpu_driver_inventory", "")):
+            saved = evidence["gnb_provenance"][key]
+            evidence["gnb_provenance"][key] = bad
+            evidence_file.write_text(json.dumps(evidence))
+            try:
+                validate_artifacts(root, summary_path, time.time())
+            except ValueError:
+                pass
+            else:
+                raise AssertionError(f"CUDA provenance tampering accepted: {key}")
+            evidence["gnb_provenance"][key] = saved
     print("event=native_legacy_artifact_verifier_self_test result=pass")
 
 

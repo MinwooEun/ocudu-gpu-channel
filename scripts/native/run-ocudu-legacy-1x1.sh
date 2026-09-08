@@ -8,11 +8,15 @@ source "${script_dir}/env.sh"
 
 native_root="${OCUDU_NATIVE_ROOT}"
 channel_mode="${OCUDU_NATIVE_CHANNEL_MODE:-legacy}"
+qualification="${OCUDU_NATIVE_CUDA_QUALIFICATION:-0}"
+[[ "$qualification" == 0 || "$qualification" == 1 ]] || { echo "invalid qualification switch" >&2; exit 2; }
+[[ "$qualification" == 0 || "$channel_mode" == legacy ]] || { echo "qualification requires legacy channel" >&2; exit 2; }
 if [[ "${channel_mode}" == "sionna" ]]; then
   duration_seconds="${OCUDU_NATIVE_SIONNA_DURATION_SECONDS:-0}"
 else
   duration_seconds="${OCUDU_NATIVE_LEGACY_DURATION_SECONDS:-15}"
 fi
+[[ "$qualification" == 0 ]] || duration_seconds=90
 physical_gpu="${OCUDU_NATIVE_GPU_DEVICE:-0}"
 cuda_compiler="${CUDACXX:-/opt/conda/envs/cuda128/bin/nvcc}"
 inner="${script_dir}/run-ocudu-legacy-1x1-inner.sh"
@@ -46,7 +50,15 @@ sionna_run_family="${OCUDU_NATIVE_SIONNA_RUN_FAMILY:-ocudu-sionna-1x1-native}"
 sionna_event_family="${OCUDU_NATIVE_SIONNA_EVENT_FAMILY:-native_sionna_1x1}"
 execution_profile="${OCUDU_NATIVE_EXECUTION_PROFILE:-1x1}"
 broker_ready_device="${OCUDU_NATIVE_BROKER_READY_DEVICE:-ue0}"
-audited_ocudu="a1916edcdbcd70ba6e0af47ee87be061dad5a4e4"
+gnb_profile="${OCUDU_NATIVE_GNB_PROFILE:-cpu}"
+gnb_acceleration="${OCUDU_NATIVE_GNB_ACCELERATION:-auto}"
+case "${gnb_acceleration}" in
+  auto|disabled|low-phy-rx|low-phy-tx|pusch|pdsch|prach|all) ;;
+  *) echo 'invalid OCUDU_NATIVE_GNB_ACCELERATION' >&2; exit 2 ;;
+esac
+[[ "${gnb_profile}" == cuda || "${gnb_acceleration}" == auto ]] || { echo 'GNB_ACCELERATION override requires cuda profile' >&2; exit 2; }
+gnb_selection="$(/usr/bin/python3 "${script_dir}/native_gnb_profile.py" --root "${native_root}" --profile "${gnb_profile}" --fields)"
+IFS=$'\t' read -r gnb_binary gnb_source gnb_build audited_ocudu <<<"${gnb_selection}"
 audited_srsran="eea87b1d893ae58e0b08bc381730c502024ae71f"
 audited_open5gs="d9d3abdd480be96fac3bc8a997e83446648763ca"
 
@@ -90,7 +102,7 @@ PY
 [[ "${renderer_uses_scenario}" == "0" || "${renderer_uses_scenario}" == "1" ]] || \
   usage_error "OCUDU_NATIVE_RENDERER_USES_SCENARIO must be 0 or 1"
 if [[ "${channel_mode}" == "legacy" ]]; then
-  [[ "${duration_seconds}" == "15" ]] || usage_error "legacy duration is fixed to 15 seconds"
+  [[ "$qualification" == 1 || "${duration_seconds}" == "15" ]] || usage_error "legacy duration is fixed to 15 seconds"
 else
   [[ "${duration_seconds}" =~ ^(0|[1-9][0-9]*)$ ]] || usage_error "invalid Sionna duration"
   [[ "${sionna_update_hz}" =~ ^[0-9]+([.][0-9]+)?$ ]] || usage_error "invalid Sionna update rate"
@@ -113,7 +125,7 @@ for command_name in unshare nsenter ip mount umount flock cmake ctest setsid std
 done
 [[ -x /usr/bin/python3 ]] || usage_error "missing /usr/bin/python3"
 for path in "${inner}" "${renderer}" "${verifier}" \
-  "${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" \
+  "${gnb_binary}" \
   "${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue" \
   "${native_root}/builds/open5gs-v2.7.6/tests/app/5gc" \
   "${native_root}/install/mongodb-6.0.29/bin/mongod" \
@@ -138,15 +150,15 @@ if [[ "${channel_mode}" == "sionna" ]]; then
     usage_error "Sionna RT/pyzmq import failed in ${sionna_python}"
 fi
 [[ -c /dev/net/tun ]] || usage_error "/dev/net/tun is absent"
-[[ "$(git -C "${native_root}/src/ocudu" rev-parse HEAD)" == "${audited_ocudu}" ]] || usage_error "OCUDU revision mismatch"
+[[ "$(git -C "${gnb_source}" rev-parse HEAD)" == "${audited_ocudu}" ]] || usage_error "OCUDU revision mismatch"
 [[ "$(git -C "${native_root}/src/srsRAN_4G" rev-parse HEAD)" == "${audited_srsran}" ]] || usage_error "srsRAN revision mismatch"
 [[ "$(git -C "${native_root}/src/open5gs" rev-parse HEAD)" == "${audited_open5gs}" ]] || usage_error "Open5GS revision mismatch"
 "/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
   --root "${native_root}" --repo-root "${repo_root}" \
-  --lock "${script_dir}/native-workspace.lock.json"
-grep -qx 'ENABLE_ZEROMQ:BOOL=ON' "${native_root}/builds/ocudu-zmq-release/CMakeCache.txt" || usage_error "gNB lacks ZMQ"
+  --lock "${script_dir}/native-workspace.lock.json" --gnb-profile "${gnb_profile}"
+grep -qx 'ENABLE_ZEROMQ:BOOL=ON' "${gnb_build}/CMakeCache.txt" || usage_error "gNB lacks ZMQ"
 for binary in \
-  "${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" \
+  "${gnb_binary}" \
   "${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue" \
   "${native_root}/builds/open5gs-v2.7.6/tests/app/5gc" \
   "${native_root}/install/mongodb-6.0.29/bin/mongod"; do
@@ -179,6 +191,10 @@ if [[ "${channel_mode}" == "sionna" ]]; then
 else
   result_family="ocudu-interop"
   run_family="ocudu-legacy-1x1-native"
+fi
+if [[ "$qualification" == 1 ]]; then
+  result_family="ocudu-cuda-kpi"
+  run_family="ocudu-cuda-kpi-native"
 fi
 log_dir="${results_root}/logs/${result_family}/${timestamp}"
 report_dir="${results_root}/reports/${result_family}/${timestamp}"
@@ -221,7 +237,13 @@ if [[ "${channel_mode}" == "sionna" && "${renderer_uses_scenario}" == "1" ]]; th
   renderer_args+=(--scenario-config "${sionna_scenario}")
 fi
 "/usr/bin/python3" "${renderer_args[@]}" >"${log_dir}/render.log" 2>&1
-"${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" -c "${config_dir}/gnb.yaml" --dryrun \
+if [[ "$qualification" == 1 ]]; then
+  /usr/bin/python3 "${script_dir}/configure-gnb-kpis.py" "${config_dir}/gnb.yaml"
+fi
+if [[ "${gnb_acceleration}" != auto ]]; then
+  /usr/bin/python3 "${script_dir}/disable-gnb-cuda.py" "${config_dir}/gnb.yaml" "${gnb_acceleration}"
+fi
+"${gnb_binary}" -c "${config_dir}/gnb.yaml" --dryrun \
   >"${log_dir}/gnb-dryrun.log" 2>&1
 
 channel_build="${native_root}/builds/ocudu-gpu-channel-cuda-release"
@@ -243,14 +265,14 @@ if [[ "${channel_mode}" == "sionna" && "${execution_profile}" == "rank1" ]]; the
   cp "${config_dir}/sionna-rank1-shape.json" "${preserved_configs}/"
   cp "${sionna_scenario}" "${preserved_configs}/sionna-scenario.json"
 fi
-"${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" --version \
+"${gnb_binary}" --version \
   >"${report_dir}/gnb-version.txt" 2>&1
-grep -Eq 'OCUDU 5G gNB version .*\(a1916ed\)' "${report_dir}/gnb-version.txt" || \
+grep -Eq "OCUDU 5G gNB version .*\\(${audited_ocudu:0:7}\\)" "${report_dir}/gnb-version.txt" || \
   usage_error "native gNB binary does not identify the audited revision"
 "/usr/bin/python3" - "${source_evidence}" "${native_root}" "${channel_build}" \
   "${source_manifest}" "${preserved_configs}" "${channel_head}" \
   "${channel_diff_sha256}" "${audited_ocudu}" "${audited_srsran}" \
-  "${audited_open5gs}" "${channel_mode}" "${execution_profile}" <<'PY'
+  "${audited_open5gs}" "${channel_mode}" "${execution_profile}" "${gnb_binary}" "${gnb_profile}" "${script_dir}" "${gnb_acceleration}" <<'PY'
 import hashlib
 import json
 import pathlib
@@ -258,7 +280,11 @@ import sys
 
 (output_path, native_root, channel_build, manifest_path, config_root,
  channel_head, channel_diff_sha256, ocudu_commit, srsran_commit,
- open5gs_commit, channel_mode, execution_profile) = sys.argv[1:]
+ open5gs_commit, channel_mode, execution_profile, gnb_binary, gnb_profile, script_dir, gnb_acceleration) = sys.argv[1:]
+sys.path.insert(0, script_dir)
+from native_gnb_profile import resolve_profile
+gnb_provenance = resolve_profile(pathlib.Path(native_root), gnb_profile, hardware=True)
+gnb_provenance["acceleration_request"] = gnb_acceleration
 
 def digest(path):
     value = hashlib.sha256()
@@ -271,7 +297,7 @@ native = pathlib.Path(native_root)
 build = pathlib.Path(channel_build)
 configs = pathlib.Path(config_root)
 binary_paths = {
-    "gnb": native / "builds/ocudu-zmq-release/apps/gnb/gnb",
+    "gnb": pathlib.Path(gnb_binary),
     "srsue": native / "builds/srsran4g-zmq-release/srsue/src/srsue",
     "open5gs_5gc": native / "builds/open5gs-v2.7.6/tests/app/5gc",
     "mongod": native / "install/mongodb-6.0.29/bin/mongod",
@@ -288,6 +314,8 @@ profile_label = "1x1" if channel_mode == "legacy" else execution_profile
 data = {
     "schema": f"ocudu-native-{channel_mode}-{profile_label}-source-evidence/v1",
     "docker_used": False,
+    "gnb_profile": gnb_profile,
+    "gnb_provenance": gnb_provenance,
     "channel_head": channel_head,
     "channel_tracked_diff_sha256": channel_diff_sha256,
     "channel_source_manifest_sha256": digest(manifest_path),
@@ -339,7 +367,7 @@ common_inner_args=(
   --probe-broker "${channel_build}/ocudu-gpu-channel"
   --broker "${channel_build}/ocudu-gpu-channel"
   --probe-config "${repo_root}/examples/topology.ocudu-docker.cuda.yaml"
-  --native-root "${native_root}" --repo-root "${repo_root}"
+  --native-root "${native_root}" --repo-root "${repo_root}" --gnb-binary "${gnb_binary}" --gnb-profile "${gnb_profile}"
   --config-dir "${config_dir}" --log-dir "${log_dir}"
   --report-dir "${report_dir}" --timestamp "${timestamp}"
   --channel-mode "${channel_mode}" --run-duration-seconds "${duration_seconds}"
@@ -358,7 +386,11 @@ if [[ "${channel_mode}" == "legacy" ]]; then
       "${run_status}" "${summary_path}" >&2
     exit "${run_status}"
   fi
-  "/usr/bin/python3" "${verifier}" --results-root "${results_root}" --summary "${summary_path}"
+  if [[ "$qualification" == 1 ]]; then
+    /usr/bin/python3 "${script_dir}/verify-cuda-kpis.py" --results-root "${results_root}" --summary "${summary_path}"
+  else
+    "/usr/bin/python3" "${verifier}" --results-root "${results_root}" --summary "${summary_path}"
+  fi
   printf 'summary=%s\n' "${summary_path}"
   exit 0
 fi

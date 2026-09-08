@@ -12,6 +12,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+from native_gnb_profile import verify_source
 
 
 def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -42,6 +43,7 @@ def require(condition: bool, message: str) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--gnb-profile", choices=("cpu", "cuda"), default=os.environ.get("OCUDU_NATIVE_GNB_PROFILE", "cpu"))
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--lock", type=Path, required=True)
@@ -55,6 +57,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    require(args.gnb_profile in ("cpu", "cuda"), "unknown gNB profile")
     root = args.root.resolve()
     repo_root = args.repo_root.resolve()
     with args.lock.open("r", encoding="utf-8") as source:
@@ -123,13 +126,14 @@ def main() -> int:
                 require(sidecar_path.stat().st_size == sidecar["bytes"], "archive sidecar size mismatch")
                 require(sha256(sidecar_path) == sidecar["sha256"], "archive sidecar checksum mismatch")
 
-    for source in lock["git_sources"]:
+    sources = [s for s in lock["git_sources"] if args.gnb_profile in s.get("gnb_profiles", ["cpu", "cuda"])]
+    for source in sources:
         path = root / source["path"]
         if not (path / ".git").exists():
             missing.append(source["path"])
             continue
         require(command("git", "-C", str(path), "rev-parse", "HEAD") == source["commit"], f"Git revision mismatch: {source['name']}")
-        require(command("git", "-C", str(path), "status", "--porcelain") == "", f"Git checkout is dirty: {source['name']}")
+        verify_source(root, repo_root, source)
         missing_objects = command(
             "git", "-C", str(path), "rev-list", "--objects", "--missing=print", "HEAD"
         )
@@ -140,7 +144,7 @@ def main() -> int:
 
     if missing and not args.allow_missing_cache:
         raise ValueError("missing locked inputs: " + ", ".join(missing))
-    print(f"lock_validation=ok debs={len(rows)} archives={len(lock['archives'])} git_sources={len(lock['git_sources'])}")
+    print(f"lock_validation=ok debs={len(rows)} archives={len(lock['archives'])} git_sources={len(sources)} gnb_profile={args.gnb_profile}")
     for value in missing:
         print(f"lock_missing={value}")
     print(f"claim_boundary={lock['claim_boundary']['not_claimed']}")

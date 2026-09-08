@@ -11,7 +11,8 @@ repo_root="$(cd "${script_dir}/../.." && pwd)"
   --repo-root "${repo_root}" \
   --lock "${script_dir}/native-workspace.lock.json"
 
-audited_ocudu="a1916edcdbcd70ba6e0af47ee87be061dad5a4e4"
+selection="$(/usr/bin/python3 "${script_dir}/native_gnb_profile.py" --root "${OCUDU_NATIVE_ROOT}" --profile "${OCUDU_NATIVE_GNB_PROFILE:-cpu}" --fields)"
+IFS=$'\t' read -r gnb_binary gnb_source gnb_build audited_ocudu <<<"${selection}"
 audited_srsran="eea87b1d893ae58e0b08bc381730c502024ae71f"
 audited_open5gs="d9d3abdd480be96fac3bc8a997e83446648763ca"
 
@@ -56,11 +57,11 @@ check_binary()
   sha256sum "${binary}"
 }
 
-check_revision ocudu "${OCUDU_NATIVE_ROOT}/src/ocudu" "${audited_ocudu}"
+check_revision ocudu "${gnb_source}" "${audited_ocudu}"
 check_revision srsran4g "${OCUDU_NATIVE_ROOT}/src/srsRAN_4G" "${audited_srsran}"
 check_revision open5gs "${OCUDU_NATIVE_ROOT}/src/open5gs" "${audited_open5gs}"
 
-check_binary gnb "${OCUDU_NATIVE_ROOT}/builds/ocudu-zmq-release/apps/gnb/gnb"
+check_binary gnb "${gnb_binary}"
 check_binary srsue "${OCUDU_NATIVE_ROOT}/builds/srsran4g-zmq-release/srsue/src/srsue"
 check_binary open5gs5gc "${OCUDU_NATIVE_ROOT}/builds/open5gs-v2.7.6/tests/app/5gc"
 check_binary mongod "${OCUDU_NATIVE_ROOT}/install/mongodb-6.0.29/bin/mongod"
@@ -80,7 +81,7 @@ for extension in \
 done
 echo "open5gs_freeDiameter_modules=ok"
 
-"${OCUDU_NATIVE_ROOT}/builds/ocudu-zmq-release/apps/gnb/gnb" --version
+"${gnb_binary}" --version
 "${OCUDU_NATIVE_ROOT}/builds/srsran4g-zmq-release/srsue/src/srsue" --version
 "${OCUDU_NATIVE_ROOT}/install/mongodb-6.0.29/bin/mongod" --version | head -n 3
 
@@ -138,7 +139,7 @@ fi
 "/usr/bin/python3" "${script_dir}/verify-open5gs-subscriber.py" --self-test
 echo "native_legacy_1x1_dependencies=ready"
 
-"${OCUDU_NATIVE_ROOT}/builds/ocudu-zmq-release/apps/gnb/gnb" \
+"${gnb_binary}" \
   -c "${script_dir}/../../examples/native/ocudu/gnb_zmq_b210_fdd_2port_no_core.yaml" \
   --dryrun >/dev/null
 echo "native_2port_no_core_dependencies=ready"

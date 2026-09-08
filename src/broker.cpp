@@ -354,13 +354,15 @@ struct WorkerDiag {
   // buckets are written by the producer on EVERY slot instead, so the summary
   // at shutdown is a percentile over the whole run.
   //
-  // Fixed-width buckets of 5 us up to 5 ms, plus an overflow bucket. A slot at
+  // Fixed-width buckets of 1 us up to 5 ms, plus an overflow bucket. A slot at
   // 23.04 MS/s is 1000 us, so this resolves the whole budget and five times
-  // past it at 0.5% granularity; anything slower than 5 ms is already a gross
+  // past it at 0.1% granularity. This also resolves a 5% comparison around
+  // an 80 us baseline; a 5 us bucket is too coarse there. Anything slower
+  // than 5 ms is already a gross
   // deadline miss and only its count matters. Relaxed increments are enough:
   // the reader runs after the producers have joined.
-  static constexpr std::size_t kProcessBuckets = 1001;
-  static constexpr double kProcessBucketUs = 5.0;
+  static constexpr std::size_t kProcessBuckets = 5001;
+  static constexpr double kProcessBucketUs = 1.0;
   std::array<std::atomic<std::uint64_t>, kProcessBuckets> process_hist{};
 };
 
@@ -1358,7 +1360,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   // sampled once a second -- these percentiles cover EVERY slot the run
   // processed, so they can be quoted as percentiles. `n` is the slot count they
   // were computed from; quote it alongside any figure taken from this line.
-  // Values are bucket upper edges at 5 us resolution.
+  // Values are bucket upper edges at 1 us resolution.
   for (std::size_t n = 0; n != nodes.size(); ++n) {
     const WorkerDiag& diag = producer_diag[n];
     const std::uint64_t samples = process_sample_count(diag);
