@@ -47,6 +47,24 @@ live_ready_event="native_sionna_1x1_live_ready"
 # under that period -- 0.2 s puts five packets in every report.
 ue_keepalive_seconds="0"
 
+# Optional gNB binary override. Unset, every use below resolves to exactly the
+# path this script hardcoded before, so an unset run is the pre-change run.
+gnb_binary=""
+
+# gNB startup wait. Unset it stays 15 s, the value this script hardcoded before.
+# A CUDA PHY build needs longer: its device-side initialisation runs before the
+# gNB prints its started banner, and 15 s kills it mid-initialisation.
+gnb_start_timeout_seconds="15"
+
+# Extra seconds granted to the broker's own --duration clock, which starts
+# when the broker process starts, not when the gNB's radio appears. Unset it
+# is 0 and the broker is launched with exactly the duration it was launched
+# with before. A CUDA PHY gNB needs it: its device-side initialisation runs
+# for ~20 s before the ZMQ radio binds, so a broker holding only the measured
+# duration self-exits before the gNB ever requests a sample, and the run ends
+# with zero slots processed rather than with a verdict about acceleration.
+broker_startup_allowance_seconds="0"
+
 usage_error()
 {
   printf 'error: %s\n' "$1" >&2
@@ -56,6 +74,9 @@ usage_error()
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
     --mode) mode="${2:-}"; shift 2 ;;
+    --gnb-binary) gnb_binary="${2:-}"; shift 2 ;;
+    --gnb-start-timeout-seconds) gnb_start_timeout_seconds="${2:-}"; shift 2 ;;
+    --broker-startup-allowance-seconds) broker_startup_allowance_seconds="${2:-}"; shift 2 ;;
     --parent-netns) parent_netns="${2:-}"; shift 2 ;;
     --parent-mntns) parent_mntns="${2:-}"; shift 2 ;;
     --outer-uid) outer_uid="${2:-}"; shift 2 ;;
@@ -96,6 +117,8 @@ done
    "${channel_mode}" == "external" ]] || \
   usage_error "--channel-mode must be legacy, sionna or external"
 [[ "${run_duration_seconds}" =~ ^(0|[1-9][0-9]*)$ ]] || usage_error "invalid run duration"
+[[ "${broker_startup_allowance_seconds}" =~ ^(0|[1-9][0-9]*)$ ]] || \
+  usage_error "invalid broker startup allowance"
 [[ "${ue_keepalive_seconds}" =~ ^(0|0?\.[0-9]+|[1-9][0-9]*(\.[0-9]+)?)$ ]] || \
   usage_error "invalid keepalive interval"
 if [[ "${ue_keepalive_seconds}" != "0" ]]; then
@@ -416,7 +439,7 @@ run_stack()
   for required in "${native_root}" "${repo_root}" "${config_dir}" "${log_dir}" "${report_dir}"; do
     [[ "${required}" == /* && -d "${required}" && ! -L "${required}" ]] || usage_error "invalid run directory: ${required}"
   done
-  local gnb="${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb"
+  local gnb="${gnb_binary:-${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb}"
   local srsue="${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue"
   local fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
   local mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
@@ -484,9 +507,13 @@ while time.monotonic() < deadline:
         time.sleep(.25)
 raise SystemExit(2)
 PY
+  local broker_duration_seconds="${run_duration_seconds}"
+  if [[ "${run_duration_seconds}" -gt 0 ]]; then
+    broker_duration_seconds=$((run_duration_seconds + broker_startup_allowance_seconds))
+  fi
   local broker_args=(
     "${broker}" --config "${config_dir}/topology.yaml"
-    --duration "${run_duration_seconds}s"
+    --duration "${broker_duration_seconds}s"
   )
   if [[ "${channel_mode}" != "legacy" ]]; then
     broker_args+=(
@@ -501,7 +528,7 @@ PY
   broker_index=$((${#process_pids[@]} - 1))
   # Bound a finite run while allowing duration=0 to remain live until SIGINT.
   if [[ "${run_duration_seconds}" -gt 0 ]]; then
-    broker_exit_deadline=$((SECONDS + run_duration_seconds + 10))
+    broker_exit_deadline=$((SECONDS + broker_duration_seconds + 10))
   else
     broker_exit_deadline=0
   fi
@@ -525,7 +552,7 @@ PY
   fi
   start_group gnb "${log_dir}/gnb-console.log" "${gnb}" -c "${config_dir}/gnb.yaml"
   gnb_pid="${started_pid}"
-  wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" 15 || usage_error "gNB did not start"
+  wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" "${gnb_start_timeout_seconds}" || usage_error "gNB did not start"
   if [[ -n "${gnb_metrics_socket}" ]]; then
     # Runs inside this namespace so it can reach the gNB's loopback, and
     # writes its listening socket into the shared run directory. Started
@@ -555,11 +582,18 @@ PY
   fi
   if [[ "${rrc}" -eq 1 && "${pdu}" -eq 1 && "${ping_ok}" -eq 1 ]]; then
     write_live_ready "${rrc}" "${pdu}" "${ping_ok}"
-    # Started only after the verdict is written, and only for the unbounded
-    # live demo: the bounded gate keeps the exact traffic profile it was
-    # proven with, and ue-ping.log -- which the acceptance check reads --
-    # stays the acceptance ping alone.
-    if [[ "${ue_keepalive_seconds}" != "0" && "${run_duration_seconds}" -eq 0 ]]; then
+    # Started only after the verdict is written. ue-ping.log -- which the
+    # acceptance check reads -- stays the acceptance ping alone; the keepalive
+    # writes to its own log, so the verdict path is unchanged either way.
+    #
+    # Bounded runs were excluded here so that the gate kept the exact traffic
+    # profile it was proven with. That still holds by default: the interval is
+    # 0 unless a caller sets it, so an unset run carries the same traffic it
+    # always did. A bounded run may now opt in, because measuring uplink BLER
+    # needs more than the attach exchange and one acceptance ping -- under
+    # thirty PUSCH transmissions cannot express a one-percentage-point
+    # difference, whatever threshold is written down.
+    if [[ "${ue_keepalive_seconds}" != "0" ]]; then
       start_group ue-keepalive "${log_dir}/ue-keepalive.log" \
         nsenter --net=/run/netns/ue1 -- \
         ping -I tun_srsue -i "${ue_keepalive_seconds}" 10.45.1.1

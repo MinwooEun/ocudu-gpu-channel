@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "comment": "CUDA-only lock. scripts/native/native-workspace.lock.json is never edited: the gates that read it must keep validating exactly the sources they validated before this workstream existed.",
+  "source": {
+    "name": "ocudu-cuda",
+    "path": "src/ocudu-cuda",
+    "commit": "5830c9cb7813393b5d518dd5ee2b6641071be4ad",
+    "url": "https://gitlab.com/ocudu/work_groups/wg1_hw_accel/cuda_accelerated_ocudu.git",
+    "branch": "nvcuda_accel_02",
+    "patch": {
+      "path": "scripts/cuda/patches/c1-ocudu-cuda-discrete-and-config.patch",
+      "sha256": "d2579af289c79377e50b55811d563b0cba2587b42f9409bd1001a1e6d934da0a"
+    }
+  },
+  "build": {
+    "build_dir": "builds/c1-cuda-patched",
+    "cuda_architectures": "120"
+  }
+}

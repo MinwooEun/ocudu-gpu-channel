@@ -43,6 +43,9 @@
   (`SRSRAN_4G_REPO`/`SRSRAN_4G_REF`), which carries the
   `SRSUE_PRACH_PREAMBLE_INDEX` override. `src/broker.cpp` is unchanged.
 
+- CUDA OCUDU integration (2026-09-10 to 2026-09-25): the WG1 CUDA-accelerated OCUDU (`cuda_accelerated_ocudu`, pin `5830c9cb`) is integrated as a separate gNB build selected by an audited lock, without changing the CPU gNB or the channel emulator. Roadmaps and evidence: [`CUDA_MILESTONES.md`](CUDA_MILESTONES.md) (RTX 5090, C0-C7), [`SPARK_MILESTONES.md`](SPARK_MILESTONES.md) (DGX Spark GB10, S0-S6), [`JETSON_MILESTONES.md`](JETSON_MILESTONES.md) (Jetson AGX Orin, J0-J4). Tooling lives under `scripts/cuda/`; vendor-code changes are kept as reviewed patches in `scripts/cuda/patches/`. On GB10 the candidate patch plus the D8/D9 fixes gives live BLER/SINR parity with the CPU gNB on matched allocations; on Orin the D6/D7 layer gives the first full pass of the vendor PHY suite and an all-acceleration live attach.
+
+
 ## Workspace Artifacts
 
 - Rank-1 MISO/SIMO and Sionna integration assessment: `docs/mimo-integration-report.html`.

@@ -47,6 +47,19 @@ sionna_event_family="${OCUDU_NATIVE_SIONNA_EVENT_FAMILY:-native_sionna_1x1}"
 execution_profile="${OCUDU_NATIVE_EXECUTION_PROFILE:-1x1}"
 broker_ready_device="${OCUDU_NATIVE_BROKER_READY_DEVICE:-ue0}"
 audited_ocudu="a1916edcdbcd70ba6e0af47ee87be061dad5a4e4"
+# Optional gNB binary override for an alternative build (e.g. the CUDA gNB).
+# It must declare the revision it reports, so the identity check below stays a
+# real check rather than being skipped. Both unset, this file behaves exactly
+# as it did before: gnb_binary is the audited CPU build and the version grep
+# still demands a1916ed.
+gnb_binary="${OCUDU_NATIVE_GNB_BINARY:-${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb}"
+audited_gnb_commit="${OCUDU_NATIVE_GNB_COMMIT:-a1916ed}"
+gnb_start_timeout_seconds="${OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS:-15}"
+broker_startup_allowance_seconds="${OCUDU_NATIVE_BROKER_STARTUP_ALLOWANCE_SECONDS:-0}"
+[[ "${gnb_binary}" == /* && -x "${gnb_binary}" ]] || usage_error "gNB binary is not an executable absolute path: ${gnb_binary}"
+[[ "${audited_gnb_commit}" =~ ^[0-9a-f]{7,40}$ ]] || usage_error "invalid OCUDU_NATIVE_GNB_COMMIT"
+[[ "${gnb_start_timeout_seconds}" =~ ^[1-9][0-9]{0,2}$ ]] || usage_error "invalid OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS"
+[[ "${broker_startup_allowance_seconds}" =~ ^(0|[1-9][0-9]{0,2})$ ]] || usage_error "invalid OCUDU_NATIVE_BROKER_STARTUP_ALLOWANCE_SECONDS"
 audited_srsran="eea87b1d893ae58e0b08bc381730c502024ae71f"
 audited_open5gs="d9d3abdd480be96fac3bc8a997e83446648763ca"
 
@@ -114,7 +127,7 @@ for command_name in unshare nsenter ip mount umount flock cmake ctest setsid std
 done
 [[ -x /usr/bin/python3 ]] || usage_error "missing /usr/bin/python3"
 for path in "${inner}" "${renderer}" "${verifier}" \
-  "${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" \
+  "${gnb_binary}" \
   "${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue" \
   "${native_root}/builds/open5gs-v2.7.6/tests/app/5gc" \
   "${native_root}/install/mongodb-6.0.29/bin/mongod" \
@@ -158,7 +171,7 @@ fi
   --lock "${script_dir}/native-workspace.lock.json"
 grep -qx 'ENABLE_ZEROMQ:BOOL=ON' "${native_root}/builds/ocudu-zmq-release/CMakeCache.txt" || usage_error "gNB lacks ZMQ"
 for binary in \
-  "${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" \
+  "${gnb_binary}" \
   "${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue" \
   "${native_root}/builds/open5gs-v2.7.6/tests/app/5gc" \
   "${native_root}/install/mongodb-6.0.29/bin/mongod"; do
@@ -233,7 +246,7 @@ if [[ "${channel_mode}" != "legacy" && "${renderer_uses_scenario}" == "1" ]]; th
   renderer_args+=(--scenario-config "${sionna_scenario}")
 fi
 "/usr/bin/python3" "${renderer_args[@]}" >"${log_dir}/render.log" 2>&1
-"${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" -c "${config_dir}/gnb.yaml" --dryrun \
+"${gnb_binary}" -c "${config_dir}/gnb.yaml" --dryrun \
   >"${log_dir}/gnb-dryrun.log" 2>&1
 
 channel_build="${native_root}/builds/ocudu-gpu-channel-cuda-release"
@@ -255,14 +268,14 @@ if [[ "${channel_mode}" != "legacy" && "${execution_profile}" == "rank1" ]]; the
   cp "${config_dir}/sionna-rank1-shape.json" "${preserved_configs}/"
   cp "${sionna_scenario}" "${preserved_configs}/sionna-scenario.json"
 fi
-"${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" --version \
+"${gnb_binary}" --version \
   >"${report_dir}/gnb-version.txt" 2>&1
-grep -Eq 'OCUDU 5G gNB version .*\(a1916ed\)' "${report_dir}/gnb-version.txt" || \
+grep -Eq "OCUDU 5G gNB version .*\(${audited_gnb_commit}\)" "${report_dir}/gnb-version.txt" || \
   usage_error "native gNB binary does not identify the audited revision"
 "/usr/bin/python3" - "${source_evidence}" "${native_root}" "${channel_build}" \
   "${source_manifest}" "${preserved_configs}" "${channel_head}" \
   "${channel_diff_sha256}" "${audited_ocudu}" "${audited_srsran}" \
-  "${audited_open5gs}" "${channel_mode}" "${execution_profile}" <<'PY'
+  "${audited_open5gs}" "${channel_mode}" "${execution_profile}" "${gnb_binary}" <<'PY'
 import hashlib
 import json
 import pathlib
@@ -270,7 +283,7 @@ import sys
 
 (output_path, native_root, channel_build, manifest_path, config_root,
  channel_head, channel_diff_sha256, ocudu_commit, srsran_commit,
- open5gs_commit, channel_mode, execution_profile) = sys.argv[1:]
+ open5gs_commit, channel_mode, execution_profile, gnb_binary) = sys.argv[1:]
 
 def digest(path):
     value = hashlib.sha256()
@@ -283,7 +296,7 @@ native = pathlib.Path(native_root)
 build = pathlib.Path(channel_build)
 configs = pathlib.Path(config_root)
 binary_paths = {
-    "gnb": native / "builds/ocudu-zmq-release/apps/gnb/gnb",
+    "gnb": pathlib.Path(gnb_binary),
     "srsue": native / "builds/srsran4g-zmq-release/srsue/src/srsue",
     "open5gs_5gc": native / "builds/open5gs-v2.7.6/tests/app/5gc",
     "mongod": native / "install/mongodb-6.0.29/bin/mongod",
@@ -362,6 +375,10 @@ common_inner_args=(
   --channel-mode "${channel_mode}" --run-duration-seconds "${duration_seconds}"
   --run-family "${run_family}"
   --broker-ready-device "${broker_ready_device}"
+  --gnb-binary "${gnb_binary}"
+  --gnb-start-timeout-seconds "${gnb_start_timeout_seconds}"
+  --broker-startup-allowance-seconds "${broker_startup_allowance_seconds}"
+  --ue-keepalive-seconds "${ue_keepalive_seconds}"
 )
 
 if [[ "${channel_mode}" == "legacy" ]]; then
@@ -460,7 +477,6 @@ unshare --user --map-root-user --net --mount --fork --kill-child=TERM --propagat
   --sionna-status-jsonl "${sionna_status_jsonl}" --sionna-update-hz "${sionna_update_hz}" \
   --sionna-ready-seconds "${sionna_ready_seconds}" --live-ready-path "${live_ready_path}" \
   --live-ready-event "${sionna_event_family}_live_ready" \
-  --ue-keepalive-seconds "${ue_keepalive_seconds}" \
   >"${log_dir}/native-runtime-console.log" 2>&1 9<&- &
 runtime_pid="$!"
 runtime_child_deadline=$((SECONDS + 5))

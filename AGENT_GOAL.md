@@ -15,6 +15,7 @@ Build and maintain this fork of `ocudu-gpu-channel` as a real-time GPU-accelerat
 - Downlink 1×N_TX row-vector channels (one effective stream at the UE) and uplink N_RX×1 column-vector channels (one independently modelled branch per gNB receive port), executed on the GPU with a CPU reference.
 - Keeping srsUE at `nof_antennas = 1`; starting OCUDU at `nof_antennas_dl: 2` / `nof_antennas_ul: 2`; extending the gNB side to four ports only after the two-port gates pass.
 - Evidence-backed end-to-end results: attach, PDU session, traffic, PHY metrics, and channel telemetry, with per-branch gain/delay/fading isolation proved against synthetic peers before live srsUE runs.
+- Integration of the CUDA-accelerated OCUDU gNB (OCUDU Hardware Acceleration WG1, `cuda_accelerated_ocudu`) as a **selectable additional gNB profile** alongside the pinned CPU reference: its separate source checkout and build, the reviewed hash-locked compatibility patch required to run it on discrete-GPU hardware, its qualification tooling, and evidence-backed CPU/CUDA comparison. The CUDA gNB is an addition, never a replacement for the CPU reference, and never a reason to edit an existing gate.
 
 ## Non-Goals
 
@@ -24,7 +25,7 @@ Build and maintain this fork of `ocudu-gpu-channel` as a real-time GPU-accelerat
 - Same-PRB MU-MIMO, user grouping, or multi-user precoding.
 - Calling duplicated downlink samples "diversity" without verified precoding or a supported diversity mode.
 - Sionna RT integration in any form (export, record/replay, live CIR): another team member owns it; this fork only avoids design choices that would block a later merge.
-- Replacing OCUDU's CU/DU/MAC/scheduler/PHY, the 5G core, or non-ZMQ RF drivers; patching srsUE itself.
+- Reimplementing OCUDU's CU/DU/MAC/scheduler/PHY, replacing the 5G core, or non-ZMQ RF drivers; patching srsUE itself. Carrying a reviewed, hash-locked compatibility patch against an upstream OCUDU working-group branch is in scope under the CUDA bullet above; reimplementing OCUDU functionality is not. Any such patch is reported upstream and declared in every claim derived from it.
 
 ## Success Criteria
 
@@ -38,7 +39,7 @@ Build and maintain this fork of `ocudu-gpu-channel` as a real-time GPU-accelerat
 
 - All ports of the gNB radio node share one sample epoch; a directional coefficient vector activates atomically at one slot boundary — a partially updated port vector is not an acceptable state.
 - Precoding and beam weights belong to OCUDU/RU; propagation, fading, delay, noise, and superposition belong to this project. Receiver noise is applied once per receiver, not per propagation coefficient.
-- The existing 1×1 OCUDU↔srsUE attach gate is preserved unchanged as the regression net.
+- The existing 1×1 OCUDU↔srsUE attach gate is preserved unchanged as the regression net. **"Unchanged" is literal and overrides convenience**: the gate's runner, inner runner, and artifact verifier are never edited to carry new functionality. A new gNB profile, acceleration workstream, or measurement mode ships as additional files that leave every pre-existing gate file byte-identical. The same rule applies to the other established live gates and to the shared workspace validators they call.
 - Keep real-time data paths measurable and bounded in allocation, buffering, and latency; never zero-fill missing channel state silently.
 - Make GPU availability, device selection, fallback behavior, and unsupported hardware conditions explicit at runtime.
 
