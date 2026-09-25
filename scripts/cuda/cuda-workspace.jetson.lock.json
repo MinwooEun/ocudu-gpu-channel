@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "comment": "Jetson AGX Orin lock for the J track (JETSON_MILESTONES.md). Same schema as cuda-workspace.lock.json, which stays the RTX 5090 lock and is not edited. Paths are relative to the Jetson work root /workspace/ocudu-jetson.",
+  "source": {
+    "name": "ocudu-cuda",
+    "path": "src/ocudu-cuda",
+    "commit": "5830c9cb7813393b5d518dd5ee2b6641071be4ad",
+    "url": "https://gitlab.com/ocudu/work_groups/wg1_hw_accel/cuda_accelerated_ocudu.git",
+    "branch": "nvcuda_accel_02",
+    "patch": {
+      "path": "scripts/cuda/patches/c1-ocudu-cuda-discrete-and-config.patch",
+      "sha256": "d2579af289c79377e50b55811d563b0cba2587b42f9409bd1001a1e6d934da0a"
+    }
+  },
+  "build": {
+    "build_dir": "builds/c1-cuda-patched-sm87",
+    "unpatched_build_dir": "builds/j1-cuda-vendor-sm87",
+    "cuda_architectures": "87"
+  },
+  "platform": {
+    "module": "Jetson AGX Orin 64GB",
+    "l4t": "R36.4.4",
+    "os": "Ubuntu 22.04.3 (container ocudu-jetson-minwoo:j0 on l4t-jetpack r36.4.0)",
+    "machine": "aarch64",
+    "cuda": "12.6.68",
+    "driver": "540.4.0",
+    "compute_capability": "8.7"
+  },
+  "stack_sources": {
+    "ocudu": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+    "srsRAN_4G": "eea87b1d893ae58e0b08bc381730c502024ae71f",
+    "open5gs": "d9d3abdd480be96fac3bc8a997e83446648763ca",
+    "comment": "Same commits as scripts/native/native-workspace.lock.json git_sources."
+  },
+  "archives": [
+    {
+      "name": "mongodb-community",
+      "version": "6.0.29",
+      "platform": "ubuntu2204-aarch64",
+      "url": "https://fastdl.mongodb.org/linux/mongodb-linux-aarch64-ubuntu2204-6.0.29.tgz",
+      "cache_path": "tools/mongodb-linux-aarch64-ubuntu2204-6.0.29.tgz",
+      "sha256": "81003080fd01a95dc7bbc08a5e62c80d22b55df0ce5df6b674c2ec915a4b825b"
+    }
+  ]
+}

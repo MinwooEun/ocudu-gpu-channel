@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "comment": "Jetson AGX Orin lock for the J3/J4 live runs (JETSON_MILESTONES.md): the J2c checkout -- pin + C1 committed locally as 35e206b504 -- with the Orin layer (D6 + D7) and the Spark findings D8 (slope-compensated FD smoothing) + D9 (LDPC NMS 0.8) as the uncommitted diff. Paths relative to /workspace/ocudu-jetson.",
+  "source": {
+    "name": "ocudu-cuda",
+    "path": "src/ocudu-cuda-j2c",
+    "commit": "35e206b504bfa74319c0e4496c05ead45d8eaf0a",
+    "url": "https://gitlab.com/ocudu/work_groups/wg1_hw_accel/cuda_accelerated_ocudu.git",
+    "branch": "nvcuda_accel_02 @ 5830c9cb + C1 (local commit)",
+    "patch": {
+      "path": "scripts/cuda/patches/j2c-ocudu-cuda-orin-d8-d9.patch",
+      "sha256": "f731d89d55ca982d0c24bad35b1eb2639c9ce37433e634d4551a4df1ab98c16f"
+    }
+  },
+  "build": {
+    "build_dir": "builds/j2c-cuda-patched-sm87",
+    "cuda_architectures": "87"
+  },
+  "cpu_baseline": {
+    "comment": "CPU OCUDU gNB built by s3-build-stack.sh with STACK_MCPU=cortex-a78ae STACK_MARCH=armv8.2-a.",
+    "path": "src/ocudu",
+    "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+    "build_dir": "builds/ocudu-zmq-release"
+  },
+  "j2b_live_note": "J3 first live (09-25) used J2b: src/ocudu-cuda-j2b, j2b-ocudu-cuda-orin.patch f7e3b246, builds/j2b-cuda-patched-sm87."
+}
