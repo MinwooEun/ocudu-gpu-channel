@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "comment": "DGX Spark (GB10) lock for the S track (SPARK_MILESTONES.md). Same schema as cuda-workspace.lock.json (the RTX 5090 lock, not edited); selected with OCUDU_CUDA_WORKSPACE_LOCK. Paths are relative to the Spark work root /workspace/ocudu-spark. The patched source is a separate checkout so the unpatched vendor tree used by S1 stays clean.",
+  "source": {
+    "name": "ocudu-cuda",
+    "path": "src/ocudu-cuda-c1",
+    "commit": "5830c9cb7813393b5d518dd5ee2b6641071be4ad",
+    "url": "https://gitlab.com/ocudu/work_groups/wg1_hw_accel/cuda_accelerated_ocudu.git",
+    "branch": "nvcuda_accel_02",
+    "patch": {
+      "path": "scripts/cuda/patches/c1-ocudu-cuda-discrete-and-config.patch",
+      "sha256": "d2579af289c79377e50b55811d563b0cba2587b42f9409bd1001a1e6d934da0a"
+    }
+  },
+  "build": {
+    "build_dir": "builds/s2-cuda-patched-sm121",
+    "cuda_architectures": "121",
+    "mcpu": "neoverse-v2"
+  },
+  "cpu_baseline": {
+    "comment": "Non-CUDA OCUDU gNB for the S3/S5 CPU baseline (live-direct-zmq.sh cpu). Same commit as the workstation native lock; built by s3-build-stack.sh with MCPU=neoverse-v2, MARCH=armv9-a.",
+    "path": "src/ocudu",
+    "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+    "build_dir": "builds/ocudu-zmq-release"
+  }
+}

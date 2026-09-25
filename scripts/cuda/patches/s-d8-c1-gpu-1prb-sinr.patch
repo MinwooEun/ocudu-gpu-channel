@@ -1,0 +1,742 @@
+diff --git a/include/ocudu/phy/upper/channel_processors/pusch/factories.h b/include/ocudu/phy/upper/channel_processors/pusch/factories.h
+index 4be12d2..983de70 100644
+--- a/include/ocudu/phy/upper/channel_processors/pusch/factories.h
++++ b/include/ocudu/phy/upper/channel_processors/pusch/factories.h
+@@ -102,6 +102,9 @@ struct pusch_demodulator_factory_accelerated_configuration {
+   bool                                             enable_post_eq_sinr = false;
+   bool                                             compensate_cfo      = true;
+   channel_equalizer_algorithm_type                 equalizer_algorithm = channel_equalizer_algorithm_type::mmse;
++  /// Time interpolation used by the resident GPU channel estimator.
++  port_channel_estimator_td_interpolation_strategy td_interpolation_strategy =
++      port_channel_estimator_td_interpolation_strategy::average;
+   /// NVIDIA CUDA device ID the accelerated demodulator binds to.
+   int nvcuda_device_id = 0;
+ };
+diff --git a/lib/ofh/compression/iq_compression_cuda.cpp b/lib/ofh/compression/iq_compression_cuda.cpp
+index 847f340..8ab8060 100644
+--- a/lib/ofh/compression/iq_compression_cuda.cpp
++++ b/lib/ofh/compression/iq_compression_cuda.cpp
+@@ -475,14 +475,21 @@ bool iq_compression_cuda::compress_device_symbol(span<uint8_t>                bu
+   }
+ 
+   void* stream = ocudu_ofh_compression_get_stream(handle);
+-  if (!grid.prepare_device_grid_reading(stream)) {
++  const bool live_read = grid.prepare_device_grid_reading(stream);
++  if (!live_read &&
++      (!grid.stage_owned_snapshot_from_host() || !grid.prepare_owned_device_snapshot_reading(stream))) {
+     release_handle(handle);
+     return false;
+   }
++  // A host consumer may have migrated a managed grid since its GPU producer.
++  // Read a synchronized private snapshot in that case, without bypassing the
++  // live-allocation residency guard. The backend completes its D2H before
++  // returning, so both kinds of read hold can be released synchronously.
++  const void* input = live_read ? grid.get_device_grid_cbf16() : grid.get_owned_device_snapshot_cbf16();
+   bool success = ocudu_ofh_compress_device_grid(handle,
+                                                 to_cuda_compression_type(type),
+                                                 buffer.data(),
+-                                                grid.get_device_grid_cbf16(),
++                                                input,
+                                                 grid.get_nof_symbols(),
+                                                 grid.get_nof_subc(),
+                                                 port,
+@@ -491,6 +498,16 @@ bool iq_compression_cuda::compress_device_symbol(span<uint8_t>                bu
+                                                 nof_prbs,
+                                                 params.data_width,
+                                                 iq_scaling) != 0;
++  if (!success) {
++    // An error after enqueue must not release the grid while earlier work is
++    // still reading it. Drain the handle before relinquishing either hold.
++    (void)ocudu_ofh_compression_synchronize(handle);
++  }
++  if (live_read) {
++    grid.release_device_grid_reading();
++  } else {
++    grid.release_owned_device_snapshot_reading();
++  }
+   if (success) {
+     release_handle(handle);
+   } else {
+diff --git a/lib/phy/cuda/src/pusch_e2e.cu b/lib/phy/cuda/src/pusch_e2e.cu
+index 6e5061c..14e577f 100644
+--- a/lib/phy/cuda/src/pusch_e2e.cu
++++ b/lib/phy/cuda/src/pusch_e2e.cu
+@@ -4221,6 +4221,68 @@ __global__ void kernel_freq_interpolate_type1(
+  * Each thread handles one (prb, port) pair for one DMRS symbol, applying
+  * the filter across 6 pilot positions and writing 12 smoothed subcarriers.
+  */
++/* One smoothed DM-RS pilot: raised-cosine FIR over the neighbouring pilots of
++ * the same CDM group, with the per-pilot phase step removed first.
++ *
++ * A timing offset rotates the channel linearly across frequency. Averaging
++ * rotated taps shrinks the estimate and the residual is then counted as noise
++ * (SINR -2.5 dB at 1 PRB, -0.6 dB at 6 PRB with 1 us, D8). The step is
++ * estimated inside the filter window, the taps are de-rotated about the output
++ * pilot and filtered, so the output keeps its own phase -- the CPU estimator
++ * reaches the same end with unwrapped-phase virtual pilots. Out-of-range taps
++ * are skipped and the filter renormalised, which also makes one PRB safe.
++ *
++ * Tap t of pilot q lives at sym_base + (q / nof_pilots) * prb_stride + inner +
++ * pusch_dmrs_sc_offset(dmrs_type, cdm, q % nof_pilots). */
++__device__ __forceinline__ float2 fd_smooth_pilot_slope_comp(
++    const __half2* __restrict__ d_estimates,
++    int sym_base, int prb_stride, int inner, int cdm,
++    int dmrs_type, int nof_pilots, int total_pilots, int global_pilot)
++{
++    const int HALF_FILTER = FD_SMOOTH_FILTER_LEN / 2;
++    float tap_re[FD_SMOOTH_FILTER_LEN], tap_im[FD_SMOOTH_FILTER_LEN];
++    bool  tap_ok[FD_SMOOTH_FILTER_LEN];
++
++    #pragma unroll
++    for (int t = 0; t < FD_SMOOTH_FILTER_LEN; t++) {
++        int src_pilot = global_pilot + (t - HALF_FILTER);
++        tap_ok[t] = (src_pilot >= 0 && src_pilot < total_pilots);
++        tap_re[t] = tap_im[t] = 0.0f;
++        if (!tap_ok[t]) continue;
++        int src_idx = sym_base + (src_pilot / nof_pilots) * prb_stride + inner +
++                      pusch_dmrs_sc_offset(dmrs_type, cdm, src_pilot % nof_pilots);
++        __half2 h_src = d_estimates[src_idx];
++        tap_re[t] = __half2float(__low2half(h_src));
++        tap_im[t] = __half2float(__high2half(h_src));
++    }
++
++    float acc_re = 0.0f, acc_im = 0.0f;
++    #pragma unroll
++    for (int t = 0; t + 1 < FD_SMOOTH_FILTER_LEN; t++) {
++        if (!tap_ok[t] || !tap_ok[t + 1]) continue;
++        acc_re += tap_re[t + 1] * tap_re[t] + tap_im[t + 1] * tap_im[t];
++        acc_im += tap_im[t + 1] * tap_re[t] - tap_re[t + 1] * tap_im[t];
++    }
++    const float step = (acc_re != 0.0f || acc_im != 0.0f) ? atan2f(acc_im, acc_re) : 0.0f;
++
++    float sum_re = 0.0f, sum_im = 0.0f, coef_sum = 0.0f;
++    #pragma unroll
++    for (int t = 0; t < FD_SMOOTH_FILTER_LEN; t++) {
++        if (!tap_ok[t]) continue;
++        float c, sn;
++        __sincosf(-step * (float)(t - HALF_FILTER), &sn, &c);
++        sum_re += d_rc_filter[t] * (tap_re[t] * c - tap_im[t] * sn);
++        sum_im += d_rc_filter[t] * (tap_re[t] * sn + tap_im[t] * c);
++        coef_sum += d_rc_filter[t];
++    }
++    if (coef_sum > 1e-6f) {
++        float inv_coef = 1.0f / coef_sum;
++        sum_re *= inv_coef;
++        sum_im *= inv_coef;
++    }
++    return make_float2(sum_re, sum_im);
++}
++
+ __global__ void kernel_fd_smoothing_fp16(
+     __half2* __restrict__ d_estimates,  /* [dmrs_sym, prb, port, 12] in-place */
+     int nof_prb,
+@@ -4247,42 +4309,11 @@ __global__ void kernel_fd_smoothing_fp16(
+     #pragma unroll
+     for (int p = 0; p < 6; p++) {
+         if (p >= nof_pilots) break;
+-        float sum_re = 0.0f;
+-        float sum_im = 0.0f;
+-        float coef_sum = 0.0f;
+-        int global_pilot = pilot_base + p;
+-
+-        for (int t = 0; t < FD_SMOOTH_FILTER_LEN; t++) {
+-            int src_pilot = global_pilot + (t - HALF_FILTER);
+-
+-            /* Skip out-of-range taps (don't clamp) */
+-            if (src_pilot < 0 || src_pilot >= total_pilots) continue;
+-
+-            /* Read from the appropriate PRB's estimates */
+-            int src_prb = src_pilot / nof_pilots;
+-            int src_pos = src_pilot % nof_pilots;
+-            int src_idx = dmrs_sym_idx * re_per_dmrs_sym +
+-                          src_prb * (nof_ports * 12) + port * 12 +
+-                          pusch_dmrs_sc_offset(dmrs_type, 0, src_pos);
+-
+-            __half2 h_src = d_estimates[src_idx];
+-            float r = __half2float(__low2half(h_src));
+-            float i = __half2float(__high2half(h_src));
+-
+-            sum_re += d_rc_filter[t] * r;
+-            sum_im += d_rc_filter[t] * i;
+-            coef_sum += d_rc_filter[t];
+-        }
+-
+-        /* Renormalize to compensate for truncated taps at band edges */
+-        if (coef_sum > 1e-6f) {
+-            float inv_coef = 1.0f / coef_sum;
+-            sum_re *= inv_coef;
+-            sum_im *= inv_coef;
+-        }
+-
+-        smoothed_re[p] = sum_re;
+-        smoothed_im[p] = sum_im;
++        float2 sm = fd_smooth_pilot_slope_comp(d_estimates, dmrs_sym_idx * re_per_dmrs_sym, nof_ports * 12,
++                                               port * 12, 0, dmrs_type, nof_pilots, total_pilots,
++                                               pilot_base + p);
++        smoothed_re[p] = sm.x;
++        smoothed_im[p] = sm.y;
+     }
+ 
+     /* Write back smoothed estimates for all 12 subcarriers */
+@@ -4353,35 +4384,11 @@ __global__ void kernel_mimo_fd_smoothing_fp16(
+     #pragma unroll
+     for (int p = 0; p < 6; p++) {
+         if (p >= nof_pilots) break;
+-        float sum_re = 0.0f;
+-        float sum_im = 0.0f;
+-        float coef_sum = 0.0f;
+-        int global_pilot = pilot_base + p;
+-
+-        for (int t = 0; t < FD_SMOOTH_FILTER_LEN; t++) {
+-            int src_pilot = global_pilot + (t - HALF_FILTER);
+-            if (src_pilot < 0 || src_pilot >= total_pilots) continue;
+-
+-            int src_prb = src_pilot / nof_pilots;
+-            int src_pos = src_pilot % nof_pilots;
+-            int src_sc = pusch_dmrs_sc_offset(dmrs_type, cdm_offset, src_pos);
+-            int src_idx = dmrs_sym_idx * re_per_dmrs_sym +
+-                          src_prb * re_per_prb + port * re_per_port + layer * re_per_layer + src_sc;
+-
+-            __half2 h_src = d_estimates[src_idx];
+-            sum_re += d_rc_filter[t] * __half2float(__low2half(h_src));
+-            sum_im += d_rc_filter[t] * __half2float(__high2half(h_src));
+-            coef_sum += d_rc_filter[t];
+-        }
+-
+-        if (coef_sum > 1e-6f) {
+-            float inv_coef = 1.0f / coef_sum;
+-            sum_re *= inv_coef;
+-            sum_im *= inv_coef;
+-        }
+-
+-        smoothed_re[p] = sum_re;
+-        smoothed_im[p] = sum_im;
++        float2 sm = fd_smooth_pilot_slope_comp(d_estimates, dmrs_sym_idx * re_per_dmrs_sym, re_per_prb,
++                                               port * re_per_port + layer * re_per_layer, cdm_offset, dmrs_type,
++                                               nof_pilots, total_pilots, pilot_base + p);
++        smoothed_re[p] = sm.x;
++        smoothed_im[p] = sm.y;
+     }
+ 
+     __half2 smoothed_pilots[6];
+@@ -4445,34 +4452,10 @@ __global__ void kernel_mimo_fd_smoothing_fp16_wide(
+ 
+     if (sc < nof_pilots) {
+         int p = sc;
+-        float sum_re = 0.0f;
+-        float sum_im = 0.0f;
+-        float coef_sum = 0.0f;
+-        int global_pilot = pilot_base + p;
+-
+-        for (int t = 0; t < FD_SMOOTH_FILTER_LEN; t++) {
+-            int src_pilot = global_pilot + (t - HALF_FILTER);
+-            if (src_pilot < 0 || src_pilot >= total_pilots) continue;
+-
+-            int src_prb = src_pilot / nof_pilots;
+-            int src_pos = src_pilot % nof_pilots;
+-            int src_sc = pusch_dmrs_sc_offset(dmrs_type, cdm_offset, src_pos);
+-            int src_idx = dmrs_sym_idx * re_per_dmrs_sym +
+-                          src_prb * re_per_prb + port * re_per_port + layer * re_per_layer + src_sc;
+-
+-            __half2 h_src = d_estimates[src_idx];
+-            sum_re += d_rc_filter[t] * __half2float(__low2half(h_src));
+-            sum_im += d_rc_filter[t] * __half2float(__high2half(h_src));
+-            coef_sum += d_rc_filter[t];
+-        }
+-
+-        if (coef_sum > 1e-6f) {
+-            float inv_coef = 1.0f / coef_sum;
+-            sum_re *= inv_coef;
+-            sum_im *= inv_coef;
+-        }
+-
+-        s_pilots[p] = __halves2half2(__float2half(sum_re), __float2half(sum_im));
++        float2 sm = fd_smooth_pilot_slope_comp(d_estimates, dmrs_sym_idx * re_per_dmrs_sym, re_per_prb,
++                                               port * re_per_port + layer * re_per_layer, cdm_offset, dmrs_type,
++                                               nof_pilots, total_pilots, pilot_base + p);
++        s_pilots[p] = __halves2half2(__float2half(sm.x), __float2half(sm.y));
+     }
+ 
+     __syncthreads();
+diff --git a/lib/phy/cuda/src/pusch_e2e_api.cu b/lib/phy/cuda/src/pusch_e2e_api.cu
+index 76bad7b..8f3aacf 100644
+--- a/lib/phy/cuda/src/pusch_e2e_api.cu
++++ b/lib/phy/cuda/src/pusch_e2e_api.cu
+@@ -2154,8 +2154,14 @@ nr_ldpc_status_t pusch_e2e_process_full_gpu_optimized(
+      * LSE channel estimates. Operates on pilot positions and
+      * re-interpolates to all 12 subcarriers. Must run before noise
+      * estimation so cross-validation sees smoothed estimates.
++     *
++     * Single-PRB allocations are smoothed too: the cross-validation noise
++     * estimate below is calibrated for smoothed estimates, and skipping this
++     * phase for nof_prb == 1 over-reported SINR by ~2.4 dB, which then drove
++     * the UL link adaptation to MCSs that fail (SPARK_MILESTONES.md, D8).
++     * The kernel skips out-of-range taps and renormalises, so one PRB is safe.
+      * ================================================================ */
+-    if (cfg.nof_prb > 1) {
++    {
+         dim3 smooth_grid(cfg.nof_prb, nof_dmrs_symbols);
+         launch_kernel_fd_smoothing_fp16(smooth_grid, cfg.nof_rx_ports, 0, stream, 
+             handle->d_estimates_fp16,
+@@ -2611,7 +2617,9 @@ nr_ldpc_status_t pusch_e2e_process_full_gpu_optimized_mimo_half(
+             (int)cfg.dmrs_type);
+     }
+ 
+-    if (cfg.nof_prb > 1) {
++    /* Single-PRB allocations are smoothed too (D8): the noise estimate below is
++     * calibrated for smoothed estimates; the smoothing kernels handle one PRB. */
++    {
+         /* Wide-block smoothing variant (same arithmetic, efficient thread mapping).
+          * Enabled by default; set OCUDU_MIMO_FD_SMOOTH_OPT=0 to fall back for A/B. */
+         static const bool fd_smooth_opt = []() {
+diff --git a/lib/phy/upper/channel_processors/pusch/demodulator_factories.cpp b/lib/phy/upper/channel_processors/pusch/demodulator_factories.cpp
+index de95fa6..6fb4373 100644
+--- a/lib/phy/upper/channel_processors/pusch/demodulator_factories.cpp
++++ b/lib/phy/upper/channel_processors/pusch/demodulator_factories.cpp
+@@ -181,7 +181,8 @@ public:
+     enable_post_eq_sinr(config.enable_post_eq_sinr),
+     compensate_cfo(config.compensate_cfo),
+     equalizer_algorithm(config.equalizer_algorithm),
+-    nvcuda_device_id(config.nvcuda_device_id)
++    nvcuda_device_id(config.nvcuda_device_id),
++    td_interpolation_strategy(config.td_interpolation_strategy)
+   {
+     ocudu_assert(equalizer_factory, "Invalid equalizer factory.");
+     ocudu_assert(precoder_factory, "Invalid transform precoder factory.");
+@@ -207,7 +208,8 @@ public:
+                                                                                 enable_post_eq_sinr,
+                                                                                 compensate_cfo,
+                                                                                 equalizer_algorithm,
+-                                                                                nvcuda_device_id);
++                                                                                nvcuda_device_id,
++                                                                                td_interpolation_strategy);
+     auto sw_demodulator          = std::make_unique<pusch_demodulator_impl>(equalizer_factory->create(),
+                                                                    precoder_factory->create(),
+                                                                    demodulation_factory->create(),
+@@ -230,6 +232,7 @@ private:
+   bool                                             compensate_cfo;
+   channel_equalizer_algorithm_type                 equalizer_algorithm;
+   int                                              nvcuda_device_id;
++  port_channel_estimator_td_interpolation_strategy td_interpolation_strategy;
+ };
+ 
+ } // namespace
+diff --git a/lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.cpp b/lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.cpp
+index aaa9aea..8906c31 100644
+--- a/lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.cpp
++++ b/lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.cpp
+@@ -186,11 +186,10 @@ inline pusch_demodulator_notifier::demodulation_stats build_e2e_final_stats(floa
+ {
+   pusch_demodulator_notifier::demodulation_stats stats;
+ 
+-  // Match the host-facing CPU goodness metric by preferring the
+-  // post-equalization EVM-derived SINR whenever the kernel provides it.
+-  if (std::isfinite(gpu_evm) && gpu_evm > 0.0f) {
+-    stats.sinr_dB.emplace(-20.0f * std::log10(gpu_evm));
+-  } else if (std::isfinite(gpu_sinr_db)) {
++  // Use the same post-equalization noise-variance SINR as the CPU and
++  // deferred resident path. EVM is a separate metric; substituting it here
++  // inflates scheduler SINR for synchronous/UCI-bearing transmissions.
++  if (std::isfinite(gpu_sinr_db)) {
+     stats.sinr_dB.emplace(gpu_sinr_db);
+   } else {
+     stats.sinr_dB.emplace(MAX_SINR_DB);
+@@ -652,7 +651,8 @@ pusch_demodulator_gpu_impl::pusch_demodulator_gpu_impl(std::unique_ptr<channel_e
+                                                        bool                                     compute_post_eq_sinr_,
+                                                        bool                                     compensate_cfo,
+                                                        channel_equalizer_algorithm_type         equalizer_algorithm,
+-                                                       int                                      nvcuda_device_id) :
++                                                       int                                      nvcuda_device_id,
++                                                       port_channel_estimator_td_interpolation_strategy td_interpolation_strategy) :
+   equalizer(std::move(equalizer_)),
+   precoder(std::move(precoder_)),
+   demapper_fallback(std::move(demapper_fallback_)),
+@@ -686,13 +686,18 @@ pusch_demodulator_gpu_impl::pusch_demodulator_gpu_impl(std::unique_ptr<channel_e
+     fmt::print("[PUSCH GPU] Path tracing ENABLED via OCUDU_PUSCH_ACCELERATION_TRACE\n");
+   }
+ 
+-  // Time interpolation mode: average (default) or linear.
++  // Honor the configured estimator strategy on the resident path too.
++  time_interp_mode_ = td_interpolation_strategy == port_channel_estimator_td_interpolation_strategy::interpolate ? 1 : 0;
++  // Keep the existing explicit experiment override.
+   const char* ti_env = std::getenv("OCUDU_TIME_INTERP");
+   if (ti_env && std::string(ti_env) == "linear") {
+     time_interp_mode_ = 1;
+     fmt::print("[PUSCH GPU] Time interpolation: linear (OCUDU_TIME_INTERP=linear)\n");
+   }
+ 
++  ocudulog::fetch_basic_logger("PHY").info("PUSCH GPU channel estimator: time_interpolation={} cfo_compensation={}",
++                                           time_interp_mode_ == 1 ? "interpolate" : "average", compensate_cfo_);
++
+   // Noise estimation mode: 1 = pilot-residual (default), 0 = cross-validation.
+   // OCUDU_NOISE_MODE=cv restores the old cross-validation mode for A/B testing.
+   const char* noise_env = std::getenv("OCUDU_NOISE_MODE");
+diff --git a/lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.h b/lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.h
+index f84ccf9..5744923 100644
+--- a/lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.h
++++ b/lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.h
+@@ -64,7 +64,9 @@ public:
+       bool                                     compute_post_eq_sinr_,
+       bool                                     compensate_cfo_     = true,
+       channel_equalizer_algorithm_type         equalizer_algorithm = channel_equalizer_algorithm_type::mmse,
+-      int                                      nvcuda_device_id    = 0);
++      int                                      nvcuda_device_id    = 0,
++      port_channel_estimator_td_interpolation_strategy td_interpolation_strategy =
++          port_channel_estimator_td_interpolation_strategy::average);
+ 
+   /// Destructor - releases CUDA resources.
+   ~pusch_demodulator_gpu_impl() override;
+diff --git a/lib/phy/upper/signal_processors/srs/srs_estimator_cuda_impl.cpp b/lib/phy/upper/signal_processors/srs/srs_estimator_cuda_impl.cpp
+index 4fe8034..4f26295 100644
+--- a/lib/phy/upper/signal_processors/srs/srs_estimator_cuda_impl.cpp
++++ b/lib/phy/upper/signal_processors/srs/srs_estimator_cuda_impl.cpp
+@@ -355,25 +355,36 @@ srs_estimator_result srs_estimator_cuda_impl::estimate(const resource_grid_reade
+     gpu_configured        = true;
+   }
+ 
+-  // Class-C / ISAC already consume the owned fade snapshot. SRS must do the
+-  // same: a GPU load of the live managed UL VA Xid 31's FAULT_PTE @ 0x140000
+-  // on GB10 after any host migrate (or even without one, on a late stream).
+-  const void* d_grid_cbf16  = nullptr;
+-  const void* owned         = grid.get_owned_device_snapshot_cbf16();
+-  void*       owned_ready   = grid.get_owned_device_snapshot_ready_event();
+-  if (owned == nullptr || owned_ready == nullptr) {
+-    if (grid.stage_owned_snapshot_from_host()) {
+-      owned       = grid.get_owned_device_snapshot_cbf16();
+-      owned_ready = grid.get_owned_device_snapshot_ready_event();
++  // Managed live grids must retain their owned-snapshot path. Ordinary host
++  // grids (including the discrete-GPU pinned factory) have no snapshot API;
++  // stage those into the estimator's private cudaMalloc buffer instead.
++  const void* d_grid_cbf16 = nullptr;
++  if (!grid.supports_device_grid_reading()) {
++    if (staged_grid_source != &grid || !staged_grid_reader) {
++      staged_grid_reader = std::make_unique<pusch_device_grid_reader_cuda>(grid);
++      staged_grid_source = &grid;
+     }
+-  }
+-  if (owned != nullptr && owned_ready != nullptr &&
+-      cudaStreamWaitEvent(static_cast<cudaStream_t>(stream), static_cast<cudaEvent_t>(owned_ready), 0) ==
+-          cudaSuccess) {
+-    d_grid_cbf16 = owned;
++    if (!staged_grid_reader->stage_host_grid_async(stream)) {
++      return {};
++    }
++    d_grid_cbf16 = staged_grid_reader->get_device_grid_cbf16();
+   } else {
+-    static_cast<void>(cudaGetLastError());
+-    return {};
++    const void* owned       = grid.get_owned_device_snapshot_cbf16();
++    void*       owned_ready = grid.get_owned_device_snapshot_ready_event();
++    if (owned == nullptr || owned_ready == nullptr) {
++      if (grid.stage_owned_snapshot_from_host()) {
++        owned       = grid.get_owned_device_snapshot_cbf16();
++        owned_ready = grid.get_owned_device_snapshot_ready_event();
++      }
++    }
++    if (owned != nullptr && owned_ready != nullptr &&
++        cudaStreamWaitEvent(static_cast<cudaStream_t>(stream), static_cast<cudaEvent_t>(owned_ready), 0) ==
++            cudaSuccess) {
++      d_grid_cbf16 = owned;
++    } else {
++      static_cast<void>(cudaGetLastError());
++      return {};
++    }
+   }
+ 
+   srs_estimator_metrics_t        metrics            = {};
+diff --git a/lib/phy/upper/upper_phy_factories.cpp b/lib/phy/upper/upper_phy_factories.cpp
+index bf90d69..c1f5b30 100644
+--- a/lib/phy/upper/upper_phy_factories.cpp
++++ b/lib/phy/upper/upper_phy_factories.cpp
+@@ -27,6 +27,7 @@
+ #include "ocudu/phy/upper/signal_processors/prs/factories.h"
+ #include "ocudu/phy/upper/signal_processors/srs/srs_estimator_factory.h"
+ #include "ocudu/support/error_handling.h"
++#include "ocudu/support/executors/inline_task_executor.h"
+ #include <algorithm>
+ #include <cstdlib>
+ #include <limits>
+@@ -959,6 +960,7 @@ create_ul_processor_factory(const upper_phy_factory_configuration& config,
+     accel_config.max_nof_prb          = config.ul_bw_rb;
+     accel_config.enable_post_eq_sinr  = enable_eq_sinr;
+     accel_config.compensate_cfo       = config.pusch_channel_estimator_compensate_cfo;
++    accel_config.td_interpolation_strategy = pusch_chan_estimator_td_strategy;
+     accel_config.equalizer_algorithm  = pusch_equalizer_algorithm_type;
+     accel_config.nvcuda_device_id     = config.nvcuda_device_id;
+     pusch_demod_factory               = create_pusch_demodulator_factory_accelerated(accel_config);
+@@ -1369,9 +1371,19 @@ ocudu::create_downlink_processor_factory_sw(const downlink_processor_factory_sw_
+   report_fatal_error_if_not(pdcch_proc_factory, "Invalid PDCCH processor factory.");
+ 
+   const bool pdsch_acceleration_requested = (config.pdsch_acceleration_mode == "enabled");
++  // ZMQ deliberately omits a codeblock executor to require synchronous PHY
++  // processing. Forced CUDA PDSCH already uses synchronous codeblock batches;
++  // provide an inline executor for that case without introducing a task queue.
++  static inline_task_executor synchronous_pdsch_executor;
++  upper_phy_executor pdsch_codeblock_executor = dependencies.pdsch_codeblock_executor;
++  if (pdsch_acceleration_requested && !pdsch_codeblock_executor.is_valid() &&
++      std::holds_alternative<pdsch_processor_flexible_configuration>(config.pdsch_processor)) {
++    pdsch_codeblock_executor = {&synchronous_pdsch_executor, 1};
++    ocudulog::fetch_basic_logger("PHY").info("PDSCH CUDA synchronous executor selected for sequential PHY.");
++  }
+   const bool pdsch_uses_flexible_processor =
+       std::holds_alternative<pdsch_processor_flexible_configuration>(config.pdsch_processor) &&
+-      dependencies.pdsch_codeblock_executor.is_valid();
++      pdsch_codeblock_executor.is_valid();
+   if (pdsch_acceleration_requested && !pdsch_uses_flexible_processor) {
+     report_fatal_error(
+         "Accelerated PDSCH block processor requested but no block-processor capable PDSCH configuration is active");
+@@ -1430,10 +1442,10 @@ ocudu::create_downlink_processor_factory_sw(const downlink_processor_factory_sw_
+   // Create channel processors - PDSCH
+   std::shared_ptr<pdsch_processor_factory> pdsch_proc_factory;
+   unsigned                                 pdsch_processor_pool_size = config.pdsch_executor.max_concurrency;
+-  const unsigned pdsch_codeblock_concurrency  = std::max(1U, dependencies.pdsch_codeblock_executor.max_concurrency);
++  const unsigned pdsch_codeblock_concurrency  = std::max(1U, pdsch_codeblock_executor.max_concurrency);
+   unsigned       pdsch_acceleration_nof_lanes = 0;
+   if (std::holds_alternative<pdsch_processor_generic_configuration>(config.pdsch_processor) ||
+-      !dependencies.pdsch_codeblock_executor.is_valid()) {
++      !pdsch_codeblock_executor.is_valid()) {
+     pdsch_proc_factory = create_pdsch_processor_factory_sw(
+         pdsch_enc_factory, pdsch_mod_factory, dmrs_pdsch_proc_factory, ptrs_pdsch_gen_factory);
+     report_fatal_error_if_not(pdsch_proc_factory, "Invalid generic PDSCH processor factory.");
+@@ -1484,7 +1496,7 @@ ocudu::create_downlink_processor_factory_sw(const downlink_processor_factory_sw_
+           config.pdsch_executor.max_concurrency,
+           pdsch_processor_pool_size);
+     }
+-    report_fatal_error_if_not(dependencies.pdsch_codeblock_executor.max_concurrency >= 1,
++    report_fatal_error_if_not(pdsch_codeblock_executor.max_concurrency >= 1,
+                               "The number of threads (i.e., {}) must be equal to or greater than 1.");
+ 
+     // Create a flexible PDSCH processor factory.
+@@ -1494,8 +1506,8 @@ ocudu::create_downlink_processor_factory_sw(const downlink_processor_factory_sw_
+         pdsch_rg_mapper_factory,
+         dmrs_pdsch_proc_factory,
+         ptrs_pdsch_gen_factory,
+-        *dependencies.pdsch_codeblock_executor.executor,
+-        use_pdsch_acceleration ? pdsch_acceleration_nof_lanes : dependencies.pdsch_codeblock_executor.max_concurrency,
++        *pdsch_codeblock_executor.executor,
++        use_pdsch_acceleration ? pdsch_acceleration_nof_lanes : pdsch_codeblock_executor.max_concurrency,
+         cb_batch_length);
+ 
+     // The number of required processors in the pool must be equal to the maximum number of PDSCH that can be enqueued
+diff --git a/tests/integrationtests/phy/upper/channel_processors/CMakeLists.txt b/tests/integrationtests/phy/upper/channel_processors/CMakeLists.txt
+index dbc451f..2cf2dae 100644
+--- a/tests/integrationtests/phy/upper/channel_processors/CMakeLists.txt
++++ b/tests/integrationtests/phy/upper/channel_processors/CMakeLists.txt
+@@ -43,9 +43,12 @@ gtest_discover_tests(pxsch_chain_test)
+ add_executable(pusch_gpu_cpu_comparison_test pusch_gpu_cpu_comparison_test.cpp)
+ target_link_libraries(pusch_gpu_cpu_comparison_test ocudu_pxsch_bler_test_helpers)
+ add_test(pusch_gpu_cpu_comparison_test pusch_gpu_cpu_comparison_test -R 10)
++add_test(pusch_gpu_cpu_cfo_interpolation_test pusch_gpu_cpu_comparison_test -L -P 27 -R 10 -S 30 -N 1)
++add_test(pusch_gpu_cpu_sync_sinr_test pusch_gpu_cpu_comparison_test -L -H -P 27 -R 10 -S 30 -N 1)
+ 
+ add_executable(pdsch_gpu_e2e_test pdsch_gpu_e2e_test.cpp)
+ target_link_libraries(pdsch_gpu_e2e_test
++        ocudu_upper_phy
+         ocudu_ran
+         ocudu_channel_processors
+         ocudu_phy_support
+diff --git a/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp b/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp
+index 36d52e2..8ddeb56 100644
+--- a/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp
++++ b/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp
+@@ -731,6 +731,12 @@ TEST(PdschGpuIssueProfile, ManagedGridMatchesHostAcrossHarqRvsAndRepeatedSlots)
+     cpu_notifier.wait_for_completion();
+     gpu_notifier.wait_for_completion();
+ 
++    // Exercise the live-device path before compare_resource_grids migrates
++    // pages to the CPU. Its read hold must be released or that host read hangs.
++    std::vector<uint8_t> direct_compressed(compressed_symbol_bytes);
++    ASSERT_TRUE(gpu_compressor->compress_device_symbol(
++        direct_compressed, gpu_grid->get_reader(), 0, 0, 0, nof_prb, compression_params));
++
+     grid_diff_stats diff = compare_resource_grids(cpu_grid->get_reader(), gpu_grid->get_reader());
+     ASSERT_EQ(diff.nof_mismatches, 0U) << "max_abs_error=" << diff.max_abs_error << " at port=" << diff.port
+                                        << " symbol=" << diff.symbol << " subcarrier=" << diff.subcarrier
+@@ -746,6 +752,9 @@ TEST(PdschGpuIssueProfile, ManagedGridMatchesHostAcrossHarqRvsAndRepeatedSlots)
+         ASSERT_TRUE(gpu_compressor->compress_device_symbol(
+             gpu_compressed, gpu_grid->get_reader(), port, symbol, 0, nof_prb, compression_params));
+         ASSERT_EQ(cpu_compressed, gpu_compressed);
++        if (port == 0 && symbol == 0) {
++          ASSERT_EQ(cpu_compressed, direct_compressed);
++        }
+       }
+     }
+   }
+diff --git a/tests/integrationtests/phy/upper/channel_processors/pusch_gpu_cpu_comparison_test.cpp b/tests/integrationtests/phy/upper/channel_processors/pusch_gpu_cpu_comparison_test.cpp
+index 91a824a..1fcf14d 100644
+--- a/tests/integrationtests/phy/upper/channel_processors/pusch_gpu_cpu_comparison_test.cpp
++++ b/tests/integrationtests/phy/upper/channel_processors/pusch_gpu_cpu_comparison_test.cpp
+@@ -47,7 +47,7 @@
+ using namespace ocudu;
+ 
+ // Default test parameters
+-static constexpr subcarrier_spacing scs                         = subcarrier_spacing::kHz30;
++static subcarrier_spacing scs                         = subcarrier_spacing::kHz30;
+ static constexpr uint16_t           rnti                        = 0x1234;
+ static constexpr unsigned           bwp_start_rb                = 0;
+ static constexpr unsigned           nof_ofdm_symbols            = 14;
+@@ -57,14 +57,16 @@ static constexpr dmrs_config_type   dmrs                        = dmrs_config_ty
+ static constexpr unsigned           nof_cdm_groups_without_data = 2;
+ static constexpr cyclic_prefix      cy_prefix                   = cyclic_prefix::NORMAL;
+ static constexpr unsigned           rv                          = 0;
+-static constexpr unsigned           n_id                        = 0;
+-static constexpr unsigned           scrambling_id               = 0;
++static unsigned           n_id                        = 0;
++static unsigned           scrambling_id               = 0;
+ static constexpr bool               n_scid                      = false;
+ static constexpr bool               use_early_stop              = true;
+ 
+ // Configurable test parameters
+ static unsigned              max_nof_threads = std::min(8U, std::thread::hardware_concurrency());
+ static unsigned              nof_repetitions = 100;
++static bool live_cfo_regression = false;
++static bool sync_sinr_regression = false;
+ static std::vector<unsigned> prb_allocations = {3, 4, 5, 6};
+ static std::vector<float>    sinr_values_dB  = {5.0F, 10.0F, 15.0F, 20.0F, 25.0F, 30.0F};
+ static std::vector<unsigned> rx_port_counts  = {1, 2};
+@@ -110,6 +112,7 @@ public:
+ 
+   void run()
+   {
++    report_error_if_not(!sync_sinr_regression || live_cfo_regression, "-H requires -L");
+     print_header();
+ 
+     // Run tests for each configuration
+@@ -126,6 +129,24 @@ public:
+     }
+ 
+     print_summary();
++    if (live_cfo_regression) {
++      report_error_if_not(!all_results.empty(), "CFO regression has no results");
++      for (const auto& r : all_results) {
++        report_error_if_not(r.total_transmissions == nof_repetitions && r.cpu_crc_errors == 0 &&
++                            r.gpu_crc_errors == 0 && r.cpu_data_errors == 0 && r.gpu_data_errors == 0,
++                            "CFO regression CRC or payload mismatch");
++      }
++      if (sync_sinr_regression) {
++        for (const auto& r : all_results) {
++          report_error_if_not(r.cpu_sinr_stats.get_nof_observations() == nof_repetitions &&
++                              r.gpu_sinr_stats.get_nof_observations() == nof_repetitions &&
++                              std::abs(r.gpu_sinr_stats.get_mean() - r.cpu_sinr_stats.get_mean()) <= 0.5F,
++                              "Synchronous GPU post-equalization SINR disagrees with CPU");
++        }
++        fmt::print("Synchronous SINR regression: PASS (GPU demodulation, host-visible decode)\n");
++      }
++      fmt::print("CFO interpolation regression: PASS (CPU/GPU CRC and payload parity)\n");
++    }
+   }
+ 
+ private:
+@@ -212,7 +233,8 @@ private:
+     sch_mcs_description mcs_descr = pusch_mcs_get_config(mcs_table, mcs_index, false, false);
+ 
+     // Frequency allocation
+-    prb_interval freq_allocation = {bwp_start_rb, bwp_start_rb + nof_prb};
++    unsigned start_rb = live_cfo_regression ? 8 : bwp_start_rb;
++    prb_interval freq_allocation = {start_rb, start_rb + nof_prb};
+ 
+     // Calculate transport block size
+     tbs_calculator_configuration tbs_config = {};
+@@ -243,8 +265,8 @@ private:
+                                           nof_ldpc_iterations,
+                                           use_early_stop,
+                                           "auto",
+-                                          port_channel_estimator_td_interpolation_strategy::average,
+-                                          channel_equalizer_algorithm_type::zf);
++                                          live_cfo_regression ? port_channel_estimator_td_interpolation_strategy::interpolate : port_channel_estimator_td_interpolation_strategy::average,
++                                          live_cfo_regression ? channel_equalizer_algorithm_type::mmse : channel_equalizer_algorithm_type::zf);
+     report_fatal_error_if_not(cpu_pusch_proc_factory, "Failed to create CPU PUSCH processor factory.");
+ 
+     // Create GPU PUSCH processor factory
+@@ -253,9 +275,9 @@ private:
+                                           max_nof_threads + 1,
+                                           nof_ldpc_iterations,
+                                           use_early_stop,
+-                                          "gpu",
+-                                          port_channel_estimator_td_interpolation_strategy::average,
+-                                          channel_equalizer_algorithm_type::zf);
++                                          sync_sinr_regression ? "gpu-demod" : "gpu",
++                                          live_cfo_regression ? port_channel_estimator_td_interpolation_strategy::interpolate : port_channel_estimator_td_interpolation_strategy::average,
++                                          live_cfo_regression ? channel_equalizer_algorithm_type::mmse : channel_equalizer_algorithm_type::zf);
+     if (!gpu_pusch_proc_factory) {
+       fmt::print("  [SKIP] GPU PUSCH processor not available\n");
+       worker_pool->stop();
+@@ -303,7 +325,7 @@ private:
+     pdsch_config.context                     = std::nullopt;
+     pdsch_config.slot                        = slot_point(to_numerology_value(scs), 0);
+     pdsch_config.rnti                        = to_rnti(rnti);
+-    pdsch_config.bwp_size_rb                 = nof_prb;
++    pdsch_config.bwp_size_rb                 = live_cfo_regression ? 106 : nof_prb;
+     pdsch_config.bwp_start_rb                = bwp_start_rb;
+     pdsch_config.cp                          = cy_prefix;
+     pdsch_config.n_id                        = n_id;
+@@ -331,7 +353,7 @@ private:
+     pusch_processor::pdu_t pusch_config;
+     pusch_config.slot               = slot_point(to_numerology_value(scs), 0);
+     pusch_config.rnti               = to_rnti(rnti);
+-    pusch_config.bwp_size_rb        = nof_prb;
++    pusch_config.bwp_size_rb        = live_cfo_regression ? 106 : nof_prb;
+     pusch_config.bwp_start_rb       = bwp_start_rb;
+     pusch_config.cp                 = cy_prefix;
+     pusch_config.mcs_descr          = mcs_descr;
+@@ -360,7 +382,7 @@ private:
+     auto emulator = std::make_unique<channel_emulator>("single-tap",
+                                                        "uniform-phase",
+                                                        sinr_dB,
+-                                                       0.0F, // CFO
++                                                       live_cfo_regression ? 400.0F : 0.0F, // CFO
+                                                        0,    // corrupted RE
+                                                        nof_layers,
+                                                        nof_rx_ports,
+@@ -375,6 +397,10 @@ private:
+ 
+     // Run test iterations
+     for (unsigned n = 0; n != nof_repetitions; ++n) {
++      if (live_cfo_regression) {
++        pdsch_config.slot = slot_point(to_numerology_value(scs), n);
++        pusch_config.slot = pdsch_config.slot;
++      }
+       // Generate random data
+       std::generate(tx_data.begin(), tx_data.end(), [&rgen]() { return static_cast<uint8_t>(rgen() & 0xff); });
+ 
+@@ -590,6 +616,8 @@ static void usage(std::string_view prog)
+   fmt::print("\t-P       Comma-separated list of PRB allocations. [Default 3,4,5,6]\n");
+   fmt::print("\t-S       Comma-separated list of SINR values in dB. [Default 5,10,15,20,25,30]\n");
+   fmt::print("\t-N       Comma-separated list of Rx port counts. [Default 1,2]\n");
++  fmt::print("\t-H       Exercise synchronous GPU SINR reporting with host-visible decoding (requires -L).\n");
++  fmt::print("\t-L       Live-style CFO decoding regression (15 kHz, offset PRB, interpolation, MMSE).\n");
+   fmt::print("\t-h       Print this message.\n");
+ }
+ 
+@@ -620,8 +648,17 @@ static std::vector<float> parse_float_list(const char* str)
+ static void parse_args(int argc, char** argv)
+ {
+   int opt = 0;
+-  while ((opt = getopt(argc, argv, "R:P:S:N:h")) != -1) {
++  while ((opt = getopt(argc, argv, "R:P:S:N:LHh")) != -1) {
+     switch (opt) {
++      case 'H':
++        sync_sinr_regression = true;
++        break;
++      case 'L':
++        live_cfo_regression = true;
++        scs = subcarrier_spacing::kHz15;
++        n_id = scrambling_id = 1;
++        mcs_index = 10;
++        break;
+       case 'R':
+         nof_repetitions = std::strtol(optarg, nullptr, 10);
+         break;
+diff --git a/tests/integrationtests/phy/upper/channel_processors/pxsch_bler_test_factories.cpp b/tests/integrationtests/phy/upper/channel_processors/pxsch_bler_test_factories.cpp
+index 92ec890..b9a6a0a 100644
+--- a/tests/integrationtests/phy/upper/channel_processors/pxsch_bler_test_factories.cpp
++++ b/tests/integrationtests/phy/upper/channel_processors/pxsch_bler_test_factories.cpp
+@@ -285,6 +285,8 @@ ocudu::create_sw_pusch_processor_factory(task_executor&
+     gpu_demod_config.max_nof_prb          = MAX_NOF_PRBS;
+     gpu_demod_config.enable_post_eq_sinr  = true;
+     gpu_demod_config.equalizer_algorithm  = equalizer_algorithm_type;
++    gpu_demod_config.compensate_cfo = compensate_cfo;
++    gpu_demod_config.td_interpolation_strategy = td_interpolation_strategy;
+     pusch_demod_factory                   = create_pusch_demodulator_factory_accelerated(gpu_demod_config);
+   }
+   // Fall back to SW demodulator if GPU is not available or not requested.
