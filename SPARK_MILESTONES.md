@@ -34,7 +34,7 @@ WG1이 문서에 적은 검증은 **이 기종**에서 나왔다. 앞의 두 플
 | **S4** | 단계별 활성화 + 백엔드 판정 | `verify-stage-backends.py`로 selected/degraded/fallback. **lower-PHY TX가 GB10에서도 DEGRADED인지** 실측 | **완료 2026-09-24** — 5단계 전부 통과, silent fallback 0. TX direct 경로는 GPU PDSCH가 켜진 단계부터만 |
 | **S5** | BLER/SINR 정합 + 이슈 6(16QAM CRC 상승) 재현 여부 | CPU 대비 BLER ≤1%p, SINR ≤0.5 dB, 이슈 6 판정 | **완료 2026-09-25** — C1: 할당 일치 PASS지만 합산 BLER 6배 → 원인 D8(1 PRB SINR) + D9(LDPC 계수). **C1+D8+D9: 교차 6회 ΔBLER −0.00%p, ΔSINR −0.19 dB, 16QAM `[0,17)` 1.90 vs 1.89%** |
 | **S6** | 측정 — 20 MHz 1-layer와 WG 수치 구성(100 MHz 4-layer) | WG 표의 21.20×(PUSCH) 등 재현 여부. **여기서부터 성능 주장 가능** | **완료 2026-09-25** — 100 MHz 4L: 감도·PDSCH 문서와 일치, **PUSCH 22×(CPU 빅 코어 고정; 미고정 40×는 착시)**. 20 MHz 1L: PDSCH 문서와 일치, PUSCH는 고정 시 1.1×(미고정 2.3×는 착시). 라이브 20 MHz 1L에서는 GPU가 느리다 |
-| **S7** | **채널 에뮬레이터 경유 + 멀티 gNB** — CUDA gNB를 emulator에 붙이고, CUDA gNB 프로세스 2개(2셀, 셀 간 간섭)를 한 GPU에서 | CUDA 1×1 emulator 게이트 통과, CPU 2셀 기준선 통과, CUDA 2셀에서 UE마다 자기 셀에 붙어 RRC/PDU/ping, 카운터 0, late 0 | **완료 2026-09-27** — 셋 다 통과. CUDA gNB 1개당 GPU 메모리 9,545 MiB. MPS 없이 시간 분할로 동작 |
+| **S7** | **채널 에뮬레이터 경유 + 멀티 gNB** — CUDA gNB를 emulator에 붙이고, CUDA gNB 프로세스 2개(2셀, 셀 간 간섭)를 한 GPU에서 | CUDA 1×1 emulator 게이트 통과, CPU 2셀 기준선 통과, CUDA 2셀에서 UE마다 자기 셀에 붙어 RRC/PDU/ping, 카운터 0, late 0 | **완료 2026-09-27** — 셋 다 통과. CUDA gNB 1개당 GPU 메모리 9,545 MiB. MPS 없이 시간 분할로 동작. zero-copy 브로커와 조합해도 통과했고(copy·zero-copy 각 2회), 브로커 p50이 30–35 µs, p99가 50–60 µs 줄었다 |
 
 ## 진행 기록
 
@@ -604,4 +604,20 @@ D9 수정은 `pusch_codeblock_decoder_cuda_batch.cpp`의 `min_sum_scale`을 0.75
 - **두 CUDA gNB 모두 GPU 경로를 탔다.** 로그의 경로 선택 줄이 1×1과 같다. 두 gNB 로그 어디에도 late·overflow 이벤트가 없다.
 - **MPS 없이 돌았다.** 두 프로세스가 GPU를 시간 분할로 나눴다. 브로커 호출이 CPU gNB 대비 p50 +15 µs, p99 +55 µs 늘었고, rx_starvations가 2 → 19로 늘었다. 셋 다 게이트 기준 안이다. 이 증가가 GPU 경합 때문인지는 분리하지 않았다.
 - **GPU 메모리:** nvidia-smi 기준 CUDA gNB 하나가 9,545 MiB를 잡는다. 5090(09-11, 1개)에서 잰 GPU 전체 사용량 10.7 GB와 같은 규모다. GB10(통합 121 GB)에서는 여유가 크다. 32 GB인 5090에서는 3개 이상이 어렵다(추정).
-- **아직 안 한 것:** MPS 켠 비교, zero-copy 브로커, 3셀 이상, 트래픽 부하에서 BLER/SINR, 장시간 실행.
+
+**zero-copy 브로커와 조합 (CUDA gNB × 2, `all`, copy·zero-copy 교대로 2회씩).** 네 번 모두 통과했고, UE는 매번 자기 셀에 붙었다. 카운터는 0이다. zero-copy 실행에서는 브로커 `gpu_timings`의 D2H가 0.8 µs라 zero-copy가 실제로 돌았다. copy 실행은 7.8–7.9 µs다.
+
+| 실행 | 브로커 | gNB 노드 n | gNB p50 / p99 | UE p50 / p99 | rx_starvations | ring 읽기 / emulator / ring 쓰기 (중앙값, µs) |
+|---|---|---|---|---|---|---|
+| 105519Z | copy | 34만 | 135 / 235 | 130 / 300–305 | 19 | 13.2 / 129.9 / 5.0 |
+| 113123Z | **zero-copy** | 34만 | **100 / 175** | **100 / 255** | 20 | 20.9 / 96.1 / 13.4 |
+| 113753Z | copy | 65만* | 100* / 225 | 130 / 305–310 | 18 | 12.8 / 113.2 / 4.8 |
+| 114423Z | **zero-copy** | 64만* | **75* / 175–180** | **95 / 255** | 22 | 20.5 / 79.0 / 12.6 |
+
+\* 두 번째 쌍은 gNB 노드 호출 수가 약 2배다. 샘플 수가 적은 조각 호출이 섞여 p50이 낮게 나오므로, 같은 쌍 안에서만 비교한다. UE 노드는 네 실행 모두 약 34만 회라 바로 비교할 수 있다.
+
+- **같은 쌍 안에서 zero-copy가 p50 30–35 µs, p99 50–60 µs 짧다.** UE 노드는 p50 130 → 95–100 µs, p99 300–310 → 255 µs다. 1×1 라이브에서 줄어든 폭(p50 약 20 µs, p99 약 25 µs)보다 크다. 이 토폴로지는 노드마다 들어오는 링크가 2개이고, GPU를 CUDA gNB 2개와 나눠 쓴다. 이 두 조건 중 어느 쪽이 폭을 키웠는지는 분리하지 않았다.
+- **브로커 한 슬롯(ring 읽기 + emulator + ring 쓰기)은 148 → 130 µs, 131 → 112 µs로 줄었다.** zero-copy에서 ring 단계가 길어지는 현상(Z8에서 본 것)이 여기서도 나타나지만, emulator 호출이 줄어든 폭이 더 크다.
+- **rx_starvations는 모드와 무관하게 18–22다.** 브로커 모드가 원인이 아니다. CPU gNB 2셀은 2였으므로 CUDA gNB 쪽 타이밍과 관련 있어 보이지만, 확인하지 않았다.
+- **GPU 메모리는 모드와 무관하게 gNB당 9,545 MiB다.**
+- **아직 안 한 것:** MPS 켠 비교, 3셀 이상, 트래픽 부하에서 BLER/SINR, 장시간 실행.
