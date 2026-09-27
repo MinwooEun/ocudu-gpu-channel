@@ -1,5 +1,8 @@
 #include "ocudu_gpu_channel/ring.h"
+#include <cstdint>
 #include <cstdlib>
+#include <deque>
+#include <random>
 #include <iostream>
 
 namespace {
@@ -68,6 +71,54 @@ int main()
     ocg::IqBuffer eight = {{1.0F, 0.0F}, {2.0F, 0.0F}, {3.0F, 0.0F}, {4.0F, 0.0F},
                            {5.0F, 0.0F}, {6.0F, 0.0F}, {7.0F, 0.0F}, {8.0F, 0.0F}};
     require(r.push(eight), "reset: new capacity honoured");
+  }
+
+  // Randomised check against a plain deque model: push/read/discard sequences
+  // of every length, over odd capacities, so pushes and reads start and end at
+  // every offset relative to the wrap (the block-copy path has two segments,
+  // and an off-by-one at the boundary would only show at specific offsets).
+  for (std::size_t cap : {1U, 3U, 7U, 16U, 61U}) {
+    ocg::IqRing r(cap);
+    std::deque<float> model;
+    std::uint64_t model_next = 0;
+    std::mt19937 rng(static_cast<unsigned>(cap));
+    float value = 0.0F;
+    for (int op = 0; op != 4000; ++op) {
+      const int kind = static_cast<int>(rng() % 3);
+      if (kind == 0) {
+        const std::size_t n = rng() % (cap + 2);
+        ocg::IqBuffer in(n);
+        for (auto& x : in) {
+          x = {value, -value};
+          value += 1.0F;
+        }
+        const bool fits = n <= cap && model.size() + n <= cap;
+        require(r.push(in) == fits, "random: push accepts exactly when it fits");
+        if (fits) {
+          for (const auto& x : in) model.push_back(x.i);
+          model_next += n;
+        } else {
+          value -= static_cast<float>(n);
+        }
+      } else if (kind == 1) {
+        const std::uint64_t earliest = model_next - model.size();
+        const std::uint64_t seq = earliest + rng() % (model.size() + 2);
+        const std::size_t n = rng() % (cap + 2);
+        ocg::IqBuffer out(n);
+        const bool valid = n == 0 || (seq >= earliest && seq + n <= model_next);
+        require(r.read(seq, out) == valid, "random: read succeeds exactly when in range");
+        for (std::size_t i = 0; valid && i != n; ++i) {
+          const float want = model[static_cast<std::size_t>(seq - earliest) + i];
+          require(out[i].i == want && out[i].q == -want, "random: read returns the pushed samples in order");
+        }
+      } else {
+        const std::uint64_t earliest = model_next - model.size();
+        const std::uint64_t seq = earliest + rng() % (model.size() + 2);
+        r.discard_before(seq);
+        while (!model.empty() && model_next - model.size() < seq) model.pop_front();
+      }
+      require(r.size() == model.size() && r.next_sequence() == model_next, "random: size and sequence track the model");
+    }
   }
 
   // Empty out-span read short-circuits to true regardless of ring state.

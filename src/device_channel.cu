@@ -187,9 +187,15 @@ __global__ void mix_fading_grid_kernel(
   }
 }
 
+// This edge's source samples for the slot, from either table layout.
+__device__ inline const IqSample* source_samples(const DeviceSourceTable& sources, int src_index, int count)
+{
+  return sources.direct != 0 ? sources.ptr[src_index] : sources.base + static_cast<std::size_t>(src_index) * count;
+}
+
 __global__ void apply_channel_kernel(
     const DeviceLinkState* __restrict__ states,
-    const IqSample* __restrict__ source_iq,
+    const __grid_constant__ DeviceSourceTable sources,
     const float2* __restrict__ fading_grid,
     IqSample* __restrict__ out_buffer,
     int n_links,
@@ -210,17 +216,16 @@ __global__ void apply_channel_kernel(
     return;
   }
   const DeviceLinkState* s = &states[k];
-  // D4: every read indexes source_iq by the edge's src_index, which is the
-  // slot for this edge's source-node IQ. Multiple edges sharing a source
-  // read from the same slot — the host pack deduped them into one copy.
-  const int src_base = s->src_index * count;
+  // D4: every read goes to the edge's source by src_index. Multiple edges
+  // sharing a source read the same samples -- the host deduped them.
+  const IqSample* __restrict__ source_iq = source_samples(sources, s->src_index, count);
 
   // Non-tdl link: pass-through (the kernel still runs on these for uniformity;
   // the cost is one global-memory read + write per sample, negligible).
   if (s->has_tdl == 0) {
     const int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < count) {
-      out_buffer[k * count + idx] = source_iq[src_base + idx];
+      out_buffer[k * count + idx] = source_iq[idx];
     }
     return;
   }
@@ -346,7 +351,7 @@ __global__ void apply_channel_kernel(
       if (read_idx >= count) {
         // Future read: zero (matches delay.h's apply_tdl_step bound).
       } else if (read_idx >= 0) {
-        const IqSample sam = source_iq[src_base + read_idx];
+        const IqSample sam = source_iq[read_idx];
         si = sam.i;
         sq = sam.q;
       } else {
@@ -388,7 +393,7 @@ __global__ void apply_channel_kernel(
 // per link is at most kDeviceMaxDelayLine memory ops, trivially serial).
 __global__ void update_delay_line_kernel(
     DeviceLinkState* __restrict__ states,
-    const IqSample* __restrict__ source_iq,
+    const __grid_constant__ DeviceSourceTable sources,
     const unsigned long long* __restrict__ next_slot_start,
     int n_links,
     int count)
@@ -411,12 +416,12 @@ __global__ void update_delay_line_kernel(
   // D4: read this edge's source slot. Multiple edges sharing a source all
   // roll their own delay_line from the same source_iq slot — that's correct;
   // each link's delay_line is per-link state, but the input bytes are shared.
-  const int src_base = s->src_index * count;
+  const IqSample* __restrict__ source_iq = source_samples(sources, s->src_index, count);
 
   if (count >= dl_size) {
     // Last dl_size samples of input become the new ring.
     for (int i = 0; i < dl_size; ++i) {
-      s->delay_line[i] = source_iq[src_base + (count - dl_size) + i];
+      s->delay_line[i] = source_iq[(count - dl_size) + i];
     }
   } else {
     // Shift ring left by `count`, append all of input at the end.
@@ -425,7 +430,7 @@ __global__ void update_delay_line_kernel(
       s->delay_line[i] = s->delay_line[i + count];
     }
     for (int i = 0; i < count; ++i) {
-      s->delay_line[keep_old + i] = source_iq[src_base + i];
+      s->delay_line[keep_old + i] = source_iq[i];
     }
   }
 }
@@ -654,7 +659,7 @@ void launch_mix_fading_grid_kernel(
 
 void launch_apply_channel_kernel_static(
     const DeviceLinkState* states,
-    const IqSample* source_iq,
+    const DeviceSourceTable& sources,
     const float* fading_grid,
     IqSample* out_buffer,
     int n_links,
@@ -671,13 +676,13 @@ void launch_apply_channel_kernel_static(
   const dim3 block(kBlockThreads, 1, 1);
   cudaStream_t s = static_cast<cudaStream_t>(stream);
   apply_channel_kernel<<<grid, block, 0, s>>>(
-      states, source_iq, reinterpret_cast<const float2*>(fading_grid), out_buffer, n_links, count,
+      states, sources, reinterpret_cast<const float2*>(fading_grid), out_buffer, n_links, count,
       sample_rate_hz);
 }
 
 void launch_update_delay_line_kernel(
     DeviceLinkState* states,
-    const IqSample* source_iq,
+    const DeviceSourceTable& sources,
     const unsigned long long* next_slot_start,
     int n_links,
     int count,
@@ -687,7 +692,7 @@ void launch_update_delay_line_kernel(
     return;
   }
   cudaStream_t s = static_cast<cudaStream_t>(stream);
-  update_delay_line_kernel<<<n_links, 1, 0, s>>>(states, source_iq, next_slot_start,
+  update_delay_line_kernel<<<n_links, 1, 0, s>>>(states, sources, next_slot_start,
                                                  n_links, count);
 }
 

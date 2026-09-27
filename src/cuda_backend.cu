@@ -360,6 +360,11 @@ struct CudaSuperposeState {
   bool zc_out = false;
   bool zc_meta = false;
   bool zc_direct = false;
+  // zc_direct_in (Z8): the channel kernels read each source straight from the
+  // caller's input span (DeviceSourceTable direct layout), so the host no
+  // longer packs host_source_iq. Device-channel path only, and only while the
+  // node's source count fits the table.
+  bool zc_direct_in = false;
   IqSample* mapped_staged = nullptr;
   GpuStep* mapped_host_steps = nullptr;
   int* mapped_host_step_meta = nullptr;
@@ -447,6 +452,7 @@ void free_superpose_state(CudaSuperposeState& state)
   state.zc_out = false;
   state.zc_meta = false;
   state.zc_direct = false;
+  state.zc_direct_in = false;
   state.host_link_states.clear();
   state.host_link_states.shrink_to_fit();
   state.source_first_edge.clear();
@@ -465,6 +471,7 @@ struct ZeroCopyParts {
   bool out = false;
   bool meta = false;
   bool direct = false;
+  bool direct_in = false;
 };
 
 bool resolve_zero_copy(CudaHostMemory mode, int device)
@@ -510,6 +517,7 @@ ZeroCopyParts resolve_zero_copy_parts(bool zero_copy, int device)
     parts.in = true;
     parts.out = true;
     parts.direct = pageable != 0;
+    parts.direct_in = pageable != 0;
     return parts;
   }
   const std::string list = env;
@@ -520,6 +528,15 @@ ZeroCopyParts resolve_zero_copy_parts(bool zero_copy, int device)
   parts.out = has("out");
   parts.meta = has("meta");
   parts.direct = has("direct");
+  parts.direct_in = has("direct_in");
+  if (parts.direct_in) {
+    int pageable = 0;
+    check(cudaDeviceGetAttribute(&pageable, cudaDevAttrPageableMemoryAccess, device),
+          "cudaDeviceGetAttribute pageableMemoryAccess");
+    if (pageable == 0) {
+      throw std::runtime_error("OCG_ZC_PARTS=direct_in needs pageable memory access");
+    }
+  }
   if (parts.direct) {
     int pageable = 0;
     check(cudaDeviceGetAttribute(&pageable, cudaDevAttrPageableMemoryAccess, device),
@@ -680,6 +697,7 @@ public:
       sp.zc_out = zc_parts_.out;
       sp.zc_meta = zc_parts_.meta;
       sp.zc_direct = zc_parts_.direct && sp.rows == 1;
+      sp.zc_direct_in = zc_parts_.direct_in;
       check(cudaHostAlloc(reinterpret_cast<void**>(&sp.host_staged), staged_bytes,
                           sp.zc_in ? cudaHostAllocMapped : cudaHostAllocDefault),
             "cudaHostAlloc superpose staged");
@@ -1051,6 +1069,15 @@ public:
     // suffices for every edge sharing source s, because the broker reads
     // all such edges from the same tx_ring at the same cursor — they
     // carry identical bytes.
+    //
+    // Z8 direct input skips the pack: the kernels read each source's span in
+    // place through the table, and build_steps reads the same span.
+    const bool direct_in =
+        sp.use_device_channel && sp.zc_direct_in && sp.num_sources <= static_cast<std::size_t>(kDeviceMaxDirectSources);
+    DeviceSourceTable source_table;
+    source_table.base = sp.device_source_iq;
+    source_table.direct = direct_in ? 1 : 0;
+    std::vector<const IqSample*> host_source(sp.num_sources, nullptr);
     if (sp.use_device_channel) {
       for (std::size_t s = 0; s < sp.num_sources; ++s) {
         const int k = sp.source_first_edge[s];
@@ -1061,8 +1088,14 @@ public:
         if (edge.samples.size() != count) {
           throw std::runtime_error("CUDA superposition input is malformed");
         }
-        IqSample* src_slot = sp.host_source_iq + s * count;
-        std::copy(edge.samples.data(), edge.samples.data() + count, src_slot);
+        if (direct_in) {
+          source_table.ptr[s] = edge.samples.data();
+          host_source[s] = edge.samples.data();
+        } else {
+          IqSample* src_slot = sp.host_source_iq + s * count;
+          std::copy(edge.samples.data(), edge.samples.data() + count, src_slot);
+          host_source[s] = src_slot;
+        }
       }
     }
     // M4.2 -- one snap per LINK per slot, before any of its edges is staged.
@@ -1218,8 +1251,8 @@ public:
         // the same raw_slot pointer here — fine because build_steps is
         // read-only on its input buffer.
         const int src_idx = sp.host_link_states[k].src_index;
-        IqSample* raw_slot = sp.host_source_iq + static_cast<std::size_t>(src_idx) * count;
-        build_steps(ls_it->second.model, *edge.model, raw_slot, count, sample_rate_hz);
+        build_steps(ls_it->second.model, *edge.model, host_source[static_cast<std::size_t>(src_idx)], count,
+                    sample_rate_hz);
       } else {
         // Host stage_link path (legacy).
         IqSample* slot = sp.host_staged + k * count;
@@ -1273,11 +1306,14 @@ public:
       // Phase 2 D2b + D4: raw IQ H2D into device_source_iq, sized by UNIQUE
       // source count. The channel kernel reads per-edge via
       // DeviceLinkState::src_index and writes device_staged. Bytes saved vs
-      // pre-D4 = (link_count - num_sources) * count * 8.
-      check(cudaMemcpyAsync(sp.device_source_iq, sp.host_source_iq,
-                            sp.num_sources * sample_bytes,
-                            cudaMemcpyHostToDevice, sp.stream),
-            "cudaMemcpyAsync superpose source_iq H2D");
+      // pre-D4 = (link_count - num_sources) * count * 8. Direct input reads
+      // the caller's spans instead, so there is nothing to ship.
+      if (!direct_in) {
+        check(cudaMemcpyAsync(sp.device_source_iq, sp.host_source_iq,
+                              sp.num_sources * sample_bytes,
+                              cudaMemcpyHostToDevice, sp.stream),
+              "cudaMemcpyAsync superpose source_iq H2D");
+      }
       check(cudaMemcpyAsync(sp.device_next_slot_start, sp.host_next_slot_start,
                             static_cast<std::size_t>(link_count) * sizeof(unsigned long long),
                             cudaMemcpyHostToDevice, sp.stream),
@@ -1341,7 +1377,7 @@ public:
         check(cudaGetLastError(), "mix_fading_grid_kernel launch");
       }
       launch_apply_channel_kernel_static(sp.device_link_states,
-                                          sp.device_source_iq,
+                                          source_table,
                                           sp.device_fading_grid,
                                           sp.device_staged,
                                           link_count,
@@ -1350,7 +1386,7 @@ public:
                                           sp.stream);
       check(cudaGetLastError(), "apply_channel_kernel launch");
       launch_update_delay_line_kernel(sp.device_link_states,
-                                       sp.device_source_iq,
+                                       source_table,
                                        sp.device_next_slot_start,
                                        link_count,
                                        static_cast<int>(count),
@@ -1404,7 +1440,7 @@ public:
     }
 
     record_timings(sp.h2d_start, sp.h2d_done, sp.kernel_done, sp.d2h_done, call_start, total_start, out_start,
-                   sp.use_device_channel, sp.zc_in || sp.zc_out || sp.zc_meta);
+                   sp.use_device_channel, sp.zc_in || sp.zc_out || sp.zc_meta || sp.zc_direct_in);
   }
 
   ProcessorTimings last_timings() const override

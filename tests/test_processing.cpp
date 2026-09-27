@@ -3,6 +3,7 @@
 #include "ocudu_gpu_channel/cpu_backend.h"
 #include "ocudu_gpu_channel/delay.h"
 #include "ocudu_gpu_channel/processing.h"
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdlib>
@@ -1223,9 +1224,15 @@ int main()
     // edges sharing one source, receiver noise model) and the host-stage path
     // (leading phase step reads host_staged through its mapping).
     {
+      // `source_of` gives each edge's source index; edges with the same index
+      // carry the same samples, as the broker's shared TX ring does.
       auto run_modes = [](const ocg::TopologyConfig& base, const std::string& dst,
                           const std::vector<std::string>& keys, const std::vector<const ocg::ModelConfig*>& models,
-                          const ocg::ModelConfig* rx, bool expect_device_channel, const char* label) {
+                          const ocg::ModelConfig* rx, bool expect_device_channel, const char* label,
+                          std::vector<int> source_of = {}) {
+        if (source_of.empty()) {
+          source_of.assign(keys.size(), 0);
+        }
         constexpr std::size_t batch = 256;
         constexpr int slots = 4;
         // Mode 0 is copy; modes 1.. are zero-copy with each OCG_ZC_PARTS split
@@ -1242,6 +1249,8 @@ int main()
             (void)ocg::create_channel_processor(probe);
             parts.push_back("in,out,meta,direct");
             parts.push_back("in,out,direct");
+            parts.push_back("direct_in");
+            parts.push_back("in,out,direct,direct_in");
           } catch (const std::exception&) {
             std::cout << "zero-copy parity: direct skipped (no pageable memory access)\n";
           }
@@ -1258,14 +1267,19 @@ int main()
           auto cuda = ocg::create_channel_processor(cfg);
           unsetenv("OCG_ZC_PARTS");
           for (int s = 0; s != slots; ++s) {
-            ocg::IqBuffer src(batch);
-            for (std::size_t n = 0; n != batch; ++n) {
-              const double t = static_cast<double>(s * batch + n);
-              src[n] = {static_cast<float>(std::cos(0.07 * t)), static_cast<float>(std::sin(0.11 * t))};
+            const int n_sources = 1 + *std::max_element(source_of.begin(), source_of.end());
+            std::vector<ocg::IqBuffer> src(static_cast<std::size_t>(n_sources), ocg::IqBuffer(batch));
+            for (int j = 0; j != n_sources; ++j) {
+              for (std::size_t n = 0; n != batch; ++n) {
+                const double t = static_cast<double>(s * batch + n);
+                src[static_cast<std::size_t>(j)][n] = {static_cast<float>(std::cos((0.07 + 0.05 * j) * t)),
+                                                       static_cast<float>(std::sin((0.11 + 0.03 * j) * t))};
+              }
             }
             std::vector<ocg::SuperpositionInput> edges;
             for (std::size_t k = 0; k != keys.size(); ++k) {
-              edges.push_back({.link_key = keys[k], .model = models[k], .samples = src});
+              edges.push_back({.link_key = keys[k], .model = models[k],
+                               .samples = src[static_cast<std::size_t>(source_of[k])]});
             }
             ocg::IqBuffer out(batch);
             cuda->process_superposition(dst, edges, rx, 23040000, out);
@@ -1342,6 +1356,27 @@ int main()
       run_modes(device_cfg, "ue0",
                 {ocg::link_key(device_cfg.links[0]), ocg::link_key(device_cfg.links[1])}, {&faded, &weak},
                 &rx_noise, true, "zero-copy parity: device-channel path must be bit-identical to copy");
+
+      // Fan-in: three UEs with distinct IQ into one gNB, so every source-table
+      // entry is a different buffer and a wrong src_index shows as a mismatch.
+      auto fanin_cfg = cfg;
+      fanin_cfg.devices = {{.id = "gnb0", .role = "gnb", .sample_rate_hz = 23040000,
+                            .tx_endpoint = "tx0", .rx_endpoint = "rx0", .rx_model = "zc_rx"}};
+      for (int u = 0; u != 3; ++u) {
+        const std::string id = "ue" + std::to_string(u);
+        fanin_cfg.devices.push_back({.id = id, .role = "ue", .sample_rate_hz = 23040000,
+                                     .tx_endpoint = "tx" + std::to_string(u + 1),
+                                     .rx_endpoint = "rx" + std::to_string(u + 1)});
+        fanin_cfg.links.push_back({.from = id, .to = "gnb0", .model = u == 1 ? weak.id : faded.id});
+      }
+      fanin_cfg.models.emplace(faded.id, faded);
+      fanin_cfg.models.emplace(weak.id, weak);
+      fanin_cfg.models.emplace(rx_noise.id, rx_noise);
+      run_modes(fanin_cfg, "gnb0",
+                {ocg::link_key(fanin_cfg.links[0]), ocg::link_key(fanin_cfg.links[1]),
+                 ocg::link_key(fanin_cfg.links[2])},
+                {&faded, &weak, &faded}, &rx_noise, true,
+                "zero-copy parity: 3-source fan-in must be bit-identical to copy", {0, 1, 2});
 
       auto host_cfg = cfg;
       host_cfg.links = {{.from = "gnb0", .to = "ue0", .model = phase.id}};

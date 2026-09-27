@@ -1,4 +1,5 @@
 #include "ocudu_gpu_channel/ring.h"
+#include <algorithm>
 
 namespace ocg {
 
@@ -24,12 +25,15 @@ bool IqRing::push(std::span<const IqSample> samples)
     return false;
   }
 
-  for (const auto& sample : samples) {
-    const std::size_t index = (start_ + size_) % buffer_.size();
-    buffer_[index] = sample;
-    ++size_;
-    ++next_sequence_;
-  }
+  // At most two contiguous block copies (before and after the wrap) instead
+  // of a per-sample modulo: a 1 ms slot is 23k+ samples, and the per-sample
+  // loop was the whole cost of the broker's ring stages.
+  const std::size_t tail = (start_ + size_) % buffer_.size();
+  const std::size_t first = std::min(samples.size(), buffer_.size() - tail);
+  std::copy(samples.begin(), samples.begin() + static_cast<std::ptrdiff_t>(first), buffer_.begin() + static_cast<std::ptrdiff_t>(tail));
+  std::copy(samples.begin() + static_cast<std::ptrdiff_t>(first), samples.end(), buffer_.begin());
+  size_ += samples.size();
+  next_sequence_ += samples.size();
   return true;
 }
 
@@ -43,9 +47,12 @@ bool IqRing::read(std::uint64_t sequence, std::span<IqSample> out) const
   }
 
   const auto offset = static_cast<std::size_t>(sequence - earliest_sequence());
-  for (std::size_t i = 0; i != out.size(); ++i) {
-    out[i] = buffer_[(start_ + offset + i) % buffer_.size()];
-  }
+  const std::size_t head = (start_ + offset) % buffer_.size();
+  const std::size_t first = std::min(out.size(), buffer_.size() - head);
+  std::copy(buffer_.begin() + static_cast<std::ptrdiff_t>(head),
+            buffer_.begin() + static_cast<std::ptrdiff_t>(head + first), out.begin());
+  std::copy(buffer_.begin(), buffer_.begin() + static_cast<std::ptrdiff_t>(out.size() - first),
+            out.begin() + static_cast<std::ptrdiff_t>(first));
   return true;
 }
 

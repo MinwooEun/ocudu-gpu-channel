@@ -19,8 +19,11 @@ enum class Backend {
 //             a discrete GPU, where device memory sits across PCIe.
 //   ZeroCopy: mapped pinned host buffers (cudaHostAllocMapped) that the
 //             kernels read and write directly, so the per-slot IQ copies
-//             disappear. Meant for integrated GPUs (GB10, Orin) whose GPU and
-//             CPU share one DRAM; on a discrete GPU every access crosses PCIe.
+//             disappear. Where the device can access pageable memory, the
+//             kernels also read the caller's input spans and write its output
+//             row in place, which removes the host packing and output copies.
+//             Meant for integrated GPUs (GB10, Orin) whose GPU and CPU share
+//             one DRAM; on a discrete GPU every access crosses PCIe.
 //   Auto:     ZeroCopy when the device reports cudaDevAttrIntegrated, else Copy.
 enum class CudaHostMemory {
   Copy,
