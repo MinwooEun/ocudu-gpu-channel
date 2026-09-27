@@ -14,6 +14,20 @@ enum class Backend {
   Cuda
 };
 
+// How the CUDA backend moves per-slot IQ between host and GPU.
+//   Copy:     pinned host buffers + explicit H2D/D2H cudaMemcpyAsync. Right for
+//             a discrete GPU, where device memory sits across PCIe.
+//   ZeroCopy: mapped pinned host buffers (cudaHostAllocMapped) that the
+//             kernels read and write directly, so the per-slot IQ copies
+//             disappear. Meant for integrated GPUs (GB10, Orin) whose GPU and
+//             CPU share one DRAM; on a discrete GPU every access crosses PCIe.
+//   Auto:     ZeroCopy when the device reports cudaDevAttrIntegrated, else Copy.
+enum class CudaHostMemory {
+  Copy,
+  ZeroCopy,
+  Auto
+};
+
 enum class ModelStepType {
   PathLoss,
   Awgn,
@@ -72,6 +86,9 @@ struct RuntimeConfig {
   // bound is 1 ms. Lower it if a live attach shows the added delay eating the
   // slot budget; Msg3 PUSCH is the thinnest margin in this system on record.
   std::size_t rx_ring_batches = 2;
+  // Default Copy keeps every platform on the measured path until the ZeroCopy
+  // numbers (ZERO_COPY_MILESTONES.md) justify flipping it.
+  CudaHostMemory cuda_host_memory = CudaHostMemory::Copy;
 };
 
 // A node in the channel-emulation graph. gNBs and UEs are the SAME class -- a
@@ -443,6 +460,7 @@ std::string to_string(Backend backend);
 std::string to_string(ModelStepType type);
 
 Backend parse_backend(const std::string& value);
+CudaHostMemory parse_cuda_host_memory(const std::string& value);
 ModelStepType parse_model_step_type(const std::string& value);
 
 std::size_t resolve_batch_samples(const RuntimeConfig& runtime, std::uint64_t sample_rate_hz);

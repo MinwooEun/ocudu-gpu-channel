@@ -15,7 +15,7 @@ namespace {
 
 void usage()
 {
-  std::cout << "usage: ocudu-gpu-channel-bench --config topology.yaml [--duration 10s] [--scs-khz 30]\n"
+  std::cout << "usage: ocudu-gpu-channel-bench --config topology.yaml [--duration 10s] [--scs-khz 30] [--per-node]\n"
             << "  Drives ChannelProcessor::process_superposition() once per RX node per slot,\n"
             << "  the same call the live broker makes. One fused H2D + kernel + D2H on CUDA\n"
             << "  regardless of edge count.\n";
@@ -41,6 +41,7 @@ void print_summary_row(const std::string& metric,
 int main(int argc, char** argv)
 {
   std::string config_path;
+  bool per_node = false;
   std::chrono::milliseconds duration = std::chrono::seconds(10);
   unsigned scs_khz = 30;
 
@@ -54,6 +55,8 @@ int main(int argc, char** argv)
       config_path = argv[++i];
     } else if (arg == "--duration" && i + 1 < argc) {
       duration = ocg::app::parse_duration(argv[++i]);
+    } else if (arg == "--per-node") {
+      per_node = true;
     } else if (arg == "--scs-khz" && i + 1 < argc) {
       scs_khz = static_cast<unsigned>(std::stoul(argv[++i]));
     } else {
@@ -94,6 +97,16 @@ int main(int argc, char** argv)
     ocg::LatencyRecorder kernel_recorder;
     ocg::LatencyRecorder d2h_recorder;
     ocg::LatencyRecorder gpu_process_recorder;
+    ocg::LatencyRecorder call_recorder;
+    ocg::LatencyRecorder host_prep_recorder;
+    ocg::LatencyRecorder host_out_recorder;
+    // --per-node: the same CUDA phases per destination node. The aggregate
+    // rows mix every node's calls, so a single heavy node (a gNB with many
+    // incoming UEs) only shows up in the tail; this keeps it visible.
+    struct NodeRecorders {
+      ocg::LatencyRecorder call, gpu_process, h2d, kernel, d2h, host_prep, host_out;
+    };
+    std::unordered_map<std::string, NodeRecorders> per_node_recorders;
     // Cumulative per-RX power statistics, used by cross-backend matching:
     // sum(|i|^2 + |q|^2) over every sample of every slot, divided by total
     // samples at the end. Cumulative stat converges with iteration count
@@ -186,6 +199,19 @@ int main(int argc, char** argv)
             add_us(kernel_recorder, timings.kernel_us);
             add_us(d2h_recorder, timings.d2h_us);
             add_us(gpu_process_recorder, timings.gpu_process_us);
+            add_us(call_recorder, timings.call_us);
+            add_us(host_prep_recorder, timings.host_prep_us);
+            add_us(host_out_recorder, timings.host_out_us);
+            if (per_node) {
+              auto& nr = per_node_recorders[node.id];
+              add_us(nr.call, timings.call_us);
+              add_us(nr.gpu_process, timings.gpu_process_us);
+              add_us(nr.h2d, timings.h2d_us);
+              add_us(nr.kernel, timings.kernel_us);
+              add_us(nr.d2h, timings.d2h_us);
+              add_us(nr.host_prep, timings.host_prep_us);
+              add_us(nr.host_out, timings.host_out_us);
+            }
           }
         }
         recorder.add(std::chrono::steady_clock::now() - start);
@@ -204,8 +230,28 @@ int main(int argc, char** argv)
       print_summary_row("kernel_us", kernel_recorder.summarize(), slot_us, "n/a");
       print_summary_row("d2h_us", d2h_recorder.summarize(), slot_us, "n/a");
       print_summary_row("gpu_process_us", gpu_process_recorder.summarize(), slot_us, "n/a");
+      print_summary_row("call_us", call_recorder.summarize(), slot_us, "n/a");
+      print_summary_row("host_prep_us", host_prep_recorder.summarize(), slot_us, "n/a");
+      print_summary_row("host_out_us", host_out_recorder.summarize(), slot_us, "n/a");
+      for (const auto& node : resolved.nodes) {
+        auto it = per_node_recorders.find(node.id);
+        if (it == per_node_recorders.end()) {
+          continue;
+        }
+        const std::string prefix = "node:" + node.id + ":";
+        print_summary_row(prefix + "call_us", it->second.call.summarize(), slot_us, "n/a");
+        print_summary_row(prefix + "gpu_process_us", it->second.gpu_process.summarize(), slot_us, "n/a");
+        print_summary_row(prefix + "h2d_us", it->second.h2d.summarize(), slot_us, "n/a");
+        print_summary_row(prefix + "kernel_us", it->second.kernel.summarize(), slot_us, "n/a");
+        print_summary_row(prefix + "d2h_us", it->second.d2h.summarize(), slot_us, "n/a");
+        print_summary_row(prefix + "host_prep_us", it->second.host_prep.summarize(), slot_us, "n/a");
+        print_summary_row(prefix + "host_out_us", it->second.host_out.summarize(), slot_us, "n/a");
+      }
     }
     std::cout << "backend," << processor->backend_name() << "\n";
+    // The host-memory mode the CUDA backend actually ran (runtime.cuda_host_memory
+    // after auto resolution), so an A/B run cannot silently measure the wrong one.
+    std::cout << "cuda_zero_copy," << (processor->last_timings().zero_copy ? 1 : 0) << "\n";
     std::cout << "cuda_status," << ocg::backend_status() << "\n";
     std::cout << "iterations," << iterations << "\n";
     std::cout << "raw_cf32_full_duplex_bits_per_device,rate_hz,bits_per_second\n";

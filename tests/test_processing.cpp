@@ -1213,6 +1213,143 @@ int main()
       require_near_buffer(ref, cuda_out,
                           "D4: same-source 2-edge CUDA output must match CPU sum at 1e-3");
     }
+
+    // (h) runtime.cuda_host_memory=zero_copy must be bit-identical to copy.
+    // Zero-copy changes only where the kernels read and write (mapped host
+    // memory instead of H2D/D2H-filled device buffers), never what they
+    // compute, so the gate is exact equality over several slots -- carrying
+    // delay-line, fading-clock, CFO-phase and AWGN-counter state across them.
+    // Covers the device-channel path (fading tdl + cfo + snr_db awgn, two
+    // edges sharing one source, receiver noise model) and the host-stage path
+    // (leading phase step reads host_staged through its mapping).
+    {
+      auto run_modes = [](const ocg::TopologyConfig& base, const std::string& dst,
+                          const std::vector<std::string>& keys, const std::vector<const ocg::ModelConfig*>& models,
+                          const ocg::ModelConfig* rx, bool expect_device_channel, const char* label) {
+        constexpr std::size_t batch = 256;
+        constexpr int slots = 4;
+        // Mode 0 is copy; modes 1.. are zero-copy with each OCG_ZC_PARTS split
+        // (Z4), so every mapped buffer is exercised on its own and together.
+        // `direct` needs pageable memory access; prepare() refuses it where the
+        // device lacks that, which is how this test learns whether to run it.
+        // nullptr = no OCG_ZC_PARTS, i.e. the default split.
+        std::vector<const char*> parts = {nullptr, "in,out", "in,out,meta", "in", "out", "meta"};
+        {
+          auto probe = base;
+          probe.runtime.cuda_host_memory = ocg::CudaHostMemory::ZeroCopy;
+          setenv("OCG_ZC_PARTS", "in,out,meta,direct", 1);
+          try {
+            (void)ocg::create_channel_processor(probe);
+            parts.push_back("in,out,meta,direct");
+            parts.push_back("in,out,direct");
+          } catch (const std::exception&) {
+            std::cout << "zero-copy parity: direct skipped (no pageable memory access)\n";
+          }
+          unsetenv("OCG_ZC_PARTS");
+        }
+        const int n_modes = 1 + static_cast<int>(parts.size());
+        std::vector<std::vector<ocg::IqBuffer>> outs(static_cast<std::size_t>(n_modes));
+        for (int mode = 0; mode != n_modes; ++mode) {
+          auto cfg = base;
+          cfg.runtime.cuda_host_memory = mode == 0 ? ocg::CudaHostMemory::Copy : ocg::CudaHostMemory::ZeroCopy;
+          if (mode != 0 && parts[static_cast<std::size_t>(mode - 1)] != nullptr) {
+            setenv("OCG_ZC_PARTS", parts[static_cast<std::size_t>(mode - 1)], 1);
+          }
+          auto cuda = ocg::create_channel_processor(cfg);
+          unsetenv("OCG_ZC_PARTS");
+          for (int s = 0; s != slots; ++s) {
+            ocg::IqBuffer src(batch);
+            for (std::size_t n = 0; n != batch; ++n) {
+              const double t = static_cast<double>(s * batch + n);
+              src[n] = {static_cast<float>(std::cos(0.07 * t)), static_cast<float>(std::sin(0.11 * t))};
+            }
+            std::vector<ocg::SuperpositionInput> edges;
+            for (std::size_t k = 0; k != keys.size(); ++k) {
+              edges.push_back({.link_key = keys[k], .model = models[k], .samples = src});
+            }
+            ocg::IqBuffer out(batch);
+            cuda->process_superposition(dst, edges, rx, 23040000, out);
+            const auto t = cuda->last_timings();
+            require(t.zero_copy == (mode != 0), "zero-copy parity: timings must report the resolved mode");
+            require(t.used_device_channel == expect_device_channel,
+                    "zero-copy parity: dispatch path must not depend on host-memory mode");
+            outs[static_cast<std::size_t>(mode)].push_back(std::move(out));
+          }
+        }
+        for (int mode = 1; mode != n_modes; ++mode) {
+          for (int s = 0; s != slots; ++s) {
+            for (std::size_t n = 0; n != batch; ++n) {
+              const auto& a = outs[0][static_cast<std::size_t>(s)][n];
+              const auto& b = outs[static_cast<std::size_t>(mode)][static_cast<std::size_t>(s)][n];
+              if (!(a.i == b.i && a.q == b.q)) {
+                const char* split = parts[static_cast<std::size_t>(mode - 1)];
+                std::cerr << "zero-copy parts " << (split != nullptr ? split : "default") << " slot " << s
+                          << " sample " << n << "\n";
+              }
+              require(a.i == b.i && a.q == b.q, label);
+            }
+          }
+        }
+      };
+
+      ocg::TopologyConfig cfg;
+      cfg.runtime.backend = ocg::Backend::Cuda;
+      cfg.runtime.batch_samples_auto = false;
+      cfg.runtime.batch_samples = 256;
+      cfg.runtime.queue_samples = 4096;
+      cfg.devices = {{.id = "gnb0", .role = "gnb", .sample_rate_hz = 23040000,
+                      .tx_endpoint = "tx0", .rx_endpoint = "rx0"},
+                     {.id = "ue0", .role = "ue", .sample_rate_hz = 23040000,
+                      .tx_endpoint = "tx1", .rx_endpoint = "rx1", .rx_model = "zc_rx"}};
+
+      ocg::ModelConfig faded;
+      faded.id = "zc_faded";
+      ocg::ModelStep tdl;
+      tdl.type = ocg::ModelStepType::Tdl;
+      tdl.taps = {ocg::TapSpec{.delay_samples = 0.0, .gain_db = 0.0, .phase_rad = 0.0, .is_los = true,
+                               .los_k_db = 6.0, .los_angle_rad = 0.0},
+                  ocg::TapSpec{.delay_samples = 3.5, .gain_db = -3.0, .phase_rad = 0.0},
+                  ocg::TapSpec{.delay_samples = 17.25, .gain_db = -9.0, .phase_rad = 0.4}};
+      tdl.taps_declared = true;
+      tdl.fading_enabled = true;
+      tdl.fading_f_d_max_hz = 50.0;
+      tdl.fading_grid_us = 100.0;
+      tdl.fading_spectrum = ocg::FadingSpectrum::Jakes;
+      faded.chain.push_back(tdl);
+      faded.chain.push_back({.type = ocg::ModelStepType::Cfo, .params = {{"cfo_hz", 150.0}}});
+      faded.chain.push_back({.type = ocg::ModelStepType::Awgn, .params = {{"snr_db", 20.0}}});
+      ocg::ModelConfig weak;
+      weak.id = "zc_weak";
+      ocg::ModelStep weak_tdl;
+      weak_tdl.type = ocg::ModelStepType::Tdl;
+      weak_tdl.taps = {ocg::TapSpec{.delay_samples = 1.0, .gain_db = -6.0, .phase_rad = 0.2}};
+      weak_tdl.taps_declared = true;
+      weak.chain.push_back(weak_tdl);
+      ocg::ModelConfig rx_noise;
+      rx_noise.id = "zc_rx";
+      rx_noise.chain.push_back({.type = ocg::ModelStepType::Awgn, .params = {{"noise_power", 1e-3}}});
+      ocg::ModelConfig phase;
+      phase.id = "zc_phase";
+      phase.chain.push_back({.type = ocg::ModelStepType::Phase, .params = {{"phase_rad", 0.3}}});
+      phase.chain.push_back({.type = ocg::ModelStepType::Awgn, .params = {{"snr_db", 25.0}}});
+
+      auto device_cfg = cfg;
+      device_cfg.links = {{.from = "gnb0", .to = "ue0", .model = faded.id},
+                          {.from = "gnb0", .to = "ue0", .model = weak.id}};
+      device_cfg.models.emplace(faded.id, faded);
+      device_cfg.models.emplace(weak.id, weak);
+      device_cfg.models.emplace(rx_noise.id, rx_noise);
+      run_modes(device_cfg, "ue0",
+                {ocg::link_key(device_cfg.links[0]), ocg::link_key(device_cfg.links[1])}, {&faded, &weak},
+                &rx_noise, true, "zero-copy parity: device-channel path must be bit-identical to copy");
+
+      auto host_cfg = cfg;
+      host_cfg.links = {{.from = "gnb0", .to = "ue0", .model = phase.id}};
+      host_cfg.models.emplace(phase.id, phase);
+      host_cfg.models.emplace(rx_noise.id, rx_noise);
+      run_modes(host_cfg, "ue0", {ocg::link_key(host_cfg.links[0])}, {&phase}, &rx_noise, false,
+                "zero-copy parity: host-stage path must be bit-identical to copy");
+    }
   }
 #endif
 

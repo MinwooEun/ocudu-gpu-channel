@@ -34,6 +34,20 @@ struct ProcessorTimings {
   // regression in the dispatch gate can't silently revert to host staging
   // -- parity would still hold but the 183x perf win would be lost.
   bool used_device_channel = false;
+  // True when the most recent CUDA call ran with runtime.cuda_host_memory
+  // resolved to ZeroCopy: the kernels read and wrote mapped host memory, so
+  // h2d_us covers only the small per-slot metadata and d2h_us is ~0.
+  bool zero_copy = false;
+  // Host-side parts of the same call, so a phase table accounts for all of it:
+  //   host_prep_us: call entry -> first GPU enqueue (input packing into the
+  //                 staging buffer, control snaps, model-chain builds)
+  //   host_out_us:  staging output -> caller rows copy after the sync
+  //   call_us:      the whole call (what the broker's process_us measures)
+  // gpu_process_us runs from the first enqueue to the end, so it includes
+  // host_out_us but not host_prep_us.
+  double host_prep_us = 0.0;
+  double host_out_us = 0.0;
+  double call_us = 0.0;
 };
 
 // One incoming lane of a superposition: the lane's channel model and the

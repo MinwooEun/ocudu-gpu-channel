@@ -1544,6 +1544,24 @@ models:
   require(rx_ring_explicit.runtime.rx_ring_batches == 4,
           "runtime.rx_ring_batches parses an explicit value");
 
+  // runtime.cuda_host_memory selects how the CUDA backend moves per-slot IQ.
+  require(rx_ring_default.runtime.cuda_host_memory == ocg::CudaHostMemory::Copy,
+          "runtime.cuda_host_memory defaults to copy when omitted");
+  write_rx_ring_config("  cuda_host_memory: zero_copy");
+  require(ocg::load_config_file(rx_ring_path).runtime.cuda_host_memory == ocg::CudaHostMemory::ZeroCopy,
+          "runtime.cuda_host_memory parses zero_copy");
+  write_rx_ring_config("  cuda_host_memory: auto");
+  require(ocg::load_config_file(rx_ring_path).runtime.cuda_host_memory == ocg::CudaHostMemory::Auto,
+          "runtime.cuda_host_memory parses auto");
+  write_rx_ring_config("  cuda_host_memory: mapped");
+  rejected = false;
+  try {
+    (void)ocg::load_config_file(rx_ring_path);
+  } catch (const std::exception&) {
+    rejected = true;
+  }
+  require(rejected, "runtime.cuda_host_memory rejects an unknown mode");
+
   write_rx_ring_config("  rx_ring_batches: 1");
   rejected = false;
   try {
