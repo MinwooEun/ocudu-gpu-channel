@@ -34,6 +34,7 @@ WG1이 문서에 적은 검증은 **이 기종**에서 나왔다. 앞의 두 플
 | **S4** | 단계별 활성화 + 백엔드 판정 | `verify-stage-backends.py`로 selected/degraded/fallback. **lower-PHY TX가 GB10에서도 DEGRADED인지** 실측 | **완료 2026-09-24** — 5단계 전부 통과, silent fallback 0. TX direct 경로는 GPU PDSCH가 켜진 단계부터만 |
 | **S5** | BLER/SINR 정합 + 이슈 6(16QAM CRC 상승) 재현 여부 | CPU 대비 BLER ≤1%p, SINR ≤0.5 dB, 이슈 6 판정 | **완료 2026-09-25** — C1: 할당 일치 PASS지만 합산 BLER 6배 → 원인 D8(1 PRB SINR) + D9(LDPC 계수). **C1+D8+D9: 교차 6회 ΔBLER −0.00%p, ΔSINR −0.19 dB, 16QAM `[0,17)` 1.90 vs 1.89%** |
 | **S6** | 측정 — 20 MHz 1-layer와 WG 수치 구성(100 MHz 4-layer) | WG 표의 21.20×(PUSCH) 등 재현 여부. **여기서부터 성능 주장 가능** | **완료 2026-09-25** — 100 MHz 4L: 감도·PDSCH 문서와 일치, **PUSCH 22×(CPU 빅 코어 고정; 미고정 40×는 착시)**. 20 MHz 1L: PDSCH 문서와 일치, PUSCH는 고정 시 1.1×(미고정 2.3×는 착시). 라이브 20 MHz 1L에서는 GPU가 느리다 |
+| **S7** | **채널 에뮬레이터 경유 + 멀티 gNB** — CUDA gNB를 emulator에 붙이고, CUDA gNB 프로세스 2개(2셀, 셀 간 간섭)를 한 GPU에서 | CUDA 1×1 emulator 게이트 통과, CPU 2셀 기준선 통과, CUDA 2셀에서 UE마다 자기 셀에 붙어 RRC/PDU/ping, 카운터 0, late 0 | **완료 2026-09-27** — 셋 다 통과. CUDA gNB 1개당 GPU 메모리 9,545 MiB. MPS 없이 시간 분할로 동작 |
 
 ## 진행 기록
 
@@ -580,3 +581,27 @@ D9 수정은 `pusch_codeblock_decoder_cuda_batch.cpp`의 `min_sum_scale`을 0.75
 - 여러 PDU를 한 번에 인코딩하는 경로(`ldpc_encoder_cuda_batch`, `transport_block.cu`)는 라이브러리에 있지만 **gNB 코드 어디에서도 호출되지 않는다**. 벤치마크만 하위 API를 직접 쓴다. 이 경로가 gNB 처리기의 일을 전부 포함하는지는 확인하지 않았다.
 - 결론: 다중 UE에서 GPU가 CPU보다 느린 이유는 교차 PDU 배치가 gNB에 연결되지 않았기 때문이다. 연결하면 7배 가까운 여지가 있다.
 - GPU PDSCH를 켜도 DMRS는 CPU가 매핑한다(`pdsch_processor_flexible_impl::map_reference_signals`, D7 스택). 그래서 슬롯마다 그리드 소유권이 CPU와 GPU를 오간다.
+
+### S7 — 채널 에뮬레이터 경유 + 멀티 gNB (2026-09-27)
+
+지금까지 Spark의 CUDA gNB 라이브는 직결 ZMQ(gNB↔srsUE)뿐이었다. 이번에 처음으로 channel emulator를 거쳐 붙였고, 이어서 CUDA gNB 프로세스 2개를 한 GPU에서 돌렸다. 빌드는 C1+D8+D9(`cuda-workspace.spark-d8.lock.json`, `builds/d8-cuda-patched-sm121`), 가속 단계 `all`, emulator 브로커는 `gb10-zero-copy` 트리(`/workspace/gpuch/zc9`)이고 host memory는 `copy`다.
+
+**1×1 (`run-ocudu-cuda-1x1.sh`, 20260927T104658Z): 통과.** `tx_pulls=67097`, `rx_starvations=7`, 카운터 0. gNB 로그에서 GPU 경로 선택을 확인했다: UL 그리드 direct writer, DL 그리드 direct reader, PRACH buffer direct writer. lower-PHY TX는 host staging fallback이다(S4와 같음).
+
+**멀티 gNB 러너.** `scripts/native/run-ocudu-multi-gnb.sh`(+`-inner.sh`, `render-multi-gnb-configs.py`)를 새로 만들었다. Docker 기반 `scripts/remote/ocudu-multi-gnb-smoke.sh`를 native로 옮긴 것이다. 네임스페이스·프로세스 관리는 native 멀티 UE 게이트 것을 그대로 쓴다. 구성은 다음과 같다.
+- gNB 프로세스 2개. 셀마다 PCI 1/2, `gnb_id` 411/412, ZMQ 포트 2000–2001/2010–2011이 다르다. N2/N3 bind는 `127.0.0.11`/`.12`로 나눴다(같은 주소면 GTP-U 포트가 충돌한다).
+- srsUE 2개, Open5GS 하나.
+- 브로커 토폴로지는 `examples/topology.multi-gnb.cuda.yaml`이다: serving 6 dB, intercell 20 dB, 링크 8개.
+- `OCUDU_NATIVE_GNB_ACCELERATION`이 있으면 CUDA gNB(두 셀 모두), 없으면 CPU gNB다.
+- 판정에 **UE가 자기 셀(PCI)에 붙었는지**를 넣었다. 두 UE가 한 셀에만 붙으면 2셀 시험이 아니기 때문이다.
+- aarch64용 노브를 넣었다: `OCUDU_NATIVE_CUDA_ARCH`, `OCUDU_NATIVE_SKIP_WORKSPACE_LOCK`.
+
+| 실행 | gNB | 결과 | UE0 → PCI | UE1 → PCI | rx_starvations | 브로커 p50 / p99 (gNB 노드) | GPU 메모리 |
+|---|---|---|---|---|---|---|---|
+| 20260927T105015Z | CPU × 2 | **통과** | 1 (기대 1) | 2 (기대 2) | 2 | 120 / 180 µs | — |
+| 20260927T105519Z | **CUDA × 2** (`all`) | **통과** | 1 (기대 1) | 2 (기대 2) | 19 | 135 / 235 µs | **gNB당 9,545 MiB** (RSS 4.9 GB) |
+
+- **두 CUDA gNB 모두 GPU 경로를 탔다.** 로그의 경로 선택 줄이 1×1과 같다. 두 gNB 로그 어디에도 late·overflow 이벤트가 없다.
+- **MPS 없이 돌았다.** 두 프로세스가 GPU를 시간 분할로 나눴다. 브로커 호출이 CPU gNB 대비 p50 +15 µs, p99 +55 µs 늘었고, rx_starvations가 2 → 19로 늘었다. 셋 다 게이트 기준 안이다. 이 증가가 GPU 경합 때문인지는 분리하지 않았다.
+- **GPU 메모리:** nvidia-smi 기준 CUDA gNB 하나가 9,545 MiB를 잡는다. 5090(09-11, 1개)에서 잰 GPU 전체 사용량 10.7 GB와 같은 규모다. GB10(통합 121 GB)에서는 여유가 크다. 32 GB인 5090에서는 3개 이상이 어렵다(추정).
+- **아직 안 한 것:** MPS 켠 비교, zero-copy 브로커, 3셀 이상, 트래픽 부하에서 BLER/SINR, 장시간 실행.
