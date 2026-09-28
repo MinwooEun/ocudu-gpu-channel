@@ -40,6 +40,7 @@ WG1이 문서에 적은 검증은 **이 기종**에서 나왔다. 앞의 두 플
 | **S10** | **100 MHz가 패치 후에도 실시간의 0.72×인 이유** | 슬롯 경로를 홉별로 나누고, 원인을 되돌리는 조작으로 확인 | **완료 2026-09-28** — 원인은 바이트가 아니라 **CPU 배치**다. lock-step 고리에 파이프라이닝이 사실상 없어(리드 0–1 메시지) 슬롯마다 고리 한 바퀴를 기다리는데, 그 고리의 스레드 전환이 (a) 깊은 idle 상태(LPI-3, 탈출 지연 433 µs 선언)에 들어간 코어를 깨우고 (b) 절반은 A725 little 코어에서 돈다. **gNB·브로커·UE를 X925 big 코어에 나눠 고정하면 1,470 → 2,060–2,077 슬롯/s(실시간)**, CUDA gNB + MPS도 2,068. little 코어 고정은 1,522 |
 | **S11** | **S9–S10 해결책을 게이트 기본값으로 + S8 재측정** — 패치 OAI ZMQ 모듈, 플랫폼 CPU 배치, CUDA gNB면 MPS를 환경 변수 없이 적용하고, 그 조건에서 20–100 MHz를 다시 잰다. 브로커 코어 수와 라이브·벤치 차이도 가른다 | 기본값만으로 실시간, 적용 내역이 실행마다 기록됨, srsUE 게이트 무회귀, 대역폭마다 copy·zero-copy 2쌍, 원인마다 대조 | **완료 2026-09-28** — 24/24 통과, **20–100 MHz 전부 실시간**(S8 0.3×), starvation 3,000대 → 1(CUDA gNB 5). 브로커를 3코어로 주니 100 MHz p99 115–135 → **65 µs**(CPU·CUDA gNB). 라이브 커널이 벤치보다 긴 이유는 little 코어 배치(이제 해결)와 CPU가 막 쓴 입력(+1.6 µs, GB10 일관성) |
 | **S12** | **integration-0928 조합 검증** — GB10에서 prepare() 수정 확인, 1x1 회귀, OAI 2×2 rank 2(copy·zero-copy, CUDA gNB, 40–100 MHz, 덜 깨끗한 H) | 게이트 기본값만으로, 실행마다 다른 GPU 프로세스 기록, y=Hx 같은 실행에서 | **완료 2026-09-28** — 20 MHz 2×2 rank 2 copy·zero-copy 2쌍 전부 NACK 0, 148 Mb/s(air), y=Hx 통과, zero-copy가 브로커 p50 70 → 50 µs. **새 결함 2개:** (1) OAI UE가 OCUDU 기본 송신 레벨(12 dB 백오프)에서 64QAM의 69–89%를 NACK(rank 1·2, 1×1 게이트는 ping만 봐서 통과로 보였음) → 로컬 패치 `oai-zmq-rx-gain.patch` + 게이트 기본 UE RX gain −12 dB로 NACK 0. (2) CUDA gNB의 PDSCH 가속이 2포트 셀의 rank 1에서 NACK 45%(rank 2는 5.5%) — 미해결. 40–100 MHz 2×2는 부하 시 실시간 0.24–0.59(UE CPU) |
+| **S13** | **CUDA gNB PDSCH 결함(D10), 넓은 대역 2×2 실시간, 50 MHz rank 2 비율** | CPU·GPU 출력 비교로 위치를 좁히고, 수정은 D-계열 규약(패치·lock·음성 대조군)으로, 라이브는 CPU gNB와 짝지어 | **완료 2026-09-28** — **D10:** GPU TB 인코더가 CPU 세그멘터의 filler 0을 "값 없음"으로 보고 자기 값을 써서, filler 0인 다중 CB TB(예: 9,474 B = BG1 9 CB)가 틀린 K로 부호화됐다. 2포트 문제가 아니었다(1포트도 같음, 게이트가 ping만 봐서 숨음). 수정 후 CUDA gNB 2×2 rank 2 148.2 · rank 1 74.1 Mb/s, NACK 0 = CPU gNB, d8 대조 NACK 45%. **100 MHz 2×2는 코어 배치로 안 풀린다**(0.26 → 최대 0.32): lock-step 한 바퀴가 0.8–0.9 ms(중계 + 장치 턴어라운드, 리드 0–1)로 0.5 ms를 넘는 구조 한계. **50 MHz rank 2 21%**는 스케줄러가 아니라 부하 중 UE가 RI=1을 보고한 결과(원인 미확정) |
 
 ## 진행 기록
 
@@ -872,4 +873,55 @@ UE 노드 기준, 같은 대역폭의 S8 값과 비교(전체 표는 `compare-bw
 **6. 패치 점검(`check-oai-local-patches.sh --probe`, Spark):** 정적 11/11, probe 5/6. 실패 1건은 ZMQ reply-poll의 "패치 후 > 0.9" 기준이었다. 이 probe는 2×2에 200M 부하를 거는데, Spark의 2코어 UE는 패치 후에도 0.89에 머문다(원본 0.29). 기준을 0.7로 낮췄다.
 
 **Spark 상태:** gate 프로세스·MPS·GPU 앱 없음. `iperf3`를 컨테이너에 설치했다(2×2 게이트 필요). 계측 UE 트리 `src/oai-s12dbg`·빌드 `builds/oai-s12dbg`는 남겨 두었다.
+
+## S13 — CUDA gNB PDSCH 결함(D10), 넓은 대역 2×2, 50 MHz rank 2 (2026-09-28)
+
+**왜:** S12에서 세 가지가 미해결로 남았다. (1) CUDA gNB의 PDSCH 가속을 켜면 2포트 셀에서 rank 1 NACK 45%(rank 2 5.5%), (2) 40–100 MHz 2×2가 부하 중 실시간 0.24–0.59, (3) 50 MHz 2×2의 rank 2 비율 21%. 트리 Spark `/workspace/gpuch/int0928`(`integration-0928`), 실행 스크립트·원자료 `/workspace/gpuch/s13/`, 요약 `s13-summary.txt`, 표 워크스테이션 `~/ocudu-work/perf-platform/compare-s13.md`. 모든 실행 시작 시 `nvidia-smi`에 다른 GPU 프로세스가 없었다. CUDA gNB 실행은 모두 게이트 기본 MPS(`mps=on`, MPS 서버 1개)로 돌았다.
+
+### 1. D10 — GPU TB 인코더가 filler 0을 무시했다 (해결)
+
+- **처음 드러난 곳:** 2×2 게이트(20 MHz, unitary H, zero-copy)에 CUDA gNB(PDSCH 가속까지 누적)를 붙이면 rank 1에서 NACK 45%, iperf 1.5 Mb/s.
+- **첫 가설(그리드·매핑 경로)은 틀렸다:** 환경 변수로 경로를 하나씩 끈 6회(rank 1 강제, 8 s iperf)가 전부 NACK 0.450–0.452였다 — direct CUDA-visible 그리드(기본), sidecar 그리드(`OCUDU_PDSCH_DIRECT_DEVICE_GRID=0`, 로그에서 경로 전환 확인), GPU 디바이스 매핑 끔, direct-grid encode 끔, 인코드 캐시 끔, host TB CRC. S12의 "매핑을 꺼도 같다"는 그리드 경로가 바뀌지 않은 실행이었다(로그상 direct 경로 그대로). 매퍼 가드도 코드상 정상이다(PRG 1개·가중치가 모두 같은 실수일 때만 디바이스 경로).
+- **실패의 모양:** gNB 로그에서 HARQ 재전송(rv>0)이 뒤따른 새 전송을 실패로 세면, 실패는 106 PRB 64QAM 할당 중 **TBS 9,474 B(9 CB)에서만** 났다(슬롯 2·3에서 61–75%, 다른 슬롯 0%). 같은 할당의 10,247 B(10 CB)는 전부 성공. 두 TB의 차이는 LDPC filler다: 9,474 B는 C=9, Z=384, K=8448, **F=0**, 10,247 B는 C=10, F=224.
+- **오프라인 재현:** 벤더의 `pdsch_gpu_e2e_test`(CPU·GPU 자원 그리드 비교)는 45개 케이스가 예약 RE(CSI-RS 모양)·PMI 코드북 가중치를 넣어도 전부 통과했다. TBS를 강제로 9,474 B로 주면 **1포트·2포트 모두 불일치**, 10,247 B는 둘 다 일치. 즉 2포트 문제가 아니라 TB 크기 문제이고, 1포트 셀(S7, S11)도 같은 TB가 나오면 틀린다 — 그 게이트들은 ping만 봤다.
+- **원인:** `lib/phy/cuda/src/transport_block.cu`의 `tb_encoder_configure`와 `tb_batch_encoder_configure`는 CPU 세그멘터가 넘긴 모양(BG, Z, C, F)으로 GPU 설정을 덮어쓰는데, `nof_filler_bits > 0`일 때만 F를 덮었다. F=0은 "주어지지 않음"으로 보고 GPU가 스스로 계산한 F를 남겨, K = K' − F가 틀린 채 부호화했다.
+- **수정(D10):** CPU가 모양을 주면(Z > 0) F를 0까지 포함해 그대로 따른다. 두 곳 모두. `scripts/cuda/patches/s-d10-tb-encoder-zero-filler.patch`(d8/d9 위의 D10 단독), 결합 패치 `s-c1-d8-d9-d10.patch`, lock `cuda-workspace.spark-d10.lock.json`(체크아웃 `src/ocudu-cuda-d10`, 빌드 `builds/d10-cuda-patched-sm121`, `resolve-cuda-gnb.py` 감사 통과). 회귀 케이스: `pdsch_gpu_e2e_test`에 강제 TBS 9,474 B(1포트·2포트)와 10,247 B(F>0 대조)를 추가.
+- **음성 대조군:** D10 트리에서 `transport_block.cu`만 d8 것으로 되돌리면 정확히 9,474 B 두 케이스만 실패(46 통과), 되돌린 걸 원복하면 48/48(전체 스위트 60/60).
+- **라이브(20 MHz 2×2, unitary H, zero-copy, 게이트 기본값):**
+
+| 실행 | gNB | rank | NACK | DL (air) | 실시간 |
+|---|---|---|---|---|---|
+| l1 | CUDA d10 | 2 | 0 | 148.22 Mb/s | 0.87 |
+| l2 | CPU | 2 | 0 | 148.16 | 0.86 |
+| l3 | CUDA d10 | 1 | 0 | 74.11 | 1.00 |
+| l4 | CPU | 1 | 0 | 74.11 | 1.00 |
+| l5 | CUDA d10 | 2 | 0 | 148.16 | 0.88 |
+| l6 (대조) | CUDA **d8** | 1 | **0.45** | — | 0.39 |
+
+  CUDA gNB가 CPU gNB와 같아졌다. l1의 meta 후처리는 실행 중에 러너를 고쳐서 깨졌지만 게이트 자체와 요약은 정상이다.
+- **범위:** D10은 PDSCH TB 인코더 결함이다. D8/D9와 같은 WG1 CUDA 코드(`5830c9cb`) 계열이므로 Jetson(`j2c`)과 워크스테이션 C1 빌드에도 같은 결함이 있다. 거기엔 아직 적용하지 않았다.
+
+### 2. 넓은 대역 2×2 실시간 — 코어 배치로는 안 풀린다 (구조 한계, 미해결)
+
+- **배치 시도(100 MHz, CPU gNB, zero-copy, 200M 15 s):** 기본 프로파일 0.257, UE 큰 코어 6개(gNB 0–6) 0.296, UE 5개 + 브로커 3개 0.316, gNB를 큰 코어 4개로 줄이면 시작 실패(S12와 같음). UE 스레드는 각 15–26%로 포화된 것이 없다. 2×2 프로파일 변형은 이득이 작아 추가하지 않았다.
+- **부하와 무관:** iperf 1M(거의 무부하)에서도 0.58(1×1 100 MHz는 실시간).
+- **홉 분해(브로커 `OCG_HOP_TRACE_DIR`, 포트 0 기준, 메시지 = 61,440샘플 = 0.5 ms, 실시간 = 2,000 msg/s):**
+
+| 구간 (p50, µs) | 부하 | 무부하 |
+|---|---|---|
+| 브로커 produce(채널 처리, 2포트) | 183 / 185 | 182 / 183 |
+| 생산 스레드 깨어남 gNB / UE | 81 / 191 | 80 / 195 |
+| 장치 턴어라운드 rx_turn gNB / UE | 418 / 495 | 410 / 489 |
+| DL / UL 중계 | 493 / 376 | 490 / 371 |
+| 처리율 | 1,111 msg/s | 1,245 msg/s |
+
+  리드(TX pulled − RX served)는 0–1 메시지로 파이프라이닝이 없어, 한 바퀴(중계 + 장치 턴어라운드)가 0.8–0.9 ms 걸린다. 2포트라 메시지 바이트가 1×1의 2배(방향마다 포트 2개 × 491 KB)이고 브로커 produce만 183 µs다. **판정:** CPU 배치 문제가 아니라 lock-step 고리의 직렬 지연이다. 줄일 후보는 브로커 run-ahead(파이프라이닝), 2포트 produce(183 µs) 단축, 장치 턴어라운드 — 모두 구조 변경이라 이번에 하지 않았다. DL actor 8개 시도는 인자 공백 때문에 실행되지 않았다(스레드 비포화라 우선순위 낮음).
+
+### 3. 50 MHz 2×2 rank 2 21% — UE가 부하 중 RI=1을 보고 (원인 미확정)
+
+- S12의 50 MHz 실행을 다시 보면 CSI 보고 3,601건 중 RI=2가 90%인데 스케줄 결정은 rank 2가 21%(1,617/7,815)다. 시간별로 나누면 **무부하 구간 CSI는 전부 RI=2**, iperf 부하 20 s 동안에는 RI=1이 190/264, 122/343이다. 스케줄러는 최신 RI를 그대로 따랐다(모든 슬롯 같은 비율).
+- 100 MHz(n78 TDD 30 kHz, 부하)에서는 rank 2 99.8%, 20 MHz도 99.9% — 50 MHz(n3 FDD 15 kHz, 270 PRB)만이다. gNB 설정은 대역폭 외 차이가 없다(CSI는 OCUDU 기본).
+- **후보(미확인):** 부하 중에만 떨어지므로 PDSCH가 CSI-IM/ZP-CSI-RS 영역과 겹쳐 UE의 간섭 측정이 오르는 경우(270 PRB에서 기본 CSI 자원 대역폭 설정), 또는 OAI UE의 RI 추정. 설정이 INFO 로그에 안 찍혀 이번엔 가르지 못했다. MAC pcap/RRC 덤프로 CSI 자원 대역을 확인하는 것이 다음 단계.
+
+**Spark 상태:** 게이트 프로세스·MPS·GPU 앱 없음, 이 트랙의 tmux 세션 모두 종료. 새 체크아웃 `src/ocudu-cuda-d10`·빌드 `builds/d10-cuda-patched-sm121`. d8 빌드의 `pdsch_gpu_e2e_test` 바이너리는 진단 중 환경 변수 노브를 넣어 다시 빌드한 것이다(소스는 원복, lock 감사 대상인 gNB 바이너리·소스 diff는 그대로).
 
