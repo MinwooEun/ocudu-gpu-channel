@@ -11,7 +11,7 @@ set -uo pipefail
 #     (builds/oai-zmq-patched via build-oai-zmq-patched.py --verify,
 #      builds/oai-zmq-local/BUILD-MANIFEST.txt)
 #
-# --probe (about 9 minutes, uses the GPU; run it alone on the device):
+# --probe (about 12 minutes, uses the GPU; run it alone on the device):
 #   one short OAI 2x2 run per side, and each patch must show its defect without
 #   it and the fix with it:
 #     ZMQ reply-poll  stock module -> real-time factor < 0.5; patched -> > 0.7
@@ -21,6 +21,9 @@ set -uo pipefail
 #                     patched UE -> NACK < 5% (both at UE RX gain 0)
 #     ZMQ RX gain     gNB at its default back-off, UE RX gain 0 -> rank-2
 #                     NACK > 20%; the gate default -12 dB -> NACK < 5%
+#     CSI RI init     50 MHz full-band load at 24 dB back-off: stock UE ->
+#                     rank-2 share of new PDSCH < 50% (it reports RI=1 from an
+#                     uninitialised accumulator); patched UE -> > 90%
 #
 # Usage (as container root, like the gates):
 #   OCUDU_NATIVE_ROOT=... bash scripts/native/check-oai-local-patches.sh [--probe]
@@ -157,6 +160,26 @@ if [[ "${probe}" == 1 ]]; then
     else
       awk -v v="${nack:-1}" 'BEGIN{exit !(v < 0.05)}' && report PASS "zmq rx gain: -12 dB fixes it" "rank-2 NACK=${nack}" \
         || report FAIL "zmq rx gain: -12 dB fixes it" "rank-2 NACK=${nack:-none} (expected < 0.05) ${dir}"
+    fi
+  done
+  # CSI RI init: patched module both sides, 24 dB so the MMSE overflow stays
+  # out of it; the UE build is the only difference. Full-band 50 MHz load is
+  # where the stale accumulator flips the rank (SPARK_MILESTONES.md S14).
+  rank2_share()
+  {
+    /usr/bin/python3 -c 'import json,sys; d=json.load(open(sys.argv[1]))["dl_decisions"]; a=d.get("ri1_new",0); b=d.get("ri2_new",0); print("%.3f" % (b/(a+b)) if a+b else "")' \
+      "$1/rank-summary.json" 2>/dev/null
+  }
+  for side in stock local; do
+    dir="$(run_probe "csi-ri-${side}" OCUDU_NATIVE_OAI_ZMQ_MODULE=patched OCUDU_NATIVE_OAI_UE="${side}" \
+      OAI2X2_TX_BACKOFF_DB=24 OAI2X2_BW_MHZ=50)"
+    share="$(rank2_share "${dir}")"
+    if [[ "${side}" == stock ]]; then
+      awk -v v="${share:-1}" 'BEGIN{exit !(v < 0.50)}' && report PASS "csi ri init: stock UE shows defect" "rank-2 share=${share}" \
+        || report FAIL "csi ri init: stock UE shows defect" "rank-2 share=${share:-none} (expected < 0.50) ${dir}"
+    else
+      awk -v v="${share:-0}" 'BEGIN{exit !(v > 0.90)}' && report PASS "csi ri init: patched UE fixes it" "rank-2 share=${share}" \
+        || report FAIL "csi ri init: patched UE fixes it" "rank-2 share=${share:-none} (expected > 0.90) ${dir}"
     fi
   done
 fi

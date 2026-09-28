@@ -36,7 +36,7 @@
       ]
     },
     "ue": {
-      "why": "The pinned nrUE 2-layer equaliser (nr_dlsch_mmse) wraps int16 at OCUDU's TX level, so rank-2 PDSCH NACKs unless the gNB backs off ~24 dB (docs/plans/m6-rank2-su-mimo-live.md 8.1/8.7). The OAI 2x2 gate runs this UE by default; OCUDU_NATIVE_OAI_UE=stock opts out.",
+      "why": "The pinned nrUE 2-layer equaliser (nr_dlsch_mmse) wraps int16 at OCUDU's TX level, so rank-2 PDSCH NACKs unless the gNB backs off ~24 dB (docs/plans/m6-rank2-su-mimo-live.md 8.1/8.7). Its CSI rank estimator (nr_csi_rs_ri_estimation) accumulates Hh*H into an uninitialised stack array, so under full-band PDSCH load the condition number comes from stack garbage and the UE reports RI=1 (50 MHz 2x2: rank 2 on ~20% of PDSCH); oai-csi-ri-amf-init.patch zeroes it (SPARK_MILESTONES.md S14). The OAI 2x2 gate runs this UE by default; OCUDU_NATIVE_OAI_UE=stock opts out.",
       "builder": "scripts/native/build-oai-ue-local.sh",
       "src_dir": "src/oai-local",
       "output_dir": "builds/oai-zmq-local",
@@ -45,6 +45,11 @@
           "path": "scripts/native/patches/oai-nr-dlsch-mmse-scale.patch",
           "sha256": "1856ac0f0aa11c13bfd5e718a656b616492b39dfdbc194bfc5ecedf44881d691",
           "files": ["openair1/PHY/NR_UE_TRANSPORT/nr_dlsch_demodulation.c"]
+        },
+        {
+          "path": "scripts/native/patches/oai-csi-ri-amf-init.patch",
+          "sha256": "ade6931e390ea0e5e0ddcb432d9d1c2dc67cfcb13619602737e6a314dde9bf34",
+          "files": ["openair1/PHY/NR_UE_TRANSPORT/csi_rx.c"]
         }
       ],
       "optional": []

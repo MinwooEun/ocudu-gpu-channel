@@ -41,6 +41,7 @@ WG1이 문서에 적은 검증은 **이 기종**에서 나왔다. 앞의 두 플
 | **S11** | **S9–S10 해결책을 게이트 기본값으로 + S8 재측정** — 패치 OAI ZMQ 모듈, 플랫폼 CPU 배치, CUDA gNB면 MPS를 환경 변수 없이 적용하고, 그 조건에서 20–100 MHz를 다시 잰다. 브로커 코어 수와 라이브·벤치 차이도 가른다 | 기본값만으로 실시간, 적용 내역이 실행마다 기록됨, srsUE 게이트 무회귀, 대역폭마다 copy·zero-copy 2쌍, 원인마다 대조 | **완료 2026-09-28** — 24/24 통과, **20–100 MHz 전부 실시간**(S8 0.3×), starvation 3,000대 → 1(CUDA gNB 5). 브로커를 3코어로 주니 100 MHz p99 115–135 → **65 µs**(CPU·CUDA gNB). 라이브 커널이 벤치보다 긴 이유는 little 코어 배치(이제 해결)와 CPU가 막 쓴 입력(+1.6 µs, GB10 일관성) |
 | **S12** | **integration-0928 조합 검증** — GB10에서 prepare() 수정 확인, 1x1 회귀, OAI 2×2 rank 2(copy·zero-copy, CUDA gNB, 40–100 MHz, 덜 깨끗한 H) | 게이트 기본값만으로, 실행마다 다른 GPU 프로세스 기록, y=Hx 같은 실행에서 | **완료 2026-09-28** — 20 MHz 2×2 rank 2 copy·zero-copy 2쌍 전부 NACK 0, 148 Mb/s(air), y=Hx 통과, zero-copy가 브로커 p50 70 → 50 µs. **새 결함 2개:** (1) OAI UE가 OCUDU 기본 송신 레벨(12 dB 백오프)에서 64QAM의 69–89%를 NACK(rank 1·2, 1×1 게이트는 ping만 봐서 통과로 보였음) → 로컬 패치 `oai-zmq-rx-gain.patch` + 게이트 기본 UE RX gain −12 dB로 NACK 0. (2) CUDA gNB의 PDSCH 가속이 2포트 셀의 rank 1에서 NACK 45%(rank 2는 5.5%) — 미해결. 40–100 MHz 2×2는 부하 시 실시간 0.24–0.59(UE CPU) |
 | **S13** | **CUDA gNB PDSCH 결함(D10), 넓은 대역 2×2 실시간, 50 MHz rank 2 비율** | CPU·GPU 출력 비교로 위치를 좁히고, 수정은 D-계열 규약(패치·lock·음성 대조군)으로, 라이브는 CPU gNB와 짝지어 | **완료 2026-09-28** — **D10:** GPU TB 인코더가 CPU 세그멘터의 filler 0을 "값 없음"으로 보고 자기 값을 써서, filler 0인 다중 CB TB(예: 9,474 B = BG1 9 CB)가 틀린 K로 부호화됐다. 2포트 문제가 아니었다(1포트도 같음, 게이트가 ping만 봐서 숨음). 수정 후 CUDA gNB 2×2 rank 2 148.2 · rank 1 74.1 Mb/s, NACK 0 = CPU gNB, d8 대조 NACK 45%. **100 MHz 2×2는 코어 배치로 안 풀린다**(0.26 → 최대 0.32): lock-step 한 바퀴가 0.8–0.9 ms(중계 + 장치 턴어라운드, 리드 0–1)로 0.5 ms를 넘는 구조 한계. **50 MHz rank 2 21%**는 스케줄러가 아니라 부하 중 UE가 RI=1을 보고한 결과(원인 미확정) |
+| **S14** | **50 MHz 2×2 rank 2 비율 원인** — 부하 중 UE가 RI=1을 보고하는 이유를 UE 안에서 찾고 로컬 패치로 고친다 | 같은 조건 A/B(이전 UE ↔ 패치 UE) 2쌍, 20·100 MHz 회귀, 반복 점검(`check-oai-local-patches.sh`)에 결함 재현·수정 probe 추가 | **완료 2026-09-28** — 원인은 CSI 설정도 실시간 여부도 아니라 **OAI UE의 RI 추정이 초기화하지 않은 스택 배열에 누적**하는 것(`nr_csi_rs_ri_estimation`의 `csi_rs_estimated_A_MF`). 채널 추정값은 무부하·부하가 같은데 조건수 계산만 스택 잔여값 때문에 틀어진다. 로컬 패치 `oai-csi-ri-amf-init.patch`(memset 한 줄)로 **rank 2 비율 0.207 → 0.998**(2쌍), NACK 0, 50 MHz DL air 234 → 360 Mb/s. 20 MHz 0.999, 100 MHz 0.998 무회귀 |
 
 ## 진행 기록
 
@@ -917,11 +918,61 @@ UE 노드 기준, 같은 대역폭의 S8 값과 비교(전체 표는 `compare-bw
 
   리드(TX pulled − RX served)는 0–1 메시지로 파이프라이닝이 없어, 한 바퀴(중계 + 장치 턴어라운드)가 0.8–0.9 ms 걸린다. 2포트라 메시지 바이트가 1×1의 2배(방향마다 포트 2개 × 491 KB)이고 브로커 produce만 183 µs다. **판정:** CPU 배치 문제가 아니라 lock-step 고리의 직렬 지연이다. 줄일 후보는 브로커 run-ahead(파이프라이닝), 2포트 produce(183 µs) 단축, 장치 턴어라운드 — 모두 구조 변경이라 이번에 하지 않았다. DL actor 8개 시도는 인자 공백 때문에 실행되지 않았다(스레드 비포화라 우선순위 낮음).
 
-### 3. 50 MHz 2×2 rank 2 21% — UE가 부하 중 RI=1을 보고 (원인 미확정)
+### 3. 50 MHz 2×2 rank 2 21% — UE가 부하 중 RI=1을 보고 (원인 미확정 → S14에서 규명)
 
 - S12의 50 MHz 실행을 다시 보면 CSI 보고 3,601건 중 RI=2가 90%인데 스케줄 결정은 rank 2가 21%(1,617/7,815)다. 시간별로 나누면 **무부하 구간 CSI는 전부 RI=2**, iperf 부하 20 s 동안에는 RI=1이 190/264, 122/343이다. 스케줄러는 최신 RI를 그대로 따랐다(모든 슬롯 같은 비율).
 - 100 MHz(n78 TDD 30 kHz, 부하)에서는 rank 2 99.8%, 20 MHz도 99.9% — 50 MHz(n3 FDD 15 kHz, 270 PRB)만이다. gNB 설정은 대역폭 외 차이가 없다(CSI는 OCUDU 기본).
 - **후보(미확인):** 부하 중에만 떨어지므로 PDSCH가 CSI-IM/ZP-CSI-RS 영역과 겹쳐 UE의 간섭 측정이 오르는 경우(270 PRB에서 기본 CSI 자원 대역폭 설정), 또는 OAI UE의 RI 추정. 설정이 INFO 로그에 안 찍혀 이번엔 가르지 못했다. MAC pcap/RRC 덤프로 CSI 자원 대역을 확인하는 것이 다음 단계.
 
 **Spark 상태:** 게이트 프로세스·MPS·GPU 앱 없음, 이 트랙의 tmux 세션 모두 종료. 새 체크아웃 `src/ocudu-cuda-d10`·빌드 `builds/d10-cuda-patched-sm121`. d8 빌드의 `pdsch_gpu_e2e_test` 바이너리는 진단 중 환경 변수 노브를 넣어 다시 빌드한 것이다(소스는 원복, lock 감사 대상인 gNB 바이너리·소스 diff는 그대로).
+
+## S14 — 50 MHz 2×2 rank 2 비율의 원인 (2026-09-28)
+
+**배경.** S12·S13에서 50 MHz(n3 FDD, 15 kHz, 270 PRB) OAI 2×2만 부하 중 rank 2가 21%였다. 20 MHz와 100 MHz는 99.8% 이상이다. S13은 이것을 "부하 중 UE가 RI=1을 보고"까지 좁혔고, 후보로 PDSCH와 CSI-IM/ZP-CSI-RS의 겹침(간섭 측정 상승) 또는 OAI UE의 RI 추정을 남겼다. 이번 트랙은 그 둘을 가르고 고치는 것이다. 모든 실행은 `integration-0928` Spark 트리(`/workspace/gpuch/int0928`, `c786ad8` 기준), 게이트 기본값(패치 ZMQ 모듈, 로컬 UE, big 코어 배치), unitary H, zero-copy, CPU gNB다. 실행마다 다른 GPU 프로세스는 없었다(`s14/runs/*/meta.txt`).
+
+**1. 재현과 조건 좁히기 (gNB 로그만으로).**
+
+| 조건 (50 MHz) | 부하 중 CSI 보고(ACK와 다중화된 PUCCH F2) RI=2 / 전체 | 스케줄 rank 2 비율 |
+|---|---|---|
+| iperf 200M (2회) | 74 / 369, 73 / 368 | 0.20 |
+| iperf 120M | 74 / 369 | 0.20 |
+| iperf 60M | 460 / 460 | 1.00 |
+| iperf 20M | 525 / 525 | 1.00 |
+| 200M + UE 코어 7개 (2회) | 74 / 370, 72 / 364 | 0.20 |
+| 200M + MCS 상한 20 | 73 / 365 | 0.20 |
+| 200M + gNB 백오프 24 dB | 25 / 394 | 0.07 |
+| 200M + UE RX gain −24 / −6 dB | 25 / 389 · 93 / 355 | 0.07 · 0.27 |
+
+- RI=1은 부하 구간의 보고에서만 나온다(부하 중 보고는 전부 HARQ-ACK와 다중화된 F2, 무부하 보고는 CSI 단독 F2로 전부 RI=2). 같은 다중화 보고가 20·100 MHz에서는 RI=2라서 다중화·PUCCH 복호 문제는 아니다.
+- 60M 이하에서는 PDSCH가 42–84 RB로 부분 대역이고, 120M 이상에서는 CSI-RS 슬롯(짝수 프레임 슬롯 2)에도 270 RB 전 대역이다. **전 대역 PDSCH가 있는 CSI-RS 슬롯의 측정만** 망가진다.
+- UE 코어 수와 MCS는 영향이 없어 UE CPU 부족이나 TB 크기는 아니다. 레벨을 낮추면 더 나빠지고 올리면 조금 나아진다(나중에 보니 스택 잔여값의 크기에 따른 부수 효과).
+
+**2. gNB 송신은 깨끗하다 (wire capture).** 부하 중 40 ms를 브로커에서 캡처(`c50-load`, skip 10 s)해 워크스테이션에서 OFDM 격자로 풀었다(`ofdm.py`).
+- CSI-RS(슬롯 2, 심볼 4, RB당 2 RE, 540 RE)의 두 포트는 fd-CDM2 관계(포트1 = 포트0 · [+1, −1])를 **오차 1.5e−4**로 지킨다. PDSCH가 CSI-RS RE를 침범하지 않는다(레이트 매칭 정상). 처음 본 "오염"은 내 FFT 창이 한 심볼 어긋난 분석 착오였고, 창을 CP 안으로 맞추자 사라졌다.
+- 같은 캡처로 y=Hx를 확인하면 DL 두 행 모두 최대 오차 1.3e−7이다. **UE 입력은 정확히 Hx**이고 잡음도 없다. 그러므로 원인은 UE 안이다.
+
+**3. UE 안에서 찾기 (계측 UE).** 로컬 UE 패치 위에 계측만 더한 `src/oai-s14dbg`(빌드 `builds/oai-s14dbg`)를 `OAI2X2_NRUE_DIR`로 붙였다. RI 추정(`nr_csi_rs_ri_estimation`)에서 RB 구간별 조건수 투표, 조건수 분포, 세 RB의 추정 채널과 det/numer를 찍었다.
+- 무부하: 조건수 3,240 RE 전부 0–4 dB, count +3,240 → RI=2. 부하(전 대역 PDSCH): 5–15 dB 이상이 대부분, count −1,400 ~ −2,700 → RI=1. 망가짐이 RB 구간에 고르게 퍼져 있다(국소적 충돌이 아님).
+- 결정적 증거: **추정 채널 H는 무부하와 부하가 같다**(예: h00 ≈ (1672,164)/(1680,104), h01 ≈ (−652,−448)/(−672,−424)). 그런데 같은 H에서 계산한 det/numer가 무부하 2,818,929 / 2,819,155(조건수 0 dB)에서 부하 7,213,069 / 33,658,662, 250,142,562 / 567,637,577로 제멋대로다. 무부하에서도 호출마다 값이 4배로 늘었다(2.8e6 → 11.3e6) — 누적이다.
+- **원인:** `csi_rs_estimated_A_MF`(HᴴH를 담는 스택 VLA)를 0으로 초기화하지 않고, `nr_a_sum_b()`가 그 위에 `x += y`로 더한다(`openair1/PHY/NR_UE_TRANSPORT/csi_rx.c`, 핀 `2b69bde6`의 `nr_csi_rs_ri_estimation`). 시작값이 같은 스레드에서 직전에 돈 처리(부하 중에는 PDSCH 처리)의 스택 잔여값이라, 전 대역 PDSCH가 있으면 조건수가 무작위가 된다. 20 MHz도 부하 중 조건수 분포가 절반쯤 흐려져 있었지만(705/1,272 RE만 0–4 dB) 과반을 넘겨 RI=2였고, 100 MHz도 우연히 넘는다 — 대역폭별 차이는 스택 배치의 우연이다.
+
+**4. 수정과 확인.** `scripts/native/patches/oai-csi-ri-amf-init.patch`(sha256 `ade6931e…`): 누적 전에 `memset(csi_rs_estimated_A_MF, 0, sizeof(...))` 한 줄. `oai-local-patches.lock.json`의 UE 패치 목록에 추가해 `build-oai-ue-local.sh`가 MMSE 패치와 함께 적용한다(Spark `builds/oai-zmq-local` 재빌드, nr-uesoftmodem `d390f09b…`). 이전 UE(`58f68c88…`, MMSE 패치만)는 A 쪽 대조로 `builds/oai-zmq-local-s13`에 복사해 두었다.
+
+| 실행 (50 MHz, 200M, 12 dB) | UE | rank 2 비율 | 부하 중 CSI RI=2 | NACK | DL air | 실시간 |
+|---|---|---|---|---|---|---|
+| ab-prev-1 | 이전 | 0.207 | 75 / 372 | 0 | 234.2 Mb/s | 0.48 |
+| ab-new-1 | 패치 | **0.998** | 276 / 276 | 0 | **360.0** | 0.39 |
+| ab-prev-2 | 이전 | 0.207 | 75 / 371 | 0 | 234.3 | 0.48 |
+| ab-new-2 | 패치 | **0.998** | 276 / 276 | 0 | **359.2** | 0.39 |
+| new-20 (20 MHz) | 패치 | 0.999 | 656 / 656 | 0 | 148.1 | 0.85 |
+| new-100 (100 MHz) | 패치 | 0.998 | 155 / 170 | 0 | 435.5 | 0.26 |
+| stock-bo24 (24 dB) | stock | 0.069 | — | 0.001 | 204.9 | 0.52 |
+| new-bo24 (24 dB) | 패치 | 0.998 | — | 0.006 | 352.9 | 0.38 |
+
+- 50 MHz 실시간 비율이 0.48 → 0.39로 내려간 것은 rank 2로 UE 복호 부하가 늘어서다(S13의 구조 한계와 같은 원인, 이 패치와 무관).
+- 실시간 여부와의 관계: 원인이 스택 잔여값이라 실시간 여부와 무관하다. 부하가 낮으면(60M 이하) CSI-RS 슬롯의 PDSCH가 부분 대역이라 잔여값이 달라 드러나지 않았을 뿐이다.
+- **반복 점검:** `check-oai-local-patches.sh` 정적 점검 15/15 통과(새 패치의 sha256·핀 적용·로컬 UE manifest 포함). `--probe`에 "CSI RI init" 항목을 추가했다: 50 MHz, 24 dB, 200M에서 stock UE는 rank 2 비율 < 0.50(실측 0.069), 로컬 UE는 > 0.90(실측 0.998)이어야 한다. 이번에 probe 전체는 돌리지 않았고, 두 문턱은 위 stock-bo24·new-bo24 실행으로 확인했다.
+- **다른 장비 주의:** lock의 UE 패치 목록이 바뀌어 워크스테이션·Jetson의 `builds/oai-zmq-local`은 manifest가 맞지 않는다. 게이트가 로컬 UE를 거부하므로 각 장비에서 `build-oai-ue-local.sh`를 한 번 다시 돌려야 한다.
+
+**Spark 상태:** 게이트 프로세스·MPS·GPU 앱 없음, 이 트랙의 tmux 세션 종료. 남긴 것: 계측 트리 `src/oai-s14dbg`·빌드 `builds/oai-s14dbg`, A 대조 `builds/oai-zmq-local-s13`, 실행 스크립트와 원자료 `/workspace/gpuch/s14/`. 표는 `~/ocudu-work/perf-platform/compare-s14.md`(git 밖), 캡처 분석 스크립트는 워크스테이션 scratchpad.
 
