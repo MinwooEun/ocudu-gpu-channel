@@ -333,3 +333,51 @@ docker exec ocudu-minwoo bash -c 'cd ~minwoo/ocudu-work/ocudu-oai-mimo && env HO
 
 드라이버와 원시 데이터: `~/ocudu-work/perf-platform/oai2x2-f/`(git 밖).
 
+### 8.7 24 dB back-off 대신 OAI 로컬 수정 — 2-layer 등화기 int16 오버플로 (2026-09-28, 워크스테이션 RTX 5090)
+
+**무엇을 하려 했나.** §8.1의 결함 때문에 rank 2는 gNB 송신을 24 dB 낮춰야만 동작했다. 안전한 값은 채널 행렬에 따라 달랐고(20 dB는 NACK 52%, §8.6에서는 RLF로 UE가 끊긴다), OCUDU 기본값(12 dB)으로는 쓸 수 없었다. 방침은 OAI를 고치되 **핀 트리는 건드리지 않고 빌드할 때 로컬 패치를 적용**하는 것이다. 업스트림 제보는 마지막에 한다.
+
+**어디서 깨지는지 — 코드 위치.** `nr_dlsch_mmse`(`openair1/PHY/NR_UE_TRANSPORT/nr_dlsch_demodulation.c`)는 A = HᴴH를 만든 뒤 `det(A)`와 `adj(A)·(Hᴴy)`(= `det(A)·x`)를 `mult_complex_vectors`로 계산한다. 이 함수(`openair1/PHY/TOOLS/tools_defs.h:337`)는 32비트 곱을 `shift`만큼 민 뒤 **하위 16비트만 남긴다**. 포화(saturation)가 없어서 범위를 넘으면 값이 감긴다(wrap). shift는 슬롯마다 정해지는 `log2_maxh − 1`이다. 수신 전력이 `log2_maxh` 한 단계 안에서 높은 쪽에 있으면 `det`와 출력이 int16을 넘는다. 그러면 등화된 심볼과 LLR 기준값(`det × QAM 진폭`)의 부호가 뒤집힌다. §8.1에서 본 "float ZF × 48.8k"는 `det` 자체가 int16을 넘은 값이었다.
+
+**수정 (`scripts/native/patches/oai-nr-dlsch-mmse-scale.patch`, sha256 `1856ac0f…`).** shift를 데이터로 정한다. 모든 중간 곱은 대략 `2·max|A|²·|x|` 이하이므로, `max|A|² >> s ≤ 2¹³`이 되는 s를 쓰고, stock shift가 충분하면 stock shift를 그대로 쓴다. 출력과 LLR 기준값이 같은 비율로 줄어서 LLR의 기하는 바뀌지 않는다. 추가 shift가 필요 없는 조건에서는 stock과 비트 단위로 같다. 이 함수는 다중 레이어일 때만 불린다(`nl > 2 || (nl == 2 && !do_ml)`, 같은 파일 1021행). 그래서 rank 1과 1×1 경로는 코드상 영향이 없다.
+
+**빌드.** `scripts/native/build-oai-ue-local.sh`는 핀 트리를 `git clone --shared`로 `src/oai-local`에 복제하고, 기록된 UE 패치를 적용해 `builds/oai-zmq-local`에 빌드한다(`build-oai-ue.sh`와 같은 플래그·타깃, 일반 사용자 uid 1001). `BUILD-MANIFEST.txt`에 핀, 패치 sha256, `nr-uesoftmodem` sha256을 적는다. 핀 트리와 `builds/oai-zmq-release`는 그대로다. 모든 로컬 OAI 패치와 해시는 `scripts/native/oai-local-patches.sh` 한곳에 있다(ZMQ 패치 포함).
+
+**등화기 수준 검증 (계측 빌드).** 계측 클론 `~/ocudu-work/oai-debug`(float ZF와 비교해 부호 오류율을 찍는 `M63STAT`)에 같은 패치를 얹어 다시 빌드했다(`~/ocudu-work/oai-debug-build`, uid 1001).
+
+| 조건 | 부호 오류율 | 최대 \|출력\| | rank-2 NACK |
+|---|---|---|---|
+| stock, 20 dB (`063013Z`, §8.1) | 3.0–15.2% | 31.4k (int16 끝) | 52% |
+| **패치, 20 dB** (`110618Z`) | **0.0000** | 8.8k | **0%** (148.3 Mb/s) |
+| **패치, 12 dB** (`110757Z`) | **0.0000** | 6.6–7.3k | 1.2% |
+
+**라이브 검증.** stock UE(`builds/oai-zmq-release`)와 패치 UE를 번갈아 돌렸다. 모든 실행이 실시간(배율 0.999–1.000)이었고, 패치 ZMQ 모듈을 썼으며, GPU에 다른 프로세스는 없었다. 1차는 빌드 디렉터리를 직접 지정했고, 2차는 게이트 기본값(`OCUDU_NATIVE_OAI_UE` 미지정 → local, `=stock`으로 opt-out)으로 돌렸다.
+
+| 조건 | stock UE | 패치 UE | 판정 |
+|---|---|---|---|
+| 유니터리 H, **20 dB** | NACK 50.8% / 54.2%, RLF 2회 / 2회, **11.7 / 11.1 Mb/s** | NACK **0% / 0%**, RLF 0, **148.3 / 148.2 Mb/s** | 결함 해소 |
+| 유니터리 H, **12 dB**(OCUDU 기본) | NACK 1.3% / 1.4%, TB 12.5 kB, **96.2 / 96.1 Mb/s** | NACK 1.1% / 1.2%, TB 15.3–15.5 kB, **119.1 / 117.5 Mb/s** | 패치가 +22% |
+| 유니터리 H, 24 dB | NACK 0%, 148.25 Mb/s | NACK 0%, 148.21 Mb/s | 같음 (추가 shift 불필요) |
+| 기준 H(조건수 1.6), **12 dB** | rank 2 66% / 66%, UE의 RI=1 보고 247 / 266회, **71.0 / 70.6 Mb/s** | rank 2 100% / 100%, RI=1 보고 4 / 4회, **90.4 / 90.9 Mb/s** | 패치가 +28% |
+| 기준 H, 28 dB | rank 2 38% / 39%, 102.4 / 102.6 Mb/s | rank 2 52% / 56%, 112.8 / 115.3 Mb/s | RI 요동은 양쪽에 남는다 |
+| rank 1 고정, 24 dB | 74.11 Mb/s, TB 크기 같음 | 74.08 Mb/s | 영향 없음 (코드 경로 밖) |
+
+- 유니터리 H의 모든 실행(12/20/24 dB, 양쪽)에서 같은 실행의 행렬 검증 `matrix_capture_status=passed`.
+- **12 dB 유니터리에서 stock이 느린 이유:** 두 실행의 CSI 보고 분포는 같다(`1001111` 3,733 대 3,726회). 차이는 초반에 있다. stock은 첫 1/5 구간에 NACK 72회(패치 36회)가 몰리고, 이후 구간은 비슷하다(29–33 대 24–28). 그 뒤 gNB가 고른 TB 크기가 실행 끝까지 한 단계 낮게 유지된다(13.3k 대 16.4k). 초반 오버플로 묶음이 gNB의 링크 적응(OLLA) 오프셋을 끌어내리고 천천히만 회복되는 것으로 해석한다. 2회 모두 재현했다.
+- **12 dB 기준 H에서 RI 차이(재현 2/2, 원인 미확인):** RI는 UE가 CSI-RS로 따로 계산한다(`csi_rx.c:431` `nr_csi_rs_ri_estimation`, 자체 `log2_maxh`와 행렬식). 이 코드는 패치가 건드리지 않는다. 그런데도 stock UE만 RI=1을 약 7% 보고한다. 간접 결합으로 보이지만 UE의 RI 로그가 이 로그 수준에서 찍히지 않아 메커니즘은 분리하지 못했다.
+- **28 dB 기준 H의 RI 요동**은 오버플로와 무관하다(NACK 0%). OAI의 RI 판정(조건수 5 dB 임계값) 문제로 남는다.
+
+**게이트 기본값.** `run-ocudu-oai-2x2.sh`는 이제 패치 UE를 기본으로 쓴다(`OCUDU_NATIVE_OAI_UE=local`). `=stock`으로 되돌릴 수 있고, `OAI2X2_NRUE_DIR`을 주면 그것이 우선한다. local 빌드는 manifest의 핀·패치·바이너리 해시가 맞을 때만 쓴다. `run-params.txt`에 `oai_ue`와 `oai_ue_sha256`을 남긴다. OAI 1×1 게이트는 핀 UE를 그대로 쓴다(1-layer라 이 패치의 경로 밖이다).
+
+**반복 점검 — `scripts/native/check-oai-local-patches.sh [--probe]`.** 로컬 패치마다 (1) 기록된 sha256, (2) 핀 트리에 아직 적용되는지(`patch --dry-run`), (3) 빌드 산출물의 manifest가 핀·패치와 맞는지를 확인한다. `--probe`는 짧은 2×2 실행 4회(약 6분, GPU 단독)로 각 패치가 없을 때 결함이, 있을 때 수정이 보이는지 확인한다. 기준: ZMQ는 stock 실시간 배율 < 0.5, 패치 > 0.9. MMSE는 20 dB에서 stock NACK > 20%, 패치 < 5%.
+
+| 점검 | 결과 |
+|---|---|
+| 정적 7항목 | 모두 PASS |
+| 음성 대조: 패치 문맥 한 줄을 바꾼 사본 | sha256과 적용 두 항목 FAIL, exit 1 |
+| `--probe` | ZMQ stock 0.2768 → 패치 0.9991, MMSE stock NACK 0.5437 → 패치 0.0, `result=pass` |
+
+**남은 것.** 12 dB에서도 NACK가 약 1.2% 남는다(패치 후 부호 오류 0, 오버플로는 아님). 원인은 보지 않았다. 12 dB 기준 H의 RI 차이는 메커니즘을 찾지 못했다. 기준 H의 RI 요동은 OAI RI 판정의 별도 문제다. 업스트림 제보(OAI 두 건: MMSE 오버플로, ZMQ 응답 대기)는 마지막에 한다.
+
+드라이버·원시 데이터: `~/ocudu-work/perf-platform/oai2x2-f/`(git 밖). 계측 클론 `~/ocudu-work/oai-debug`에는 계측 코드와 이 패치가 함께 적용되어 있다.
+
