@@ -28,7 +28,7 @@ emulator의 CUDA 백엔드는 디스크리트 GPU(RTX 5090) 기준으로 짜여 
 
 ## 설계
 
-- **노브:** `runtime.cuda_host_memory: copy | zero_copy | auto`. 기본값은 `copy`로, 현재 동작과 같다. `auto`는 `cudaDevAttrIntegrated=1`이고 `cudaDevAttrCanMapHostMemory=1`일 때만 zero-copy를 쓴다. `zero_copy`를 명시하면 디스크리트에서도 허용해서 음성 대조군으로 잴 수 있다.
+- **노브:** `runtime.cuda_host_memory: copy | zero_copy | auto`. 기본값은 처음에 `copy`였고 Z7에서 `auto`로 바꿨다. `auto`는 `cudaDevAttrIntegrated=1`이고 `cudaDevAttrCanMapHostMemory=1`일 때만 zero-copy를 쓴다. `zero_copy`를 명시하면 디스크리트에서도 허용해서 음성 대조군으로 잴 수 있다.
 - **zero-copy 경로:** 호스트 버퍼를 `cudaHostAllocMapped`로 잡고, 커널은 `cudaHostGetDevicePointer` 포인터로 그 메모리를 직접 읽고 쓴다.
   - `host_source_iq`(원시 IQ, device-channel 경로 입력), `host_next_slot_start`, `host_output`: device 쪽 포인터가 같은 메모리의 별칭이다. H2D·D2H 복사가 없어진다.
   - `host_staged`(host-stage 경로 입력): `mapped_staged` 별칭으로 읽는다. `device_staged`는 device-channel 경로의 GPU 전용 중간 버퍼라 device 메모리로 남긴다.
@@ -48,7 +48,7 @@ emulator의 CUDA 백엔드는 디스크리트 GPU(RTX 5090) 기준으로 짜여 
 | **Z5** | 라이브 — legacy 1×1 게이트를 `zero_copy`로 | attach·PDU·ping 통과, 카운터 0, 브로커 p50이 65 µs 대비 얼마나 줄었는지(같은 날 `copy` 1회와 짝지어 측정) | **완료 2026-09-27** — copy/zero-copy 짝 측정 2라운드(Z3 코드 4회 + 최종 코드 4회) 전부 통과. 최종 코드: ue0 p50 55–65 → **40–45 µs**, p99 100 → **80–85 µs** |
 | **Z6** | Jetson Orin 확인 | Orin은 통합이지만 `ConcurrentManagedAccess=0`(D6). mapped pinned는 managed와 다른 경로라 동작해야 하지만 캐시 동작과 성능은 실측으로 판정. bit 동일 + A/B | **완료 2026-09-28** — ctest 12/12(bit 동일, `direct` 계열은 pageable 미지원으로 건너뜀), 9/9 통과, `auto` → zero-copy `in,out`. 클럭 고정 A/B 8개 설정 전부 −6 ~ −30%, 라이브 p50 415–455 → 345–360 µs(4회 pass) |
 | **Z8** | **입력 직접 읽기 + 브로커 ring 복사 제거** (Z4 이후 남은 최대 병목) | 커널이 호출자/ring 버퍼에서 바로 읽어 `host_prep`의 입력 모으기 복사를 없애고, 브로커 ring read/push 복사를 줄임. 사용자 수×대역폭에서 슬롯 예산(500 µs) 안으로 들어오는지 | **완료 2026-09-27** — N64 gNB 934 → **177 µs**(예산 안), mvp 46.6 → **25.9 µs**. ring 단계 30–40 → 4–14 µs. 라이브 p50 60–65 → **40 µs** |
-| **Z7** | 기본값 결정 + 정리 | Z3–Z6 근거로 `auto`를 기본으로 할지 결정, 문서·예제 YAML 갱신, PR 준비(push는 확인받고) | **부분 완료 2026-09-27** — README에 노브·벤치 출력 문서화, 로컬 커밋. 기본값은 `copy` 유지(Z6 Jetson 미검증이라 `auto` 기본화 보류), PR·push 안 함 |
+| **Z7** | 기본값 결정 + 정리 | Z3–Z6 근거로 `auto`를 기본으로 할지 결정, 문서·예제 YAML 갱신, PR 준비(push는 확인받고) | **완료 2026-09-28** — 기본값 `auto`. Jetson ctest 12/12, 기본 설정에서 Jetson `cuda_zero_copy=1`, 5090 `0`. push 안 함 |
 
 ## 위험
 
@@ -289,3 +289,13 @@ mvp-2edge 호출 하나로 본 이득(−14.3 µs): H2D IQ −5.3, D2H −9.7, �
 - **30 W Orin은 23.04 MS/s 라이브에서 여유가 없다.** zero-copy를 써도 p50이 500 µs 슬롯 예산의 70%이고, p95는 약 1 ms로 예산을 넘는다. Spark(p50 40 µs)와 달리 emulator 호출 자체가 크다. 커널만 약 90 µs다(GPU 612 MHz, SM 8개). attach는 통과하지만, 더 높은 대역폭이나 다중 UE 라이브는 MAXN 없이 기대하기 어렵다(MAXN 전환은 hyunsoo 합의 필요, 이번에는 바꾸지 않았다).
 
 **Z7에 대한 결론:** 통합 GPU 두 종(GB10, Orin) 모두에서 zero-copy가 bit 동일이고, 벤치·라이브 모두 빠르다. `auto`는 두 플랫폼에서 의도대로 해석된다(GB10 `in,out,direct,direct_in`, Orin `in,out`). 디스크리트는 `auto` → copy로 경로가 바뀌지 않는다. **`auto`를 기본값으로 하는 근거는 이것으로 충분하다.** 남은 Z7 작업은 기본값 전환(`config.h`와 `test_config` 기본값 검사), README·예제 갱신, PR 정리다. 플랫폼별 meta 분할(Orin에서 in,out,meta)은 선택 사항이다.
+
+### Z7 — 2026-09-28 (기본값 `auto`)
+
+- **결정:** Z3–Z6에서 두 통합 GPU 모두 bit 동일이고 벤치·라이브 모두 빨랐다(GB10 mvp 46.6 → 25.9 µs, Orin 251 → 183 µs, 라이브 p50 GB10 60–65 → 40, Orin 415–455 → 345–360 µs). 디스크리트는 Z1에서 느려지는 것을 확인했고 `auto`가 거기서 `copy`를 고른다. 그래서 `RuntimeConfig::cuda_host_memory` 기본값을 `Auto`로 바꿨다.
+- 변경: `include/ocudu_gpu_channel/config.h`(기본값과 주석), `tests/test_config.cpp`(기본값 검사 `Auto`, `copy` 파싱 검사 추가), `README.md`(노브 표, Orin 수치). 예제 YAML은 `cuda_host_memory`를 쓰지 않으므로 바꿀 것이 없다. 라이브 렌더러(`render-multi-gnb-configs.py` 등)는 모드를 명시하므로 A/B 측정은 영향이 없다.
+- **검증:**
+  - Jetson(`/workspace/gpuch/zc7`, sm_87, CUDA 12.6): ctest 12/12. `cuda_host_memory`가 없는 `topology.mvp.cuda.yaml`로 벤치 → `cuda_zero_copy,1`.
+  - 워크스테이션 5090(CUDA 13.0, sm_120): 같은 벤치 → `cuda_zero_copy,0`(copy 유지).
+- **별도 발견 — 5090 ctest 간헐 실패 (Z7과 무관):** 5090에서 `matrix_profile_history`가 간헐적으로 실패한다(`FAIL: long-delay CUDA echo must match CPU`, `FAIL: delayed echo must survive a gain/phase or identical matrix update`). `processing`도 한 번 실패했다. 같은 GPU에서 다른 브로커 프로세스(OAI 2×2 트랙)가 돌고 있었다. 8회 반복 기준 실패 횟수: `a07b8a9`(zero-copy 이전) 6/8, `6fab580` 3/8, `285fad6` 5/8. zero-copy 이전부터 있던 문제이고, 단독 실행이던 Z1 때는 12/12였다. GPU를 공유할 때 드러나는 타이밍 의존으로 보이지만 원인은 확인하지 않았다. GPU가 비었을 때 재현과 원인 분리가 필요하다.
+

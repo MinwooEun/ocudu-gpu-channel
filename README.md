@@ -191,14 +191,17 @@ and the measured fan-in scaling live in
 
 | value | behavior |
 |---|---|
-| `copy` (default) | pinned staging buffers + explicit H2D/D2H copies; right for a discrete GPU |
+| `auto` (default) | `zero_copy` when the device reports `cudaDevAttrIntegrated`, else `copy` |
+| `copy` | pinned staging buffers + explicit H2D/D2H copies; right for a discrete GPU |
 | `zero_copy` | kernels read the input and write the output in host memory directly, and on a device with pageable memory access read the caller's input spans and write its output row in place, so the per-slot IQ copies and the host packing copy disappear |
-| `auto` | `zero_copy` when the device reports `cudaDevAttrIntegrated`, else `copy` |
 
 On GB10 this cuts the emulator call from 46.6 to 25.9 us for the 2-edge MVP,
-and for a gNB receiving 64 UEs from 934 to 177 us. On a discrete GPU
-`zero_copy` is much slower (every access crosses PCIe). Evidence and the
-per-buffer breakdown: [`ZERO_COPY_MILESTONES.md`](ZERO_COPY_MILESTONES.md).
+and for a gNB receiving 64 UEs from 934 to 177 us. Jetson Orin has no pageable
+memory access, so only the input and output buffers are mapped; the MVP call
+still drops from 251 to 183 us and the live broker p50 by about 20%. On a
+discrete GPU `zero_copy` is much slower (every access crosses PCIe), which is
+why `auto` keeps it on `copy`. Evidence and the per-buffer breakdown:
+[`ZERO_COPY_MILESTONES.md`](ZERO_COPY_MILESTONES.md).
 
 Strict-realtime validation (fails the process on any flow / starvation /
 continuity error):

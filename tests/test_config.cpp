@@ -1545,8 +1545,11 @@ models:
           "runtime.rx_ring_batches parses an explicit value");
 
   // runtime.cuda_host_memory selects how the CUDA backend moves per-slot IQ.
-  require(rx_ring_default.runtime.cuda_host_memory == ocg::CudaHostMemory::Copy,
-          "runtime.cuda_host_memory defaults to copy when omitted");
+  require(rx_ring_default.runtime.cuda_host_memory == ocg::CudaHostMemory::Auto,
+          "runtime.cuda_host_memory defaults to auto when omitted");
+  write_rx_ring_config("  cuda_host_memory: copy");
+  require(ocg::load_config_file(rx_ring_path).runtime.cuda_host_memory == ocg::CudaHostMemory::Copy,
+          "runtime.cuda_host_memory parses copy");
   write_rx_ring_config("  cuda_host_memory: zero_copy");
   require(ocg::load_config_file(rx_ring_path).runtime.cuda_host_memory == ocg::CudaHostMemory::ZeroCopy,
           "runtime.cuda_host_memory parses zero_copy");

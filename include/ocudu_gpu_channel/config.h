@@ -89,9 +89,10 @@ struct RuntimeConfig {
   // bound is 1 ms. Lower it if a live attach shows the added delay eating the
   // slot budget; Msg3 PUSCH is the thinnest margin in this system on record.
   std::size_t rx_ring_batches = 2;
-  // Default Copy keeps every platform on the measured path until the ZeroCopy
-  // numbers (ZERO_COPY_MILESTONES.md) justify flipping it.
-  CudaHostMemory cuda_host_memory = CudaHostMemory::Copy;
+  // Default Auto: zero-copy on integrated GPUs, where it is bit-identical and
+  // measured faster on both GB10 and Orin; copy on a discrete GPU, where every
+  // mapped access crosses PCIe (ZERO_COPY_MILESTONES.md Z3-Z6).
+  CudaHostMemory cuda_host_memory = CudaHostMemory::Auto;
 };
 
 // A node in the channel-emulation graph. gNBs and UEs are the SAME class -- a
