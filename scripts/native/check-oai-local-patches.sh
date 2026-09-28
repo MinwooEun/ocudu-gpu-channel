@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-# Recurring check for the local OAI patches (oai-local-patches.sh).
+# Recurring check for the local OAI patches (oai-local-patches.lock.json, read
+# through oai-local-patches.sh).
 #
 # Static part (seconds, no GPU):
-#   - each patch file matches its recorded sha256
+#   - each patch file, default and optional, matches its recorded sha256
 #   - each patch still applies to the pinned OAI tree (patch --dry-run)
-#   - the built artifacts carry manifests for this pin and these patches
-#     (builds/oai-zmq-s9/MODULE-MANIFEST.txt, builds/oai-zmq-local/BUILD-MANIFEST.txt)
+#   - the built artifacts match this pin and these patches
+#     (builds/oai-zmq-patched via build-oai-zmq-patched.py --verify,
+#      builds/oai-zmq-local/BUILD-MANIFEST.txt)
 #
 # --probe (about 6 minutes, uses the GPU; run it alone on the device):
 #   one short OAI 2x2 run per side, and each patch must show its defect without
@@ -40,20 +42,20 @@ report()
 
 check_patch()
 {
-  local entry="$1" name want got file
+  local entry="$1" kind="${2:-}" name want got file
   name="${entry%%:*}"
   want="${entry##*:}"
   file="${script_dir}/patches/${name}"
   got="$(sha256sum "${file}" 2>/dev/null | cut -d' ' -f1)"
   if [[ "${got}" == "${want}" ]]; then
-    report PASS "${name} sha256" "${got:0:12}"
+    report PASS "${name} sha256${kind}" "${got:0:12}"
   else
-    report FAIL "${name} sha256" "have ${got:-missing}, recorded ${want:0:12}"
+    report FAIL "${name} sha256${kind}" "have ${got:-missing}, recorded ${want:0:12}"
   fi
   if patch -d "${pinned}" -p1 --dry-run -s <"${file}" >/dev/null 2>&1; then
-    report PASS "${name} applies to pin" "${OAI_LOCAL_PIN:0:8}"
+    report PASS "${name} applies to pin${kind}" "${OAI_LOCAL_PIN:0:8}"
   else
-    report FAIL "${name} applies to pin" "patch --dry-run failed against ${pinned}"
+    report FAIL "${name} applies to pin${kind}" "patch --dry-run failed against ${pinned}"
   fi
 }
 
@@ -66,15 +68,14 @@ fi
 for entry in "${OAI_LOCAL_ZMQ_PATCHES[@]}" "${OAI_LOCAL_UE_PATCHES[@]}"; do
   check_patch "${entry}"
 done
+for entry in "${OAI_LOCAL_OPTIONAL_PATCHES[@]}"; do
+  check_patch "${entry}" " (optional)"
+done
 
-zmq_manifest="${native_root}/builds/oai-zmq-s9/MODULE-MANIFEST.txt"
-zmq_sha="${OAI_LOCAL_ZMQ_PATCHES[0]##*:}"
-if grep -qx "oai_pin=${OAI_LOCAL_PIN}" "${zmq_manifest}" 2>/dev/null && \
-   grep -qx "patch_sha256=${zmq_sha}" "${zmq_manifest}" && \
-   grep -qx "module_sha256=$(sha256sum "${native_root}/builds/oai-zmq-s9/liboai_zmqdevif.so" | cut -d' ' -f1)" "${zmq_manifest}"; then
-  report PASS "builds/oai-zmq-s9 manifest" "pin, patch and module hashes match"
+if zmq_verify="$(OCUDU_NATIVE_ROOT="${native_root}" /usr/bin/python3 "${script_dir}/build-oai-zmq-patched.py" --verify 2>&1)"; then
+  report PASS "builds/oai-zmq-patched manifest" "lock entry, patch and module hashes match"
 else
-  report FAIL "builds/oai-zmq-s9 manifest" "missing or stale; run build-oai-zmq-module.sh patched"
+  report FAIL "builds/oai-zmq-patched manifest" "${zmq_verify##*error: }"
 fi
 ue_manifest="${native_root}/builds/oai-zmq-local/BUILD-MANIFEST.txt"
 ue_ok=1

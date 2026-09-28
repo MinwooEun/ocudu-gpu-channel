@@ -89,14 +89,6 @@ for path in "${inner}" "${renderer}" "${verifier}" \
   [[ -e "${path}" ]] || usage_error "missing required path: ${path}"
 done
 [[ -c /dev/net/tun ]] || usage_error "/dev/net/tun is absent"
-# The ZMQ radio module the nrUE loads: the S9 reply-poll patched build unless
-# OCUDU_NATIVE_OAI_ZMQ_MODULE=stock or OCUDU_NATIVE_OAI_SHLIBPATH says otherwise.
-# Exports OCUDU_NATIVE_OAI_SHLIBPATH, which the inner script reads.
-# shellcheck source=oai-zmq-module.sh
-source "${script_dir}/oai-zmq-module.sh"
-resolve_oai_zmq_module "${native_root}" || usage_error "OAI ZMQ module selection failed"
-printf 'oai zmq module: %s %s (sha256 %s)\n' "${OAI_ZMQ_MODULE_VARIANT}" \
-  "${OCUDU_NATIVE_OAI_SHLIBPATH}" "${OAI_ZMQ_MODULE_SHA256}"
 [[ "$(git -C "${native_root}/src/ocudu" rev-parse HEAD)" == "${audited_ocudu}" ]] || usage_error "OCUDU revision mismatch"
 [[ "$(git -C "${native_root}/src/oai" rev-parse HEAD)" == "${audited_oai}" ]] || usage_error "OAI revision mismatch"
 [[ "$(git -C "${native_root}/src/open5gs" rev-parse HEAD)" == "${audited_open5gs}" ]] || usage_error "Open5GS revision mismatch"
@@ -128,46 +120,22 @@ for binary in \
   fi
   rm -f "${ldd_report}"
 done
-# Gate defaults that keep a run at real time (SPARK_MILESTONES.md S9-S11). Each
-# has an opt-out, and each choice is written to run-params.json below.
-#
-# 1. A CUDA gNB shares the GPU with the broker; without MPS the two contexts
-#    time-slice and the broker's kernel start waits ~150 us at p99 (S9). Re-run
-#    this gate under one MPS server, which with-cuda-mps.py always shuts down.
-#    This comes first so the re-run resolves 2. and 3. from a clean slate.
-#    OCUDU_NATIVE_MPS=off opts out, =on forces it for a CPU gNB too.
-mps_choice="${OCUDU_NATIVE_MPS:-auto}"
-[[ "${mps_choice}" =~ ^(auto|on|off)$ ]] || usage_error "OCUDU_NATIVE_MPS must be auto, on or off"
-gnb_uses_cuda=0
-ldd "${gnb_binary}" 2>/dev/null | grep -Eq 'libcudart|libcuda\.so' && gnb_uses_cuda=1
-if [[ -z "${CUDA_MPS_PIPE_DIRECTORY:-}" ]] && \
-   [[ "${mps_choice}" == "on" || ( "${mps_choice}" == "auto" && "${gnb_uses_cuda}" -eq 1 ) ]]; then
-  export OCUDU_NATIVE_MPS_REASON="${mps_choice}:gnb_uses_cuda=${gnb_uses_cuda}"
-  exec /usr/bin/python3 "${repo_root}/scripts/cuda/with-cuda-mps.py" -- bash "${BASH_SOURCE[0]}"
-fi
-# 2. The OAI ZMQ radio module: the patched build from oai-zmq-module.lock.json
-#    (the stock driver paces the lock-step chain to ~0.3x real time).
-#    OCUDU_NATIVE_OAI_ZMQ_MODULE=stock loads the release module instead; an
-#    explicit OCUDU_NATIVE_OAI_SHLIBPATH still wins over both.
-oai_zmq_choice="${OCUDU_NATIVE_OAI_ZMQ_MODULE:-patched}"
-if [[ -n "${OCUDU_NATIVE_OAI_SHLIBPATH:-}" ]]; then
-  oai_zmq_choice="custom"
-elif [[ "${oai_zmq_choice}" == "patched" ]]; then
-  OCUDU_NATIVE_ROOT="${native_root}" /usr/bin/python3 "${script_dir}/build-oai-zmq-patched.py" --verify \
-    >/dev/null || usage_error "patched OAI ZMQ module missing or stale (scripts/native/build-oai-zmq-patched.py)"
-  OCUDU_NATIVE_OAI_SHLIBPATH="${native_root}/builds/oai-zmq-patched"
-elif [[ "${oai_zmq_choice}" == "stock" ]]; then
-  OCUDU_NATIVE_OAI_SHLIBPATH="${native_root}/builds/oai-zmq-release"
-else
-  usage_error "OCUDU_NATIVE_OAI_ZMQ_MODULE must be patched or stock"
-fi
-export OCUDU_NATIVE_OAI_SHLIBPATH
-# 3. CPU placement from platform-profiles.json (a no-op on an unknown host;
-#    OCUDU_NATIVE_PLATFORM=none turns it off, per-role *_CPUS override it).
-platform_shell="$(/usr/bin/python3 "${script_dir}/platform-profile.py" --shell)" || \
-  usage_error "platform profile resolution failed"
-eval "${platform_shell}"
-export OCUDU_NATIVE_PLATFORM_PROFILE OCUDU_NATIVE_GNB_CPUS OCUDU_NATIVE_BROKER_CPUS OCUDU_NATIVE_NRUE_CPUS
+# Gate defaults that keep a run at real time (SPARK_MILESTONES.md S9-S11,
+# oai-gate-defaults.sh): MPS for a CUDA gNB (re-executes this gate), the
+# patched OAI ZMQ radio module (oai-local-patches.lock.json), and the platform
+# CPU placement. Each has an opt-out, and each choice goes to run-params.json.
+# shellcheck source=oai-gate-defaults.sh
+source "${script_dir}/oai-gate-defaults.sh"
+# shellcheck source=oai-local-patches.sh
+source "${script_dir}/oai-local-patches.sh"
+oai_gate_mps_reexec "${gnb_binary}" "${BASH_SOURCE[0]}" || usage_error "MPS selection failed"
+gnb_uses_cuda="${OAI_GATE_GNB_USES_CUDA}"
+# Exports OCUDU_NATIVE_OAI_SHLIBPATH, which the inner script reads.
+resolve_oai_zmq_module "${native_root}" || usage_error "OAI ZMQ module selection failed"
+oai_zmq_choice="${OAI_ZMQ_MODULE_VARIANT}"
+printf 'oai zmq module: %s %s (sha256 %s)\n' "${OAI_ZMQ_MODULE_VARIANT}" \
+  "${OCUDU_NATIVE_OAI_SHLIBPATH}" "${OAI_ZMQ_MODULE_SHA256}"
+oai_gate_platform || usage_error "platform profile resolution failed"
 # The stack runs in its own network namespace, so a host listener on these
 # ports cannot collide with it. The check stays on by default; a host that runs
 # its own Open5GS/MongoDB (this workstation does) sets
@@ -249,10 +217,7 @@ with open(path, "x", encoding="utf-8") as output:
     json.dump(data, output, indent=2, sort_keys=True)
     output.write("\n")
 PY
-printf 'event=oai_gate_defaults oai_zmq_module=%s platform=%s gnb_cpus=%s broker_cpus=%s nrue_cpus=%s mps=%s\n' \
-  "${oai_zmq_choice}" "${OCUDU_NATIVE_PLATFORM_PROFILE}" "${OCUDU_NATIVE_GNB_CPUS:-any}" \
-  "${OCUDU_NATIVE_BROKER_CPUS:-any}" "${OCUDU_NATIVE_NRUE_CPUS:-any}" \
-  "$([[ -n "${CUDA_MPS_PIPE_DIRECTORY:-}" ]] && echo on || echo off)" | tee "${log_dir}/gate-defaults.log"
+oai_gate_defaults_line | tee "${log_dir}/gate-defaults.log"
 channel_head="$(git -C "${repo_root}" rev-parse HEAD)"
 channel_diff_sha256="$(git -C "${repo_root}" diff --binary -- . | sha256sum | awk '{print $1}')"
 

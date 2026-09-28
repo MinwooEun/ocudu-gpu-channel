@@ -1,0 +1,43 @@
+{
+  "schema": "ocudu-native-oai-local-patches/v1",
+  "why": "Defects in the pinned OAI that this repository fixes locally until they are reported upstream. Patches are applied at build time; the pinned tree src/oai and its build builds/oai-zmq-release are never modified. check-oai-local-patches.sh verifies every entry.",
+  "oai_commit": "2b69bde6aeafe892cda1531a0f0cbba2e37792cd",
+  "artifacts": {
+    "zmq_module": {
+      "why": "The pinned OAI ZMQ radio driver sleeps in zmq_poll for up to 10 ms while a REP reply is owed, which paces the whole lock-step gNB <-> broker <-> nrUE chain to ~0.3x real time (SPARK_MILESTONES.md S9). The OAI gates load this module by default; OCUDU_NATIVE_OAI_ZMQ_MODULE=stock opts out.",
+      "builder": "scripts/native/build-oai-zmq-patched.py",
+      "base_build_dir": "builds/oai-zmq-release",
+      "output_dir": "builds/oai-zmq-patched",
+      "target": "oai_zmqdevif",
+      "patches": [
+        {
+          "path": "scripts/native/patches/oai-zmq-tx-reply-poll.patch",
+          "sha256": "b2f1e51bfe38385fefcabbd7e9675278f45c5ab165af33429cb19772b5dbb9e3",
+          "files": ["radio/zmq/zmq_radio.cpp"]
+        }
+      ],
+      "optional": [
+        {
+          "path": "scripts/native/patches/oai-zmq-rx-poll.patch",
+          "sha256": "149551c7740d8a237479ddf02c717cd73bb43ceeb94ed58555a4e92195629220",
+          "files": ["radio/zmq/zmq_imported.cpp"],
+          "reason": "S10: +3% slots/s at 100 MHz unpinned, no gain once the platform CPU split is applied (2,060 vs 2,077 slots/s); a measurement knob only, never built into the default module."
+        }
+      ]
+    },
+    "ue": {
+      "why": "The pinned nrUE 2-layer equaliser (nr_dlsch_mmse) wraps int16 at OCUDU's TX level, so rank-2 PDSCH NACKs unless the gNB backs off ~24 dB (docs/plans/m6-rank2-su-mimo-live.md 8.1/8.7). The OAI 2x2 gate runs this UE by default; OCUDU_NATIVE_OAI_UE=stock opts out.",
+      "builder": "scripts/native/build-oai-ue-local.sh",
+      "src_dir": "src/oai-local",
+      "output_dir": "builds/oai-zmq-local",
+      "patches": [
+        {
+          "path": "scripts/native/patches/oai-nr-dlsch-mmse-scale.patch",
+          "sha256": "1856ac0f0aa11c13bfd5e718a656b616492b39dfdbc194bfc5ecedf44881d691",
+          "files": ["openair1/PHY/NR_UE_TRANSPORT/nr_dlsch_demodulation.c"]
+        }
+      ],
+      "optional": []
+    }
+  }
+}

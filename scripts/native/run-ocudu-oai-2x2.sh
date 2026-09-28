@@ -24,10 +24,18 @@ set -euo pipefail
 #                         or stock (builds/oai-zmq-release, the pinned build)
 #   OAI2X2_NRUE_DIR       explicit nr-uesoftmodem build directory; overrides
 #                         OCUDU_NATIVE_OAI_UE
-#   OCUDU_NATIVE_OAI_ZMQ_MODULE  patched (default: builds/oai-zmq-s9, the S9
+#   OCUDU_NATIVE_OAI_ZMQ_MODULE  patched (default: builds/oai-zmq-patched, the S9
 #                         reply-poll driver) or stock (builds/oai-zmq-release)
 #   OCUDU_NATIVE_OAI_SHLIBPATH  explicit ZMQ radio module directory; overrides
 #                         OCUDU_NATIVE_OAI_ZMQ_MODULE
+#   OCUDU_NATIVE_GNB_BINARY  gNB binary (default the pinned CPU build); a CUDA
+#                         gNB runs under MPS by default (OCUDU_NATIVE_MPS)
+#   OCUDU_NATIVE_MPS      auto (default: MPS only for a CUDA gNB) | on | off
+#   OCUDU_NATIVE_PLATFORM auto (default: platform-profiles.json CPU split) | none
+#   OCUDU_NATIVE_CUDA_ARCH  broker CUDA architecture (default 120; GB10 121)
+#   OCUDU_NATIVE_CHANNEL_BUILD  broker build directory
+#   OCUDU_NATIVE_BROKER_STARTUP_ALLOWANCE_SECONDS  added to the broker window
+#                         (a CUDA gNB takes ~20 s to start)
 #   OAI2X2_LABEL          free-text label stored with the run
 #
 # Output: results/{logs,reports}/oai-2x2/<timestamp>/, then
@@ -39,8 +47,13 @@ repo_root="$(cd "${script_dir}/../.." && pwd)"
 source "${script_dir}/env.sh"
 
 native_root="${OCUDU_NATIVE_ROOT}"
-# shellcheck source=oai-zmq-module.sh
-source "${script_dir}/oai-zmq-module.sh"
+# shellcheck source=oai-local-patches.sh
+source "${script_dir}/oai-local-patches.sh"
+# shellcheck source=oai-gate-defaults.sh
+source "${script_dir}/oai-gate-defaults.sh"
+gnb_binary="${OCUDU_NATIVE_GNB_BINARY:-${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb}"
+export OCUDU_NATIVE_GNB_BINARY="${gnb_binary}"
+cuda_arch="${OCUDU_NATIVE_CUDA_ARCH:-120}"
 physical_gpu="${OCUDU_NATIVE_GPU_DEVICE:-0}"
 cuda_compiler="${CUDACXX:-/usr/local/cuda/bin/nvcc}"
 inner="${script_dir}/run-ocudu-oai-2x2-inner.sh"
@@ -69,6 +82,11 @@ for command_name in unshare nsenter ip mount umount flock cmake ss setsid stdbuf
 done
 [[ "$(git -C "${native_root}/src/ocudu" rev-parse HEAD)" == "${audited_ocudu}" ]] || usage_error "OCUDU revision mismatch"
 [[ "$(git -C "${native_root}/src/oai" rev-parse HEAD)" == "${audited_oai}" ]] || usage_error "OAI revision mismatch"
+[[ -x "${gnb_binary}" ]] || usage_error "missing gNB binary: ${gnb_binary}"
+# The S9-S11 real-time defaults, as in the OAI 1x1 gate (oai-gate-defaults.sh).
+# MPS first: it re-executes this script under one MPS server for a CUDA gNB.
+oai_gate_mps_reexec "${gnb_binary}" "${BASH_SOURCE[0]}" || usage_error "MPS selection failed"
+oai_gate_platform || usage_error "platform profile resolution failed"
 # Exports OCUDU_NATIVE_OAI_SHLIBPATH for the inner script (patched by default).
 resolve_oai_zmq_module "${native_root}" || usage_error "OAI ZMQ module selection failed"
 printf 'oai zmq module: %s %s\n' "${OAI_ZMQ_MODULE_VARIANT}" "${OCUDU_NATIVE_OAI_SHLIBPATH}"
@@ -95,13 +113,14 @@ render_args=(--repo-root "${repo_root}" --native-root "${native_root}" --output-
 [[ -n "${OAI2X2_TX_BACKOFF_DB:-}" ]] && render_args+=(--tx-backoff-db "${OAI2X2_TX_BACKOFF_DB}")
 /usr/bin/python3 "${renderer}" "${render_args[@]}" >"${log_dir}/render.log" 2>&1 || {
   cat "${log_dir}/render.log" >&2; usage_error "render failed"; }
-"${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" -c "${config_dir}/gnb.yaml" --dryrun \
+"${gnb_binary}" -c "${config_dir}/gnb.yaml" --dryrun \
   >"${log_dir}/gnb-dryrun.log" 2>&1 || { tail -20 "${log_dir}/gnb-dryrun.log" >&2; usage_error "gNB dry run failed"; }
 
-channel_build="${native_root}/builds/ocudu-gpu-channel-oai2x2-cuda-release"
+channel_build="${OCUDU_NATIVE_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-oai2x2-cuda-release}"
 cmake -S "${repo_root}" -B "${channel_build}" -DCMAKE_BUILD_TYPE=Release \
   -DOCUDU_GPU_CHANNEL_ENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER="${cuda_compiler}" \
-  -DOCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES=120 >"${log_dir}/cmake-configure.log" 2>&1
+  -DCMAKE_CUDA_ARCHITECTURES="${cuda_arch}" \
+  -DOCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES="${cuda_arch}" >"${log_dir}/cmake-configure.log" 2>&1
 cmake --build "${channel_build}" -j"$(nproc)" >"${log_dir}/cmake-build.log" 2>&1
 export OAI2X2_BROKER_BIN="${channel_build}/ocudu-gpu-channel"
 
@@ -114,9 +133,14 @@ cp "${config_dir}"/* "${report_dir}/"
   printf 'oai_ue=%s\noai_ue_sha256=%s\n' "${OAI_UE_VARIANT}" "${OAI_UE_SHA256}"
   printf 'oai_zmq_module=%s\noai_shlibpath=%s\noai_zmq_module_sha256=%s\n' \
     "${OAI_ZMQ_MODULE_VARIANT}" "${OCUDU_NATIVE_OAI_SHLIBPATH}" "${OAI_ZMQ_MODULE_SHA256}"
+  printf 'gnb_binary=%s\ngnb_uses_cuda=%s\nmps=%s\nplatform=%s\ngnb_cpus=%s\nbroker_cpus=%s\nnrue_cpus=%s\n' \
+    "${gnb_binary}" "${OAI_GATE_GNB_USES_CUDA}" "$([[ -n "${CUDA_MPS_PIPE_DIRECTORY:-}" ]] && echo on || echo off)" \
+    "${OCUDU_NATIVE_PLATFORM_PROFILE}" "${OCUDU_NATIVE_GNB_CPUS:-any}" "${OCUDU_NATIVE_BROKER_CPUS:-any}" \
+    "${OCUDU_NATIVE_NRUE_CPUS:-any}"
   printf 'channel_head=%s\nchannel_dirty=%s\n' "$(git -C "${repo_root}" rev-parse HEAD)" \
     "$(git -C "${repo_root}" status --porcelain | wc -l)"
 } >"${report_dir}/run-params.txt"
+oai_gate_defaults_line | tee "${log_dir}/gate-defaults.log"
 
 parent_netns="$(readlink /proc/self/ns/net)"
 parent_mntns="$(readlink /proc/self/ns/mnt)"

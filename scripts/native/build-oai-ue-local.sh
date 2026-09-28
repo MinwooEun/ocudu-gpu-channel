@@ -9,10 +9,10 @@ set -euo pipefail
 #   builds/oai-zmq-local   the patched build (same flags and targets as
 #                      build-oai-ue.sh), with BUILD-MANIFEST.txt
 #
-# The ZMQ radio module is patched separately (build-oai-zmq-module.sh); the
+# The ZMQ radio module is patched separately (build-oai-zmq-patched.py); the
 # gates load it with --loader.oai_zmqdevif.shlibpath, so it is not rebuilt here.
 #
-# UE patches applied, in order (name and recorded sha256 in oai-local-patches.sh):
+# UE patches applied, in order (the `ue` artifact in oai-local-patches.lock.json):
 #   oai-nr-dlsch-mmse-scale.patch   2-layer equaliser int16 wrap (M6 8.1 / 8.7)
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

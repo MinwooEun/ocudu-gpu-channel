@@ -326,9 +326,8 @@ run_stack()
   done
   local gnb="${OCUDU_NATIVE_GNB_BINARY:-${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb}"
   local nrue="${native_root}/builds/oai-zmq-release/nr-uesoftmodem"
-  # OCUDU_NATIVE_OAI_SHLIBPATH points the nrUE at another module directory,
-  # e.g. one holding the ZMQ driver built with scripts/native/patches/
-  # oai-zmq-tx-reply-poll.patch (S9).
+  # The outer script resolves the ZMQ radio module (oai-local-patches.sh; the
+  # S9 reply-poll patched build by default) and exports OCUDU_NATIVE_OAI_SHLIBPATH.
   local oai_build="${OCUDU_NATIVE_OAI_SHLIBPATH:-${native_root}/builds/oai-zmq-release}"
   local fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
   local mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"

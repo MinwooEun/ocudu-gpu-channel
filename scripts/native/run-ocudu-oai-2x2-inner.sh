@@ -278,7 +278,18 @@ run_stack()
   local iperf_seconds="${OAI2X2_IPERF_SECONDS:-15}"
   local iperf_rate="${OAI2X2_IPERF_RATE:-80M}"
   local oai_build="${OAI2X2_NRUE_DIR:-${native_root}/builds/oai-zmq-release}"
-  local gnb="${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb"
+  local gnb="${OCUDU_NATIVE_GNB_BINARY:-${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb}"
+  # Platform CPU placement and profiler wrappers, as in the OAI 1x1 gate: the
+  # outer script resolves OCUDU_NATIVE_{GNB,BROKER,NRUE}_CPUS (empty on a host
+  # without a profile, which leaves the scheduler alone); the *_WRAPPER knobs
+  # prefix a command with a script that ends in `exec ... "$@"`.
+  local broker_pin=() gnb_pin=() nrue_pin=()
+  [[ -n "${OCUDU_NATIVE_BROKER_CPUS:-}" ]] && broker_pin=(taskset -c "${OCUDU_NATIVE_BROKER_CPUS}")
+  [[ -n "${OCUDU_NATIVE_GNB_CPUS:-}" ]] && gnb_pin=(taskset -c "${OCUDU_NATIVE_GNB_CPUS}")
+  [[ -n "${OCUDU_NATIVE_NRUE_CPUS:-}" ]] && nrue_pin=(taskset -c "${OCUDU_NATIVE_NRUE_CPUS}")
+  # The broker's --duration clock starts with the broker; a CUDA gNB's device
+  # initialisation (~20 s) is added on top of the window.
+  local startup_allowance="${OCUDU_NATIVE_BROKER_STARTUP_ALLOWANCE_SECONDS:-0}"
   local nrue="${oai_build}/nr-uesoftmodem"
   local fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
   local mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
@@ -288,7 +299,7 @@ run_stack()
   for binary in "${gnb}" "${nrue}" "${fivegc}" "${mongod}" "${broker}"; do
     [[ -x "${binary}" ]] || usage_error "missing executable: ${binary}"
   done
-  # The outer script resolves the ZMQ radio module (oai-zmq-module.sh; the S9
+  # The outer script resolves the ZMQ radio module (oai-local-patches.sh; the S9
   # reply-poll patched build by default) and exports OCUDU_NATIVE_OAI_SHLIBPATH;
   # the nrUE binary stays ${oai_build}'s.
   local zmq_module_dir="${OCUDU_NATIVE_OAI_SHLIBPATH:-${oai_build}}"
@@ -361,15 +372,16 @@ PY
     fi
     # shellcheck disable=SC2086
     start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" \
-      "${broker}" --config "${config_dir}/topology.yaml" --duration "${broker_seconds}s" ${broker_extra}
+      "${broker_pin[@]}" ${OCUDU_NATIVE_BROKER_WRAPPER:-} \
+      "${broker}" --config "${config_dir}/topology.yaml" --duration "$((broker_seconds + startup_allowance))s" ${broker_extra}
     broker_pid="${started_pid}"
     broker_index=$((${#process_pids[@]} - 1))
     wait_log "${log_dir}/broker.log" 'event=radio_node_resolved id=ue0' "${broker_pid}" 15 || usage_error "broker did not become ready"
   fi
-  window_deadline=$((SECONDS + broker_seconds))
-  start_group gnb "${log_dir}/gnb-console.log" "${gnb}" -c "${config_dir}/gnb.yaml"
+  window_deadline=$((SECONDS + broker_seconds + startup_allowance))
+  start_group gnb "${log_dir}/gnb-console.log" "${gnb_pin[@]}" ${OCUDU_NATIVE_GNB_WRAPPER:-} "${gnb}" -c "${config_dir}/gnb.yaml"
   gnb_pid="${started_pid}"
-  wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" 20 || usage_error "gNB did not start"
+  wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" "${OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS:-20}" || usage_error "gNB did not start"
   sleep 3
   # Cell identity and the three M6.2 fixes (setpriv, --CO, absolute uecap) are
   # the 1x1 gate's; see run-ocudu-oai-1x1-inner.sh for why each is needed.
@@ -379,7 +391,7 @@ PY
   # shellcheck disable=SC2086
   start_group nrue "${log_dir}/nrue.log" nsenter --net="/run/netns/${nested_name}" -- \
     setpriv --bounding-set -sys_nice \
-    "${nrue}" -O "${config_dir}/nrue.conf" \
+    "${nrue_pin[@]}" ${OCUDU_NATIVE_NRUE_WRAPPER:-} "${nrue}" -O "${config_dir}/nrue.conf" \
     -E -r 106 --numerology 0 --band 3 -C 1842500000 --ssb 486 --CO -95000000 \
     --ue-fo-compensation \
     --ue-nb-ant-rx 2 --ue-nb-ant-tx 2 \

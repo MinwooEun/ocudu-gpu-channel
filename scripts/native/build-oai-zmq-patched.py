@@ -2,11 +2,13 @@
 """Build the patched OAI ZMQ radio module the OAI gates load by default.
 
 The pinned OAI tree stays untouched: the radio/zmq sources are copied to a
-scratch directory, the patches listed in oai-zmq-module.lock.json are applied
-there, and the one shared object is compiled and linked with the exact flags
+scratch directory, the patches that oai-local-patches.lock.json lists for the
+zmq_module artifact are applied there, and the one shared object is compiled and linked with the exact flags
 and link line of the pinned release build (builds/oai-zmq-release). The result
 goes to builds/oai-zmq-patched with the release build's other modules
-symlinked next to it, plus a manifest.json the gates verify before use.
+symlinked next to it, plus a manifest.json the gates verify before use. Only
+the default patches are built in; the lock's `optional` entries are
+measurement knobs that check-oai-local-patches.sh verifies but nothing builds.
 
 Why the module is patched at all: SPARK_MILESTONES.md S9 (the stock driver
 paces a lock-step run to ~0.3x real time).
@@ -30,7 +32,7 @@ import tempfile
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
-LOCK = SCRIPT_DIR / 'oai-zmq-module.lock.json'
+LOCK = SCRIPT_DIR / 'oai-local-patches.lock.json'
 MODULE = 'liboai_zmqdevif.so'
 
 
@@ -61,14 +63,46 @@ def read_flags(path):
     return compiler, flags
 
 
-def verify(root, lock):
+def load_lock():
+    """The zmq_module section with the pin, and the digest a build records.
+
+    The digest covers only this artifact's section and the pin, so editing the
+    UE patch list does not invalidate a ZMQ module built from the same inputs.
+    """
+    full = json.loads(LOCK.read_text())
+    lock = dict(full['artifacts']['zmq_module'])
+    lock['oai_commit'] = full['oai_commit']
+    digest = hashlib.sha256(json.dumps(lock, sort_keys=True).encode()).hexdigest()
+    return lock, digest
+
+
+def toolchain_env(root):
+    """The environment build-oai-ue.sh compiled the release build under.
+
+    build-oai-ue.sh sources env.sh, whose CPATH/LIBRARY_PATH point at the
+    workspace sysroot (simde, libconfig, ...). flags.make does not carry those
+    include directories, so the module must be compiled under the same
+    environment or its headers are not found (x86 workstation) or resolve
+    differently. Falls back to the caller's environment where env.sh does not
+    apply (a workspace without the sysroot components).
+    """
+    env = dict(os.environ, OCUDU_NATIVE_ROOT=str(root))
+    probe = subprocess.run(['bash', '-c', 'source "$1" >/dev/null 2>&1 && env -0', 'env', str(SCRIPT_DIR / 'env.sh')],
+                           env=env, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    if probe.returncode != 0:
+        return env, 'caller'
+    sourced = dict(item.split('=', 1) for item in probe.stdout.decode().split('\0') if '=' in item)
+    return sourced, 'env.sh'
+
+
+def verify(root, lock, lock_digest):
     out = root / lock['output_dir']
     manifest_path = out / 'manifest.json'
     if not manifest_path.is_file():
         die(f'no patched OAI ZMQ module at {out}; run scripts/native/build-oai-zmq-patched.py')
     manifest = json.loads(manifest_path.read_text())
-    if manifest.get('lock_sha256') != sha256(LOCK):
-        die(f'{out} was built from another oai-zmq-module.lock.json; rebuild it')
+    if manifest.get('lock_section_sha256') != lock_digest:
+        die(f'{out} was built from another zmq_module entry in oai-local-patches.lock.json; rebuild it')
     # The patch files themselves, not just the lock that names them: a patch
     # edited without a lock update must stop the gate, not load stale bytes.
     for entry in lock['patches']:
@@ -89,9 +123,9 @@ def main():
     root = Path(os.environ.get('OCUDU_NATIVE_ROOT', '')).resolve()
     if not root.is_dir() or str(root) == '/':
         die('OCUDU_NATIVE_ROOT must name the native workspace')
-    lock = json.loads(LOCK.read_text())
+    lock, lock_digest = load_lock()
     if sys.argv[1:] == ['--verify']:
-        return verify(root, lock)
+        return verify(root, lock, lock_digest)
     if sys.argv[1:]:
         die('usage: build-oai-zmq-patched.py [--verify]')
     src = root / 'src/oai'
@@ -118,6 +152,7 @@ def main():
         patches.append((path, entry))
 
     compiler, flags = read_flags(flags_make)
+    build_env, build_env_source = toolchain_env(root)
     scratch = Path(tempfile.mkdtemp(prefix='oai-zmq-patched-'))
     try:
         shutil.copytree(src / 'radio/zmq', scratch / 'radio/zmq')
@@ -134,7 +169,7 @@ def main():
                        # so two builds of the same lock give the same bytes.
                        + ['-ffile-prefix-map=%s=%s' % (scratch, src)]
                        + ['-o', str(obj), '-c', str(source)])
-        subprocess.run(compile_cmd, check=True, cwd=base / 'radio/zmq')
+        subprocess.run(compile_cmd, check=True, cwd=base / 'radio/zmq', env=build_env)
 
         stage = out.with_name(out.name + '.tmp')
         shutil.rmtree(stage, ignore_errors=True)
@@ -146,7 +181,7 @@ def main():
             die('unexpected link.txt layout: ' + str(link_txt))
         link = [str(obj) if arg == release_obj else str(stage / MODULE) if arg == release_out else arg
                 for arg in link]
-        subprocess.run(link, check=True, cwd=base / 'radio/zmq')
+        subprocess.run(link, check=True, cwd=base / 'radio/zmq', env=build_env)
         linked = []
         for lib in sorted(base.glob('lib*.so')):
             if lib.name != MODULE:
@@ -155,7 +190,7 @@ def main():
         compiler_version = subprocess.check_output([compiler, '--version'], text=True).splitlines()[0]
         manifest = {
             'schema': 'ocudu-native-oai-zmq-module/v1',
-            'lock_sha256': sha256(LOCK),
+            'lock_section_sha256': lock_digest,
             'oai_commit': head,
             'patches': [{'path': e['path'], 'sha256': e['sha256']} for _, e in patches],
             'module_sha256': sha256(stage / MODULE),
@@ -163,6 +198,7 @@ def main():
             'flags_make_sha256': sha256(flags_make),
             'link_txt_sha256': sha256(link_txt),
             'compiler': compiler_version,
+            'toolchain_env': build_env_source,
             'machine': platform.machine(),
             'symlinked_from_release': linked,
             'built_utc': datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ'),
