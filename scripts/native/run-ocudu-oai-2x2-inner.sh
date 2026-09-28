@@ -277,6 +277,9 @@ run_stack()
   local attach_seconds="${OAI2X2_ATTACH_SECONDS:-45}"
   local iperf_seconds="${OAI2X2_IPERF_SECONDS:-15}"
   local iperf_rate="${OAI2X2_IPERF_RATE:-80M}"
+  local iperf_dir="${OAI2X2_IPERF_DIR:-dl}"
+  local iperf_ul_rate="${OAI2X2_IPERF_UL_RATE:-60M}"
+  [[ "${iperf_dir}" == dl || "${iperf_dir}" == ul || "${iperf_dir}" == both ]] || usage_error "OAI2X2_IPERF_DIR must be dl, ul or both"
   local oai_build="${OAI2X2_NRUE_DIR:-${native_root}/builds/oai-zmq-release}"
   local gnb="${OCUDU_NATIVE_GNB_BINARY:-${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb}"
   # Platform CPU placement and profiler wrappers, as in the OAI 1x1 gate: the
@@ -307,6 +310,8 @@ run_stack()
   # ports2 = the UE advertises 2 DL MIMO layers (maxMIMO-Layers 2) and 2-port
   # SRS/PUSCH; OAI's own 2x2 ZMQ CI job uses this same file.
   local uecap_file="${native_root}/src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF/uecap_ports2.xml"
+  # OAI2X2_UL_MAX_RANK: the renderer wrote a band-3, 2-layer-PUSCH derivative.
+  [[ -f "${config_dir}/uecap.xml" ]] && uecap_file="${config_dir}/uecap.xml"
   [[ -f "${uecap_file}" ]] || usage_error "missing OAI UE capability file: ${uecap_file}"
 
   prepare_namespace
@@ -424,14 +429,24 @@ PY
       ping_ok=1
     fi
     if [[ "${iperf_seconds}" -gt 0 ]]; then
-      start_group iperf3 "${log_dir}/iperf3-server.log" iperf3 -s -B 10.45.1.1 -p 5201 -1
-      sleep 0.5
-      # Downlink: -R makes the server (core side) send to the UE.
-      if timeout $((iperf_seconds + 20)) nsenter --net=/run/netns/ue1 -- \
-          iperf3 -c 10.45.1.1 -B 10.45.1.2 -p 5201 -R -u -b "${iperf_rate}" -t "${iperf_seconds}" -l 1300 --json \
-          >"${log_dir}/iperf3-dl.json" 2>"${log_dir}/iperf3-dl.err"; then
-        iperf_ok=1
+      local iperf_dl_ok=1 iperf_ul_ok=1
+      if [[ "${iperf_dir}" == dl || "${iperf_dir}" == both ]]; then
+        start_group iperf3 "${log_dir}/iperf3-server.log" iperf3 -s -B 10.45.1.1 -p 5201 -1
+        sleep 0.5
+        # Downlink: -R makes the server (core side) send to the UE.
+        timeout $((iperf_seconds + 20)) nsenter --net=/run/netns/ue1 -- \
+            iperf3 -c 10.45.1.1 -B 10.45.1.2 -p 5201 -R -u -b "${iperf_rate}" -t "${iperf_seconds}" -l 1300 --json \
+            >"${log_dir}/iperf3-dl.json" 2>"${log_dir}/iperf3-dl.err" || iperf_dl_ok=0
       fi
+      if [[ "${iperf_dir}" == ul || "${iperf_dir}" == both ]]; then
+        start_group iperf3ul "${log_dir}/iperf3-server-ul.log" iperf3 -s -B 10.45.1.1 -p 5202 -1
+        sleep 0.5
+        # Uplink: the UE sends to the core side.
+        timeout $((iperf_seconds + 20)) nsenter --net=/run/netns/ue1 -- \
+            iperf3 -c 10.45.1.1 -B 10.45.1.2 -p 5202 -u -b "${iperf_ul_rate}" -t "${iperf_seconds}" -l 1300 --json \
+            >"${log_dir}/iperf3-ul.json" 2>"${log_dir}/iperf3-ul.err" || iperf_ul_ok=0
+      fi
+      [[ "${iperf_dl_ok}" -eq 1 && "${iperf_ul_ok}" -eq 1 ]] && iperf_ok=1
     fi
   fi
   # Hold the window open until the configured end so the metrics cover it.

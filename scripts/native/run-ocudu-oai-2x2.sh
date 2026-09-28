@@ -17,6 +17,12 @@ set -euo pipefail
 #   OAI2X2_BROKER_SECONDS run window (default 90)
 #   OAI2X2_IPERF_SECONDS  DL UDP iperf length, 0 disables (default 15)
 #   OAI2X2_IPERF_RATE     DL UDP offered rate (default 80M)
+#   OAI2X2_UL_MAX_RANK    unset (default: stock UL, 1 layer) | 1 | 2; set, the gNB
+#                         gets pusch.max_rank + periodic SRS and the UE a band-3
+#                         capability with 2-layer codebook PUSCH (renderer doc)
+#   OAI2X2_IPERF_DIR      dl (default) | ul | both -- UDP iperf direction(s)
+#   OAI2X2_IPERF_UL_RATE  UL UDP offered rate (default 60M)
+#   OAI2X2_GNB_PHY_LOG    info (default) | debug -- diagnosis only
 #   OAI2X2_BROKER_EXTRA   extra broker arguments (e.g. wire capture)
 #   OAI2X2_UE_EXTRA       extra nr-uesoftmodem arguments
 #   OCUDU_NATIVE_OAI_UE   local (default: builds/oai-zmq-local, pinned OAI + the
@@ -111,6 +117,8 @@ render_args=(--repo-root "${repo_root}" --native-root "${native_root}" --output-
   --topology "${topology}")
 [[ -n "${OAI2X2_MAX_UE_MCS:-}" ]] && render_args+=(--max-ue-mcs "${OAI2X2_MAX_UE_MCS}")
 [[ -n "${OAI2X2_TX_BACKOFF_DB:-}" ]] && render_args+=(--tx-backoff-db "${OAI2X2_TX_BACKOFF_DB}")
+[[ -n "${OAI2X2_UL_MAX_RANK:-}" ]] && render_args+=(--ul-max-rank "${OAI2X2_UL_MAX_RANK}")
+[[ -n "${OAI2X2_GNB_PHY_LOG:-}" ]] && render_args+=(--gnb-phy-log "${OAI2X2_GNB_PHY_LOG}")
 /usr/bin/python3 "${renderer}" "${render_args[@]}" >"${log_dir}/render.log" 2>&1 || {
   cat "${log_dir}/render.log" >&2; usage_error "render failed"; }
 "${gnb_binary}" -c "${config_dir}/gnb.yaml" --dryrun \
@@ -128,6 +136,7 @@ cp "${config_dir}"/* "${report_dir}/"
 {
   printf 'timestamp=%s\npath=%s\nmax_rank=%s\ncsi_rs=%s\nmax_ue_mcs=%s\ntx_backoff_db=%s\n' \
     "${timestamp}" "${OAI2X2_PATH}" "${max_rank}" "${csi_rs}" "${OAI2X2_MAX_UE_MCS:-}" "${OAI2X2_TX_BACKOFF_DB:-}"
+  printf 'ul_max_rank=%s\niperf_dir=%s\n' "${OAI2X2_UL_MAX_RANK:-}" "${OAI2X2_IPERF_DIR:-dl}"
   printf 'topology=%s\nlabel=%s\nue_extra=%s\nbroker_extra=%s\nnrue_dir=%s\n' \
     "${topology}" "${OAI2X2_LABEL:-}" "${OAI2X2_UE_EXTRA:-}" "${OAI2X2_BROKER_EXTRA:-}" "${OAI2X2_NRUE_DIR:-}"
   printf 'oai_ue=%s\noai_ue_sha256=%s\n' "${OAI_UE_VARIANT}" "${OAI_UE_SHA256}"

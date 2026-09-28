@@ -9,6 +9,15 @@ what 2x2 needs:
         optional `pdsch.max_ue_mcs` cap. CSI-RS stays at the OCUDU default
         (enabled): the OAI nrUE measures 2-port CSI-RS and reports RI/PMI,
         which is how the gNB learns that rank 2 is possible at all.
+  UL    `--ul-max-rank 2`: 2-layer codebook PUSCH. The gNB gets
+        `pusch.max_rank: 2` and periodic SRS (OCUDU picks the UL rank and TPMI
+        from the SRS channel matrix), and the UE gets a capability file derived
+        from OAI's own uecap_ports2.xml that (a) lists band 3 -- the stock file
+        only lists band 78, so OCUDU fell back to its 1-layer / 1-SRS-port
+        defaults for this band-3 cell -- and (b) advertises twoLayers on every
+        codebook PUSCH per-CC entry, because the OAI UE MAC takes its PUSCH
+        layer capability from the last per-CC entry matching the cell SCS and
+        bandwidth, and all 15 kHz entries said oneLayer.
   path  `broker`: the gNB talks to the CUDA broker on loopback and the UE on
         the veth pair, through the 2x2 topology fixture.
         `direct`: no broker; the gNB binds its TX on the veth host side and
@@ -63,6 +72,8 @@ def render_gnb_2x2(
     max_ue_mcs: int | None,
     csi_rs: bool,
     tx_backoff_db: float | None,
+    ul_max_rank: int | None = None,
+    srs_period_ms: float = 10.0,
 ) -> str:
     rendered = oai.render_gnb_oai(source, log_dir)
     rendered = legacy.replace_exact(
@@ -103,9 +114,42 @@ def render_gnb_2x2(
         1,
         "gNB PDSCH rank / CSI-RS",
     )
+    if ul_max_rank is not None:
+        # OCUDU selects the PUSCH rank and TPMI from the SRS channel matrix
+        # (ue_channel_state_manager::get_nof_ul_layers); without SRS it stays
+        # at rank 1 whatever max_rank says.
+        rendered = legacy.replace_exact(
+            rendered,
+            "  pusch:\n    mcs_table: qam64\n\n",
+            f"  pusch:\n    mcs_table: qam64\n    max_rank: {ul_max_rank}\n"
+            f"  srs:\n    type_enabled: periodic\n    period_ms: {srs_period_ms:g}\n\n",
+            1,
+            "gNB PUSCH rank / SRS",
+        )
+        # Per-UE scheduler metrics in the gNB log carry ul_ri (the mean UL rank
+        # the scheduler derived from SRS); the PHY PUSCH line prints the layer
+        # count only at debug level.
+        rendered = rendered.rstrip("\n") + (
+            "\n\nmetrics:\n  enable_log: true\n  layers:\n    enable_sched: true\n"
+            "  periodicity:\n    du_report_period: 1000\n"
+        )
     rendered = legacy.replace_exact(
         rendered, "  mac_enable: enable\n", "  mac_enable: disable\n", 1, "gNB MAC pcap off (>1 DL antenna)"
     )
+    return rendered
+
+
+def render_uecap_ul2(source: str) -> str:
+    """Band-3 copy of OAI's uecap_ports2.xml with 2-layer codebook PUSCH everywhere."""
+    if source.count("<bandNR>78</bandNR>") != 3:
+        legacy.fail("uecap_ports2.xml: expected exactly three band-78 entries")
+    rendered = source.replace("<bandNR>78</bandNR>", "<bandNR>3</bandNR>")
+    one = "<maxNumberMIMO-LayersCB-PUSCH><oneLayer/></maxNumberMIMO-LayersCB-PUSCH>"
+    if rendered.count(one) == 0:
+        legacy.fail("uecap_ports2.xml: no oneLayer codebook PUSCH entries to raise")
+    rendered = rendered.replace(one, "<maxNumberMIMO-LayersCB-PUSCH><twoLayers/></maxNumberMIMO-LayersCB-PUSCH>")
+    if "<maxNumberSRS-Ports-PerResource><n2/></maxNumberSRS-Ports-PerResource>" not in rendered:
+        legacy.fail("uecap_ports2.xml: no 2-port SRS feature set")
     return rendered
 
 
@@ -137,6 +181,9 @@ def main() -> int:
     parser.add_argument("--csi-rs", choices=("on", "off"), default="on")
     parser.add_argument("--topology", type=Path, required=True)
     parser.add_argument("--tx-backoff-db", type=float)
+    parser.add_argument("--ul-max-rank", type=int, choices=(1, 2))
+    parser.add_argument("--srs-period-ms", type=float, default=10.0)
+    parser.add_argument("--gnb-phy-log", choices=("info", "debug"), default="info")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve(strict=True)
@@ -167,17 +214,32 @@ def main() -> int:
             args.max_ue_mcs,
             args.csi_rs == "on",
             args.tx_backoff_db,
+            args.ul_max_rank,
+            args.srs_period_ms,
         ),
         "topology.yaml": validate_topology(topology_source),
         "open5gs.yaml": legacy.render_open5gs(open5gs_source, native_root),
         "nrue.conf": oai.validate_nrue(nrue_source),
         "subscriber.csv": legacy.validate_subscriber(subscriber_source),
     }
+    if args.ul_max_rank is not None:
+        rendered["uecap.xml"] = render_uecap_ul2(
+            legacy.read_regular(
+                native_root / "src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF/uecap_ports2.xml",
+                "pinned OAI 2-port UE capability",
+            )
+        )
+    if args.gnb_phy_log == "debug":
+        # Diagnosis only: PUSCH/PDSCH PDU fields such as nof_layers and ports are
+        # printed at debug level.
+        rendered["gnb.yaml"] = legacy.replace_exact(
+            rendered["gnb.yaml"], "\nlog:\n  filename:", "\nlog:\n  phy_level: debug\n  filename:", 1, "gNB PHY debug log"
+        )
     for name, text in rendered.items():
         if legacy.PLACEHOLDER_RE.search(text):
             legacy.fail(f"unresolved placeholder in {name}")
         legacy.write_new(output_dir / name, text)
-    print(f'event=native_oai_2x2_configs_rendered output_dir="{output_dir}" path={args.path} max_rank={args.max_rank}')
+    print(f'event=native_oai_2x2_configs_rendered output_dir="{output_dir}" path={args.path} max_rank={args.max_rank} ul_max_rank={args.ul_max_rank}')
     return 0
 
 
