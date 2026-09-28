@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "comment": "DGX Spark (GB10) lock for the C1+D8+D9+D10 CUDA build (SPARK_MILESTONES.md S13): the D8/D9 combined patch plus D10 (GPU TB encoder kept its own LDPC filler count when the CPU segmenter supplied F=0, so zero-filler multi-CB TBs, e.g. 9474 bytes = 9 BG1 CBs at Z=384, were encoded with the wrong K). D10 alone is scripts/cuda/patches/s-d10-tb-encoder-zero-filler.patch on top of s-c1-d8-d9.patch; this lock carries the combined patch. Separate checkout src/ocudu-cuda-d10 and build. cpu_baseline as in cuda-workspace.spark.lock.json.",
+  "source": {
+    "name": "ocudu-cuda",
+    "path": "src/ocudu-cuda-d10",
+    "commit": "5830c9cb7813393b5d518dd5ee2b6641071be4ad",
+    "url": "https://gitlab.com/ocudu/work_groups/wg1_hw_accel/cuda_accelerated_ocudu.git",
+    "branch": "nvcuda_accel_02",
+    "patch": {
+      "path": "scripts/cuda/patches/s-c1-d8-d9-d10.patch",
+      "sha256": "6379fc5d420f7c7fab54880ee75c803df383dcc4e2197d4ff2c7e790371767da"
+    }
+  },
+  "build": {
+    "build_dir": "builds/d10-cuda-patched-sm121",
+    "cuda_architectures": "121",
+    "mcpu": "neoverse-v2"
+  },
+  "cpu_baseline": {
+    "comment": "Non-CUDA OCUDU gNB for the S3/S5 CPU baseline (live-direct-zmq.sh cpu). Same commit as the workstation native lock; built by s3-build-stack.sh with MCPU=neoverse-v2, MARCH=armv9-a.",
+    "path": "src/ocudu",
+    "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+    "build_dir": "builds/ocudu-zmq-release"
+  }
+}

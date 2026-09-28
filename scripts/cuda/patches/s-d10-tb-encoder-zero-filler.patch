@@ -1,0 +1,69 @@
+diff --git a/lib/phy/cuda/src/transport_block.cu b/lib/phy/cuda/src/transport_block.cu
+index cff517b..81419d5 100644
+--- a/lib/phy/cuda/src/transport_block.cu
++++ b/lib/phy/cuda/src/transport_block.cu
+@@ -1511,7 +1511,11 @@ nr_ldpc_status_t tb_encoder_configure(tb_encoder_handle_t handle,
+ 
+             int Kb_full = (ldpc_cfg->base_graph == 1) ? NR_LDPC_BG1_INFO_NODES : NR_LDPC_BG2_INFO_NODES;
+             int K_prime = Kb_full * new_Z;
+-            ldpc_cfg->num_filler_bits = (cfg->nof_filler_bits > 0) ? cfg->nof_filler_bits : ldpc_cfg->num_filler_bits;
++            // D10: when the CPU segmenter supplies the shape (Z > 0), its filler count is authoritative, including
++            // F = 0. Treating 0 as "not provided" kept the GPU-derived F and shifted K for zero-filler multi-CB TBs.
++            if (cfg->lifting_size > 0 || cfg->nof_filler_bits > 0) {
++                ldpc_cfg->num_filler_bits = cfg->nof_filler_bits;
++            }
+             ldpc_cfg->num_info_bits = K_prime - ldpc_cfg->num_filler_bits;
+             handle->tb_cfg.cb_size_bits = ldpc_cfg->num_info_bits;
+             handle->tb_cfg.filler_bits = ldpc_cfg->num_filler_bits;
+@@ -3405,7 +3409,8 @@ nr_ldpc_status_t tb_batch_encoder_configure(tb_batch_encoder_handle_t handle,
+ 
+         int Kb_full = (ldpc_cfg->base_graph == 1) ? NR_LDPC_BG1_INFO_NODES : NR_LDPC_BG2_INFO_NODES;
+         int K_prime = Kb_full * new_Z;
+-        if (cfg->tb_cfg.nof_filler_bits > 0) {
++        // D10: the CPU segmenter's filler count is authoritative whenever it supplies the shape, including F = 0.
++        if (cfg->tb_cfg.lifting_size > 0 || cfg->tb_cfg.nof_filler_bits > 0) {
+             ldpc_cfg->num_filler_bits = cfg->tb_cfg.nof_filler_bits;
+         }
+         ldpc_cfg->num_info_bits = K_prime - ldpc_cfg->num_filler_bits;
+diff --git a/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp b/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp
+index 8ddeb56..c71aac9 100644
+--- a/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp
++++ b/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp
+@@ -77,8 +77,16 @@ struct pdsch_gpu_e2e_params {
+   unsigned           start_symbol  = 0;
+   unsigned           nof_symbols   = nof_ofdm_symbols;
+   subcarrier_spacing pdu_scs       = scs;
++  unsigned           forced_tbs_bytes = 0;
+ };
+ 
++// D10 regression: force a TB size (bytes) that the MCS table would not produce, e.g. a zero-filler multi-CB TB.
++static pdsch_gpu_e2e_params with_forced_tbs(pdsch_gpu_e2e_params params, unsigned tbs_bytes)
++{
++  params.forced_tbs_bytes = tbs_bytes;
++  return params;
++}
++
+ namespace ocudu {
+ 
+ std::ostream& operator<<(std::ostream& os, pdsch_mcs_table table)
+@@ -583,6 +591,9 @@ TEST_P(PdschGpuE2eFixture, CpuAndGpuResourceGridsMatch)
+                                dmrs_symbol_mask,
+                                params.nof_cdm_groups_without_data,
+                                params.nof_symbols);
++  if (params.forced_tbs_bytes != 0) {
++    tbs = params.forced_tbs_bytes * 8U;
++  }
+   ASSERT_EQ(tbs % 8, 0U);
+ 
+   pdsch_processor::pdu_t pdu = build_pdsch_pdu(mcs_descr,
+@@ -1469,6 +1480,10 @@ INSTANTIATE_TEST_SUITE_P(
+         pdsch_gpu_e2e_params{pdsch_mcs_table::qam256, sch_mcs_index(20), 162, 1, 0, dmrs_profile::double_symbol, 2},
+         pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(27), 273, 1, 0, dmrs_profile::double_symbol, 2},
+         pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(27), 273, 1, 0, dmrs_profile::double_symbol, 2, 2},
++        // D10: a 9474-byte TB is 9 BG1 codeblocks with zero filler bits (Z=384, K=8448); 10247 bytes has F=224.
++        with_forced_tbs(pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(20), 106, 1, 0, dmrs_profile::double_symbol, 2}, 9474),
++        with_forced_tbs(pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(20), 106, 1, 0, dmrs_profile::double_symbol, 2, 2}, 9474),
++        with_forced_tbs(pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(20), 106, 1, 0, dmrs_profile::double_symbol, 2}, 10247),
+         pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(27), 273, 1, 0, dmrs_profile::double_symbol, 2, 4},
+         pdsch_gpu_e2e_params{pdsch_mcs_table::qam64,
+                              sch_mcs_index(27),
