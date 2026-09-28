@@ -900,7 +900,7 @@ UE 노드 기준, 같은 대역폭의 S8 값과 비교(전체 표는 `compare-bw
 | l6 (대조) | CUDA **d8** | 1 | **0.45** | — | 0.39 |
 
   CUDA gNB가 CPU gNB와 같아졌다. l1의 meta 후처리는 실행 중에 러너를 고쳐서 깨졌지만 게이트 자체와 요약은 정상이다.
-- **범위:** D10은 PDSCH TB 인코더 결함이다. D8/D9와 같은 WG1 CUDA 코드(`5830c9cb`) 계열이므로 Jetson(`j2c`)과 워크스테이션 C1 빌드에도 같은 결함이 있다. 거기엔 아직 적용하지 않았다.
+- **범위:** D10은 PDSCH TB 인코더 결함이다. D8/D9와 같은 WG1 CUDA 코드(`5830c9cb`) 계열이므로 Jetson(`j2c`)과 워크스테이션 C1 빌드에도 같은 결함이 있다. → 2026-09-28 적용 완료: 워크스테이션 C1+D10(`CUDA_MILESTONES.md` D10 절, lock `cuda-workspace.c1-d10.lock.json`), Jetson J2d(`JETSON_MILESTONES.md` J9, lock `cuda-workspace.jetson-d10.lock.json`). 두 곳 모두 수정 전 결함을 재현했다.
 
 ### 2. 넓은 대역 2×2 실시간 — 코어 배치로는 안 풀린다 (구조 한계, 미해결)
 

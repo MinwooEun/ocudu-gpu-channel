@@ -68,6 +68,7 @@ WG 수치는 GB10 것이고 Orin은 SM 8개로 훨씬 작다. **J6 이전에는 
 | **J6** | **측정** — 같은 fixture로 CPU·CUDA 교차 실행 | 슬롯 처리 지연 분포, `OCUDU_PUSCH_ACCELERATION_TIMING` 단계별 타이밍, `tegrastats` GPU/CPU/전력, late/dropped. 전원 모드 두 개 이상(MAXN + 기본). **여기서부터만 Orin에서의 속도 비교 서술 가능** | 미착수 |
 | **J7** | **정리·제보** — 결과를 `docs/`에 보고서로, 새 upstream HEAD(`900d8d0e`) 재확인 | 보고서(한/영). upstream HEAD에서 J1–J2 재실행 결과. **이슈 #2 후속 코멘트는 minwoo 승인 후에만** 게시 | 미착수 |
 | **J8** | **OAI nrUE 라이브(1×1, 2×2)와 CPU 배치** — `integration-0928`, CPU gNB, zero-copy 브로커(`auto`), 패치 ZMQ 모듈과 패치 UE(MMSE int16 수정) 기본값 | OAI 1×1·2×2가 Orin에서 붙는지, 실시간 배율, 막히는 곳, Orin용 CPU 배치 프로파일이 도움이 되는지 | **완료 2026-09-28** — 1×1 통과(Orin 첫 OAI attach), 배치 프로파일로 0.58–0.60× → **0.80–0.81×**. 2×2 rank 2 통과(NACK 1.1–1.3%, y=Hx 통과) 하지만 **0.13–0.28×**. 30 W에서는 둘 다 실시간 미달 |
+| **J9** | **D10 적용(J2d = J2c + D10)** — GB10(S13)에서 찾은 GPU TB 인코더의 filler 0 결함 | 수정 전 재현, 수정 후 PHY 14 + OFH 16, 음성 대조군, 짧은 라이브 CPU 대 CUDA 정합 | **완료 2026-09-28** — 아래 J9 절 |
 
 J2까지가 "Orin에서 벤더 코드가 맞게 도는가", J4가 "managed 가정이 버티는가", J5가 "결과가 맞는가", J6이 "Orin에서 쓸 만한가"다.
 
@@ -514,6 +515,24 @@ managed 런에서 크래시가 나면:
 **남은 것:** MAXN에서 1×1·2×2 재측정, gNB 4코어 정지의 원인, 2×2 고리가 길어지는 원인 분리, 2×2 전용 배치를 게이트별 프로파일로 둘지 결정.
 
 원자료: 게이트 결과 Jetson `results/{logs,reports}/oai-1x1|oai-2x2/<ts>`(2×2 wire capture는 `130143Z`만 보존), 실행 스크립트·표본 `/workspace/gpuch/int-*.sh`, `samp-*.txt`, `j8-hop-*.txt`, `j8-matrix-verify.txt`.
+
+### J9 — D10 적용, J2d (2026-09-28, `results/j2d-20260928T161122Z`)
+
+**배경:** S13(Spark)에서 벤더 `lib/phy/cuda/src/transport_block.cu`의 `tb_encoder_configure`·`tb_batch_encoder_configure`가 CPU 세그멘터의 LDPC filler 0을 "값 없음"으로 보고 GPU 자체 값을 써서, filler 0인 다중 CB TB(9,474 B = BG1 9 CB)를 틀린 K로 부호화한다는 것을 찾았다(D10). 하드웨어와 무관한 WG1 코드라 J2c에도 있어야 한다.
+
+**패치:** `scripts/cuda/patches/j2d-ocudu-cuda-orin-d8-d9-d10.patch` = J2c(C1 커밋 위 D6+D7+D8+D9) + D10(`lib/` 두 곳 + `pdsch_gpu_e2e_test` 강제 TBS 9,474 B 1·2포트, 10,247 B F>0 대조), sha256 `ab384cef…`. `j2-patched-validate.sh`를 `J2_TAG=j2d`로 돌려 체크아웃 `src/ocudu-cuda-j2d`, 빌드 `builds/j2d-cuda-patched-sm87`(`-j4`, 48분)을 만들었다. 라이브 lock은 `cuda-workspace.jetson-d10.lock.json`이다. j2d 체크아웃의 로컬 C1 커밋은 `2dbd249`로 j2c의 `35e206b`와 해시만 다르다(커밋 시각). 부모는 둘 다 pin `5830c9cb`다.
+
+**오프라인:** PHY 14/14(`pusch_gpu_cpu_comparison_test` 3,514 s), OFH 16/16, 로그 판정 pass. `pdsch_gpu_e2e_test` 60/60.
+
+**결함 재현 겸 음성 대조군:** j2d 체크아웃에서 D10의 `lib/` 부분만 되돌리고(= J2c 코드) `pdsch_gpu_e2e_test`만 다시 빌드하니 9,474 B 두 케이스만 실패하고 58개가 통과했다(10,247 B 대조 포함). 되살리니 60/60. 소스 diff는 다시 lock 해시 `ab384cef…`와 같고, gNB 바이너리(`1378e4d1…`)는 전후 그대로다.
+
+**라이브(짧게, MODE_30W, srsUE 1×1 직결 ZMQ, 트래픽 60 s, 접속 창 400 s):** CPU gNB와 CUDA J2d(`all`) 각 1회, 둘 다 RRC·PDU·ping 통과, 백엔드 OK, CUDA gNB 기동 80 s. PUSCH 일치 신규 전송 1,126건 비교: **ΔBLER −0.18%p, ΔSINR −0.00 dB → PASS**(`s5-compare-arms.py`). 이 게이트는 ping 수준 DL이라 9,474 B TB를 거의 만들지 않는다. D10 자체의 증거는 위 오프라인 재현과 음성 대조군이고, 라이브는 회귀 없음 확인이다.
+
+**막힌 것:**
+- 첫 라이브 시도는 두 arm 모두 곧바로 끝났다. 러너가 root로 `git -C src/ocudu-cuda-j2d rev-parse`를 부르는데 체크아웃이 dev 소유라 git이 `dubious ownership`으로 거부했다. CPU arm도 `src/ocudu`에서 같은 이유로 막혔다. 컨테이너 root의 `~/.gitconfig`에 두 경로를 `safe.directory`로 추가했다.
+- 다른 사용자: 호스트에 user-a의 데스크톱 세션만 있고 브로커는 없었다. 전원 모드 `MODE_30W` 그대로, SCTP 모듈 적재 상태.
+
+**디스크:** 실행마다 남는 MongoDB `data/`를 지우고, 217 MB짜리 `srsue-internal.log`는 gzip으로 줄였다(두 실행 합계 27 MB). j2d 소스·빌드(약 0.9 GB)가 남아 사용률은 93%다(여유 4.0 GB). 09-25의 옛 `5gc` 두 묶음은 여전히 돌고 있다(J8에 적은 대로).
 
 ## 이 트랙이 주는 것
 
