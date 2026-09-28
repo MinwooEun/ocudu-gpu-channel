@@ -48,7 +48,7 @@ def main() -> int:
         for line in gnb_log.open(errors="replace"):
             if (st := STAMP_RE.search(line)) is not None:
                 wall = datetime.fromisoformat(st.group(1) + "+00:00").timestamp()
-                stamps.append((wall, int(st.group(2)) * 10 + int(st.group(3))))
+                stamps.append((wall, int(st.group(2)), int(st.group(3))))
             if (m := DL_RE.search(line)) is not None:
                 key = f"ri{m.group(3)}_{'new' if m.group(1) == 'true' else 'retx'}"
                 dl[key] += 1
@@ -91,10 +91,14 @@ def main() -> int:
         start = data["start"]["timestamp"]["timesecs"]
         window = (start, start + data["end"]["sum_received"]["seconds"])
     realtime_factor = None
-    selected = [st for st in stamps if window is None or window[0] <= st[0] <= window[1]]
+    # Air time in ms from [SFN.slot]: a 30 kHz cell (100 MHz n78) has 20 slots
+    # per 10 ms frame, a 15 kHz one 10; any slot index >= 10 marks the former.
+    slots_per_frame = 20 if any(st[2] >= 10 for st in stamps) else 10
+    selected = [(st[0], st[1] * 10 + st[2] * 10.0 / slots_per_frame) for st in stamps
+                if window is None or window[0] <= st[0] <= window[1]]
     if len(selected) > 1 and selected[-1][0] > selected[0][0]:
-        sim_slots = sum((b[1] - a[1]) % 10240 for a, b in zip(selected, selected[1:]))
-        realtime_factor = round((sim_slots / 1000.0) / (selected[-1][0] - selected[0][0]), 4)
+        sim_ms = sum((b[1] - a[1]) % 10240 for a, b in zip(selected, selected[1:]))
+        realtime_factor = round((sim_ms / 1000.0) / (selected[-1][0] - selected[0][0]), 4)
     total_ack = acks["ack"] + acks["nack"]
     summary = {
         "dl_decisions": dict(dl),

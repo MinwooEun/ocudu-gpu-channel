@@ -39,6 +39,7 @@ WG1이 문서에 적은 검증은 **이 기종**에서 나왔다. 앞의 두 플
 | **S9** | **S8 관측의 원인 규명** — OAI 실행이 실시간보다 느린 이유, CUDA gNB 100 MHz의 브로커 p99 증가, zero-copy에서 ring 단계가 길어지는 이유 | 원인마다 증거와 되돌리는 조작 | **완료 2026-09-28** — (1) OAI ZMQ 드라이버가 TX 응답을 최대 10 ms 늦춤, 패치 후 20 MHz 256–382 → 1000 슬롯/s(실시간), starvation 3,335 → 1. (2) GPU 컨텍스트 time-slicing, MPS로 p99 195 → 80 µs(CPU gNB와 같음). (3) GPU가 만진 pageable 버퍼의 CPU memcpy가 3–6배 느려짐 |
 | **S10** | **100 MHz가 패치 후에도 실시간의 0.72×인 이유** | 슬롯 경로를 홉별로 나누고, 원인을 되돌리는 조작으로 확인 | **완료 2026-09-28** — 원인은 바이트가 아니라 **CPU 배치**다. lock-step 고리에 파이프라이닝이 사실상 없어(리드 0–1 메시지) 슬롯마다 고리 한 바퀴를 기다리는데, 그 고리의 스레드 전환이 (a) 깊은 idle 상태(LPI-3, 탈출 지연 433 µs 선언)에 들어간 코어를 깨우고 (b) 절반은 A725 little 코어에서 돈다. **gNB·브로커·UE를 X925 big 코어에 나눠 고정하면 1,470 → 2,060–2,077 슬롯/s(실시간)**, CUDA gNB + MPS도 2,068. little 코어 고정은 1,522 |
 | **S11** | **S9–S10 해결책을 게이트 기본값으로 + S8 재측정** — 패치 OAI ZMQ 모듈, 플랫폼 CPU 배치, CUDA gNB면 MPS를 환경 변수 없이 적용하고, 그 조건에서 20–100 MHz를 다시 잰다. 브로커 코어 수와 라이브·벤치 차이도 가른다 | 기본값만으로 실시간, 적용 내역이 실행마다 기록됨, srsUE 게이트 무회귀, 대역폭마다 copy·zero-copy 2쌍, 원인마다 대조 | **완료 2026-09-28** — 24/24 통과, **20–100 MHz 전부 실시간**(S8 0.3×), starvation 3,000대 → 1(CUDA gNB 5). 브로커를 3코어로 주니 100 MHz p99 115–135 → **65 µs**(CPU·CUDA gNB). 라이브 커널이 벤치보다 긴 이유는 little 코어 배치(이제 해결)와 CPU가 막 쓴 입력(+1.6 µs, GB10 일관성) |
+| **S12** | **integration-0928 조합 검증** — GB10에서 prepare() 수정 확인, 1x1 회귀, OAI 2×2 rank 2(copy·zero-copy, CUDA gNB, 40–100 MHz, 덜 깨끗한 H) | 게이트 기본값만으로, 실행마다 다른 GPU 프로세스 기록, y=Hx 같은 실행에서 | **완료 2026-09-28** — 20 MHz 2×2 rank 2 copy·zero-copy 2쌍 전부 NACK 0, 148 Mb/s(air), y=Hx 통과, zero-copy가 브로커 p50 70 → 50 µs. **새 결함 2개:** (1) OAI UE가 OCUDU 기본 송신 레벨(12 dB 백오프)에서 64QAM의 69–89%를 NACK(rank 1·2, 1×1 게이트는 ping만 봐서 통과로 보였음) → 로컬 패치 `oai-zmq-rx-gain.patch` + 게이트 기본 UE RX gain −12 dB로 NACK 0. (2) CUDA gNB의 PDSCH 가속이 2포트 셀의 rank 1에서 NACK 45%(rank 2는 5.5%) — 미해결. 40–100 MHz 2×2는 부하 시 실시간 0.24–0.59(UE CPU) |
 
 ## 진행 기록
 
@@ -845,3 +846,30 @@ UE 노드 기준, 같은 대역폭의 S8 값과 비교(전체 표는 `compare-bw
 - 워크스테이션에서 패치 모듈을 쓰려면 거기서 `build-oai-zmq-patched.py`를 한 번 돌려야 한다(x86 release 빌드의 플래그를 그대로 쓴다). 워크스테이션에서는 프로파일이 맞지 않아 CPU 배치가 적용되지 않는다(5090 프로파일은 따로 정해야 한다).
 
 - **통합 후 이름 (2026-09-28, `integration-0928`):** S11의 `oai-zmq-module.lock.json`은 `oai-local-patches.lock.json`의 `zmq_module` 항목이 됐고(UE 패치도 같은 파일), 게이트 기본값 코드는 `oai-gate-defaults.sh`로 옮겨 OAI 2×2 게이트도 같이 쓴다. 빌드 manifest 필드가 바뀌었으므로 Spark의 `builds/oai-zmq-patched`는 `build-oai-zmq-patched.py`로 한 번 다시 빌드해야 한다. 자세한 대응표는 `docs/plans/m6-rank2-su-mimo-live.md` §8.8.
+
+## S12 — integration-0928 조합 검증 (2026-09-28)
+
+**왜:** 두 브랜치(`gb10-zero-copy`, `oai-2x2`)를 합친 `integration-0928`이 GB10에서 한 번도 라이브로 돌지 않았다. 특히 OAI 2×2(rank 2)는 워크스테이션 5090의 copy 경로에서만 돌았고, zero-copy·CUDA gNB·넓은 대역과의 조합은 없었다. 트리 Spark `/workspace/gpuch/int0928`(브랜치 `s12-spark`), 빌드 `builds/gpuch-int0928-release`, 원자료 `/workspace/gpuch/s12/runs/`, 표 워크스테이션 `~/ocudu-work/perf-platform/compare-s12.md`. 모든 실행에서 시작·종료 `nvidia-smi`에 다른 GPU 프로세스는 없었다.
+
+**게이트 정리(코드):** Spark 트리에 늘 남기던 미커밋 수정 3개(x86 workspace lock 생략, sm_121, 26.04 배너)를 multi-gNB 게이트의 `OCUDU_NATIVE_SKIP_WORKSPACE_LOCK`·`OCUDU_NATIVE_CUDA_ARCH`로 옮겼다(`30563f3`). 2×2 게이트가 `OAI2X2_BW_MHZ`·`OAI2X2_CUDA_HOST_MEMORY`(1×1 대역폭 렌더러의 `apply_bandwidth`를 공유, 1×1 렌더 결과는 바이트 동일)와 `OCUDU_NATIVE_GNB_ACCELERATION`(CUDA gNB)을 받는다(`48019eb`, `3d53608`). 2×2 요약기의 실시간 비율이 30 kHz 셀에서 20배 틀리던 것을 고쳤다(프레임당 20슬롯).
+
+**1. prepare() 스트림 순서 수정(GB10):** 다른 프로세스에서 1블록 busy 커널을 돌리며 `test_matrix_profile_history`·`test_processing`을 직접 실행했다. 수정 전 빌드(zc9) **10/10 실패**, 수정 후 0/10. 유휴 GPU에서는 둘 다 통과. ctest 12/12와 9단계 시퀀스는 유휴·경쟁 두 조건 모두 통과.
+
+**2. 1×1 회귀:** OAI 1×1, srsUE 1×1 모두 통과(실시간, p50/p99 35/55 µs).
+
+**3. 2×2 rank 2, 20 MHz — 여기서 결함이 드러났다.**
+- **증상:** 첫 실행(패치 UE, OCUDU 기본 12 dB 백오프, zero-copy)에서 attach·PDU·ping은 통과했지만 PDSCH NACK 89%, iperf 0.5 Mb/s, RLF 1회. 워크스테이션의 같은 조건은 118 Mb/s였다.
+- **추적:** (a) 같은 실행의 wire capture에서 y=Hx 통과(오차 8e-10) → 채널은 정상. (b) 24 dB에서는 원본·패치 UE 모두 NACK 0 → 레벨 문제. (c) rank 1(12 dB)도 NACK 69% → 패치한 2레이어 MMSE가 아니라 공통 경로. (d) 같은 gNB에 srsUE는 NACK 0 → gNB는 정상. (e) Spark의 OAI 1×1(12 dB)도 NACK 89%, **워크스테이션의 OAI 1×1도 78%** → aarch64 전용이 아니고, OAI 1×1 게이트는 ping만 봐서 통과로 보였다(S8·S11의 OAI 결과도 같은 상태였다). (f) 백오프 스윕: rank 1 NACK 12 dB 0.69 · 15 dB 0.43 · 18 dB 0.010 · 21 dB 0.007 · 24 dB 0, rank 2도 같은 경계. (g) 계측 UE: 채널 보상 뒤 int16 포화 없음(최대 5–7k), 채널 추정 매끈함, OAI FFT 단독 시험은 입력 61 dB까지 SNR이 오르고 포화 없음, 캡처 최대 샘플 0.30(full scale 대비). 그런데 추출한 RE를 float MRC로 등화해도 64QAM EVM이 0.86–0.91(24 dB는 0.001). (h) gNB는 그대로 두고 **UE의 ZMQ 입력만 −12 dB로 줄이면 NACK 69% → 0, 9.7 → 74.1 Mb/s.**
+- **판정:** OAI UE 수신 체인이 입력 레벨에 따라 망가진다. ZMQ 라디오에는 AGC가 없어서 gNB가 보낸 레벨(약 55 dB 디지털 전력)이 그대로 들어오고, OAI의 목표 레벨 `TARGET_RX_POWER`는 50 dB다. FFT 뒤 어느 단계가 망가지는지는 좁히지 못했다.
+- **조치(로컬 패치):** `oai-zmq-rx-gain.patch`가 ZMQ 라디오에 `zmq.[n].rx_gain_db`(기본 0, 변화 없음)를 더한다. 무선 장비의 RF 수신 이득 역할이다. OAI 1×1·2×2 게이트가 패치 모듈일 때 −12 dB를 기본으로 넘기고 기록한다(`OCUDU_NATIVE_OAI_UE_RX_GAIN_DB`로 변경, 0이면 끔). 점검 스크립트의 `--probe`에 0 dB(NACK 0.89) vs −12 dB(0.0) 대조를 넣었다. 먼저 의심한 aarch64 RX 변환의 비포화 절단은 실제 결함이지만 이번 원인이 아니었다(`oai-zmq-rx-saturate.patch`, 잠재 결함으로 유지).
+- **결과(기본값, unitary H):** copy·zero-copy 2쌍 전부 rank 2 99.9%, NACK 0, 130–132 Mb/s(실시간 0.88–0.89 → air 148 Mb/s), y=Hx 통과. zero-copy가 브로커 p50/p99 70/90 → **50/70 µs**, emulator 호출 68 → 50 µs. 덜 깨끗한 H(reference)도 rank 2 99.9%, NACK 0 — 워크스테이션에서 보던 RI 흔들림(28 dB)은 이 레벨에서는 나오지 않았다.
+- **남은 것:** 20 MHz 2×2도 iperf 중에는 실시간 0.88–0.91이다. UE가 코어 2개(18,19)를 다 쓴다(179%).
+
+**4. CUDA gNB + 2×2(MPS 자동):** `all` 가속에서 NACK 45%, 실시간 0.30, iperf 실패. 가속 단계를 누적으로 나눠 보니 disabled·lower-PHY·PUSCH까지는 CPU gNB와 같고(NACK 0, 132–134 Mb/s), **PDSCH 가속을 켜는 순간** 망가진다: rank 2 NACK 5.5%(87 Mb/s), **rank 1 NACK 45%**. GPU 그리드 매핑(`OCUDU_PDSCH_DISABLE_DEVICE_MAP=1`)을 꺼도 같다. 2포트 셀에서 1레이어를 두 포트에 싣는 경로(precoding)가 의심되지만 확인하지 않았다. 1포트 셀의 CUDA gNB(S7, S11)는 정상이었다. **미해결.**
+
+**5. 넓은 대역 2×2(zero-copy, 100 MHz는 copy도):** 전부 attach, NACK 0, y=Hx 통과. 부하(200M) 중 실시간 비율은 40 MHz 0.47, 50 MHz 0.51, 100 MHz 0.24–0.25(air-time 환산 304 / 234 / 452–474 Mb/s). 50 MHz는 rank 2 비율이 21%로 떨어졌다(원인 미확인). 부하 없이는 40 MHz도 실시간(브로커 1,000–1,036 배치/s). 부하 중 UE는 코어 2개로 179%, 3개로 230%를 쓰고 실시간은 0.52–0.59까지만 오른다. gNB를 코어 3–4개로 줄이면 시작하지 못했다. 즉 넓은 대역 2×2의 실시간은 CPU 예산 문제이고, 플랫폼 프로파일(1×1 기준)을 2×2용으로 다시 나눠야 한다 — 미해결.
+
+**6. 패치 점검(`check-oai-local-patches.sh --probe`, Spark):** 정적 11/11, probe 5/6. 실패 1건은 ZMQ reply-poll의 "패치 후 > 0.9" 기준이었다. 이 probe는 2×2에 200M 부하를 거는데, Spark의 2코어 UE는 패치 후에도 0.89에 머문다(원본 0.29). 기준을 0.7로 낮췄다.
+
+**Spark 상태:** gate 프로세스·MPS·GPU 앱 없음. `iperf3`를 컨테이너에 설치했다(2×2 게이트 필요). 계측 UE 트리 `src/oai-s12dbg`·빌드 `builds/oai-s12dbg`는 남겨 두었다.
+
