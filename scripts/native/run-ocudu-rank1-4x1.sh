@@ -79,7 +79,10 @@ done
 "/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
   --root "${native_root}" --repo-root "${repo_root}" \
   --lock "${script_dir}/native-workspace.lock.json"
-git -C "${repo_root}" diff --quiet bc88865 -- \
+# bc88865 (the pre-MIMO anchor in the parent tree) is not in this history.
+# f93386b is the last commit here that touched these fixtures and drivers
+# (merge of the rank-1 MISO/SIMO workstream); a change after it still fails.
+git -C "${repo_root}" diff --quiet f93386b -- \
   examples/topology.ocudu-docker.cuda.yaml \
   examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml \
   scripts/remote/ocudu-attach-smoke.sh scripts/remote/common.sh || \
