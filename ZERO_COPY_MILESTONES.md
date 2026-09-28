@@ -297,5 +297,5 @@ mvp-2edge 호출 하나로 본 이득(−14.3 µs): H2D IQ −5.3, D2H −9.7, �
 - **검증:**
   - Jetson(`/workspace/gpuch/zc7`, sm_87, CUDA 12.6): ctest 12/12. `cuda_host_memory`가 없는 `topology.mvp.cuda.yaml`로 벤치 → `cuda_zero_copy,1`.
   - 워크스테이션 5090(CUDA 13.0, sm_120): 같은 벤치 → `cuda_zero_copy,0`(copy 유지).
-- **별도 발견 — 5090 ctest 간헐 실패 (Z7과 무관):** 5090에서 `matrix_profile_history`가 간헐적으로 실패한다(`FAIL: long-delay CUDA echo must match CPU`, `FAIL: delayed echo must survive a gain/phase or identical matrix update`). `processing`도 한 번 실패했다. 같은 GPU에서 다른 브로커 프로세스(OAI 2×2 트랙)가 돌고 있었다. 8회 반복 기준 실패 횟수: `a07b8a9`(zero-copy 이전) 6/8, `6fab580` 3/8, `285fad6` 5/8. zero-copy 이전부터 있던 문제이고, 단독 실행이던 Z1 때는 12/12였다. GPU를 공유할 때 드러나는 타이밍 의존으로 보이지만 원인은 확인하지 않았다. GPU가 비었을 때 재현과 원인 분리가 필요하다.
+- **별도 발견 — 5090 ctest 간헐 실패 (Z7과 무관):** 5090에서 `matrix_profile_history`가 간헐적으로 실패한다(`FAIL: long-delay CUDA echo must match CPU`, `FAIL: delayed echo must survive a gain/phase or identical matrix update`). `processing`도 한 번 실패했다. 같은 GPU에서 다른 브로커 프로세스(OAI 2×2 트랙)가 돌고 있었다. 8회 반복 기준 실패 횟수: `a07b8a9`(zero-copy 이전) 6/8, `6fab580` 3/8, `285fad6` 5/8. zero-copy 이전부터 있던 문제이고, 단독 실행이던 Z1 때는 12/12였다. GPU를 공유할 때 드러나는 타이밍 의존으로 보이지만 원인은 확인하지 않았다. OAI 트랙이 끝나 GPU가 빈 뒤 `c3bde7f`로 12회 반복하니 12/12 통과했다. 실패는 GPU 공유 조건에서만 난다. 원인 분리는 남아 있다.
 
