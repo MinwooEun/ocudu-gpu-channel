@@ -232,7 +232,7 @@ RadioNode는 "ZMQ 엔드포인트 쌍 N개가 한 라디오"라고만 말하고,
 
 **조건과 한계:**
 - back-off 24 dB는 **이 토폴로지 이득(0.8)에 맞춘 값**이다. 다른 H나 경로 손실을 쓰면 NACK와 RI 안정성을 다시 확인해야 한다. 기준 H(조건수 1.6)와 유니터리 H @28 dB에서는 OAI의 RI 판정(CSI-RS 조건수 < 5 dB, `csi_rx.c`)이 RI 1/2를 오가서, rank 2는 102–106 Mb/s에 그쳤다.
-- 실시간이 아니다(락스텝 0.275배). 브로커 `rx_starvations`는 75 s마다 약 12.3k로 두 모드가 같다(M6.2의 soft 신호와 같은 성격).
+- 실시간이 아니다(락스텝 0.275배). 브로커 `rx_starvations`는 75 s마다 약 12.3k로 두 모드가 같다(M6.2의 soft 신호와 같은 성격). **→ §8.5에서 원인(OAI ZMQ 드라이버의 응답 지연)을 확인했고, 패치한 드라이버로 실시간(0.999배)이 된다.**
 - UL MIMO, 64QAM 초과(qam256), 페이딩 채널에서의 rank 2는 이번 범위 밖이다.
 
 **재현:**
@@ -248,3 +248,48 @@ docker exec ocudu-minwoo bash -c 'cd ~minwoo/ocudu-work/ocudu-oai-mimo && env HO
 /usr/bin/python3 scripts/native/verify-mimo-matrix-capture.py --capture-dir <log>/wire-capture \
   --topology <report>/topology.yaml --allow-silent-source 'ue0->gnb0:1'
 ```
+
+### 8.5 실시간 복원 — OAI ZMQ 드라이버 패치 재측정 (2026-09-28, 워크스테이션 RTX 5090)
+
+M6.4가 벽시계의 0.275배로 흐른 원인은 Spark S9에서 찾은 것과 같다. OAI `radio/zmq/zmq_radio.cpp`의 `tx_poll_thread`는 REP 응답을 보내야 하는데 TX 샘플이 아직 큐에 없으면 `zmq_poll(..., 10)`으로 들어가 응답을 최대 10 ms 늦춘다. 패치 `scripts/native/patches/oai-zmq-tx-reply-poll.patch`(S9, 이 브랜치 `90acaf6`)는 응답을 기다리는 동안 20 µs마다 큐를 다시 본다.
+
+- **빌드:** 핀 트리는 그대로 두고 `zmq_radio.cpp`만 복사해 `builds/oai-zmq-s9`(패치)와 `builds/oai-zmq-s9-stock`(원본, 같은 절차)로 따로 빌드했다. 컴파일 플래그는 원래 빌드의 `flags.make`, 링크는 `link.txt`와 같다. nrUE 바이너리는 두 경우 모두 `builds/oai-zmq-release`의 것이고 ZMQ 모듈만 `OCUDU_NATIVE_OAI_SHLIBPATH`로 바꾼다(2×2 러너에도 같은 노브를 추가, `72a65ec`).
+- **조건:** M6.4와 같다(유니터리 H, back-off 24 dB, rank 2, wire capture). DL UDP 제시율만 200M으로 올렸다(실시간에서 60M은 셀 용량보다 작다). 원본과 패치를 번갈아 2쌍 측정했다. GPU에 다른 프로세스는 없었다.
+
+| 실행 | ZMQ 모듈 | 실시간 배율 | rx_starvations | ri=2 PDSCH | NACK | 수신(벽시계) | 수신(공중 시간) | 행렬 검증 |
+|---|---|---|---|---|---|---|---|---|
+| `081445Z` | 원본 | 0.277 | 15,077 | 4,524 | 0% | 41.2 Mb/s | 148.6 | 통과 |
+| `081623Z` | **패치** | **0.999** | **1** | 15,346 | 0% | **148.2** | 148.3 | 통과 |
+| `081802Z` | 원본 | 0.278 | 15,112 | 4,526 | 0% | 41.2 | 148.4 | 통과 |
+| `081940Z` | **패치** | **1.000** | **5** | 15,364 | 0% | **148.3** | 148.3 | 통과 |
+
+- **판정:** 원인은 Spark와 같다. 패치로 실시간이 되고 `rx_starvations`는 약 15k에서 1–5로 줄어든다. 공중 시간 처리량(148.3–148.6 Mb/s)은 그대로라서, M6.4의 환산이 맞았다는 것도 확인된다. 이제 벽시계 처리량 자체가 148 Mb/s다. ri=2 PDSCH 수가 약 3.4배인 것은 같은 벽시계 창에 시뮬레이션 슬롯이 그만큼 더 들어가기 때문이다.
+- **rank 1(패치, `082806Z`):** 74.1 Mb/s(벽시계), 실시간 배율 1.000, ri=2 0건. rank 2 / rank 1 = **2.00×**가 실시간에서도 유지된다.
+
+**PHY 동작은 바뀌지 않았다 (예상대로).** 드라이버 패치는 타이밍만 바꾸고 PHY에는 손대지 않는다.
+
+| 확인 | 원본 | 패치 | 판정 |
+|---|---|---|---|
+| back-off 20 dB, 유니터리 H(`082132Z`/`082311Z`) | NACK 52.8% | NACK 51.8% | int16 오버플로(§8.1)는 그대로다. 24 dB가 여전히 필요하다 |
+| 기준 H(조건수 1.6), 28 dB(`082449Z`/`082627Z`) | ri=2 36%, 100.7 Mb/s(공중) | ri=2 38%, 102.6 Mb/s | RI 1/2 요동과 102–106 Mb/s 한계도 그대로다 |
+
+- back-off 20 dB에서 처리량은 원본 38.3 Mb/s(공중)와 패치 10.2 Mb/s로 달랐다. NACK 비율은 같다(52%). 차이의 원인은 분리하지 않았다(요약기는 실행 전체의 결정 수를 세므로 슬롯당 스케줄 비율은 이 데이터로 알 수 없다). 실패 조건의 처리량이라 판정에는 쓰지 않는다.
+
+**회귀:** OAI 1×1 게이트 원본 모듈 `083218Z` pass(`rx_starvations` 3,363), 패치 모듈 `083259Z` pass(5), srsUE 1×1 `ocudu-interop/083339Z` pass(8).
+
+**하네스 수정(`31ce47b`):** OAI 1×1 게이트는 바깥 스크립트가 `builds/ocudu-gpu-channel-rank1-cuda-release`를 빌드·검사하는데, 안쪽 스크립트는 브로커를 `builds/ocudu-gpu-channel-cuda-release`에서 띄우고 있었다. 이 빌드 디렉터리는 다른 체크아웃(`ocudu-cuda-rebuild`)의 것이다. 이제 둘 다 `OCUDU_NATIVE_CHANNEL_BUILD`(기본 rank1 빌드)를 쓴다. §8.3의 `054330Z` pass는 다른 트리의 브로커로 돈 것이다. srsUE 게이트는 이 호스트에서 `OCUDU_NATIVE_CHANNEL_BUILD=builds/ocudu-gpu-channel-oai2x2-cuda-release`로 돌렸다(기본 빌드 디렉터리가 다른 트리를 가리켜 cmake 구성이 실패한다).
+
+**재현(패치 모듈):**
+
+```bash
+docker exec ocudu-minwoo bash -c 'cd ~minwoo/ocudu-work/ocudu-oai-mimo && env HOME=/root \
+  OCUDU_NATIVE_ROOT=/home/hyunsoo/ocudu-native-workspace CUDACXX=/usr/local/cuda/bin/nvcc \
+  OCUDU_NATIVE_OAI_SHLIBPATH=/home/hyunsoo/ocudu-native-workspace/builds/oai-zmq-s9 \
+  OAI2X2_PATH=broker OAI2X2_MAX_RANK=2 OAI2X2_TX_BACKOFF_DB=24 OAI2X2_IPERF_RATE=200M \
+  OAI2X2_TOPOLOGY=$PWD/examples/native/topology.ocudu.oai-2x2-unitary.cuda.yaml \
+  "OAI2X2_BROKER_EXTRA=--wire-capture-dir WIRECAP --wire-capture-samples 2304000 --wire-capture-skip 69120000" \
+  bash scripts/native/run-ocudu-oai-2x2.sh'
+```
+
+실행 스크립트와 결과 수집기는 `~/ocudu-work/perf-platform/oai2x2-s9/`(git 밖)에 있다.
+
