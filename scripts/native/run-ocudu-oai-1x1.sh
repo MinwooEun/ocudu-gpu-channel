@@ -17,8 +17,15 @@ native_root="${OCUDU_NATIVE_ROOT}"
 duration_seconds="${OCUDU_NATIVE_OAI_DURATION_SECONDS:-25}"
 physical_gpu="${OCUDU_NATIVE_GPU_DEVICE:-0}"
 cuda_compiler="${CUDACXX:-/opt/conda/envs/cuda128/bin/nvcc}"
+channel_build="${OCUDU_NATIVE_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release}"
+cuda_arch="${OCUDU_NATIVE_CUDA_ARCH:-120}"
+# The CUDA gNB (scripts/cuda/resolve-cuda-gnb.py) can stand in for the CPU one,
+# as in the srsUE legacy gate.
+gnb_binary="${OCUDU_NATIVE_GNB_BINARY:-${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb}"
+audited_gnb_commit="${OCUDU_NATIVE_GNB_COMMIT:-a1916edcd}"
 inner="${script_dir}/run-ocudu-oai-1x1-inner.sh"
-renderer="${script_dir}/render-oai-1x1-configs.py"
+# S8 (SPARK_MILESTONES.md): the bandwidth renderer composes over this one.
+renderer="${OCUDU_NATIVE_CONFIG_RENDERER:-${script_dir}/render-oai-1x1-configs.py}"
 verifier="${script_dir}/verify-oai-1x1-artifacts.py"
 audited_ocudu="a1916edcdbcd70ba6e0af47ee87be061dad5a4e4"
 audited_oai="2b69bde6aeafe892cda1531a0f0cbba2e37792cd"
@@ -68,7 +75,7 @@ for command_name in unshare nsenter ip mount umount flock cmake ctest ss setsid 
 done
 [[ -x /usr/bin/python3 ]] || usage_error "missing /usr/bin/python3"
 for path in "${inner}" "${renderer}" "${verifier}" \
-  "${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" \
+  "${gnb_binary}" \
   "${native_root}/builds/oai-zmq-release/nr-uesoftmodem" \
   "${native_root}/builds/oai-zmq-release/liboai_zmqdevif.so" \
   "${native_root}/builds/oai-zmq-release/libparams_libconfig.so" \
@@ -77,8 +84,6 @@ for path in "${inner}" "${renderer}" "${verifier}" \
   "${native_root}/builds/oai-zmq-release/libdfts.so" \
   "${native_root}/builds/open5gs-v2.7.6/tests/app/5gc" \
   "${native_root}/install/mongodb-6.0.29/bin/mongod" \
-  "${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release/test_hardware_probe" \
-  "${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release/ocudu-gpu-channel" \
   "${repo_root}/examples/topology.ocudu-docker.cuda.yaml" \
   "${repo_root}/examples/native/oai/nrue_zmq_1x1.conf"; do
   [[ -e "${path}" ]] || usage_error "missing required path: ${path}"
@@ -98,7 +103,7 @@ git -C "${repo_root}" diff --quiet bc88865 -- \
   usage_error "shared legacy fixture changed"
 grep -qx 'ENABLE_ZEROMQ:BOOL=ON' "${native_root}/builds/ocudu-zmq-release/CMakeCache.txt" || usage_error "gNB lacks ZMQ"
 for binary in \
-  "${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" \
+  "${gnb_binary}" \
   "${native_root}/builds/oai-zmq-release/nr-uesoftmodem" \
   "${native_root}/builds/open5gs-v2.7.6/tests/app/5gc" \
   "${native_root}/install/mongodb-6.0.29/bin/mongod"; do
@@ -135,8 +140,8 @@ unshare --user --map-root-user --net --mount --fork --kill-child --propagation p
   "${inner}" --mode probe --parent-netns "${parent_netns}" --parent-mntns "${parent_mntns}" \
   --outer-uid "$(id -u)" --netns-dir "${probe_dir}/run-netns" \
   --physical-gpu "${physical_gpu}" \
-  --hardware-probe "${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release/test_hardware_probe" \
-  --probe-broker "${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release/ocudu-gpu-channel" \
+  --hardware-probe "${channel_build}/test_hardware_probe" \
+  --probe-broker "${channel_build}/ocudu-gpu-channel" \
   --probe-config "${repo_root}/examples/topology.ocudu-docker.cuda.yaml"
 cleanup_probe
 trap - EXIT
@@ -163,13 +168,12 @@ channel_diff_sha256="$(git -C "${repo_root}" diff --binary -- . | sha256sum | aw
 
 "/usr/bin/python3" "${renderer}" --repo-root "${repo_root}" --native-root "${native_root}" \
   --output-dir "${config_dir}" --log-dir "${log_dir}" >"${log_dir}/render.log" 2>&1
-"${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" -c "${config_dir}/gnb.yaml" --dryrun \
+"${gnb_binary}" -c "${config_dir}/gnb.yaml" --dryrun \
   >"${log_dir}/gnb-dryrun.log" 2>&1
 
-channel_build="${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release"
 cmake -S "${repo_root}" -B "${channel_build}" -DCMAKE_BUILD_TYPE=Release \
   -DOCUDU_GPU_CHANNEL_ENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER="${cuda_compiler}" \
-  -DOCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES=120 >"${log_dir}/cmake-configure.log" 2>&1
+  -DCMAKE_CUDA_ARCHITECTURES="${cuda_arch}" -DOCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES="${cuda_arch}" >"${log_dir}/cmake-configure.log" 2>&1
 cmake --build "${channel_build}" -j"$(nproc)" >"${log_dir}/cmake-build.log" 2>&1
 CUDA_VISIBLE_DEVICES="${physical_gpu}" \
   ctest --test-dir "${channel_build}" --output-on-failure >"${log_dir}/ctest.log" 2>&1
@@ -181,14 +185,14 @@ mkdir "${preserved_configs}"
 cp "${config_dir}/gnb.yaml" "${config_dir}/topology.yaml" \
   "${config_dir}/open5gs.yaml" "${config_dir}/nrue.conf" \
   "${config_dir}/subscriber.csv" "${preserved_configs}/"
-"${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" --version \
+"${gnb_binary}" --version \
   >"${report_dir}/gnb-version.txt" 2>&1
-grep -Eq 'OCUDU 5G gNB version .*\(a1916edcd\)' "${report_dir}/gnb-version.txt" || \
+grep -Eq "OCUDU 5G gNB version .*\(${audited_gnb_commit}" "${report_dir}/gnb-version.txt" || \
   usage_error "native gNB binary does not identify the audited revision"
 "/usr/bin/python3" - "${source_evidence}" "${native_root}" "${channel_build}" \
   "${source_manifest}" "${preserved_configs}" "${channel_head}" \
   "${channel_diff_sha256}" "${audited_ocudu}" "${audited_oai}" \
-  "${audited_open5gs}" <<'PY'
+  "${audited_open5gs}" "${gnb_binary}" <<'PY'
 import hashlib
 import json
 import pathlib
@@ -196,7 +200,7 @@ import sys
 
 (output_path, native_root, channel_build, manifest_path, config_root,
  channel_head, channel_diff_sha256, ocudu_commit, oai_commit,
- open5gs_commit) = sys.argv[1:]
+ open5gs_commit, gnb_binary) = sys.argv[1:]
 
 def digest(path):
     value = hashlib.sha256()
@@ -209,7 +213,7 @@ native = pathlib.Path(native_root)
 build = pathlib.Path(channel_build)
 configs = pathlib.Path(config_root)
 binary_paths = {
-    "gnb": native / "builds/ocudu-zmq-release/apps/gnb/gnb",
+    "gnb": pathlib.Path(gnb_binary),
     "nrue": native / "builds/oai-zmq-release/nr-uesoftmodem",
     "oai_zmq_module": native / "builds/oai-zmq-release/liboai_zmqdevif.so",
     "open5gs_5gc": native / "builds/open5gs-v2.7.6/tests/app/5gc",

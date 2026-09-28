@@ -319,19 +319,19 @@ run_stack()
   for required in "${native_root}" "${repo_root}" "${config_dir}" "${log_dir}" "${report_dir}"; do
     [[ "${required}" == /* && -d "${required}" && ! -L "${required}" ]] || usage_error "invalid run directory: ${required}"
   done
-  local gnb="${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb"
+  local gnb="${OCUDU_NATIVE_GNB_BINARY:-${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb}"
   local nrue="${native_root}/builds/oai-zmq-release/nr-uesoftmodem"
   local oai_build="${native_root}/builds/oai-zmq-release"
   local fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
   local mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
-  local broker="${native_root}/builds/ocudu-gpu-channel-cuda-release/ocudu-gpu-channel"
+  local broker="${OCUDU_NATIVE_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-cuda-release}/ocudu-gpu-channel"
   local add_users="${native_root}/src/ocudu/docker/open5gs/add_users.py"
   local subscriber_verify="${repo_root}/scripts/native/verify-open5gs-subscriber.py"
   for binary in "${gnb}" "${nrue}" "${fivegc}" "${mongod}" "${broker}"; do
     [[ -x "${binary}" ]] || usage_error "missing executable: ${binary}"
   done
   [[ -f "${oai_build}/liboai_zmqdevif.so" ]] || usage_error "missing OAI ZMQ radio module"
-  local uecap_file="${native_root}/src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF/uecap_ports1.xml"
+  local uecap_file="${OCUDU_NATIVE_OAI_UECAP_FILE:-${native_root}/src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF/uecap_ports1.xml}"
   [[ -f "${uecap_file}" ]] || usage_error "missing OAI UE capability file: ${uecap_file}"
 
   prepare_namespace
@@ -397,17 +397,20 @@ while time.monotonic() < deadline:
         time.sleep(.25)
 raise SystemExit(2)
 PY
-  start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${broker}" --config "${config_dir}/topology.yaml" --duration 25s
+  # The broker's --duration clock starts with the broker, so a CUDA gNB's
+  # device initialisation (~20 s) is added on top of the fixed 25 s window.
+  local startup_allowance="${OCUDU_NATIVE_BROKER_STARTUP_ALLOWANCE_SECONDS:-0}"
+  start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${broker}" --config "${config_dir}/topology.yaml" --duration "$((25 + startup_allowance))s"
   broker_pid="${started_pid}"
   broker_index=$((${#process_pids[@]} - 1))
   # Absolute bound: the fixed 25-second run plus ten seconds for grouped
   # drain and orderly worker shutdown, independent of how quickly UE attach
   # and ping complete.
-  broker_exit_deadline=$((SECONDS + 35))
+  broker_exit_deadline=$((SECONDS + 35 + startup_allowance))
   wait_log "${log_dir}/broker.log" 'event=radio_node_resolved id=ue0' "${broker_pid}" 15 || usage_error "broker did not become ready"
   start_group gnb "${log_dir}/gnb-console.log" "${gnb}" -c "${config_dir}/gnb.yaml"
   gnb_pid="${started_pid}"
-  wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" 15 || usage_error "gNB did not start"
+  wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" "${OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS:-15}" || usage_error "gNB did not start"
   sleep 3
   # Cell identity: band 3 FDD, DL 1842.5 MHz, 106 PRB at 15 kHz. The SSB
   # start subcarrier is offsetToPointA * 12 + k_SSB = 40 * 12 + 6 = 486, read
@@ -432,10 +435,18 @@ PY
   # EPERM -- an AssertFatal abort. With the capability absent, OAI takes its
   # own graceful default-priority path (the same one it takes for any
   # unprivileged user outside a namespace).
+  # S8: the cell's PRB count, SSB offset and 3/4 sampling (-E only where it
+  # gives the gNB's rate) come from render-1x1-bw-configs.py `oai_ue_args`;
+  # OCUDU_NATIVE_OAI_UE_RADIO_ARGS replaces the whole radio set (TDD n78).
+  local oai_sampling=(-E)
+  [[ "${OCUDU_NATIVE_OAI_UE_SAMPLING:--E}" == "-" ]] && oai_sampling=()
+  local oai_radio=("${oai_sampling[@]}" -r "${OCUDU_NATIVE_OAI_UE_PRB:-106}" --numerology 0 --band 3
+    -C 1842500000 --ssb "${OCUDU_NATIVE_OAI_UE_SSB:-486}" --CO -95000000)
+  [[ -n "${OCUDU_NATIVE_OAI_UE_RADIO_ARGS:-}" ]] && read -r -a oai_radio <<<"${OCUDU_NATIVE_OAI_UE_RADIO_ARGS}"
   start_group nrue "${log_dir}/nrue.log" nsenter --net="/run/netns/${nested_name}" -- \
     setpriv --bounding-set -sys_nice \
     "${nrue}" -O "${config_dir}/nrue.conf" \
-    -E -r 106 --numerology 0 --band 3 -C 1842500000 --ssb 486 --CO -95000000 \
+    "${oai_radio[@]}" \
     --ue-fo-compensation \
     --uecap_file "${uecap_file}" \
     --device.name oai_zmqdevif \
