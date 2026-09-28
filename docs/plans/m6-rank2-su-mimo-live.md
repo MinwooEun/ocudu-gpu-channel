@@ -465,3 +465,22 @@ docker exec ocudu-minwoo bash -c 'cd ~minwoo/ocudu-work/ocudu-ulmimo && env HOME
 
 실행 스크립트와 로그는 `~/ocudu-work/perf-platform/ulmimo-h/`(git 밖)에 있다.
 
+
+### 8.10 `ul-mimo` 통합과 DL 건강도 판정 (2026-09-28, 워크스테이션 RTX 5090, `integration-0928`)
+
+**통합.** `ul-mimo`(§8.9)를 S12·J8이 들어간 `integration-0928`에 합쳤다(`98f16a9`). 충돌은 `render-oai-2x2-configs.py`와 `run-ocudu-oai-2x2.sh` 두 곳이었고, 양쪽 노브(S12의 `--bw-mhz`/`--cuda-host-memory`, `ul-mimo`의 `--ul-max-rank`/`--srs-period-ms`/`--gnb-phy-log`)와 run-params 줄을 모두 남겼다. 두 기능이 함께 동작하도록 두 가지를 고쳤다.
+- UL rank-2 capability 파생본은 20–50 MHz FDD 셀에서 band 3, 100 MHz TDD 셀에서는 stock의 n78을 유지한다.
+- `apply_bandwidth`가 렌더러가 이미 쓴 `uecap.xml`을 stock 파일로 덮어쓰던 것을, 그 파일에 대역폭 항목을 추가하도록 바꿨다. 렌더 확인: 20/50/100 MHz × DL 전용/UL rank 2 여섯 조합 모두 렌더되고, 50 MHz UL rank 2 파일은 band 3 + `twoLayers` + 50 MHz 항목을 함께 갖는다.
+
+**DL 건강도 판정 추가 (`6a283cd`).** S12에서 OAI 1x1 게이트가 attach와 ping만 보고 PDSCH NACK 약 78%인 실행을 통과시켰다. 이제 1x1 verifier는 gNB PUCCH 로그의 HARQ-ACK 비트로 NACK 비율을 계산해 10%(`OCUDU_NATIVE_OAI_MAX_NACK_RATIO`)를 넘거나 비트가 20개 미만이면 실패한다. self-test에 NACK 50% 음성 대조군을 넣었다. 2x2 요약기도 NACK ≤ 10%, PUSCH KO ≤ 10%를 보고 실패하면 3을 반환하고, 게이트는 `OAI2X2_ALLOW_UNHEALTHY=1`이 아니면 exit 3을 낸다. 오늘 2x2 실행 40개에 다시 돌리면 20 dB stock UE 실행(NACK 0.51–0.54), UL `max_rank 1` + SRS 2포트 대조(PUSCH KO 0.108), gNB가 뜨지 못한 실행만 실패로 잡힌다.
+
+**라이브 (통합 기본값: 패치 ZMQ 모듈, 패치 UE, UE RX 이득 −12 dB; GPU에 다른 프로세스 없음):**
+
+| 실행 | 결과 | NACK | 처리량 | 실시간 | y=Hx |
+|---|---|---|---|---|---|
+| 2x2 DL rank 2, 12 dB (`145629Z`) | 통과 | 0.0 | DL 148.3 Mb/s | 0.9997 | 통과 |
+| 2x2 UL rank 2 + DL (`145820Z`) | 통과 | 0.0, PUSCH KO 0 | DL 148.3, UL 111.8 Mb/s (PRB당 183.7 B) | 0.9997 | UL·DL 모두 통과, silent 허용 없음 |
+| OAI 1x1 (`150012Z`) | **실패 (새 판정)** | 0.595 (50/84) | — | — | — |
+| srsUE 1x1 | 통과 | — | — | — | — |
+
+**OAI 1x1의 NACK — 새 판정이 잡은 것, 원인 미확정.** attach·PDU·ping은 통과하지만 DL NACK이 높다. UE RX 이득을 바꿔 보면 0 dB 77%(101/131), −12 dB 60%, −24 dB 39%(18/46)로 줄지만 없어지지 않는다. 실패는 UE 전용 search space(ss_id 2)의 64QAM PDSCH에 몰려 있고, ss_id 1의 QPSK 첫 전송은 모두 복호된다. 1x1 fixture는 CSI-RS가 꺼져 있어 UE가 CQI 0을 보고하고 gNB가 링크 적응을 하지 못한다. UE가 본 SSB SINR은 34.5 dB라 64QAM이 실패할 신호 조건이 아니다. 2x2 게이트(패치 UE, 수신 2안테나, CSI-RS 켜짐)는 같은 기본값에서 NACK 0이다. 차이 후보는 CSI-RS/CQI 부재에 따른 MCS, UE 바이너리(1x1은 stock `oai-zmq-release`, 2x2는 `oai-zmq-local`), 수신 안테나 수다. 가르지 않았다.
