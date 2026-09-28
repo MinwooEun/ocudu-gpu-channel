@@ -182,6 +182,10 @@ def apply_bandwidth(out: Path, bw: int, base: str, host_memory: str, native_root
             if native_root is None:
                 raise ValueError("--native-root is needed to find the stock UE capability file")
             stock = native_root / "src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF" / uecap_name
+            # A capability the renderer already wrote (the 2x2 UL rank-2 variant)
+            # is the one to extend, not the stock file.
+            if (out / "uecap.xml").is_file():
+                stock = out / "uecap.xml"
             per_cc = re.findall(r"<FeatureSetDownlinkPerCC>.*?</FeatureSetDownlinkPerCC>",
                                 stock.read_text(encoding="utf-8"), re.S)
             if not any("<kHz15/>" in b and f"<mhz{bw}/>" in b for b in per_cc):

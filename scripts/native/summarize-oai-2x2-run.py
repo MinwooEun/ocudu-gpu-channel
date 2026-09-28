@@ -23,6 +23,10 @@ MCS_RE = re.compile(r"mcs=(\d+)")
 ACK_RE = re.compile(r"PUCCH: rnti=\S+ format=(\d).*? ack=([01]+)")
 CSI_RE = re.compile(r"PUCCH: rnti=\S+ format=2 .*?csi1=([01]+)")
 PUSCH_RE = re.compile(r"PUSCH: rnti=0x(?!39)\S+ .*?crc=(OK|KO)")
+UL_RE = re.compile(r"UL: ue=\d+ rnti=0x4\S+ h_id=\d+ ss_id=\d+ rb=\[(\d+)\.\.(\d+)\) newtx=(true|false) rv=\d+ tbs=(\d+)")
+SRS_RE = re.compile(r"- SRS: ue=\d+ rnti=\S+(?: tpmi_info=\[(.*?)\])?$")
+PUSCH_MOD_RE = re.compile(r"PHY .*PUSCH: rnti=0x4\S+ .*?mod=(\S+) .*?tbs=(\d+) crc=(OK|KO)")
+UL_RI_RE = re.compile(r" ul_ri=([0-9.]+)")
 PDSCH_PHY_RE = re.compile(r"PHY .*PDSCH: rnti=0x4\S+ .*?mod=(\S+) .*?tbs=(\d+)")
 
 
@@ -39,6 +43,12 @@ def main() -> int:
     csi = collections.Counter()
     pusch = collections.Counter()
     mods = collections.Counter()
+    ul = collections.Counter()
+    ul_tbs_per_prb = []
+    srs = collections.Counter()
+    srs_samples = []
+    pusch_mods = collections.Counter()
+    ul_ri = []
     # Lock-step ZMQ time is simulated: the slot counter only advances as fast
     # as the slowest process. Track simulated slots against wall time so the
     # wall-clock iperf rate can be put on the air-interface time base.
@@ -62,6 +72,19 @@ def main() -> int:
                 pusch[m.group(1)] += 1
             if (m := PDSCH_PHY_RE.search(line)) is not None:
                 mods[m.group(1)] += 1
+            if (m := UL_RE.search(line)) is not None:
+                ul["newtx" if m.group(3) == "true" else "retx"] += 1
+                nprb = int(m.group(2)) - int(m.group(1))
+                if m.group(3) == "true" and nprb > 0 and int(m.group(4)) > 1000:
+                    ul_tbs_per_prb.append(int(m.group(4)) / nprb)
+            if (m := SRS_RE.search(line.rstrip())) is not None:
+                srs["with_tpmi" if m.group(1) else "no_tpmi"] += 1
+                if m.group(1) and len(srs_samples) < 3:
+                    srs_samples.append(m.group(1))
+            if (m := UL_RI_RE.search(line)) is not None:
+                ul_ri.append(float(m.group(1)))
+            if (m := PUSCH_MOD_RE.search(line)) is not None:
+                pusch_mods[f"{m.group(1)}_{m.group(3)}"] += 1
 
     iperf = {}
     iperf_path = args.log_dir / "iperf3-dl.json"
@@ -85,11 +108,29 @@ def main() -> int:
         except (ValueError, KeyError, TypeError) as error:
             iperf = {"error": str(error)}
 
+    iperf_ul = {}
+    ul_path = args.log_dir / "iperf3-ul.json"
+    if ul_path.is_file() and ul_path.stat().st_size:
+        try:
+            data = json.loads(ul_path.read_text())
+            end = data.get("end", {})
+            rx = end.get("sum_received") or end.get("sum") or {}
+            iperf_ul = {
+                "received_mbps": round(rx["bits_per_second"] / 1e6, 2) if rx.get("bits_per_second") else None,
+                "lost_percent": (end.get("sum") or {}).get("lost_percent"),
+            }
+        except (ValueError, KeyError, TypeError) as error:
+            iperf_ul = {"error": str(error)}
+
     window = None
     if iperf_path.is_file() and iperf.get("received_mbps"):
         data = json.loads(iperf_path.read_text())
         start = data["start"]["timestamp"]["timesecs"]
         window = (start, start + data["end"]["sum_received"]["seconds"])
+    elif ul_path.is_file() and iperf_ul.get("received_mbps"):
+        data = json.loads(ul_path.read_text())
+        start = data["start"]["timestamp"]["timesecs"]
+        window = (start, start + (data["end"].get("sum") or {}).get("seconds", 0))
     realtime_factor = None
     # Air time in ms from [SFN.slot]: a 30 kHz cell (100 MHz n78) has 20 slots
     # per 10 ms frame, a 15 kHz one 10; any slot index >= 10 marks the former.
@@ -108,6 +149,14 @@ def main() -> int:
         "csi1_payloads": dict(csi.most_common(6)),
         "pusch_crc": dict(pusch),
         "pdsch_modulations": dict(mods),
+        "ul_decisions": dict(ul),
+        "ul_newtx_tbs_bytes_per_prb_p50": sorted(ul_tbs_per_prb)[len(ul_tbs_per_prb) // 2] if ul_tbs_per_prb else None,
+        "ul_newtx_tbs_bytes_per_prb_max": max(ul_tbs_per_prb) if ul_tbs_per_prb else None,
+        "srs_indications": dict(srs),
+        "ul_ri_reports": ul_ri,
+        "srs_tpmi_samples": srs_samples,
+        "pusch_modulation_crc": dict(pusch_mods),
+        "iperf_ul": iperf_ul,
         "iperf_dl": iperf,
         "realtime_factor": realtime_factor,
         "dl_rx_mbps_air_time": round(iperf["received_mbps"] / realtime_factor, 2)
@@ -124,7 +173,9 @@ def main() -> int:
         f"csi1={dict(csi.most_common(3))} "
         f"dl_rx_mbps={iperf.get('received_mbps')} rt_factor={realtime_factor} "
         f"dl_rx_mbps_air={summary['dl_rx_mbps_air_time']} "
-        f"lost={iperf.get('lost_percent')}"
+        f"ul_rx_mbps_air={round(iperf_ul['received_mbps'] / realtime_factor, 2) if iperf_ul.get('received_mbps') and realtime_factor else None} "
+        f"lost={iperf.get('lost_percent')} ul_rx_mbps={iperf_ul.get('received_mbps')} "
+        f"ul_tbs_per_prb_p50={summary['ul_newtx_tbs_bytes_per_prb_p50']} srs={dict(srs)} ul_ri={sorted(set(ul_ri))}"
     )
     return 0
 
