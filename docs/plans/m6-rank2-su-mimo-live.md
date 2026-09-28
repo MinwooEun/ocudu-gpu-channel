@@ -218,7 +218,7 @@ RadioNode는 "ZMQ 엔드포인트 쌍 N개가 한 라디오"라고만 말하고,
 | `062637Z` | 1 | 0 / 4847 | 0% | 9.4 kB | 20.46 | **74.4** | 통과 |
 
 - **처리량: rank 2 / rank 1 = 2.00×.** 두 쌍의 차이는 0.2 Mb/s 이내다. ZMQ 락스텝은 벽시계의 약 0.275배로 흐른다. 그래서 공중 시간 처리량은 iperf 수신 구간의 시뮬레이션 슬롯 수로 환산했다(`realtime_factor`). 두 모드 모두 셀 용량에서 포화한다(유실 24%/50%).
-- **행렬이 같은 실행에서 맞다:** 브로커 wire capture(SFN 300–310, 100 ms)에서 `verify-mimo-matrix-capture.py` 통과. DL 두 행 `max|y−Hx|` ≤ 3.1e−08(허용 1e−04), 교차항 몫 0.416/0.429. 그 100 ms 안의 PDSCH는 rank-2 실행에서 100/100이 ri=2였다. UL은 행 오차가 7.9e−10 이하로 맞지만, **OAI UE는 1-layer PUSCH를 포트 0으로만 보내서 UE TX 포트 1이 0이다.** `--allow-silent-source ue0->gnb0:1`로 기록했고, UL 2×2는 주장하지 않는다.
+- **행렬이 같은 실행에서 맞다:** 브로커 wire capture(SFN 300–310, 100 ms)에서 `verify-mimo-matrix-capture.py` 통과. DL 두 행 `max|y−Hx|` ≤ 3.1e−08(허용 1e−04), 교차항 몫 0.416/0.429. 그 100 ms 안의 PDSCH는 rank-2 실행에서 100/100이 ri=2였다. UL은 행 오차가 7.9e−10 이하로 맞지만, **OAI UE는 1-layer PUSCH를 포트 0으로만 보내서 UE TX 포트 1이 0이다.** `--allow-silent-source ue0->gnb0:1`로 기록했고, UL 2×2는 주장하지 않는다. **(정정, §8.9: UL 1레이어는 UE 한계가 아니라 설정 때문이었다. UL 2레이어도 된다.)**
 - **direct 대조(항등 H):** rank 2 144.9 Mb/s(공중 시간). 에뮬레이터 2×2 H를 거쳐도 rank-2 처리량이 줄지 않는다.
 
 **뮤테이션 프로브:**
@@ -233,7 +233,7 @@ RadioNode는 "ZMQ 엔드포인트 쌍 N개가 한 라디오"라고만 말하고,
 **조건과 한계:**
 - back-off 24 dB는 **이 토폴로지 이득(0.8)에 맞춘 값**이다. 다른 H나 경로 손실을 쓰면 NACK와 RI 안정성을 다시 확인해야 한다. 기준 H(조건수 1.6)와 유니터리 H @28 dB에서는 OAI의 RI 판정(CSI-RS 조건수 < 5 dB, `csi_rx.c`)이 RI 1/2를 오가서, rank 2는 102–106 Mb/s에 그쳤다.
 - 실시간이 아니다(락스텝 0.275배). 브로커 `rx_starvations`는 75 s마다 약 12.3k로 두 모드가 같다(M6.2의 soft 신호와 같은 성격). **→ §8.5에서 원인(OAI ZMQ 드라이버의 응답 지연)을 확인했고, 패치한 드라이버로 실시간(0.999배)이 된다.**
-- UL MIMO, 64QAM 초과(qam256), 페이딩 채널에서의 rank 2는 이번 범위 밖이다.
+- UL MIMO, 64QAM 초과(qam256), 페이딩 채널에서의 rank 2는 이번 범위 밖이다. (UL MIMO는 §8.9에서 검증했다.)
 
 **재현:**
 
@@ -399,3 +399,69 @@ docker exec ocudu-minwoo bash -c 'cd ~minwoo/ocudu-work/ocudu-oai-mimo && env HO
 - **워크스테이션 영향:** 기존 `builds/oai-zmq-s9`는 더 이상 쓰지 않는다. 게이트 전에 한 번 `build-oai-zmq-patched.py`로 `builds/oai-zmq-patched`를 만들어야 한다. Spark의 기존 `builds/oai-zmq-patched`는 manifest 필드가 `lock_sha256` → `lock_section_sha256`으로 바뀌어 `--verify`가 stale로 거부하므로 한 번 다시 빌드한다(같은 입력이라 모듈 바이트는 같아야 한다).
 - **2×2 게이트:** 1×1과 같은 기본값(CUDA gNB면 MPS, 플랫폼 CPU 배치, `OCUDU_NATIVE_{GNB,BROKER,NRUE}_WRAPPER`)과 `OCUDU_NATIVE_GNB_BINARY`, `OCUDU_NATIVE_CUDA_ARCH`(GB10은 121), `OCUDU_NATIVE_CHANNEL_BUILD`, `OCUDU_NATIVE_BROKER_STARTUP_ALLOWANCE_SECONDS`를 받는다. 무엇을 적용했는지 `run-params.txt`와 `gate-defaults.log`에 남는다. 이 조합은 아직 라이브로 돌리지 않았다(Spark 2×2, CUDA gNB 2×2).
 - **rank-1 2×1/4×1 게이트:** 이 히스토리에 없는 anchor `bc88865` 대신 `f93386b`(해당 fixture·드라이버를 마지막으로 바꾼 커밋)로 대조한다.
+
+### 8.9 UL 2레이어 MIMO — OAI nrUE ⇄ 2×2 행렬 ⇄ OCUDU gNB (2026-09-28, 워크스테이션 RTX 5090, 브랜치 `ul-mimo`)
+
+**정정.** §8.4는 "OAI UE는 1-layer PUSCH를 포트 0으로만 보낸다"고 적고 UL 2×2를 범위 밖으로 뒀다. UE의 한계가 아니었다. 소스를 보면 OAI nrUE는 codebook PUSCH 2레이어를 보내고(`nr_ulsch_ue.c` 1485–1495의 레이어 매핑, `mac_tables.c`의 precoding 표), OCUDU gNB는 UL rank를 `min(nof_antennas_ul, pusch.max_rank, UE가 보고한 pusch_max_rank)`로 정한다(`du_pusch_resource_manager.cpp` 169–179). 1레이어로 묶은 것은 설정 세 가지였다.
+
+| # | 어디서 막혔나 | 증상 | 원인 |
+|---|---|---|---|
+| 1 | OCUDU의 UE capability 해석 | UE가 2포트인데도 gNB가 1레이어·SRS 1포트로만 설정 | OAI `uecap_ports2.xml`에는 **band 78만** 있다. 셀은 band 3이라 OCUDU `ue_capability_manager`가 이 밴드의 기능을 못 찾고 기본값(`default_pusch_max_rank = 1`)을 썼다 |
+| 2 | OAI UE MAC의 자기 capability | 파일의 30 kHz 항목은 `twoLayers`인데 UE는 1레이어로 본다 | UE MAC(`config_ue.c` 2948–2961)은 셀 SCS·대역폭과 맞는 per-CC 항목 중 **마지막 것**의 `maxNumberMIMO-LayersCB-PUSCH`를 쓴다. 15 kHz 항목은 전부 `oneLayer`였다 |
+| 3 | OCUDU 스케줄러 | `pusch.max_rank`만 올려서는 rank가 오르지 않는다 | OCUDU는 UL rank와 TPMI를 **SRS 채널 행렬**로 고른다(`ue_channel_state_manager::get_nof_ul_layers`). SRS가 꺼져 있었다 |
+
+**수정 (설정만, OAI·OCUDU 소스 무수정).** `OAI2X2_UL_MAX_RANK=2`를 주면 렌더러가 gNB에 `pusch.max_rank: 2`와 주기 SRS(`srs.type_enabled: periodic`, 10 ms)를 넣고, UE에는 핀된 `uecap_ports2.xml`에서 만든 band-3 파생본을 준다(band 78 → 3, codebook PUSCH 항목 전부 `twoLayers`; SRS 2포트는 원본 그대로). 기본값(변수 없음)은 이전과 같다. 같은 커밋에서 `OAI2X2_IPERF_DIR=dl|ul|both`, `OAI2X2_IPERF_UL_RATE`, 진단용 `OAI2X2_GNB_PHY_LOG=debug`를 추가했고, UL 실행에서는 gNB 로그에 스케줄러 metrics(`ul_ri`)를 켠다. 요약기는 UL 처리량, 새 전송의 PRB당 TBS, `ul_ri`를 낸다.
+
+**판정 근거 세 가지.** gNB INFO 로그의 PUSCH 줄에는 레이어 수가 없어서(debug에서만 `nof_layers`) 다음으로 판정했다.
+- **PRB당 TBS:** 64QAM, 새 전송의 PRB당 TBS 중앙값이 1레이어 설정에서 91.9 B, `UL_MAX_RANK=2`에서 **183.7 B**(정확히 2배). 1레이어 64QAM의 상한은 약 92 B/PRB다.
+- **스케줄러 `ul_ri`:** 1초마다 1.6 → 2.0.
+- **wire capture:** UL 트래픽 중 100 ms에서 UE TX 포트 두 개가 100/100 슬롯 모두 에너지가 있고 RMS가 같으며(0.00956 / 0.00956) 서로 상관이 없다(|상관| 0.0001–0.0006). 두 레이어가 non-coherent TPMI 0(단위 행렬)로 각 포트에 하나씩 실린 모양 그대로다. `verify-mimo-matrix-capture.py`가 **`--allow-silent-source` 없이** UL·DL 두 방향 모두 통과한다(UL 행 오차 ≤ 5.4e−09, 교차항 몫 0.23/0.30).
+
+**A/B** (유니터리 H, DL back-off 12 dB(OCUDU 기본, 패치 UE), UL UDP 제시율 200M, 20 s, 번갈아 2라운드, GPU에 다른 프로세스 없음):
+
+| 실행 | 설정 | UL 수신 | 새 전송 TBS/PRB | `ul_ri` | PUSCH KO | 실시간 배율 |
+|---|---|---|---|---|---|---|
+| `122226Z` | **UL rank 2** | **101.6 Mb/s** | 183.7 B | 1.6→2.0 | 0 | 0.997 |
+| `122415Z` | rank 1 + 2포트 SRS | 45.4 | 91.9 | 1.0 | 2,756 | 0.952 |
+| `122554Z` | 기존(변수 없음) | 50.6 | 91.9 | — | 0 | 0.956 |
+| `122732Z` | **UL rank 2** | **105.6** | 183.7 | 1.6→2.0 | 0 | 0.996 |
+| `122911Z` | rank 1 + 2포트 SRS | 44.2 | 91.9 | 1.0 | 2,756 | 0.953 |
+| `123050Z` | 기존 | 51.2 | 91.9 | — | 0 | 0.959 |
+
+- **판정:** UL rank 2가 기존 1레이어 대비 **2.0배**(101.6–105.6 vs 50.6–51.2 Mb/s), 실시간, PUSCH CRC 전부 OK.
+- **DL+UL 동시(`both`, DL 200M 15 s 후 UL 200M 15 s, `123823Z`/`124003Z`):** DL 119.0/117.9 Mb/s(ri=2, NACK 1.0%), UL 112.8/107.4 Mb/s, 실시간 1.000. 행렬 검증 양방향 통과(위).
+- 처음 실행 `121030Z`(UL 40M 제시): 39.96 Mb/s 수신, 행렬 검증 통과.
+
+**알려진 결함 (대조 설정에서만): rank 1 상한 + 2포트 SRS에서 HARQ-ACK를 실은 PUSCH가 모두 실패한다.** `UL_MAX_RANK=1`(pusch.max_rank 1, SRS 2포트)에서 KO 2,756건은 두 실행에서 건수까지 같고, **전부 HARQ-ACK가 실린 PUSCH**다(ACK 실린 PUSCH 2,756/2,756 KO, CSI만 실린 것 1,162/1,162 OK, UCI 없는 것 전부 OK). PHY debug 실행(`123535Z`)에서 KO PUSCH는 EPRE −90 dB(OK는 약 −40 dB), 두 수신 포트 RSRP −95/−103 dB로 **UE가 그 PUSCH를 아예 보내지 않은 것**으로 보인다. UE 로그에는 이 레벨에서 오류가 없다. UL MIMO 모드(`max_rank 2`)에서는 rank 1로 내려간 슬롯(`ul_ri` 1.6)을 포함해 KO가 0이고, 기본 설정도 KO가 0이라 게이트 기본값과 UL MIMO에는 영향이 없다. 원인(OAI의 maxRank=1·2포트 codebook 경로 또는 DCI 0_1 해석)은 찾지 않았다.
+
+**회귀 (같은 브랜치, 기본값):** 아래 실행 중 `124143Z`부터는 다른 사용자의 Sionna·채널 에뮬레이터 작업이 같은 GPU에서 돌고 있었다. 통과·실패 판정은 유효하지만 시간 수치(실시간 배율 0.89–0.95 등)는 비교에 쓰지 않는다.
+
+| 게이트 | 결과 |
+|---|---|
+| OAI 2×2 DL, 12 dB(`124143Z`) | 통과, 118.1 Mb/s(공중 시간), NACK 1.0% |
+| OAI 2×2 DL, 24 dB(`124322Z`) | 통과, 148.0 Mb/s(공중 시간), NACK 0 |
+| OAI 1×1(`124502Z`) | 통과, `rx_starvations` 1 |
+| srsUE 1×1(`124542Z`) | 통과, `rx_starvations` 3 |
+| rank-1 2×1 srsUE(`125035Z`) | 통과, 행렬 판정 통과 |
+| rank-1 4×1 srsUE(`125115Z`) | 통과, 행렬 판정 통과 |
+
+**rank-1 게이트가 돌기까지 고친 것 (`a41c73a`):** (1) 안쪽 스크립트가 브로커를 다른 체크아웃의 `builds/ocudu-gpu-channel-cuda-release`에서 띄웠다 — OAI 1×1 게이트와 같은 버그라 `OCUDU_NATIVE_CHANNEL_BUILD`로 통일했다. (2) 호스트 포트 선검사에 `OCUDU_NATIVE_ALLOW_HOST_PORTS=1`을 추가했다(이 호스트는 자체 MongoDB를 돌린다). (3) gNB 버전 검사가 옛 배너만 받아 현재 빌드(`OCUDU gNB (commit a1916ed)`)를 거부했다. (4) 행렬 판정 스크립트가 컨테이너의 python3에서 numpy·yaml이 없어 실패했다 — `ocudu-minwoo` 컨테이너에 `python3-numpy`, `python3-yaml`을 apt로 넣고 `~/create-ocudu-minwoo.sh`에도 추가했다.
+
+**워크스테이션 CPU 배치 프로파일: 정하지 않았다.** 이 호스트는 Core Ultra 9 285K(P코어 0–7, E코어 8–23)다. A/B를 시작했지만 다른 사용자의 GPU 작업이 겹쳐 시간 비교가 무의미했고, gNB를 P코어 4개(0–3)에 묶은 실행은 gNB가 20 s 안에 뜨지 않았다(`gNB did not start`, 2/2). `platform-profiles.json`은 그대로 두었다(이 호스트에서는 배치 없음). 참고로 이 호스트에서는 `platform-profile.py`의 "가장 빠른 CPU"가 E코어 16·17로 나온다(sysfs가 6.5 GHz로 보고). 프로파일을 만들 때 탐지 지문으로만 쓰고 배치에는 `/sys/devices/cpu_core/cpus`를 봐야 한다.
+
+**재현:**
+
+```bash
+docker exec ocudu-minwoo bash -c 'cd ~minwoo/ocudu-work/ocudu-ulmimo && env HOME=/root \
+  OCUDU_NATIVE_ROOT=/home/hyunsoo/ocudu-native-workspace CUDACXX=/usr/local/cuda/bin/nvcc \
+  OCUDU_NATIVE_CHANNEL_BUILD=/home/hyunsoo/ocudu-native-workspace/builds/ocudu-gpu-channel-ulmimo-cuda-release \
+  OAI2X2_PATH=broker OAI2X2_MAX_RANK=2 OAI2X2_UL_MAX_RANK=2 OAI2X2_IPERF_DIR=both \
+  OAI2X2_IPERF_RATE=200M OAI2X2_IPERF_UL_RATE=200M OAI2X2_IPERF_SECONDS=15 \
+  OAI2X2_TOPOLOGY=$PWD/examples/native/topology.ocudu.oai-2x2-unitary.cuda.yaml \
+  "OAI2X2_BROKER_EXTRA=--wire-capture-dir WIRECAP --wire-capture-samples 2304000 --wire-capture-skip 829440000" \
+  bash scripts/native/run-ocudu-oai-2x2.sh'
+/usr/bin/python3 scripts/native/verify-mimo-matrix-capture.py --capture-dir <log>/wire-capture --topology <report>/topology.yaml
+```
+
+실행 스크립트와 로그는 `~/ocudu-work/perf-platform/ulmimo-h/`(git 밖)에 있다.
+
