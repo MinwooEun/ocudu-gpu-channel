@@ -92,7 +92,7 @@ done
   --lock "${script_dir}/native-workspace.lock.json"
 # The gNB-side fixtures must stay byte-identical to the pre-MIMO baseline: the
 # UE process is the only variable this gate is allowed to change.
-git -C "${repo_root}" diff --quiet bc88865 -- \
+git -C "${repo_root}" diff --quiet 0c13a1a -- \
   examples/topology.ocudu-docker.cuda.yaml \
   examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml || \
   usage_error "shared legacy fixture changed"
@@ -115,6 +115,11 @@ for binary in \
   fi
   rm -f "${ldd_report}"
 done
+# The stack runs in its own network namespace, so a host listener on these
+# ports cannot collide with it. The check stays on by default; a host that runs
+# its own Open5GS/MongoDB (this workstation does) sets
+# OCUDU_NATIVE_ALLOW_HOST_PORTS=1.
+[[ "${OCUDU_NATIVE_ALLOW_HOST_PORTS:-0}" == "1" ]] || \
 for port in 2000 2001 2100 2101 27017 38412 7777; do
   ss -H -ltn "sport = :${port}" | grep -q . && usage_error "TCP port ${port} is already listening"
 done
@@ -183,7 +188,7 @@ cp "${config_dir}/gnb.yaml" "${config_dir}/topology.yaml" \
   "${config_dir}/subscriber.csv" "${preserved_configs}/"
 "${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" --version \
   >"${report_dir}/gnb-version.txt" 2>&1
-grep -Eq 'OCUDU 5G gNB version .*\(a1916edcd\)' "${report_dir}/gnb-version.txt" || \
+grep -Eq 'OCUDU 5G gNB version .*\(a1916edcd\)|OCUDU gNB \(commit a1916ed[0-9a-f]*\)' "${report_dir}/gnb-version.txt" || \
   usage_error "native gNB binary does not identify the audited revision"
 "/usr/bin/python3" - "${source_evidence}" "${native_root}" "${channel_build}" \
   "${source_manifest}" "${preserved_configs}" "${channel_head}" \

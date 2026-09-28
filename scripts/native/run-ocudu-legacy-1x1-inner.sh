@@ -305,7 +305,12 @@ start_group()
   setsid stdbuf -oL -eL "$@" >"${output}" 2>&1 &
   local pid="$!"
   local pgid
-  pgid="$(ps -o pgid= -p "${pid}" | tr -d '[:space:]')"
+  # setsid runs in the background child; poll until it has made the group.
+  for _ in $(seq 1 50); do
+    pgid="$(ps -o pgid= -p "${pid}" | tr -d '[:space:]')"
+    [[ "${pgid}" == "${pid}" ]] && break
+    sleep 0.02
+  done
   [[ "${pid}" =~ ^[1-9][0-9]*$ && "${pgid}" == "${pid}" ]] || usage_error "invalid process group for ${name}"
   process_names+=("${name}")
   process_pids+=("${pid}")
