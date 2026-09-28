@@ -27,6 +27,8 @@ set -euo pipefail
 #   OAI2X2_IPERF_DIR      dl (default) | ul | both -- UDP iperf direction(s)
 #   OAI2X2_IPERF_UL_RATE  UL UDP offered rate (default 60M)
 #   OAI2X2_GNB_PHY_LOG    info (default) | debug -- diagnosis only
+#   OAI2X2_ALLOW_UNHEALTHY  1 keeps exit 0 when the run summary fails its health
+#                         bound (NACK > 10%, PUSCH KO > 10%); for runs meant to fail
 #   OAI2X2_BROKER_EXTRA   extra broker arguments (e.g. wire capture)
 #   OAI2X2_UE_EXTRA       extra nr-uesoftmodem arguments
 #   OCUDU_NATIVE_OAI_UE   local (default: builds/oai-zmq-local, pinned OAI + the
@@ -180,7 +182,15 @@ unshare --user --map-root-user --net --mount --fork --kill-child --propagation p
   --log-dir "${log_dir}" --report-dir "${report_dir}" --timestamp "${timestamp}"
 run_status="$?"
 set -e
-/usr/bin/python3 "${summarizer}" --log-dir "${log_dir}" --report-dir "${report_dir}" || true
-printf 'event=native_oai_2x2_run status=%s timestamp=%s path=%s max_rank=%s report=%s\n' \
-  "${run_status}" "${timestamp}" "${OAI2X2_PATH}" "${max_rank}" "${report_dir}"
+set +e
+/usr/bin/python3 "${summarizer}" --log-dir "${log_dir}" --report-dir "${report_dir}"
+summary_status="$?"
+set -e
+# A run that attaches but NACKs most PDSCH (S12) is not a pass. Diagnosis runs
+# that are meant to fail set OAI2X2_ALLOW_UNHEALTHY=1.
+if [[ "${run_status}" == 0 && "${summary_status}" != 0 && "${OAI2X2_ALLOW_UNHEALTHY:-0}" != 1 ]]; then
+  run_status=3
+fi
+printf 'event=native_oai_2x2_run status=%s timestamp=%s path=%s max_rank=%s summary_status=%s report=%s\n' \
+  "${run_status}" "${timestamp}" "${OAI2X2_PATH}" "${max_rank}" "${summary_status}" "${report_dir}"
 exit "${run_status}"

@@ -34,6 +34,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--log-dir", type=Path, required=True)
     parser.add_argument("--report-dir", type=Path, required=True)
+    # Health bound (S12: a run can attach and ping with most PDSCH NACKed).
+    # Diagnosis runs that deliberately fail (e.g. 20 dB with the stock UE)
+    # set OAI2X2_ALLOW_UNHEALTHY=1 in the gate.
+    parser.add_argument("--max-nack-ratio", type=float, default=0.10)
+    parser.add_argument("--max-pusch-ko-ratio", type=float, default=0.10)
+    parser.add_argument("--min-harq-ack-bits", type=int, default=20)
     args = parser.parse_args()
 
     gnb_log = args.log_dir / "gnb-internal.log"
@@ -165,6 +171,16 @@ def main() -> int:
             k: round(v / max(1, dl.get(f"{k}_new", 0) + dl.get(f"{k}_retx", 0)), 1) for k, v in dl_tbs.items()
         },
     }
+    problems = []
+    if total_ack < args.min_harq_ack_bits:
+        problems.append(f"only {total_ack} HARQ-ACK bits")
+    elif summary["nack_ratio"] > args.max_nack_ratio:
+        problems.append(f"nack_ratio {summary['nack_ratio']} > {args.max_nack_ratio}")
+    pusch_total = pusch.get("OK", 0) + pusch.get("KO", 0)
+    if pusch_total and pusch.get("KO", 0) / pusch_total > args.max_pusch_ko_ratio:
+        problems.append(f"pusch_ko_ratio {round(pusch.get('KO', 0) / pusch_total, 4)} > {args.max_pusch_ko_ratio}")
+    summary["health"] = {"result": "fail" if problems else "pass", "problems": problems,
+                         "max_nack_ratio": args.max_nack_ratio, "max_pusch_ko_ratio": args.max_pusch_ko_ratio}
     out = args.report_dir / "rank-summary.json"
     out.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
     print(
@@ -175,9 +191,11 @@ def main() -> int:
         f"dl_rx_mbps_air={summary['dl_rx_mbps_air_time']} "
         f"ul_rx_mbps_air={round(iperf_ul['received_mbps'] / realtime_factor, 2) if iperf_ul.get('received_mbps') and realtime_factor else None} "
         f"lost={iperf.get('lost_percent')} ul_rx_mbps={iperf_ul.get('received_mbps')} "
-        f"ul_tbs_per_prb_p50={summary['ul_newtx_tbs_bytes_per_prb_p50']} srs={dict(srs)} ul_ri={sorted(set(ul_ri))}"
+        f"ul_tbs_per_prb_p50={summary['ul_newtx_tbs_bytes_per_prb_p50']} srs={dict(srs)} ul_ri={sorted(set(ul_ri))} "
+        f"health={summary['health']['result']}"
+        + (f" problems=\"{'; '.join(problems)}\"" if problems else "")
     )
-    return 0
+    return 3 if problems else 0
 
 
 if __name__ == "__main__":
