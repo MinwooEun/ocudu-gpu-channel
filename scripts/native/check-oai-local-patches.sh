@@ -11,12 +11,14 @@ set -uo pipefail
 #     (builds/oai-zmq-patched via build-oai-zmq-patched.py --verify,
 #      builds/oai-zmq-local/BUILD-MANIFEST.txt)
 #
-# --probe (about 6 minutes, uses the GPU; run it alone on the device):
+# --probe (about 9 minutes, uses the GPU; run it alone on the device):
 #   one short OAI 2x2 run per side, and each patch must show its defect without
 #   it and the fix with it:
 #     ZMQ reply-poll  stock module -> real-time factor < 0.5; patched -> > 0.9
 #     MMSE scale      stock UE at 20 dB back-off -> rank-2 NACK > 20%;
-#                     patched UE -> NACK < 5%
+#                     patched UE -> NACK < 5% (both at UE RX gain 0)
+#     ZMQ RX gain     gNB at its default back-off, UE RX gain 0 -> rank-2
+#                     NACK > 20%; the gate default -12 dB -> NACK < 5%
 #
 # Usage (as container root, like the gates):
 #   OCUDU_NATIVE_ROOT=... bash scripts/native/check-oai-local-patches.sh [--probe]
@@ -128,7 +130,8 @@ if [[ "${probe}" == 1 ]]; then
   done
   # MMSE scale: patched module both sides, the UE build is the only difference (20 dB).
   for side in stock local; do
-    dir="$(run_probe "mmse-${side}" OCUDU_NATIVE_OAI_ZMQ_MODULE=patched OCUDU_NATIVE_OAI_UE="${side}" OAI2X2_TX_BACKOFF_DB=20)"
+    dir="$(run_probe "mmse-${side}" OCUDU_NATIVE_OAI_ZMQ_MODULE=patched OCUDU_NATIVE_OAI_UE="${side}" \
+      OCUDU_NATIVE_OAI_UE_RX_GAIN_DB=0 OAI2X2_TX_BACKOFF_DB=20)"
     nack="$(field "${dir}" nack_ratio)"
     if [[ "${side}" == stock ]]; then
       awk -v v="${nack:-0}" 'BEGIN{exit !(v > 0.20)}' && report PASS "mmse scale: stock UE shows defect" "rank-2 NACK=${nack}" \
@@ -136,6 +139,22 @@ if [[ "${probe}" == 1 ]]; then
     else
       awk -v v="${nack:-1}" 'BEGIN{exit !(v < 0.05)}' && report PASS "mmse scale: patched UE fixes it" "rank-2 NACK=${nack}" \
         || report FAIL "mmse scale: patched UE fixes it" "rank-2 NACK=${nack:-none} (expected < 0.05) ${dir}"
+    fi
+  done
+  # ZMQ RX gain: patched module and UE, the gNB at its default 12 dB back-off;
+  # the gain the gate applies is the only difference.
+  for side in off on; do
+    gain=0
+    [[ "${side}" == on ]] && gain=-12
+    dir="$(run_probe "rx-gain-${side}" OCUDU_NATIVE_OAI_ZMQ_MODULE=patched OCUDU_NATIVE_OAI_UE=local \
+      OCUDU_NATIVE_OAI_UE_RX_GAIN_DB="${gain}")"
+    nack="$(field "${dir}" nack_ratio)"
+    if [[ "${side}" == off ]]; then
+      awk -v v="${nack:-0}" 'BEGIN{exit !(v > 0.20)}' && report PASS "zmq rx gain: 0 dB shows defect" "rank-2 NACK=${nack}" \
+        || report FAIL "zmq rx gain: 0 dB shows defect" "rank-2 NACK=${nack:-none} (expected > 0.20) ${dir}"
+    else
+      awk -v v="${nack:-1}" 'BEGIN{exit !(v < 0.05)}' && report PASS "zmq rx gain: -12 dB fixes it" "rank-2 NACK=${nack}" \
+        || report FAIL "zmq rx gain: -12 dB fixes it" "rank-2 NACK=${nack:-none} (expected < 0.05) ${dir}"
     fi
   done
 fi

@@ -396,6 +396,9 @@ PY
   printf 'event=nrue_radio_args %s uecap=%s\n' "${oai_radio[*]}" "${uecap_file}" >"${log_dir}/nrue-radio.log"
   pushd "${log_dir}" >/dev/null
   # shellcheck disable=SC2086
+  # The gate's UE RX gain (oai-gate-defaults.sh oai_gate_ue_rx_gain), if any.
+  local -a ue_rx_gain=()
+  [[ -n "${OAI_GATE_UE_RX_GAIN_DB:-}" ]] && ue_rx_gain=(--zmq.'[0]'.rx_gain_db "${OAI_GATE_UE_RX_GAIN_DB}")
   start_group nrue "${log_dir}/nrue.log" nsenter --net="/run/netns/${nested_name}" -- \
     setpriv --bounding-set -sys_nice \
     "${nrue_pin[@]}" ${OCUDU_NATIVE_NRUE_WRAPPER:-} "${nrue}" -O "${config_dir}/nrue.conf" \
@@ -407,6 +410,7 @@ PY
     --loader.oai_zmqdevif.shlibpath "${zmq_module_dir}" \
     --zmq.'[0]'.tx_channels tcp://10.201.0.2:2101,tcp://10.201.0.2:2103 \
     --zmq.'[0]'.rx_channels tcp://10.201.0.1:2100,tcp://10.201.0.1:2102 \
+    "${ue_rx_gain[@]}" \
     ${OAI2X2_UE_EXTRA:-}
   popd >/dev/null
   nrue_pid="${started_pid}"

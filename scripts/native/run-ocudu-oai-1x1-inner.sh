@@ -475,6 +475,9 @@ PY
   # and asserts if it cannot. Inside the userns the gate's cwd may belong to an
   # unmapped uid, so start the UE from the log directory the gate owns.
   pushd "${log_dir}" >/dev/null
+  # The gate's UE RX gain (oai-gate-defaults.sh oai_gate_ue_rx_gain), if any.
+  local -a ue_rx_gain=()
+  [[ -n "${OAI_GATE_UE_RX_GAIN_DB:-}" ]] && ue_rx_gain=(--zmq.'[0]'.rx_gain_db "${OAI_GATE_UE_RX_GAIN_DB}")
   start_group nrue "${log_dir}/nrue.log" nsenter --net="/run/netns/${nested_name}" -- \
     setpriv --bounding-set -sys_nice \
     "${nrue_pin[@]}" ${OCUDU_NATIVE_NRUE_WRAPPER:-} "${nrue}" -O "${config_dir}/nrue.conf" \
@@ -484,7 +487,8 @@ PY
     --device.name oai_zmqdevif \
     --loader.oai_zmqdevif.shlibpath "${oai_build}" \
     --zmq.'[0]'.tx_channels tcp://10.201.0.2:2101 \
-    --zmq.'[0]'.rx_channels tcp://10.201.0.1:2100
+    --zmq.'[0]'.rx_channels tcp://10.201.0.1:2100 \
+    "${ue_rx_gain[@]}"
   popd >/dev/null
   nrue_pid="${started_pid}"
 
