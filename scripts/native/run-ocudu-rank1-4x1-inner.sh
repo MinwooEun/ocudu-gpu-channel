@@ -306,7 +306,9 @@ run_stack()
   local srsue="${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue"
   local fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
   local mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
-  local broker="${native_root}/builds/ocudu-gpu-channel-cuda-release/ocudu-gpu-channel"
+  # The outer script builds and probes builds/ocudu-gpu-channel-rank1-cuda-release;
+  # the shared builds/ocudu-gpu-channel-cuda-release belongs to another checkout.
+  local broker="${OCUDU_NATIVE_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release}/ocudu-gpu-channel"
   local add_users="${native_root}/src/ocudu/docker/open5gs/add_users.py"
   local subscriber_verify="${repo_root}/scripts/native/verify-open5gs-subscriber.py"
   for binary in "${gnb}" "${srsue}" "${fivegc}" "${mongod}" "${broker}"; do
