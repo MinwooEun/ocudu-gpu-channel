@@ -46,7 +46,7 @@ emulator의 CUDA 백엔드는 디스크리트 GPU(RTX 5090) 기준으로 짜여 
 | **Z3** | **A/B 측정** — 같은 바이너리로 `copy` vs `zero_copy` | GB10 11개 설정 × 3회: `gpu_process_us`·`kernel_us` p50/p99. **커널이 mapped 메모리 때문에 느려지는지**가 핵심 관측. 5090에서 `zero_copy`는 음성 대조군(느려져야 정상) | **완료 2026-09-27** — GB10 11개 설정 전부 `gpu_process_us` p50 **−5~−12 µs(−6~−25%)**, 커널은 +6~+11 µs. 5090은 Z1에서 대조군 확인 |
 | **Z4** | 남은 복사 제거 (Z3 결과 보고 결정) | 메타데이터를 mapped 메모리로, 입력 모으기와 출력 `std::copy` 제거 검토(GB10 `pageableMemoryAccessUsesHostPageTables=1`이라 호출자 버퍼 직접 접근 가능성). 단계마다 bit 동일 + A/B | **완료 2026-09-27** — 부분별 분해 측정. 기본값을 `in,out,direct`로(메타데이터 mapped는 역효과라 제외). 기본 2 edge 호출 46.1 → **31.8 µs(−31%)**. 입력 모으기 제거는 미착수(아래 Z8) |
 | **Z5** | 라이브 — legacy 1×1 게이트를 `zero_copy`로 | attach·PDU·ping 통과, 카운터 0, 브로커 p50이 65 µs 대비 얼마나 줄었는지(같은 날 `copy` 1회와 짝지어 측정) | **완료 2026-09-27** — copy/zero-copy 짝 측정 2라운드(Z3 코드 4회 + 최종 코드 4회) 전부 통과. 최종 코드: ue0 p50 55–65 → **40–45 µs**, p99 100 → **80–85 µs** |
-| **Z6** | Jetson Orin 확인 | Orin은 통합이지만 `ConcurrentManagedAccess=0`(D6). mapped pinned는 managed와 다른 경로라 동작해야 하지만 캐시 동작과 성능은 실측으로 판정. bit 동일 + A/B | 대기 |
+| **Z6** | Jetson Orin 확인 | Orin은 통합이지만 `ConcurrentManagedAccess=0`(D6). mapped pinned는 managed와 다른 경로라 동작해야 하지만 캐시 동작과 성능은 실측으로 판정. bit 동일 + A/B | **완료 2026-09-28** — ctest 12/12(bit 동일, `direct` 계열은 pageable 미지원으로 건너뜀), 9/9 통과, `auto` → zero-copy `in,out`. 클럭 고정 A/B 8개 설정 전부 −6 ~ −30%, 라이브 p50 415–455 → 345–360 µs(4회 pass) |
 | **Z8** | **입력 직접 읽기 + 브로커 ring 복사 제거** (Z4 이후 남은 최대 병목) | 커널이 호출자/ring 버퍼에서 바로 읽어 `host_prep`의 입력 모으기 복사를 없애고, 브로커 ring read/push 복사를 줄임. 사용자 수×대역폭에서 슬롯 예산(500 µs) 안으로 들어오는지 | **완료 2026-09-27** — N64 gNB 934 → **177 µs**(예산 안), mvp 46.6 → **25.9 µs**. ring 단계 30–40 → 4–14 µs. 라이브 p50 60–65 → **40 µs** |
 | **Z7** | 기본값 결정 + 정리 | Z3–Z6 근거로 `auto`를 기본으로 할지 결정, 문서·예제 YAML 갱신, PR 준비(push는 확인받고) | **부분 완료 2026-09-27** — README에 노브·벤치 출력 문서화, 로컬 커밋. 기본값은 `copy` 유지(Z6 Jetson 미검증이라 `auto` 기본화 보류), PR·push 안 함 |
 
@@ -242,3 +242,50 @@ mvp-2edge 호출 하나로 본 이득(−14.3 µs): H2D IQ −5.3, D2H −9.7, �
 2. step 메타데이터 H2D 약 3–8 µs. pinned(비 mapped) 버퍼에서 async로 보내거나, 커널 파라미터로 넘기는 방법이 있다.
 3. ring을 거치지 않는 경로. puller가 받은 버퍼를 GPU가 직접 읽고, 출력을 RX ring 저장소에 직접 쓴다. 브로커 구조를 바꿔야 한다.
 4. Z6 Jetson 검증 후 `auto` 기본화(Z7).
+
+### Z6 — 2026-09-28 (Jetson AGX Orin, sm_87, CUDA 12.6, MODE_30W)
+
+- **복사본:** `jetson-minwoo:/workspace/gpuch/zc6` = `8d916f3` bundle clone, 코드 diff 없음. 빌드 `builds/zc6-release`(`-j4`). 기본값만 `ZeroCopy`로 바꾼 시험용 복사본 `zc6-default`(config.h `Z6 TEST-ONLY flip`과 `test_config.cpp` 기본값 검사 한 줄, 커밋 대상 아님). 두 트리 모두 게이트 스크립트에 Jetson 전용 패치를 적용했다(Spark 패치와 같음: arch 87, x86 lock 검사 생략, gNB 버전 정규식, `start_group` pgid 폴링, 빌드 `-j4`).
+- **조건:** `MODE_30W`(코어 8/12 online, CPU 최대 1.728 GHz, GPU 최대 612 MHz). `jetson_clocks`는 적용하지 않았다(공유 장비). 측정 중 다른 GPU 작업은 없었다: hyunsoo 브로커 미실행, `nvidia-smi` 프로세스 없음, 호스트 tegrastats 로그를 보존했다. 09-25 라이브 실행에서 남은 우리 컨테이너의 mongod 2개는 종료했다.
+- **장치 속성:** `Integrated=1`, `CanMapHostMemory=1`, **`PageableMemoryAccess=0`**, `ConcurrentManagedAccess=0`(D6). 따라서 **Orin의 `auto`는 zero-copy를 고르고, 분할은 `in,out`이다.** `direct`·`direct_in`은 쓸 수 없고, `OCG_ZC_PARTS=direct_in`은 `needs pageable memory access`로 거부된다. 폴백은 설계대로 동작한다. mapped pinned 메모리는 managed 메모리와 다른 경로라서 D6(`cudaErrorInvalidDevice`)은 나타나지 않았다.
+
+**정확성**
+
+| 항목 | 결과 |
+|---|---|
+| ctest | **12/12**. parity (h)가 copy vs {기본(=in,out), in,out, in,out,meta, in, out, meta}를 4슬롯 bit 동일로 통과했다. 3-소스 fan-in 케이스도 포함한다. `direct` 계열은 `zero-copy parity: direct skipped (no pageable memory access)`로 건너뛰었다(3회) |
+| 9단계 시퀀스 (`zc6-default`, zero-copy) | **GPU TEST SEQUENCE PASSED** — TDL-A 3.32/3.27, 2×2 상관 9.65, iid 6.96, correlation_swap 9.26, 카운터 0. 같은 빌드의 벤치가 `cuda_zero_copy,1`을 보고했다 |
+
+**A/B 측정** (같은 바이너리, 모드는 반복마다 교차, 5 s × 3회, 중앙값). 표 전체는 `~/ocudu-work/perf-platform/compare-zc-jetson.md`, 원자료는 `runs/jetson-zc/zc-jetson-20260928T054543Z`(1차 246회 + 2차 72회, 모두 rc=0, 모드 불일치 0).
+
+- 1차 측정(코어 4-7, CPU 클럭 자유)에서는 같은 설정이 반복마다 최대 1.6배 흔들렸다. 예를 들어 tdla-46M copy의 커널이 647–1087 µs였다. **GPU 커널 시간이 CPU 클러스터 클럭을 따라 움직인다**(메모리 클럭 연동으로 추정). 그래서 2차는 코어 7에서 busy loop를 돌려 클러스터를 1.728 GHz에 붙잡고, 벤치를 코어 4-6에서 돌렸다. 아래는 2차 수치다(`call_us`, 전 노드).
+
+| 설정 | copy p50 | zero-copy p50 | Δ | p99 copy → zc | H2D | kernel | D2H |
+|---|---|---|---|---|---|---|---|
+| mvp-2edge | 251.4 | **183.2** | −68 (−27%) | 264 → 197 | 49.7 → 10.0 | 86.8 → 97.4 | 39.1 → 2.3 |
+| multi-gnb-8edge | 379.2 | **295.3** | −84 (−22%) | 404 → 318 | 74.0 → 11.3 | 134.3 → 147.0 | 34.0 → 2.3 |
+| fanin-N16 | 266.6 | **200.4** | −66 (−25%) | 1567 → 1174 | 52.0 → 12.5 | 96.2 → 104.7 | 33.2 → 2.2 |
+| tdl-a | 475.3 | **447.7** | −28 (−6%) | 490 → 461 | 31.3 → 11.0 | 351.3 → 364.5 | 22.1 → 1.6 |
+| mvp @ 122.88 MS/s | 816.9 | **575.3** | −242 (−30%) | 850 → 606 | 146.2 → 14.5 | 247.0 → 259.4 | 126.3 → 2.3 |
+| TDL-A @ 46.08 MS/s | 727.5 | **676.7** | −51 (−7%) | 749 → 693 | 46.3 → 11.9 | 539.7 → 553.7 | 30.2 → 1.6 |
+| TDL-A @ 122.88 MS/s | 1632.9 | **1497.3** | −136 (−8%) | 1885 → 1744 | 83.7 → 15.3 | 1186.8 → 1189.4 | 67.6 → 1.6 |
+| N4 @ 92.16 MS/s | 651.4 | **463.6** | −188 (−29%) | 1708 → 1272 | 120.1 → 16.2 | 201.0 → 219.5 | 97.3 → 2.3 |
+
+- **판정:** Orin에서도 zero-copy(`in,out`)는 모든 설정에서 호출 시간을 줄인다. 1차 측정 19개 설정도 방향이 모두 같았다(−5 ~ −60%). 예외는 tdla-46M 한 행(+39%)인데, 위의 클럭 흔들림 때문이고 2차에서는 −7%다. 복사 경로가 GB10보다 훨씬 비싸서(mvp H2D 50 µs + D2H 39 µs, GB10은 8 + 11) 절감 폭(µs)이 GB10보다 크다. **커널 증가분은 +3 ~ +18 µs로 GB10(+6 ~ +11)과 비슷하다.** 5090(Z1)에서 본 붕괴는 없다.
+- **`auto` = `zc`:** 1차 11개 설정에서 `auto`와 `zc`는 1–5 µs 안에서 같다.
+- **분할별(1차, mvp):** in만 216, out만 208, in,out 182, in,out,meta **177**. **GB10과 반대로 Orin에서는 meta를 mapped로 두는 편이 3–12 µs 빠르다**(2차 8개 설정 모두 −1 ~ −12 µs). 기본 분할은 바꾸지 않았다. 플랫폼별 분할은 Z7 후보다.
+- **남는 비용:** `host_prep`(입력 모으기)와 `host_out`(출력 `std::copy`)이 Orin에서는 zero-copy 뒤에도 남는다. GB10은 이를 `direct`·`direct_in`으로 없앴는데, 이 둘은 pageable access를 요구한다. 예: mvp 16 + 28 µs, 122M 124 + 139 µs, N16 gNB 노드 439 µs(1차). Orin에서 이것을 없애려면 브로커 ring 저장소 자체를 mapped pinned로 잡아야 한다(다음 후보 3과 같은 구조 변경).
+
+**라이브 (legacy 1×1, `zc6` copy / `zc6-default` zero-copy 교차, CPU gNB `a1916edc` + srsUE):** 4회 모두 **pass**(attach·PDU·ping, 카운터 0). 게이트 빌드의 모드는 벤치로 확인했다(`cuda_zero_copy,0` / `,1`).
+
+| 실행 | 모드 | gnb0 p50 / p99 | ue0 p50 / p99 | ring read / push | rx_starvations |
+|---|---|---|---|---|---|
+| 060716Z | copy | 455 / 1695 | 450 / 1720 | 21.0 / 18.3 | 33 |
+| 060925Z | zero-copy | **360 / 1455** | **350 / 1415** | 22.7 / 17.2 | 18 |
+| 061132Z | copy | 420 / 1770 | 415 / 1670 | 20.6 / 17.7 | 32 |
+| 061214Z | zero-copy | **355 / 1375** | **345 / 1390** | 19.3 / 18.6 | 28 |
+
+- p50 415–455 → **345–360 µs(약 −20%)**, p99 1670–1770 → **1375–1455 µs**. starvation도 줄었다(32–33 → 18–28).
+- **30 W Orin은 23.04 MS/s 라이브에서 여유가 없다.** zero-copy를 써도 p50이 500 µs 슬롯 예산의 70%이고, p95는 약 1 ms로 예산을 넘는다. Spark(p50 40 µs)와 달리 emulator 호출 자체가 크다. 커널만 약 90 µs다(GPU 612 MHz, SM 8개). attach는 통과하지만, 더 높은 대역폭이나 다중 UE 라이브는 MAXN 없이 기대하기 어렵다(MAXN 전환은 hyunsoo 합의 필요, 이번에는 바꾸지 않았다).
+
+**Z7에 대한 결론:** 통합 GPU 두 종(GB10, Orin) 모두에서 zero-copy가 bit 동일이고, 벤치·라이브 모두 빠르다. `auto`는 두 플랫폼에서 의도대로 해석된다(GB10 `in,out,direct,direct_in`, Orin `in,out`). 디스크리트는 `auto` → copy로 경로가 바뀌지 않는다. **`auto`를 기본값으로 하는 근거는 이것으로 충분하다.** 남은 Z7 작업은 기본값 전환(`config.h`와 `test_config` 기본값 검사), README·예제 갱신, PR 정리다. 플랫폼별 meta 분할(Orin에서 in,out,meta)은 선택 사항이다.
