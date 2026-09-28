@@ -102,8 +102,8 @@ RadioNode는 "ZMQ 엔드포인트 쌍 N개가 한 라디오"라고만 말하고,
 |---|---|---|
 | **M6.1** | OAI 소스 핀 + 빌드 프로파일 + deb 2개 추가, `nr-uesoftmodem` 빌드(UHD off, ZMQ 라디오 on) | `native-workspace.lock.json` 갱신, `builds/oai-zmq-release`, `check-workspace.sh` 통과 |
 | **M6.2** | **1×1 OAI 회귀 게이트** — OCUDU gNB 1T1R ↔ 브로커 ↔ OAI nrUE 1R | `scripts/native/run-oai-1x1.sh` + 검증 스크립트. srsUE 게이트는 그대로 유지 |
-| **M6.3** | 2포트 승격 — gNB 2T2R ↔ 2×2 `H` ↔ OAI nrUE 2R, `maxMIMO_layers = 2` | 신규 fixture(gNB conf, OAI conf, 토폴로지), 게이트 스크립트 |
-| **M6.4** | **rank-2 acceptance** + M5.5 행렬 검증 동시 통과 | acceptance 리포트, 뮤테이션 프로브 결과 |
+| **M6.3** | 2포트 승격 — gNB 2T2R ↔ 2×2 `H` ↔ OAI nrUE 2R, `maxMIMO_layers = 2` | 신규 fixture(gNB conf, OAI conf, 토폴로지), 게이트 스크립트 — **완료 2026-09-28** (§8) |
+| **M6.4** | **rank-2 acceptance** + M5.5 행렬 검증 동시 통과 | acceptance 리포트, 뮤테이션 프로브 결과 — **완료 2026-09-28, 조건부** (§8.4) |
 
 각 단계는 exit 게이트를 통과하기 전에 다음으로 넘어가지 않는다.
 
@@ -157,3 +157,227 @@ RadioNode는 "ZMQ 엔드포인트 쌍 N개가 한 라디오"라고만 말하고,
 - **4 레이어 이상** — gNB `pusch_constants::MAX_NOF_LAYERS = 4`, srsRAN_4G `SRSRAN_MAX_LAYERS 4`.
 - **srsUE의 MIMO 확장** — 하지 않는다. srsUE는 1×1 회귀 안전망으로만 남는다. 선회하려면 미션 개정이 필요하다.
 - **M0의 라이브 부채 2건**(multi-UE / multi-gNB) — 환경 차단이며 M6과 무관하다.
+
+---
+
+## 8. M6.3 / M6.4 결과 (2026-09-28, 워크스테이션 RTX 5090)
+
+브랜치 `oai-2x2`(워크트리 `~/ocudu-work/ocudu-oai-mimo`, `gb10-zero-copy`에서 분기). OAI `2b69bde6`(2026.w33), OCUDU `a1916edc`, 컨테이너 `ocudu-minwoo`. 셀: band 3 FDD, 20 MHz, 106 PRB, 15 kHz, 23.04 MS/s, `mcs_table: qam64`. 핀 트리(OAI·OCUDU)는 한 줄도 바꾸지 않았다.
+
+### 8.1 8월의 차단 요인은 규약 차이가 아니라 OAI 2-layer 등화기의 int16 오버플로다
+
+8월 정찰은 "UE가 ri=2 PDSCH의 93–96%를 NACK, QPSK도 동일, 채널 추정은 샘플 수준까지 정확"에서 멈췄다. 남은 용의는 MMSE / LLR / 디매핑 입력 3단계였다. 이번에 워크스테이션 direct 대조(브로커 없음)에서 똑같이 재현했다(`20260928T055037Z`: ri=2 568건, NACK 96%). 그 뒤 계측 빌드로 원인을 확정했다.
+
+- **계측:** 임시 패치(`docs/evidence/m6.3/oai-zf-compare.debug.patch`, 별도 클론 `~/ocudu-work/oai-debug`에서 빌드, 핀 트리는 그대로)로 OAI가 쓰는 추출 샘플 `y`와 채널 추정 `H`를 받아 float zero-forcing을 따로 계산하고, OAI의 고정소수점 출력과 나란히 찍었다.
+- **결과:** float ZF는 깨끗한 64QAM 점(±0.15/0.46/0.77/1.08)을 낸다. 즉 추정과 샘플은 맞다. OAI 출력은 같은 점에 약 48.8k를 곱한 값이라 int16을 넘어 감긴다(1.08 → −12.9k, −0.77 → +27.8k). `docs/evidence/m6.3/zf-vs-oai-equaliser.txt`.
+- **메커니즘(소스):** `nr_dlsch_mmse`는 `inv(HᴴH)`가 아니라 **adjugate**를 곱하고 행렬식으로 나누지 않는다(행렬식은 LLR 문턱 `dl_ch_mag`로 넘긴다). 그래서 출력은 `det(G)·x / 2^(log2_maxh−1)`이다(G = HᴴH ≫ log2_maxh). 이 크기는 수신 진폭의 4제곱에 비례하고 `log2_maxh`(≈ log2|H|²/2, 정수)가 한 칸 오를 때마다 1/8로 떨어지는 톱니 모양이다. 진폭이 옥타브 안 어디에 걸리느냐에 따라 멀쩡하기도 하고 감기기도 한다.
+- **왜 QPSK도 실패했나:** QPSK 점 0.707 × 48.8k = 34.5k도 넘친다. MCS를 낮춰도 소용없던 이유다.
+- **왜 OAI 자체 시뮬레이터(dlsim)는 통과했나:** OAI gNB의 송신 진폭이 작아 톱니의 안전 구간에 있다. OAI의 OCUDU 2×2 CI 설정(`ci-scripts/yaml_files/5g_zmq_radio_2x2_ocudu/ocudu.yml`)에 `amplitude_control.tx_gain_backoff: 22`가 들어 있는 것과 맞아떨어진다. 다만 그 CI는 CSI-RS가 꺼져 있어 rank 2를 스케줄하지 않는다.
+
+**조치:** 코드 수정 없이 gNB 설정 `ru_sdr.amplitude_control.tx_gain_backoff`(OCUDU 기본 12 dB)만 올린다. direct 28 dB에서 ri=2 3103건, NACK 0%(`20260928T055557Z`). 출력 크기는 약 15.9k로 감기지 않는다.
+
+**진폭 창은 토폴로지마다 다르다(실측).** 브로커, 유니터리 H, DL UDP 60M, NACK 비율:
+
+| back-off | 12 (기본) | 16 | 20 | 24 | 28 |
+|---|---|---|---|---|---|
+| 기준 H(조건수 1.6) | 2.7%(MCS 강하) | – | – | – | 0% |
+| 유니터리 H | – | 1.3% | **57–60%** | **0%** | 0% |
+| direct(항등 H) | **96%** | – | – | – | 0% |
+
+20 dB 실패의 원인은 계측 빌드의 누적 통계(`docs/evidence/m6.3/equaliser-sign-errors.txt`)로 확인했다. PDSCH마다 `log2_maxh`가 10과 11 사이를 오가고, 10인 PDSCH에서 출력이 포화(|max| 31.4k)해 성분의 4–14%가 부호를 잃는다. 24 dB에서는 `log2_maxh`가 10으로 고정되고 |max| 5.6k, 부호 오류 0이다. **back-off는 토폴로지 이득과 함께 골라야 하는 운영 조건이고, 근본 수정은 OAI 쪽이다**(adjugate 출력을 행렬식이나 추가 시프트로 정규화). 상류 제보 후보로 기록한다.
+
+### 8.2 M6.3 — 2포트 승격: 통과
+
+`scripts/native/run-ocudu-oai-2x2.sh`(+ `-inner.sh`, `render-oai-2x2-configs.py`, `summarize-oai-2x2-run.py`). gNB 설정은 OAI 1×1 게이트의 렌더에서 안테나 2/2, 포트 2쌍, `pdsch.max_rank`, MAC pcap off, TX back-off만 바꾼다. OAI는 `--ue-nb-ant-rx 2 --ue-nb-ant-tx 2`, `uecap_ports2.xml`, ZMQ 채널 2개씩이다. 토폴로지 `examples/native/topology.ocudu.oai-2x2*.cuda.yaml`에서 gNB와 UE는 모두 2포트 radio node다.
+
+- 2포트 해석: `radio_node_resolved id=ue0 tx[0]=ue0_p0 tx[1]=ue0_p1 ... implicit=false`
+- gNB가 UE의 RI=2 CSI 보고(PUCCH F2 `csi1=1…`)를 따라 **ri=2를 스케줄**한다. 로그에서 CSI 보고가 바뀌는 슬롯에 맞춰 ri가 바뀌는 것을 확인했다.
+- attach + PDU + ping 10/10, `Real-time failure` 0건(이번 세션 전 실행)
+- UE 2-layer 복호: ri=2 PDSCH의 HARQ-ACK가 전부 ACK였고, 슬롯당 TBS는 18.9 kB로 rank 1 최대치(9.4 kB)의 2배다. 계측 빌드에서는 `nl == 2` 경로의 등화 출력을 직접 확인했다.
+
+### 8.3 하네스 수리 (OAI 1×1 게이트, 워크스테이션 재가동)
+
+8월 이후 이 호스트에서 처음 돌렸다. 네 가지를 고쳤고, 같은 날 OAI 1×1 `result=pass`(`20260928T054330Z`)와 srsUE 1×1 무회귀 `result=pass`(`ocudu-interop/20260928T063339Z`)를 확인했다.
+
+1. 고정 기준 커밋 `bc88865`이 이 이력에 없다. fixture 바이트가 같은 `0c13a1a`(M6.2)로 바꿨다.
+2. gNB 버전 문자열이 `OCUDU gNB (commit a1916ed)` 형식이다. 두 형식을 모두 받도록 했다.
+3. `start_group` pgid 경쟁을 고쳤다. Spark에서 쓰던 패치를 inner 스크립트 4개에 적용했다.
+4. OAI UE는 작업 디렉터리에 `nrL1_UE_stats-0.log`를 만들지 못하면 assert로 죽는다. userns에서는 cwd가 매핑되지 않은 uid 소유일 수 있어 로그 디렉터리에서 기동한다.
+
+추가로 이 호스트는 자체 MongoDB/Open5GS를 띄우고 있다. 스택은 별도 netns라 충돌하지 않으므로, 이 경우 `OCUDU_NATIVE_ALLOW_HOST_PORTS=1`로 포트 사전검사를 끈다. OAI 빌드에는 sysroot의 `libtoolize` 경로 재배치와 컨테이너의 `xxd`가 필요했다(워크스페이스 쪽 조치이며 저장소 변경은 없다).
+
+### 8.4 M6.4 — rank-2 acceptance: 통과 (조건 명시)
+
+유니터리 2×2 H(`topology.ocudu.oai-2x2-unitary.cuda.yaml`, 이득 0.8, 조건수 1, 교차항 에너지 0.18), back-off 24 dB, 창 75 s, DL UDP 15 s @ 60 Mbit/s(벽시계) 제시. rank 1과 rank 2를 번갈아 2쌍 측정했다.
+
+| 실행 | max_rank | ri=2 / ri=1 PDSCH | NACK | 슬롯당 TBS | 수신(벽시계) | 수신(공중 시간) | 행렬 검증 |
+|---|---|---|---|---|---|---|---|
+| `062227Z` | 2 | 4506 / 11 | 0% | 18.9 kB | 41.05 Mb/s | **148.4 Mb/s** | 통과 |
+| `062350Z` | 1 | 0 / 4819 | 0% | 9.4 kB | 20.41 | **74.4** | 통과 |
+| `062514Z` | 2 | 4501 / 10 | 0% | 18.9 kB | 40.93 | **148.6** | 통과 |
+| `062637Z` | 1 | 0 / 4847 | 0% | 9.4 kB | 20.46 | **74.4** | 통과 |
+
+- **처리량: rank 2 / rank 1 = 2.00×.** 두 쌍의 차이는 0.2 Mb/s 이내다. ZMQ 락스텝은 벽시계의 약 0.275배로 흐른다. 그래서 공중 시간 처리량은 iperf 수신 구간의 시뮬레이션 슬롯 수로 환산했다(`realtime_factor`). 두 모드 모두 셀 용량에서 포화한다(유실 24%/50%).
+- **행렬이 같은 실행에서 맞다:** 브로커 wire capture(SFN 300–310, 100 ms)에서 `verify-mimo-matrix-capture.py` 통과. DL 두 행 `max|y−Hx|` ≤ 3.1e−08(허용 1e−04), 교차항 몫 0.416/0.429. 그 100 ms 안의 PDSCH는 rank-2 실행에서 100/100이 ri=2였다. UL은 행 오차가 7.9e−10 이하로 맞지만, **OAI UE는 1-layer PUSCH를 포트 0으로만 보내서 UE TX 포트 1이 0이다.** `--allow-silent-source ue0->gnb0:1`로 기록했고, UL 2×2는 주장하지 않는다.
+- **direct 대조(항등 H):** rank 2 144.9 Mb/s(공중 시간). 에뮬레이터 2×2 H를 거쳐도 rank-2 처리량이 줄지 않는다.
+
+**뮤테이션 프로브:**
+
+| 프로브 | 결과 | 판정 |
+|---|---|---|
+| `max_rank: 1` | ri=2 0건, 74.4 Mb/s | 기대대로 |
+| 거의 특이한 H(조건수 107, `-near-singular`) | UE가 여전히 RI=2를 보고(PUCCH F2 CSI 479/489) → ri=2 PDSCH NACK 94%, ping 실패(`062800Z`) | 분리 가능성이 실제로 측정되고 있다(처리량 붕괴). 단 **OAI UE의 RI 판정은 이 진폭에서 특이 채널을 걸러내지 못한다** |
+| back-off 12(OCUDU 기본), direct | NACK 96% | 8월 증상 재현 = 원인이 진폭임을 확인 |
+| back-off 20, 유니터리 H | NACK 57–60%, 부호 오류 4–14% | 톱니 창 확인(§8.1) |
+
+**조건과 한계:**
+- back-off 24 dB는 **이 토폴로지 이득(0.8)에 맞춘 값**이다. 다른 H나 경로 손실을 쓰면 NACK와 RI 안정성을 다시 확인해야 한다. 기준 H(조건수 1.6)와 유니터리 H @28 dB에서는 OAI의 RI 판정(CSI-RS 조건수 < 5 dB, `csi_rx.c`)이 RI 1/2를 오가서, rank 2는 102–106 Mb/s에 그쳤다.
+- 실시간이 아니다(락스텝 0.275배). 브로커 `rx_starvations`는 75 s마다 약 12.3k로 두 모드가 같다(M6.2의 soft 신호와 같은 성격). **→ §8.5에서 원인(OAI ZMQ 드라이버의 응답 지연)을 확인했고, 패치한 드라이버로 실시간(0.999배)이 된다.**
+- UL MIMO, 64QAM 초과(qam256), 페이딩 채널에서의 rank 2는 이번 범위 밖이다.
+
+**재현:**
+
+```bash
+docker exec ocudu-minwoo bash -c 'cd ~minwoo/ocudu-work/ocudu-oai-mimo && env HOME=/root \
+  OCUDU_NATIVE_ROOT=/home/hyunsoo/ocudu-native-workspace CUDACXX=/usr/local/cuda/bin/nvcc \
+  OAI2X2_PATH=broker OAI2X2_MAX_RANK=2 OAI2X2_TX_BACKOFF_DB=24 \
+  OAI2X2_TOPOLOGY=$PWD/examples/native/topology.ocudu.oai-2x2-unitary.cuda.yaml \
+  "OAI2X2_BROKER_EXTRA=--wire-capture-dir WIRECAP --wire-capture-samples 2304000 --wire-capture-skip 69120000" \
+  bash scripts/native/run-ocudu-oai-2x2.sh'
+# 행렬 검증(호스트 /usr/bin/python3에 numpy·yaml 있음)
+/usr/bin/python3 scripts/native/verify-mimo-matrix-capture.py --capture-dir <log>/wire-capture \
+  --topology <report>/topology.yaml --allow-silent-source 'ue0->gnb0:1'
+```
+
+### 8.5 실시간 복원 — OAI ZMQ 드라이버 패치 재측정 (2026-09-28, 워크스테이션 RTX 5090)
+
+M6.4가 벽시계의 0.275배로 흐른 원인은 Spark S9에서 찾은 것과 같다. OAI `radio/zmq/zmq_radio.cpp`의 `tx_poll_thread`는 REP 응답을 보내야 하는데 TX 샘플이 아직 큐에 없으면 `zmq_poll(..., 10)`으로 들어가 응답을 최대 10 ms 늦춘다. 패치 `scripts/native/patches/oai-zmq-tx-reply-poll.patch`(S9, 이 브랜치 `90acaf6`)는 응답을 기다리는 동안 20 µs마다 큐를 다시 본다.
+
+- **빌드:** 핀 트리는 그대로 두고 `zmq_radio.cpp`만 복사해 `builds/oai-zmq-s9`(패치)와 `builds/oai-zmq-s9-stock`(원본, 같은 절차)로 따로 빌드했다. 컴파일 플래그는 원래 빌드의 `flags.make`, 링크는 `link.txt`와 같다. nrUE 바이너리는 두 경우 모두 `builds/oai-zmq-release`의 것이고 ZMQ 모듈만 `OCUDU_NATIVE_OAI_SHLIBPATH`로 바꾼다(2×2 러너에도 같은 노브를 추가, `72a65ec`).
+- **조건:** M6.4와 같다(유니터리 H, back-off 24 dB, rank 2, wire capture). DL UDP 제시율만 200M으로 올렸다(실시간에서 60M은 셀 용량보다 작다). 원본과 패치를 번갈아 2쌍 측정했다. GPU에 다른 프로세스는 없었다.
+
+| 실행 | ZMQ 모듈 | 실시간 배율 | rx_starvations | ri=2 PDSCH | NACK | 수신(벽시계) | 수신(공중 시간) | 행렬 검증 |
+|---|---|---|---|---|---|---|---|---|
+| `081445Z` | 원본 | 0.277 | 15,077 | 4,524 | 0% | 41.2 Mb/s | 148.6 | 통과 |
+| `081623Z` | **패치** | **0.999** | **1** | 15,346 | 0% | **148.2** | 148.3 | 통과 |
+| `081802Z` | 원본 | 0.278 | 15,112 | 4,526 | 0% | 41.2 | 148.4 | 통과 |
+| `081940Z` | **패치** | **1.000** | **5** | 15,364 | 0% | **148.3** | 148.3 | 통과 |
+
+- **판정:** 원인은 Spark와 같다. 패치로 실시간이 되고 `rx_starvations`는 약 15k에서 1–5로 줄어든다. 공중 시간 처리량(148.3–148.6 Mb/s)은 그대로라서, M6.4의 환산이 맞았다는 것도 확인된다. 이제 벽시계 처리량 자체가 148 Mb/s다. ri=2 PDSCH 수가 약 3.4배인 것은 같은 벽시계 창에 시뮬레이션 슬롯이 그만큼 더 들어가기 때문이다.
+- **rank 1(패치, `082806Z`):** 74.1 Mb/s(벽시계), 실시간 배율 1.000, ri=2 0건. rank 2 / rank 1 = **2.00×**가 실시간에서도 유지된다.
+
+**PHY 동작은 바뀌지 않았다 (예상대로).** 드라이버 패치는 타이밍만 바꾸고 PHY에는 손대지 않는다.
+
+| 확인 | 원본 | 패치 | 판정 |
+|---|---|---|---|
+| back-off 20 dB, 유니터리 H(`082132Z`/`082311Z`) | NACK 52.8% | NACK 51.8% | int16 오버플로(§8.1)는 그대로다. 24 dB가 여전히 필요하다 |
+| 기준 H(조건수 1.6), 28 dB(`082449Z`/`082627Z`) | ri=2 36%, 100.7 Mb/s(공중) | ri=2 38%, 102.6 Mb/s | RI 1/2 요동과 102–106 Mb/s 한계도 그대로다 |
+
+- back-off 20 dB에서 처리량은 원본 38.3 Mb/s(공중)와 패치 10.2 Mb/s로 달랐다. NACK 비율은 같다(52%). 원인은 §8.6에서 찾았다: 패치 실행에서만 RLF 해제가 iperf 창 안에 들어왔다. 실패 조건의 처리량이라 판정에는 쓰지 않는다.
+
+**회귀:** OAI 1×1 게이트 원본 모듈 `083218Z` pass(`rx_starvations` 3,363), 패치 모듈 `083259Z` pass(5), srsUE 1×1 `ocudu-interop/083339Z` pass(8).
+
+**하네스 수정(`31ce47b`):** OAI 1×1 게이트는 바깥 스크립트가 `builds/ocudu-gpu-channel-rank1-cuda-release`를 빌드·검사하는데, 안쪽 스크립트는 브로커를 `builds/ocudu-gpu-channel-cuda-release`에서 띄우고 있었다. 이 빌드 디렉터리는 다른 체크아웃(`ocudu-cuda-rebuild`)의 것이다. 이제 둘 다 `OCUDU_NATIVE_CHANNEL_BUILD`(기본 rank1 빌드)를 쓴다. §8.3의 `054330Z` pass는 다른 트리의 브로커로 돈 것이다. srsUE 게이트는 이 호스트에서 `OCUDU_NATIVE_CHANNEL_BUILD=builds/ocudu-gpu-channel-oai2x2-cuda-release`로 돌렸다(기본 빌드 디렉터리가 다른 트리를 가리켜 cmake 구성이 실패한다).
+
+**재현(패치 모듈):**
+
+```bash
+docker exec ocudu-minwoo bash -c 'cd ~minwoo/ocudu-work/ocudu-oai-mimo && env HOME=/root \
+  OCUDU_NATIVE_ROOT=/home/hyunsoo/ocudu-native-workspace CUDACXX=/usr/local/cuda/bin/nvcc \
+  OCUDU_NATIVE_OAI_SHLIBPATH=/home/hyunsoo/ocudu-native-workspace/builds/oai-zmq-s9 \
+  OAI2X2_PATH=broker OAI2X2_MAX_RANK=2 OAI2X2_TX_BACKOFF_DB=24 OAI2X2_IPERF_RATE=200M \
+  OAI2X2_TOPOLOGY=$PWD/examples/native/topology.ocudu.oai-2x2-unitary.cuda.yaml \
+  "OAI2X2_BROKER_EXTRA=--wire-capture-dir WIRECAP --wire-capture-samples 2304000 --wire-capture-skip 69120000" \
+  bash scripts/native/run-ocudu-oai-2x2.sh'
+```
+
+실행 스크립트와 결과 수집기는 `~/ocudu-work/perf-platform/oai2x2-s9/`(git 밖)에 있다.
+
+### 8.6 패치 모듈 기본화와 20 dB 처리량 차이의 원인 (2026-09-28, 워크스테이션 RTX 5090)
+
+**패치 ZMQ 모듈을 기본으로 (`e254089`).** §8.5의 패치 모듈은 환경 변수로 경로를 줘야만 쓰였다. 이제 OAI 1×1과 2×2 게이트가 기본으로 패치 모듈을 쓴다.
+
+- `scripts/native/build-oai-zmq-module.sh patched|stock`: 핀 소스(`2b69bde6`)의 `zmq_radio.cpp`를 복사해 패치(`oai-zmq-tx-reply-poll.patch`, sha256 `b2f1e51b…`)를 적용하고, CMake가 만든 `flags.make`/`link.txt` 그대로 컴파일·링크해 `builds/oai-zmq-s9`에 넣는다. `MODULE-MANIFEST.txt`에 핀, 패치 sha256, 소스·모듈 sha256을 적는다. 다시 빌드한 모듈은 §8.5에서 쓴 모듈과 **바이트 단위로 같다**(패치 `089b1149…`, 원본 절차 `878432fe…`). 핀 소스 트리와 핀 빌드는 건드리지 않는다.
+- `scripts/native/oai-zmq-module.sh`: 게이트가 쓸 모듈을 고른다. `OCUDU_NATIVE_OAI_ZMQ_MODULE=patched`(기본) 또는 `stock`(핀 빌드의 원래 모듈), 명시한 `OCUDU_NATIVE_OAI_SHLIBPATH`가 있으면 그것이 우선한다. 패치 모듈은 manifest의 핀·패치·모듈 해시가 맞을 때만 쓴다(해시를 일부러 틀리게 하면 거부됨을 확인). 고른 모듈은 2×2의 `run-params.txt`(`oai_zmq_module`, `oai_zmq_module_sha256`)와 1×1의 source evidence에 남는다.
+- **검증(기본값, 환경 변수 없음):**
+
+| 게이트 | 실행 | 모듈 | 결과 |
+|---|---|---|---|
+| OAI 1×1 | `oai-1x1/104713Z` | patched | pass, 25 s에 tx_pulls 38,942, rx_starvations 3 (실시간) |
+| OAI 1×1 (opt-out) | `oai-1x1/104754Z` | stock | pass, tx_pulls 10,891, rx_starvations 3,345 (원래의 느린 경로) |
+| OAI 2×2 유니터리 H, 24 dB | `oai-2x2/104455Z` | patched | 실시간 배율 0.9997, ri=2 15,366, NACK 0%, **148.2 Mb/s**, 행렬 검증 통과(`matrix_capture_status=passed`) |
+| srsUE 1×1 | `ocudu-interop/104635Z` | — | pass, rx_starvations 14 |
+
+  처음 1×1 두 실행은 source evidence 단계에서 멈췄다(`exit=1`). 바꾼 파이썬 블록이 `os`를 import하지 않았다. 고친 뒤 위 두 실행이 통과했다. 행렬 검증은 numpy가 있는 호스트 `/usr/bin/python3`로 돌린다(컨테이너 파이썬에는 numpy가 없다).
+
+**20 dB에서 원본 38.3 대 패치 10.2 Mb/s — 원인은 RLF 해제가 측정 창 안에 들어온 것이다.** 20 dB는 int16 오버플로(§8.1)로 rank-2 PDSCH의 약 52%가 NACK인 실패 조건이다. 같은 NACK 비율에서 처리량이 4배 다른 이유를 찾으려고 원본·패치를 번갈아 2쌍, 그리고 측정 창을 공중 시간 기준으로 맞바꾼 대조 2회를 돌렸다(모두 DL UDP `-R`, 200M, GPU에 다른 프로세스 없음).
+
+| 실행 | 모듈 | iperf 창(벽시계) | 실시간 배율 | NACK | TB당 크기 | 0 Mb/s 구간 | 0이 아닌 구간 평균(공중) | RLF → 해제 (iperf 시작 기준, 벽시계) |
+|---|---|---|---|---|---|---|---|---|
+| `104834Z` | 원본 | 15 s | 0.277 | 52.9% | 10.8 kB | 0 | 37.3 Mb/s | 없음 |
+| `105012Z` | 패치 | 15 s | 1.000 | 51.8% | 10.9 kB | 6 | 38.3 | 5.1 s → 9.1 s |
+| `105150Z` | 원본 | 15 s | 0.276 | 46.8% | 10.8 kB | 0 | 42.5 | 없음 |
+| `105328Z` | 패치 | 15 s | 1.000 | 52.8% | 10.8 kB | 3 | 36.5 | 7.7 s → 11.7 s |
+| `105506Z` | 원본 | **54 s**(공중 약 15 s) | 0.276 | 53.0% | 10.7 kB | 0 | 37.4 | 없음 |
+| `105705Z` | 패치 | **4 s**(원본 15 s 창과 같은 공중 시간) | 1.000 | 54.1% | 10.8 kB | 0 | 41.7 | 없음 |
+| `082132Z`(§8.5) | 원본 | 15 s | 0.277 | 52.8% | 10.8 kB | 0 | 38.3 | 5.9 s → **20.4 s** (창 밖) |
+| `082311Z`(§8.5) | 패치 | 15 s | 1.000 | 51.8% | 10.8 kB | 6 | 39.5 | 5.6 s → 9.6 s |
+
+- **링크 자체는 같다.** NACK 비율(47–54%), rank 2, TB당 크기(10.7–10.9 kB)가 모드와 무관하게 같다. 그래서 HARQ 재전송 타이밍, 링크 적응(OLLA), rank 폴백은 원인이 아니다. 해제 전 구간의 처리량(패치 36.5–39.5 Mb/s)도 원본의 공중 시간 처리량(37.3–42.5 Mb/s)과 같다.
+- **차이는 해제다.** 20 dB에서는 KO(NACK·DTX)가 길게 몰려 온다. NACK의 절반 이상이 20회 이상 연속된 묶음 안에 있고, 가장 긴 묶음은 두 모드 모두 79–99회다. 독립적인 52% NACK이라면 100회 연속은 사실상 불가능하므로(0.52¹⁰⁰), 오버플로 구간이 몰려서 생긴다(`log2_maxh` 전환, §8.1). gNB는 KO가 100회 연속되면 `RLF detected. Cause: 100 consecutive HARQ-ACK KOs`를 찍고 4,000 ms 타이머 뒤 UE를 해제한다. **이 타이머는 슬롯으로 센다**: 원본 `082132Z`에서 RLF부터 만료까지 벽시계 14.46 s = 4.0 s ÷ 0.2766, 패치에서는 정확히 4.000 s다.
+  - 패치(실시간): 15 s 창 세 번 모두 5–8 s에 RLF가 나고 4 s 뒤 해제되어, 창의 마지막 3–6 s가 0 Mb/s다. 이것이 평균을 10–12 Mb/s로 끌어내린다.
+  - 원본(0.277배): RLF가 난 한 번(`082132Z`)도 해제가 벽시계 20.4 s, 창이 끝난 뒤였다. 나머지 원본 세 번은 RLF 자체가 없었다.
+  - 대조: 패치를 4 s 창으로 돌리면 RLF 전에 끝나 41.7 Mb/s, 원본과 같다.
+- **판정:** 38.3 대 10.2 Mb/s는 링크 성능의 차이가 아니다. 느린 원본 실행에서는 RLF 해제가 측정 창 밖으로 밀려나 보이지 않았을 뿐이다. 실시간에서는 20 dB의 오버플로 묶음이 몇 초 안에 RLF와 UE 해제로 이어진다. 즉 20 dB는 처리량이 낮은 조건이 아니라 **연결이 끊기는 조건**이다.
+- **확인하지 못한 것:** RLF가 실시간에서 더 잘 나는지는 정하지 못했다. 패치 4/4, 원본 1/4이지만, 원본 54 s 창(공중 약 15 s)에서도 RLF가 없었고, 가장 긴 묶음(98–99회)이 두 모드 모두 임계값 100 바로 아래에 있어 표본이 작다.
+
+드라이버와 원시 데이터: `~/ocudu-work/perf-platform/oai2x2-f/`(git 밖).
+
+### 8.7 24 dB back-off 대신 OAI 로컬 수정 — 2-layer 등화기 int16 오버플로 (2026-09-28, 워크스테이션 RTX 5090)
+
+**무엇을 하려 했나.** §8.1의 결함 때문에 rank 2는 gNB 송신을 24 dB 낮춰야만 동작했다. 안전한 값은 채널 행렬에 따라 달랐고(20 dB는 NACK 52%, §8.6에서는 RLF로 UE가 끊긴다), OCUDU 기본값(12 dB)으로는 쓸 수 없었다. 방침은 OAI를 고치되 **핀 트리는 건드리지 않고 빌드할 때 로컬 패치를 적용**하는 것이다. 업스트림 제보는 마지막에 한다.
+
+**어디서 깨지는지 — 코드 위치.** `nr_dlsch_mmse`(`openair1/PHY/NR_UE_TRANSPORT/nr_dlsch_demodulation.c`)는 A = HᴴH를 만든 뒤 `det(A)`와 `adj(A)·(Hᴴy)`(= `det(A)·x`)를 `mult_complex_vectors`로 계산한다. 이 함수(`openair1/PHY/TOOLS/tools_defs.h:337`)는 32비트 곱을 `shift`만큼 민 뒤 **하위 16비트만 남긴다**. 포화(saturation)가 없어서 범위를 넘으면 값이 감긴다(wrap). shift는 슬롯마다 정해지는 `log2_maxh − 1`이다. 수신 전력이 `log2_maxh` 한 단계 안에서 높은 쪽에 있으면 `det`와 출력이 int16을 넘는다. 그러면 등화된 심볼과 LLR 기준값(`det × QAM 진폭`)의 부호가 뒤집힌다. §8.1에서 본 "float ZF × 48.8k"는 `det` 자체가 int16을 넘은 값이었다.
+
+**수정 (`scripts/native/patches/oai-nr-dlsch-mmse-scale.patch`, sha256 `1856ac0f…`).** shift를 데이터로 정한다. 모든 중간 곱은 대략 `2·max|A|²·|x|` 이하이므로, `max|A|² >> s ≤ 2¹³`이 되는 s를 쓰고, stock shift가 충분하면 stock shift를 그대로 쓴다. 출력과 LLR 기준값이 같은 비율로 줄어서 LLR의 기하는 바뀌지 않는다. 추가 shift가 필요 없는 조건에서는 stock과 비트 단위로 같다. 이 함수는 다중 레이어일 때만 불린다(`nl > 2 || (nl == 2 && !do_ml)`, 같은 파일 1021행). 그래서 rank 1과 1×1 경로는 코드상 영향이 없다.
+
+**빌드.** `scripts/native/build-oai-ue-local.sh`는 핀 트리를 `git clone --shared`로 `src/oai-local`에 복제하고, 기록된 UE 패치를 적용해 `builds/oai-zmq-local`에 빌드한다(`build-oai-ue.sh`와 같은 플래그·타깃, 일반 사용자 uid 1001). `BUILD-MANIFEST.txt`에 핀, 패치 sha256, `nr-uesoftmodem` sha256을 적는다. 핀 트리와 `builds/oai-zmq-release`는 그대로다. 모든 로컬 OAI 패치와 해시는 `scripts/native/oai-local-patches.sh` 한곳에 있다(ZMQ 패치 포함).
+
+**등화기 수준 검증 (계측 빌드).** 계측 클론 `~/ocudu-work/oai-debug`(float ZF와 비교해 부호 오류율을 찍는 `M63STAT`)에 같은 패치를 얹어 다시 빌드했다(`~/ocudu-work/oai-debug-build`, uid 1001).
+
+| 조건 | 부호 오류율 | 최대 \|출력\| | rank-2 NACK |
+|---|---|---|---|
+| stock, 20 dB (`063013Z`, §8.1) | 3.0–15.2% | 31.4k (int16 끝) | 52% |
+| **패치, 20 dB** (`110618Z`) | **0.0000** | 8.8k | **0%** (148.3 Mb/s) |
+| **패치, 12 dB** (`110757Z`) | **0.0000** | 6.6–7.3k | 1.2% |
+
+**라이브 검증.** stock UE(`builds/oai-zmq-release`)와 패치 UE를 번갈아 돌렸다. 모든 실행이 실시간(배율 0.999–1.000)이었고, 패치 ZMQ 모듈을 썼으며, GPU에 다른 프로세스는 없었다. 1차는 빌드 디렉터리를 직접 지정했고, 2차는 게이트 기본값(`OCUDU_NATIVE_OAI_UE` 미지정 → local, `=stock`으로 opt-out)으로 돌렸다.
+
+| 조건 | stock UE | 패치 UE | 판정 |
+|---|---|---|---|
+| 유니터리 H, **20 dB** | NACK 50.8% / 54.2%, RLF 2회 / 2회, **11.7 / 11.1 Mb/s** | NACK **0% / 0%**, RLF 0, **148.3 / 148.2 Mb/s** | 결함 해소 |
+| 유니터리 H, **12 dB**(OCUDU 기본) | NACK 1.3% / 1.4%, TB 12.5 kB, **96.2 / 96.1 Mb/s** | NACK 1.1% / 1.2%, TB 15.3–15.5 kB, **119.1 / 117.5 Mb/s** | 패치가 +22% |
+| 유니터리 H, 24 dB | NACK 0%, 148.25 Mb/s | NACK 0%, 148.21 Mb/s | 같음 (추가 shift 불필요) |
+| 기준 H(조건수 1.6), **12 dB** | rank 2 66% / 66%, UE의 RI=1 보고 247 / 266회, **71.0 / 70.6 Mb/s** | rank 2 100% / 100%, RI=1 보고 4 / 4회, **90.4 / 90.9 Mb/s** | 패치가 +28% |
+| 기준 H, 28 dB | rank 2 38% / 39%, 102.4 / 102.6 Mb/s | rank 2 52% / 56%, 112.8 / 115.3 Mb/s | RI 요동은 양쪽에 남는다 |
+| rank 1 고정, 24 dB | 74.11 Mb/s, TB 크기 같음 | 74.08 Mb/s | 영향 없음 (코드 경로 밖) |
+
+- 유니터리 H의 모든 실행(12/20/24 dB, 양쪽)에서 같은 실행의 행렬 검증 `matrix_capture_status=passed`.
+- **12 dB 유니터리에서 stock이 느린 이유:** 두 실행의 CSI 보고 분포는 같다(`1001111` 3,733 대 3,726회). 차이는 초반에 있다. stock은 첫 1/5 구간에 NACK 72회(패치 36회)가 몰리고, 이후 구간은 비슷하다(29–33 대 24–28). 그 뒤 gNB가 고른 TB 크기가 실행 끝까지 한 단계 낮게 유지된다(13.3k 대 16.4k). 초반 오버플로 묶음이 gNB의 링크 적응(OLLA) 오프셋을 끌어내리고 천천히만 회복되는 것으로 해석한다. 2회 모두 재현했다.
+- **12 dB 기준 H에서 RI 차이(재현 2/2, 원인 미확인):** RI는 UE가 CSI-RS로 따로 계산한다(`csi_rx.c:431` `nr_csi_rs_ri_estimation`, 자체 `log2_maxh`와 행렬식). 이 코드는 패치가 건드리지 않는다. 그런데도 stock UE만 RI=1을 약 7% 보고한다. 간접 결합으로 보이지만 UE의 RI 로그가 이 로그 수준에서 찍히지 않아 메커니즘은 분리하지 못했다.
+- **28 dB 기준 H의 RI 요동**은 오버플로와 무관하다(NACK 0%). OAI의 RI 판정(조건수 5 dB 임계값) 문제로 남는다.
+
+**게이트 기본값.** `run-ocudu-oai-2x2.sh`는 이제 패치 UE를 기본으로 쓴다(`OCUDU_NATIVE_OAI_UE=local`). `=stock`으로 되돌릴 수 있고, `OAI2X2_NRUE_DIR`을 주면 그것이 우선한다. local 빌드는 manifest의 핀·패치·바이너리 해시가 맞을 때만 쓴다. `run-params.txt`에 `oai_ue`와 `oai_ue_sha256`을 남긴다. OAI 1×1 게이트는 핀 UE를 그대로 쓴다(1-layer라 이 패치의 경로 밖이다).
+
+**반복 점검 — `scripts/native/check-oai-local-patches.sh [--probe]`.** 로컬 패치마다 (1) 기록된 sha256, (2) 핀 트리에 아직 적용되는지(`patch --dry-run`), (3) 빌드 산출물의 manifest가 핀·패치와 맞는지를 확인한다. `--probe`는 짧은 2×2 실행 4회(약 6분, GPU 단독)로 각 패치가 없을 때 결함이, 있을 때 수정이 보이는지 확인한다. 기준: ZMQ는 stock 실시간 배율 < 0.5, 패치 > 0.9. MMSE는 20 dB에서 stock NACK > 20%, 패치 < 5%.
+
+| 점검 | 결과 |
+|---|---|
+| 정적 7항목 | 모두 PASS |
+| 음성 대조: 패치 문맥 한 줄을 바꾼 사본 | sha256과 적용 두 항목 FAIL, exit 1 |
+| `--probe` | ZMQ stock 0.2768 → 패치 0.9991, MMSE stock NACK 0.5437 → 패치 0.0, `result=pass` |
+
+**남은 것.** 12 dB에서도 NACK가 약 1.2% 남는다(패치 후 부호 오류 0, 오버플로는 아님). 원인은 보지 않았다. 12 dB 기준 H의 RI 차이는 메커니즘을 찾지 못했다. 기준 H의 RI 요동은 OAI RI 판정의 별도 문제다. 업스트림 제보(OAI 두 건: MMSE 오버플로, ZMQ 응답 대기)는 마지막에 한다.
+
+드라이버·원시 데이터: `~/ocudu-work/perf-platform/oai2x2-f/`(git 밖). 계측 클론 `~/ocudu-work/oai-debug`에는 계측 코드와 이 패치가 함께 적용되어 있다.
+
