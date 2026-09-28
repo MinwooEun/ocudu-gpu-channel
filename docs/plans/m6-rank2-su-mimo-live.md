@@ -483,4 +483,41 @@ docker exec ocudu-minwoo bash -c 'cd ~minwoo/ocudu-work/ocudu-ulmimo && env HOME
 | OAI 1x1 (`150012Z`) | **실패 (새 판정)** | 0.595 (50/84) | — | — | — |
 | srsUE 1x1 | 통과 | — | — | — | — |
 
-**OAI 1x1의 NACK — 새 판정이 잡은 것, 원인 미확정.** attach·PDU·ping은 통과하지만 DL NACK이 높다. UE RX 이득을 바꿔 보면 0 dB 77%(101/131), −12 dB 60%, −24 dB 39%(18/46)로 줄지만 없어지지 않는다. 실패는 UE 전용 search space(ss_id 2)의 64QAM PDSCH에 몰려 있고, ss_id 1의 QPSK 첫 전송은 모두 복호된다. 1x1 fixture는 CSI-RS가 꺼져 있어 UE가 CQI 0을 보고하고 gNB가 링크 적응을 하지 못한다. UE가 본 SSB SINR은 34.5 dB라 64QAM이 실패할 신호 조건이 아니다. 2x2 게이트(패치 UE, 수신 2안테나, CSI-RS 켜짐)는 같은 기본값에서 NACK 0이다. 차이 후보는 CSI-RS/CQI 부재에 따른 MCS, UE 바이너리(1x1은 stock `oai-zmq-release`, 2x2는 `oai-zmq-local`), 수신 안테나 수다. 가르지 않았다.
+**OAI 1x1의 NACK — 새 판정이 잡은 것, 원인 미확정.** attach·PDU·ping은 통과하지만 DL NACK이 높다. UE RX 이득을 바꿔 보면 0 dB 77%(101/131), −12 dB 60%, −24 dB 39%(18/46)로 줄지만 없어지지 않는다. 실패는 UE 전용 search space(ss_id 2)의 64QAM PDSCH에 몰려 있고, ss_id 1의 QPSK 첫 전송은 모두 복호된다. 1x1 fixture는 CSI-RS가 꺼져 있어 UE가 CQI 0을 보고하고 gNB가 링크 적응을 하지 못한다. UE가 본 SSB SINR은 34.5 dB라 64QAM이 실패할 신호 조건이 아니다. 2x2 게이트(패치 UE, 수신 2안테나, CSI-RS 켜짐)는 같은 기본값에서 NACK 0이다. 차이 후보는 CSI-RS/CQI 부재에 따른 MCS, UE 바이너리(1x1은 stock `oai-zmq-release`, 2x2는 `oai-zmq-local`), 수신 안테나 수다. 가르지 않았다. → §8.11에서 원인을 찾았다.
+
+
+### 8.11 OAI 1x1 NACK의 원인: 보상되지 않은 CFO (2026-09-28, 워크스테이션 RTX 5090, `integration-0928`)
+
+**무엇을 하려 했나.** §8.10의 새 판정이 잡은 OAI 1x1 게이트의 DL NACK 약 60%(ping은 통과)를 없애는 것. 후보로 적어 둔 세 가지(CSI-RS/CQI, UE 바이너리, 수신 안테나 수)를 하나씩 가르기 전에, 1x1과 2x2 게이트가 **채널도 다르다**는 점을 먼저 봤다.
+
+**어디서 터졌나.** 1x1 게이트는 srsUE 게이트와 같은 legacy 토폴로지(`examples/topology.ocudu-docker.cuda.yaml`)를 쓴다. 이 채널에는 일부러 넣은 **CFO 125 Hz**가 있다(TDL 1탭 −3 dB, 위상 0.125 rad, CFO 125 Hz). 2x2 fixture(unitary/reference 행렬)에는 CFO가 없다. 증상(QPSK 첫 전송은 복호, 64QAM만 실패, SSB SINR 34.5 dB)은 심볼마다 위상이 도는 잔여 CFO와 맞는다: 15 kHz에서 125 Hz는 심볼당 약 0.056 rad, DMRS에서 10심볼 떨어지면 0.5 rad 넘게 돈다.
+
+**추적 (소스, 핀 `2b69bde6`).**
+- UE는 초기 동기에서 주파수 오프셋을 잰다. 로그: `Got synch: ... carrier off 250 Hz`(PSS 격자라 거칠다).
+- `--cont-fo-comp`가 꺼져 있으면(기본 0) UE는 이 오프셋을 **라디오 재튜닝**(`nrue_ru_set_freq`, `executables/nr-ue.c:222-224`)으로만 고친다. 그런데 ZMQ 라디오의 `zmq_set_freq`는 아무것도 하지 않는다(`radio/zmq/zmq_radio.cpp:270-273`, `return 0`). TRS 기반 보정(`csi_rx.c:1027`, `trs_freq_correction`)도 같은 재튜닝 경로이고, 1x1은 CSI-RS가 꺼져 있어 애초에 돌지 않는다.
+- 게이트가 주던 `--ue-fo-compensation`은 초기 동기의 추정 플래그일 뿐(`nr_initial_sync.c:417`) 샘플을 돌리지 않는다.
+- 소프트웨어 보정은 `--cont-fo-comp`가 켜졌을 때만 일어난다: 매 DL 심볼 FFT 전에 `nr_fo_compensation`으로 샘플을 돌리고(`slot_fep_nr.c:105-113`), PBCH로 오프셋을 계속 추적하며(`phy_procedures_nr_ue.c:1020-1032`), UL은 그만큼 미리 보상한다(`nr-ue.c:354-361`).
+- 결론: ZMQ 경로에서는 채널 CFO가 DL 샘플에서 **한 번도 제거되지 않았다.** srsUE는 자체 CFO 추적으로 같은 채널을 통과한다.
+- §8.10의 수신 이득 의존성(0 dB 77% → −24 dB 39%)은 원인이 아니었다: FO 보상을 켜면 0 dB에서도 NACK 0이다.
+
+**수정 (게이트 설정, OAI 소스 무수정).** `oai-gate-defaults.sh`에 `oai_gate_ue_fo_comp`를 추가해 OAI 1x1·2x2 게이트가 UE에 `--cont-fo-comp 1`을 기본으로 준다. `OCUDU_NATIVE_OAI_UE_CONT_FO_COMP=0|1|2|3`으로 바꾸거나 끌 수 있고(0 = 끔), 적용 값은 `gate-defaults.log`, 1x1 `run-params.json`(`ue_cont_fo_comp`), 2x2 `run-params.txt`, `nrue-radio.log`에 남는다. 로컬 패치가 아니라 기존 UE 옵션이므로 `oai-local-patches.lock.json`에는 넣지 않았다.
+
+**라이브 (GPU에 다른 프로세스 없음, UE RX 이득 −12 dB 기본, 게이트 25 s 창).** HARQ 비트 수가 적은 것은 게이트 트래픽이 attach + ping 3회뿐이기 때문이다.
+
+| 실행 | `cont_fo_comp` | DL NACK | 결과 |
+|---|---|---|---|
+| 기준 (`150012Z`, §8.10) | 끔 | 50/84 (0.595) | 실패 |
+| 기준 재현 (`k-fo0-b`) | 끔 | 45/75 (0.600) | 실패 |
+| `k-oai1x1-fo1`, `k-fo1-b`, `k-fo1-c` | 1 | 0/29, 0/29, 0/31 | 통과 |
+| `k-fo3-a`, `k-fo3-b` (UL 사전 보상 없음) | 3 | 0/27, 0/29 | 통과 |
+| `k-fo1-g0` (UE RX 이득 0 dB) | 1 | 0/29 | 통과 |
+| **기본값만 (`k-def-a`, `k-def-b`)** | 1 (기본) | **0/29, 0/27** | **통과**, 실시간 |
+| 음성 대조군: 끔 (`k-off`) | 0 | 46/74 (0.622) | 실패 (판정이 잡음) |
+| 회귀: srsUE 1x1 (`k-srsue`) | — | — | 통과 |
+| 회귀: OAI 2x2 DL rank 2, 12 dB (`151800Z`) | 1 (기본) | 0.0 | 통과, 148.3 Mb/s, 실시간 0.9998 |
+
+**가르지 않은 것.** CFO 하나로 NACK이 전부 사라져서 CSI-RS 켜기, 패치 UE, 수신 1안테나 2x2, 고정 MCS 실행은 돌리지 않았다. 1x1 게이트는 여전히 CSI-RS 없이 CQI 0으로 돈다(링크 적응 없음). 게이트 트래픽이 적어(HARQ 비트 약 30) NACK 1% 수준의 차이는 이 게이트로 볼 수 없다.
+
+**다른 게이트에 주는 영향.** Sionna 등 도플러·CFO가 있는 채널에 OAI UE를 붙이는 실행은 모두 같은 문제를 겪는다. `--cont-fo-comp`는 이제 두 OAI 게이트의 기본값이다. S8·S11·S12의 OAI 1x1 "통과"는 이 채널에서 DL NACK이 높았던 실행이다(실시간 여부·브로커 지연 수치는 유효). S12의 Spark 2x2 12 dB NACK 89%는 CFO가 없는 2x2 fixture에서 난 것이라 이 원인과 별개다(수신 레벨 문제, `oai-zmq-rx-gain.patch`).
+
+실행 드라이버와 로그는 `~/ocudu-work/perf-platform/int-j/k-*.log`(git 밖).
