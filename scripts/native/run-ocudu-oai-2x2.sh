@@ -19,7 +19,11 @@ set -euo pipefail
 #   OAI2X2_IPERF_RATE     DL UDP offered rate (default 80M)
 #   OAI2X2_BROKER_EXTRA   extra broker arguments (e.g. wire capture)
 #   OAI2X2_UE_EXTRA       extra nr-uesoftmodem arguments
-#   OAI2X2_NRUE_DIR       OAI build directory (default builds/oai-zmq-release)
+#   OCUDU_NATIVE_OAI_UE   local (default: builds/oai-zmq-local, pinned OAI + the
+#                         local UE PHY patches, e.g. the 2-layer MMSE int16 fix)
+#                         or stock (builds/oai-zmq-release, the pinned build)
+#   OAI2X2_NRUE_DIR       explicit nr-uesoftmodem build directory; overrides
+#                         OCUDU_NATIVE_OAI_UE
 #   OCUDU_NATIVE_OAI_ZMQ_MODULE  patched (default: builds/oai-zmq-s9, the S9
 #                         reply-poll driver) or stock (builds/oai-zmq-release)
 #   OCUDU_NATIVE_OAI_SHLIBPATH  explicit ZMQ radio module directory; overrides
@@ -68,6 +72,9 @@ done
 # Exports OCUDU_NATIVE_OAI_SHLIBPATH for the inner script (patched by default).
 resolve_oai_zmq_module "${native_root}" || usage_error "OAI ZMQ module selection failed"
 printf 'oai zmq module: %s %s\n' "${OAI_ZMQ_MODULE_VARIANT}" "${OCUDU_NATIVE_OAI_SHLIBPATH}"
+# Exports OAI2X2_NRUE_DIR for the inner script (the locally patched UE by default).
+resolve_oai_ue_build "${native_root}" || usage_error "OAI UE build selection failed"
+printf 'oai ue: %s %s\n' "${OAI_UE_VARIANT}" "${OAI2X2_NRUE_DIR}"
 
 exec {lock_fd}<"${script_dir}/run-ocudu-oai-1x1.sh"
 flock -n "${lock_fd}" || usage_error "another native OAI gate is running"
@@ -104,6 +111,7 @@ cp "${config_dir}"/* "${report_dir}/"
     "${timestamp}" "${OAI2X2_PATH}" "${max_rank}" "${csi_rs}" "${OAI2X2_MAX_UE_MCS:-}" "${OAI2X2_TX_BACKOFF_DB:-}"
   printf 'topology=%s\nlabel=%s\nue_extra=%s\nbroker_extra=%s\nnrue_dir=%s\n' \
     "${topology}" "${OAI2X2_LABEL:-}" "${OAI2X2_UE_EXTRA:-}" "${OAI2X2_BROKER_EXTRA:-}" "${OAI2X2_NRUE_DIR:-}"
+  printf 'oai_ue=%s\noai_ue_sha256=%s\n' "${OAI_UE_VARIANT}" "${OAI_UE_SHA256}"
   printf 'oai_zmq_module=%s\noai_shlibpath=%s\noai_zmq_module_sha256=%s\n' \
     "${OAI_ZMQ_MODULE_VARIANT}" "${OCUDU_NATIVE_OAI_SHLIBPATH}" "${OAI_ZMQ_MODULE_SHA256}"
   printf 'channel_head=%s\nchannel_dirty=%s\n' "$(git -C "${repo_root}" rev-parse HEAD)" \

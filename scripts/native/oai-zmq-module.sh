@@ -16,9 +16,11 @@
 #   OCUDU_NATIVE_OAI_SHLIBPATH  the directory to pass as shlibpath
 #   OAI_ZMQ_MODULE_SHA256   sha256 of liboai_zmqdevif.so in that directory
 
-OAI_ZMQ_PIN="2b69bde6aeafe892cda1531a0f0cbba2e37792cd"
-OAI_ZMQ_PATCH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/patches/oai-zmq-tx-reply-poll.patch"
-OAI_ZMQ_PATCH_SHA256="b2f1e51bfe38385fefcabbd7e9675278f45c5ab165af33429cb19772b5dbb9e3"
+# shellcheck source=oai-local-patches.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/oai-local-patches.sh"
+OAI_ZMQ_PIN="${OAI_LOCAL_PIN}"
+OAI_ZMQ_PATCH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/patches/${OAI_LOCAL_ZMQ_PATCHES[0]%%:*}"
+OAI_ZMQ_PATCH_SHA256="${OAI_LOCAL_ZMQ_PATCHES[0]##*:}"
 
 resolve_oai_zmq_module()
 {

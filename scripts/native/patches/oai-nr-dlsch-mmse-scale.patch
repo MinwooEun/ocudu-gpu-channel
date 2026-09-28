@@ -1,0 +1,78 @@
+OAI nrUE (pin 2b69bde6): keep the 2-layer MMSE/ZF equaliser inside int16.
+nr_dlsch_mmse computes det(A) and adj(A)*(H^H y) = det(A)*x (A = H^H H) with
+mult_complex_vectors, which truncates (product >> shift) to 16 bits instead of
+saturating. With the stock shift (log2_maxh - 1) the products wrap once the
+received power is high enough: the equalised symbols and the LLR thresholds
+change sign and rank-2 PDSCH fails (docs/plans/m6-rank2-su-mimo-live.md 8.1).
+The shift is now chosen from the data (max|A|^2 >> s <= 2^13); output and
+thresholds scale together, and the stock shift is kept whenever it suffices.
+Apply in the OAI source root: patch -p1 < oai-nr-dlsch-mmse-scale.patch
+
+--- a/openair1/PHY/NR_UE_TRANSPORT/nr_dlsch_demodulation.c
++++ b/openair1/PHY/NR_UE_TRANSPORT/nr_dlsch_demodulation.c
+@@ -579,6 +579,40 @@
+     }
+   }
+ 
++  int fp_flag = 1;//0: float point calc 1: Fixed point calc
++
++  // The fixed-point path computes det(A) and adj(A)*(H^H y) = det(A)*x with
++  // mult_complex_vectors, which keeps only 16 bits of each (product >> shift)
++  // and wraps instead of saturating. With the stock shift (log2_maxh - 1) the
++  // products leave int16 once the received power is high enough, so the
++  // equalised symbols and the LLR thresholds (det * QAM amplitude) change
++  // sign. Pick the shift from the data instead: every product is bounded by
++  // about 2 * max|A|^2 * |x|, so shift until max|A|^2 >> s <= 2^13. Output
++  // and thresholds scale together, so the LLR geometry is unchanged; when no
++  // extra shift is needed the result is bit-identical to the stock shift.
++  int shift_eq = shift - (fp_flag == 1 ? 1 : 0);
++  {
++    int amax = 0;
++    for (int rtx = 0; rtx < nl; rtx++)
++      for (int ctx = 0; ctx < nl; ctx++) {
++        const c16_t *a = conjH_H_elements[0][ctx][rtx];
++        for (int i = 0; i < 12 * (int)nb_rb_0; i++) {
++          const int m = cmax(abs(a[i].r), abs(a[i].i));
++          if (m > amax)
++            amax = m;
++        }
++      }
++    const int64_t a2 = (int64_t)amax * amax;
++    int need = 0;
++    while ((a2 >> need) > (1 << 13))
++      need++;
++    // mult_complex_vectors takes a shift of at most 16.
++    if (need > 16)
++      need = 16;
++    if (need > shift_eq)
++      shift_eq = need;
++  }
++
+   //Compute the inverse and determinant of the H^*H matrix
+   //Allocate the inverse matrix
+   c16_t *inv_H_h_H[nl][nl];
+@@ -588,14 +622,13 @@
+     for (int ctx = 0; ctx < nl; ctx++)
+       inv_H_h_H[ctx][rtx] = inv_H_h_H_data[ctx][rtx];
+ 
+-  int fp_flag = 1;//0: float point calc 1: Fixed point calc
+   nr_matrix_inverse(nl,
+                     conjH_H_elements[0], // Input matrix
+                     inv_H_h_H, // Inverse
+                     determ_fin, // determin
+                     nb_rb_0,
+                     fp_flag, // fixed point flag
+-                    shift - (fp_flag == 1 ? 1 : 0)); // the out put is Q15
++                    shift_eq); // the out put is Q15
+ 
+   // multiply Matrix inversion pf H_h_H by the rx signal vector
+   c16_t outtemp[12 * nb_rb_0] __attribute__((aligned(32)));
+@@ -613,7 +646,7 @@
+                            rxdataF_comp[ctx],
+                            outtemp,
+                            sizeofArray(outtemp),
+-                           shift - (fp_flag == 1 ? 1 : 0));
++                           shift_eq);
+       nr_a_sum_b(rxdataF_zforcing[rtx], outtemp, nb_rb_0); // a = a + b
+     }
+ #ifdef DEBUG_DLSCH_DEMOD
