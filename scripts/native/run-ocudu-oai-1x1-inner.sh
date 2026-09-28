@@ -228,7 +228,12 @@ start_group()
   setsid stdbuf -oL -eL "$@" >"${output}" 2>&1 &
   local pid="$!"
   local pgid
-  pgid="$(ps -o pgid= -p "${pid}" | tr -d '[:space:]')"
+  # setsid runs in the background child; poll until it has made the group.
+  for _ in $(seq 1 50); do
+    pgid="$(ps -o pgid= -p "${pid}" | tr -d '[:space:]')"
+    [[ "${pgid}" == "${pid}" ]] && break
+    sleep 0.02
+  done
   [[ "${pid}" =~ ^[1-9][0-9]*$ && "${pgid}" == "${pid}" ]] || usage_error "invalid process group for ${name}"
   process_names+=("${name}")
   process_pids+=("${pid}")
@@ -449,6 +454,10 @@ PY
   local oai_radio=("${oai_sampling[@]}" -r "${OCUDU_NATIVE_OAI_UE_PRB:-106}" --numerology 0 --band 3
     -C 1842500000 --ssb "${OCUDU_NATIVE_OAI_UE_SSB:-486}" --CO -95000000)
   [[ -n "${OCUDU_NATIVE_OAI_UE_RADIO_ARGS:-}" ]] && read -r -a oai_radio <<<"${OCUDU_NATIVE_OAI_UE_RADIO_ARGS}"
+  # The UE writes nrL1_UE_stats-0.log (and friends) into its working directory
+  # and asserts if it cannot. Inside the userns the gate's cwd may belong to an
+  # unmapped uid, so start the UE from the log directory the gate owns.
+  pushd "${log_dir}" >/dev/null
   start_group nrue "${log_dir}/nrue.log" nsenter --net="/run/netns/${nested_name}" -- \
     setpriv --bounding-set -sys_nice \
     ${OCUDU_NATIVE_NRUE_WRAPPER:-} "${nrue}" -O "${config_dir}/nrue.conf" \
@@ -459,6 +468,7 @@ PY
     --loader.oai_zmqdevif.shlibpath "${oai_build}" \
     --zmq.'[0]'.tx_channels tcp://10.201.0.2:2101 \
     --zmq.'[0]'.rx_channels tcp://10.201.0.1:2100
+  popd >/dev/null
   nrue_pid="${started_pid}"
 
   local deadline=$((SECONDS + 30))
