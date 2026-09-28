@@ -84,11 +84,33 @@ oai_gate_ue_rx_gain()
   export OAI_GATE_UE_RX_GAIN_DB
 }
 
+# oai_gate_ue_fo_comp
+#   The OAI nrUE corrects its carrier offset by retuning the radio
+#   (nrue_ru_set_freq), and the ZMQ radio's set_freq is a no-op, so without
+#   continuous FO compensation a channel CFO is never removed from the DL
+#   samples. The legacy 1x1 channel carries 125 Hz: the phase drifts ~0.06 rad
+#   per symbol away from the DMRS, QPSK survives and 64QAM PDSCH NACKs ~60%
+#   (M6 §8.11). --cont-fo-comp 1 rotates every DL symbol in software
+#   (slot_fep_nr.c) by the PBCH-tracked offset and pre-compensates the UL.
+#   OCUDU_NATIVE_OAI_UE_CONT_FO_COMP=0|1|2|3 overrides it (0 disables).
+#   Exports OAI_GATE_UE_CONT_FO_COMP (empty when disabled).
+oai_gate_ue_fo_comp()
+{
+  local value="${OCUDU_NATIVE_OAI_UE_CONT_FO_COMP:-1}"
+  if [[ ! "${value}" =~ ^[0-3]$ ]]; then
+    printf 'error: OCUDU_NATIVE_OAI_UE_CONT_FO_COMP must be 0, 1, 2 or 3\n' >&2
+    return 1
+  fi
+  OAI_GATE_UE_CONT_FO_COMP=""
+  [[ "${value}" != 0 ]] && OAI_GATE_UE_CONT_FO_COMP="${value}"
+  export OAI_GATE_UE_CONT_FO_COMP
+}
+
 # oai_gate_defaults_line: one log line naming every default this run applied.
 oai_gate_defaults_line()
 {
-  printf 'event=oai_gate_defaults oai_zmq_module=%s ue_rx_gain_db=%s oai_ue=%s platform=%s gnb_cpus=%s broker_cpus=%s nrue_cpus=%s mps=%s\n' \
-    "${OAI_ZMQ_MODULE_VARIANT:-?}" "${OAI_GATE_UE_RX_GAIN_DB:-none}" "${OAI_UE_VARIANT:-n/a}" "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" \
+  printf 'event=oai_gate_defaults oai_zmq_module=%s ue_rx_gain_db=%s ue_cont_fo_comp=%s oai_ue=%s platform=%s gnb_cpus=%s broker_cpus=%s nrue_cpus=%s mps=%s\n' \
+    "${OAI_ZMQ_MODULE_VARIANT:-?}" "${OAI_GATE_UE_RX_GAIN_DB:-none}" "${OAI_GATE_UE_CONT_FO_COMP:-off}" "${OAI_UE_VARIANT:-n/a}" "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" \
     "${OCUDU_NATIVE_GNB_CPUS:-any}" "${OCUDU_NATIVE_BROKER_CPUS:-any}" "${OCUDU_NATIVE_NRUE_CPUS:-any}" \
     "$([[ -n "${CUDA_MPS_PIPE_DIRECTORY:-}" ]] && echo on || echo off)"
 }

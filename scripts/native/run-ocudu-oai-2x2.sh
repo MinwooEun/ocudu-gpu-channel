@@ -31,6 +31,7 @@ set -euo pipefail
 #                         bound (NACK > 10%, PUSCH KO > 10%); for runs meant to fail
 #   OAI2X2_BROKER_EXTRA   extra broker arguments (e.g. wire capture)
 #   OAI2X2_UE_EXTRA       extra nr-uesoftmodem arguments
+#   OCUDU_NATIVE_OAI_UE_CONT_FO_COMP  UE --cont-fo-comp mode, 1 (default) | 0 (off) | 2 | 3
 #   OCUDU_NATIVE_OAI_UE   local (default: builds/oai-zmq-local, pinned OAI + the
 #                         local UE PHY patches, e.g. the 2-layer MMSE int16 fix)
 #                         or stock (builds/oai-zmq-release, the pinned build)
@@ -111,6 +112,7 @@ oai_gate_platform || usage_error "platform profile resolution failed"
 # Exports OCUDU_NATIVE_OAI_SHLIBPATH for the inner script (patched by default).
 resolve_oai_zmq_module "${native_root}" || usage_error "OAI ZMQ module selection failed"
 oai_gate_ue_rx_gain || usage_error "UE RX gain selection failed"
+oai_gate_ue_fo_comp || usage_error "UE FO compensation selection failed"
 printf 'oai zmq module: %s %s\n' "${OAI_ZMQ_MODULE_VARIANT}" "${OCUDU_NATIVE_OAI_SHLIBPATH}"
 # Exports OAI2X2_NRUE_DIR for the inner script (the locally patched UE by default).
 resolve_oai_ue_build "${native_root}" || usage_error "OAI UE build selection failed"
@@ -160,7 +162,7 @@ cp "${config_dir}"/* "${report_dir}/"
     "${OAI2X2_BW_MHZ:-20}" "${OAI2X2_CUDA_HOST_MEMORY:-default}"
   printf 'oai_ue=%s\noai_ue_sha256=%s\n' "${OAI_UE_VARIANT}" "${OAI_UE_SHA256}"
   printf 'gnb_acceleration=%s\n' "${OCUDU_NATIVE_GNB_ACCELERATION:-none}"
-  printf 'ue_rx_gain_db=%s\n' "${OAI_GATE_UE_RX_GAIN_DB:-none}"
+  printf 'ue_rx_gain_db=%s\nue_cont_fo_comp=%s\n' "${OAI_GATE_UE_RX_GAIN_DB:-none}" "${OAI_GATE_UE_CONT_FO_COMP:-off}"
   printf 'oai_zmq_module=%s\noai_shlibpath=%s\noai_zmq_module_sha256=%s\n' \
     "${OAI_ZMQ_MODULE_VARIANT}" "${OCUDU_NATIVE_OAI_SHLIBPATH}" "${OAI_ZMQ_MODULE_SHA256}"
   printf 'gnb_binary=%s\ngnb_uses_cuda=%s\nmps=%s\nplatform=%s\ngnb_cpus=%s\nbroker_cpus=%s\nnrue_cpus=%s\n' \

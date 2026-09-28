@@ -404,6 +404,10 @@ PY
   # The gate's UE RX gain (oai-gate-defaults.sh oai_gate_ue_rx_gain), if any.
   local -a ue_rx_gain=()
   [[ -n "${OAI_GATE_UE_RX_GAIN_DB:-}" ]] && ue_rx_gain=(--zmq.'[0]'.rx_gain_db "${OAI_GATE_UE_RX_GAIN_DB}")
+  # The gate's continuous FO compensation (oai-gate-defaults.sh oai_gate_ue_fo_comp).
+  local -a ue_fo=()
+  [[ -n "${OAI_GATE_UE_CONT_FO_COMP:-}" ]] && ue_fo=(--cont-fo-comp "${OAI_GATE_UE_CONT_FO_COMP}")
+  printf 'event=nrue_fo_comp cont_fo_comp=%s\n' "${OAI_GATE_UE_CONT_FO_COMP:-off}" >>"${log_dir}/nrue-radio.log"
   start_group nrue "${log_dir}/nrue.log" nsenter --net="/run/netns/${nested_name}" -- \
     setpriv --bounding-set -sys_nice \
     "${nrue_pin[@]}" ${OCUDU_NATIVE_NRUE_WRAPPER:-} "${nrue}" -O "${config_dir}/nrue.conf" \
@@ -415,7 +419,7 @@ PY
     --loader.oai_zmqdevif.shlibpath "${zmq_module_dir}" \
     --zmq.'[0]'.tx_channels tcp://10.201.0.2:2101,tcp://10.201.0.2:2103 \
     --zmq.'[0]'.rx_channels tcp://10.201.0.1:2100,tcp://10.201.0.1:2102 \
-    "${ue_rx_gain[@]}" \
+    "${ue_rx_gain[@]}" "${ue_fo[@]}" \
     ${OAI2X2_UE_EXTRA:-}
   popd >/dev/null
   nrue_pid="${started_pid}"
