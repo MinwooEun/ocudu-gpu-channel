@@ -38,6 +38,13 @@ def fastest_cpus():
     return sorted(cpu for cpu, freq in freqs.items() if freq == top)
 
 
+def online_cpus():
+    try:
+        return cpu_list(Path('/sys/devices/system/cpu/online').read_text().strip())
+    except OSError:
+        return []
+
+
 def gpu_names():
     try:
         out = subprocess.run(['nvidia-smi', '--query-gpu=name', '--format=csv,noheader'],
@@ -54,11 +61,15 @@ def resolve():
     if wanted == 'none':
         record['reason'] = 'OCUDU_NATIVE_PLATFORM=none'
     elif wanted == 'auto':
-        host = {'gpu_names': gpu_names(), 'fastest_cpus': fastest_cpus()}
+        host = {'gpu_names': gpu_names(), 'fastest_cpus': fastest_cpus(), 'online_cpus': online_cpus()}
         record['host'] = host
         for name, profile in profiles.items():
             detect = profile['detect']
-            if detect['gpu_name'] in host['gpu_names'] and cpu_list(detect['fastest_cpus']) == host['fastest_cpus']:
+            # online_cpus is optional: it tells power modes that take cores offline
+            # apart (Orin MODE_30W runs 8 of 12 cores).
+            online_ok = 'online_cpus' not in detect or cpu_list(detect['online_cpus']) == host['online_cpus']
+            if (detect['gpu_name'] in host['gpu_names'] and cpu_list(detect['fastest_cpus']) == host['fastest_cpus']
+                    and online_ok):
                 record['profile'] = name
                 break
         else:
