@@ -76,9 +76,15 @@ done
 [[ "$(git -C "${native_root}/src/ocudu" rev-parse HEAD)" == "${audited_ocudu}" ]] || usage_error "OCUDU revision mismatch"
 [[ "$(git -C "${native_root}/src/srsRAN_4G" rev-parse HEAD)" == "${audited_srsran}" ]] || usage_error "srsRAN revision mismatch"
 [[ "$(git -C "${native_root}/src/open5gs" rev-parse HEAD)" == "${audited_open5gs}" ]] || usage_error "Open5GS revision mismatch"
-"/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
-  --root "${native_root}" --repo-root "${repo_root}" \
-  --lock "${script_dir}/native-workspace.lock.json"
+if [[ "${OCUDU_NATIVE_SKIP_WORKSPACE_LOCK:-0}" == "1" ]]; then
+  # The lock pins an x86_64 host; an aarch64 host (DGX Spark, Jetson) cannot
+  # satisfy it. The source pins above are still checked.
+  echo "event=skip x86_native_workspace_lock"
+else
+  "/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
+    --root "${native_root}" --repo-root "${repo_root}" \
+    --lock "${script_dir}/native-workspace.lock.json"
+fi
 # bc88865 (the pre-MIMO anchor in the parent tree) is not in this history.
 # f93386b is the last commit here that touched these fixtures and drivers
 # (merge of the rank-1 MISO/SIMO workstream); a change after it still fails.

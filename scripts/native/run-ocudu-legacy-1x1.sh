@@ -166,9 +166,15 @@ fi
 [[ "$(git -C "${native_root}/src/ocudu" rev-parse HEAD)" == "${audited_ocudu}" ]] || usage_error "OCUDU revision mismatch"
 [[ "$(git -C "${native_root}/src/srsRAN_4G" rev-parse HEAD)" == "${audited_srsran}" ]] || usage_error "srsRAN revision mismatch"
 [[ "$(git -C "${native_root}/src/open5gs" rev-parse HEAD)" == "${audited_open5gs}" ]] || usage_error "Open5GS revision mismatch"
-"/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
-  --root "${native_root}" --repo-root "${repo_root}" \
-  --lock "${script_dir}/native-workspace.lock.json"
+if [[ "${OCUDU_NATIVE_SKIP_WORKSPACE_LOCK:-0}" == "1" ]]; then
+  # The lock pins an x86_64 host; an aarch64 host (DGX Spark, Jetson) cannot
+  # satisfy it. The source pins above are still checked.
+  echo "event=skip x86_native_workspace_lock"
+else
+  "/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
+    --root "${native_root}" --repo-root "${repo_root}" \
+    --lock "${script_dir}/native-workspace.lock.json"
+fi
 grep -qx 'ENABLE_ZEROMQ:BOOL=ON' "${native_root}/builds/ocudu-zmq-release/CMakeCache.txt" || usage_error "gNB lacks ZMQ"
 for binary in \
   "${gnb_binary}" \
@@ -252,7 +258,8 @@ fi
 channel_build="${OCUDU_NATIVE_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-cuda-release}"
 cmake -S "${repo_root}" -B "${channel_build}" -DCMAKE_BUILD_TYPE=Release \
   -DOCUDU_GPU_CHANNEL_ENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER="${cuda_compiler}" \
-  -DOCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES=120 >"${log_dir}/cmake-configure.log" 2>&1
+  -DCMAKE_CUDA_ARCHITECTURES="${OCUDU_NATIVE_CUDA_ARCH:-120}" \
+  -DOCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES="${OCUDU_NATIVE_CUDA_ARCH:-120}" >"${log_dir}/cmake-configure.log" 2>&1
 cmake --build "${channel_build}" -j"$(nproc)" >"${log_dir}/cmake-build.log" 2>&1
 CUDA_VISIBLE_DEVICES="${physical_gpu}" \
   ctest --test-dir "${channel_build}" --output-on-failure >"${log_dir}/ctest.log" 2>&1
@@ -270,7 +277,7 @@ if [[ "${channel_mode}" != "legacy" && "${execution_profile}" == "rank1" ]]; the
 fi
 "${gnb_binary}" --version \
   >"${report_dir}/gnb-version.txt" 2>&1
-grep -Eq "OCUDU 5G gNB version .*\(${audited_gnb_commit}\)" "${report_dir}/gnb-version.txt" || \
+grep -Eq "OCUDU 5G gNB version .*\(${audited_gnb_commit}|OCUDU gNB \(commit ${audited_gnb_commit:0:7}[0-9a-f]*\)" "${report_dir}/gnb-version.txt" || \
   usage_error "native gNB binary does not identify the audited revision"
 "/usr/bin/python3" - "${source_evidence}" "${native_root}" "${channel_build}" \
   "${source_manifest}" "${preserved_configs}" "${channel_head}" \
