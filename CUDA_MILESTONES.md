@@ -318,6 +318,7 @@ WG의 "AI-RAN tensors" 인터페이스가 나오면 자체 훅 대신 그것을 
 | CUDA C1 (대조, 결함 있음) | 1 | **0.447** | 1.3 | 0.999 |
 
 - rank 2의 80 Mb/s는 이 실행의 iperf 제시율 상한이다(셀 용량은 148 Mb/s). CPU와 CUDA가 같은 조건이다.
+- `91c581c`(UE 로컬 패치 3번째, CSI RI 누산기 초기화)가 lock에 들어간 뒤 워크스테이션 `builds/oai-zmq-local`을 다시 빌드하고(`check-oai-local-patches.sh` 통과) rank 2 짝을 반복했다: CPU NACK 0.0 · 80.0 Mb/s, CUDA C1+D10 NACK 0.0 · 80.0 Mb/s, 둘 다 health=pass. 위 표는 그 커밋 전(16:36–16:40 UTC) 실행이다.
 - srsUE legacy 1×1 CUDA 게이트(`run-ocudu-cuda-1x1.sh`, `all`, C1+D10 lock): **통과**, rx_starvations 18.
 - **처음 실패한 것:** CUDA gNB 2×2 실행 두 번(D10, C1 대조 모두)이 `gNB did not start`로 끝났다. 2×2 게이트의 gNB 시작 대기 기본값이 20 s인데 CUDA gNB는 PHY 초기화에 그보다 오래 걸린다. `OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS=90`으로 다시 돌려 통과했다(1×1 CUDA 러너는 자체적으로 늘려 둔다).
 
