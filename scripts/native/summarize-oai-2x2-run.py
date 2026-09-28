@@ -74,14 +74,15 @@ def main() -> int:
                 # UDP -R: `sum` mixes the sender's rate with the receiver's
                 # loss; `sum_received` is what actually reached the UE.
                 "received_mbps": round(data["end"]["sum_received"]["bits_per_second"] / 1e6, 2)
-                if "sum_received" in data.get("end", {}) else None,
+                if (data.get("end", {}).get("sum_received") or {}).get("bits_per_second") is not None
+                else None,
                 "lost_percent": end.get("lost_percent"),
                 "packets": end.get("packets"),
                 "intervals_mbps": [
                     round(i["sum"]["bits_per_second"] / 1e6, 2) for i in data.get("intervals", [])
                 ],
             }
-        except (ValueError, KeyError) as error:
+        except (ValueError, KeyError, TypeError) as error:
             iperf = {"error": str(error)}
 
     window = None
