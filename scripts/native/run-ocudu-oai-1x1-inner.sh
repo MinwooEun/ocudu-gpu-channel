@@ -332,7 +332,9 @@ run_stack()
   local oai_build="${OCUDU_NATIVE_OAI_SHLIBPATH:-${native_root}/builds/oai-zmq-release}"
   local fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
   local mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
-  local broker="${OCUDU_NATIVE_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-cuda-release}/ocudu-gpu-channel"
+  # The broker the outer script just built and probed from this tree; the
+  # shared builds/ocudu-gpu-channel-cuda-release belongs to another checkout.
+  local broker="${OCUDU_NATIVE_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release}/ocudu-gpu-channel"
   local add_users="${native_root}/src/ocudu/docker/open5gs/add_users.py"
   local subscriber_verify="${repo_root}/scripts/native/verify-open5gs-subscriber.py"
   for binary in "${gnb}" "${nrue}" "${fivegc}" "${mongod}" "${broker}"; do
