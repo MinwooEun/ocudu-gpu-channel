@@ -5,10 +5,13 @@
 #include "ocudu_gpu_channel/processing.h"
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <mutex>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <unordered_map>
 
 namespace {
@@ -18,7 +21,19 @@ void usage()
   std::cout << "usage: ocudu-gpu-channel-bench --config topology.yaml [--duration 10s] [--scs-khz 30] [--per-node]\n"
             << "  Drives ChannelProcessor::process_superposition() once per RX node per slot,\n"
             << "  the same call the live broker makes. One fused H2D + kernel + D2H on CUDA\n"
-            << "  regardless of edge count.\n";
+            << "  regardless of edge count.\n"
+            << "  Measurement-only environment knobs (S11, live vs bench), all off by default:\n"
+            << "    OCG_BENCH_PACE=1     wait for each node's next batch boundary instead of\n"
+            << "                         calling back to back (the live cadence, e.g. 1 ms)\n"
+            << "    OCG_BENCH_REFRESH=1  rewrite every input batch on the CPU before each call\n"
+            << "                         (live inputs are fresh ring data, not a reused buffer)\n"
+            << "    OCG_BENCH_THREADS=1  one thread per RX node, concurrently, as the broker does\n";
+}
+
+bool env_on(const char* name)
+{
+  const char* value = std::getenv(name);
+  return value != nullptr && std::string(value) == "1";
 }
 
 void add_us(ocg::LatencyRecorder& recorder, double value_us)
@@ -153,13 +168,38 @@ int main(int argc, char** argv)
       src_device_by_destination[node.id] = std::move(sources);
     }
 
+    const bool pace = env_on("OCG_BENCH_PACE");
+    const bool refresh = env_on("OCG_BENCH_REFRESH");
+    const bool threaded = env_on("OCG_BENCH_THREADS");
+    std::cout << "bench_knobs,pace=" << pace << ",refresh=" << refresh << ",threads=" << threaded << "\n";
+    // Refresh writes a private copy of each lane's input per destination, so
+    // concurrent node threads never write a buffer another thread reads.
+    std::unordered_map<std::string, std::vector<ocg::IqBuffer>> fresh_inputs;
+    for (const auto& node : resolved.nodes) {
+      per_node_recorders[node.id];
+      if (refresh) {
+        const std::size_t n = rows_by_node[node.id].front().size();
+        fresh_inputs[node.id].assign(sup_by_destination[node.id].size(), ocg::IqBuffer(n));
+      }
+    }
+    std::mutex record_mutex;
+
     const auto deadline = std::chrono::steady_clock::now() + duration;
     std::uint64_t iterations = 0;
-    while (std::chrono::steady_clock::now() < deadline) {
-      for (const auto& node : resolved.nodes) {
-        const auto start = std::chrono::steady_clock::now();
+    auto run_slot = [&](const ocg::ResolvedNode& node, std::uint64_t slot_index) {
+      {
         auto& rows = rows_by_node[node.id];
         const std::size_t count = rows.front().size();
+        if (refresh) {
+          auto& inputs = fresh_inputs[node.id];
+          for (std::size_t k = 0; k != inputs.size(); ++k) {
+            const float base = static_cast<float>((slot_index + k) % 97) / 97.0F;
+            for (std::size_t i = 0; i != count; ++i) {
+              inputs[k][i] = {base + static_cast<float>(i % 17) / 17.0F, base - static_cast<float>(i % 23) / 23.0F};
+            }
+          }
+        }
+        const auto start = std::chrono::steady_clock::now();
 
         // Fused path: one process_superposition call per RX node per slot,
         // matching the broker. The CUDA backend issues one H2D + one kernel
@@ -170,7 +210,10 @@ int main(int argc, char** argv)
           const auto& sources = src_device_by_destination[node.id];
           for (std::size_t k = 0; k != sup_it->second.size(); ++k) {
             auto tx_it = latest_tx.find(sources[k]);
-            if (tx_it != latest_tx.end()) {
+            if (refresh) {
+              sup_it->second[k].samples =
+                  std::span<const ocg::IqSample>(fresh_inputs[node.id][k].data(), count);
+            } else if (tx_it != latest_tx.end()) {
               sup_it->second[k].samples =
                   std::span<const ocg::IqSample>(tx_it->second.data(), count);
             }
@@ -183,6 +226,10 @@ int main(int argc, char** argv)
           const auto* rx = node.rx_model.empty() ? nullptr : ocg::find_model(config, node.rx_model);
           processor->process_superposition(node.id, sup_it->second, rx, node.sample_rate_hz,
                                            std::span<std::span<ocg::IqSample>>(row_spans));
+          const auto end = std::chrono::steady_clock::now();
+          std::lock_guard<std::mutex> lock(record_mutex);
+          recorder.add(end - start);
+          ++iterations;
           // Accumulate per-RX-port cumulative power (cross-backend matching).
           for (std::size_t r = 0; r != rows.size(); ++r) {
             double slot_sum = 0.0;
@@ -214,8 +261,40 @@ int main(int argc, char** argv)
             }
           }
         }
-        recorder.add(std::chrono::steady_clock::now() - start);
-        ++iterations;
+      }
+    };
+    // Each node's batch period, for OCG_BENCH_PACE (1 ms for a 1 ms batch).
+    auto period_of = [&](const ocg::ResolvedNode& node) {
+      const double seconds = static_cast<double>(rows_by_node[node.id].front().size()) / node.sample_rate_hz;
+      return std::chrono::nanoseconds(static_cast<std::int64_t>(seconds * 1e9));
+    };
+    if (threaded) {
+      std::vector<std::thread> workers;
+      for (const auto& node : resolved.nodes) {
+        workers.emplace_back([&, node_ptr = &node] {
+          auto next = std::chrono::steady_clock::now();
+          for (std::uint64_t slot = 0; std::chrono::steady_clock::now() < deadline; ++slot) {
+            run_slot(*node_ptr, slot);
+            if (pace) {
+              next += period_of(*node_ptr);
+              std::this_thread::sleep_until(next);
+            }
+          }
+        });
+      }
+      for (auto& worker : workers) {
+        worker.join();
+      }
+    } else {
+      auto next = std::chrono::steady_clock::now();
+      for (std::uint64_t slot = 0; std::chrono::steady_clock::now() < deadline; ++slot) {
+        for (const auto& node : resolved.nodes) {
+          run_slot(node, slot);
+        }
+        if (pace && !resolved.nodes.empty()) {
+          next += period_of(resolved.nodes.front());
+          std::this_thread::sleep_until(next);
+        }
       }
     }
 

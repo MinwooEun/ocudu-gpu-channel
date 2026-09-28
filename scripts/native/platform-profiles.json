@@ -9,10 +9,10 @@
       },
       "cpus": {
         "gnb": "5-9",
-        "broker": "15,16",
-        "nrue": "17-19"
+        "broker": "15-17",
+        "nrue": "18,19"
       },
-      "evidence": "SPARK_MILESTONES.md S10 (100 MHz OAI 1x1: 1,424-1,506 -> 1,995-2,077 slots/s)"
+      "evidence": "SPARK_MILESTONES.md S10 (big-core split: 100 MHz OAI 1x1 1,424-1,506 -> 1,995-2,077 slots/s) and S11 (broker 2 -> 3 cores: emulator-call p99 115-135 -> 65 us at 100 MHz, CPU and CUDA gNB, real time kept; UE on 1 core or on little cores falls below real time)"
     }
   }
 }
