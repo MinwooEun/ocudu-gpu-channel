@@ -37,6 +37,7 @@ WG1이 문서에 적은 검증은 **이 기종**에서 나왔다. 앞의 두 플
 | **S7** | **채널 에뮬레이터 경유 + 멀티 gNB** — CUDA gNB를 emulator에 붙이고, CUDA gNB 프로세스 2개(2셀, 셀 간 간섭)를 한 GPU에서 | CUDA 1×1 emulator 게이트 통과, CPU 2셀 기준선 통과, CUDA 2셀에서 UE마다 자기 셀에 붙어 RRC/PDU/ping, 카운터 0, late 0 | **완료 2026-09-27** — 셋 다 통과. CUDA gNB 1개당 GPU 메모리 9,545 MiB. MPS 없이 시간 분할로 동작. zero-copy 브로커와 조합해도 통과했고(copy·zero-copy 각 2회), 브로커 p50이 30–35 µs, p99가 50–60 µs 줄었다 |
 | **S8** | **셀 대역폭 확장** — 20 MHz를 넘는 라이브 셀을 emulator 경유로, 브로커 copy vs zero-copy | 대역폭마다 attach·PDU·ping, 브로커 p50/p99, 막히는 곳은 메커니즘까지 | **완료 2026-09-28** — srsUE는 20 MHz가 한계(30 MHz PRACH 불가, 40/50 MHz 크래시). **OAI nrUE로 30/40/50 MHz(n3 FDD 15 kHz)와 100 MHz(n78 TDD 30 kHz) 전부 통과**, CUDA gNB(`all`) 100 MHz도 통과. zero-copy 브로커 p50은 20→100 MHz에서 40–45 µs로 거의 그대로, copy는 60 → 90 µs |
 | **S9** | **S8 관측의 원인 규명** — OAI 실행이 실시간보다 느린 이유, CUDA gNB 100 MHz의 브로커 p99 증가, zero-copy에서 ring 단계가 길어지는 이유 | 원인마다 증거와 되돌리는 조작 | **완료 2026-09-28** — (1) OAI ZMQ 드라이버가 TX 응답을 최대 10 ms 늦춤, 패치 후 20 MHz 256–382 → 1000 슬롯/s(실시간), starvation 3,335 → 1. (2) GPU 컨텍스트 time-slicing, MPS로 p99 195 → 80 µs(CPU gNB와 같음). (3) GPU가 만진 pageable 버퍼의 CPU memcpy가 3–6배 느려짐 |
+| **S10** | **100 MHz가 패치 후에도 실시간의 0.72×인 이유** | 슬롯 경로를 홉별로 나누고, 원인을 되돌리는 조작으로 확인 | **완료 2026-09-28** — 원인은 바이트가 아니라 **CPU 배치**다. lock-step 고리에 파이프라이닝이 사실상 없어(리드 0–1 메시지) 슬롯마다 고리 한 바퀴를 기다리는데, 그 고리의 스레드 전환이 (a) 깊은 idle 상태(LPI-3, 탈출 지연 433 µs 선언)에 들어간 코어를 깨우고 (b) 절반은 A725 little 코어에서 돈다. **gNB·브로커·UE를 X925 big 코어에 나눠 고정하면 1,470 → 2,060–2,077 슬롯/s(실시간)**, CUDA gNB + MPS도 2,068. little 코어 고정은 1,522 |
 
 ## 진행 기록
 
@@ -677,7 +678,7 @@ S8에서 원인을 확인하지 않은 세 가지를 Spark(GB10)에서 풀었다
 | **패치** | **1,048 / 999, 1,000 / 1,000** | **1, 1** | 60 / 95 |
 
   패치 후에는 브로커의 실시간 페이싱(`throttle_us` > 0)이 속도를 정한다. 워크스테이션 M6.4의 0.275× 실행도 같은 드라이버라 같은 원인일 가능성이 높지만, 거기서는 확인하지 않았다.
-- **100 MHz는 패치 후에도 실시간의 약 0.72×다**(슬롯 0.5 ms 기준 실시간 2,000/s 대비 1,410–1,480/s, `throttle_us` ≈ 0). `runtime.rx_ring_batches` 2 → 4는 효과가 없었다(1,475 → 1,481/s). 바쁜 스레드는 gNB `radio` 95%(대부분 폴링), 브로커 ZMQ I/O 60%(대부분 커널 TCP), gNB `phy_worker` 58%로 어느 것도 포화가 아니다. 슬롯마다 방향별 491 KB(cf32)를 TCP loopback으로 네 번 주고받는 lock-step 체인의 지연 합이 원인으로 추정되지만 분리하지 않았다(**열림**).
+- **100 MHz는 패치 후에도 실시간의 약 0.72×다**(슬롯 0.5 ms 기준 실시간 2,000/s 대비 1,410–1,480/s, `throttle_us` ≈ 0). `runtime.rx_ring_batches` 2 → 4는 효과가 없었다(1,475 → 1,481/s). 바쁜 스레드는 gNB `radio` 95%(대부분 폴링), 브로커 ZMQ I/O 60%(대부분 커널 TCP), gNB `phy_worker` 58%로 어느 것도 포화가 아니다. 슬롯마다 방향별 491 KB(cf32)를 TCP loopback으로 네 번 주고받는 lock-step 체인의 지연 합이 원인으로 추정되지만 분리하지 않았다. → S10에서 풀었다: 바이트 수보다 CPU 배치(깊은 idle 상태와 little 코어)가 원인이었다.
 
 ### 2. CUDA gNB 100 MHz의 브로커 p99 증가 — GPU 컨텍스트 time-slicing
 
@@ -711,4 +712,60 @@ S8에서 원인을 확인하지 않은 세 가지를 Spark(GB10)에서 풀었다
 - `scripts/native/run-ocudu-oai-1x1-inner.sh` — `OCUDU_NATIVE_OAI_SHLIBPATH`(nrUE 모듈 디렉터리), `OCUDU_NATIVE_BROKER_WRAPPER` / `OCUDU_NATIVE_GNB_WRAPPER`(프로파일러 래퍼). 기본값에서는 동작이 같다.
 - `scripts/cuda/spark/s9-coherence-bench.cu` — 위 3의 마이크로벤치.
 - **실험 기록:** 첫 100 MHz 실행 1회는 실행 중에 inner 스크립트를 고쳐 bash 구문 오류로 실패했다(측정에서 제외). nsys `--kill=none` 실행은 gNB가 남아 GPU를 잡아서 직접 종료했다. 이후 `--kill=sigterm`을 썼다.
+
+## S10 — 100 MHz가 실시간에 못 미치는 이유 (2026-09-28)
+
+S9에서 OAI ZMQ 드라이버를 고친 뒤에도 100 MHz(n78 TDD 30 kHz, 122.88 MS/s, 메시지당 61,440샘플 = 491 KB)는 실시간(0.5 ms 슬롯, 2,000/s)의 약 0.72×였다. 바쁜 스레드가 없다는 것까지가 S9의 결론이었다. 모든 실행은 CPU gNB(`a1916edc`), zero-copy 브로커, 패치된 UE 드라이버, 100 MHz이고, 시작·종료 시점에 GPU 프로세스는 없었다(CUDA gNB 실행은 자기 것만). 실행 스크립트와 원자료는 Spark `/workspace/gpuch/s10/`, 트리는 `zc10`(= `zc9` + 아래 브로커 변경), 빌드 `builds/gpuch-zc10-release`.
+
+### 1. 홉 분해 — 고리에 파이프라이닝이 없다
+
+- 브로커에 `OCG_HOP_TRACE_DIR`를 추가했다. ZMQ 전송(요청 송신·응답 수신·ring 적재, RX 요청 수신·행 pop·응답 송신)과 producer 슬롯(시작·끝)마다 타임스탬프 하나를 남긴다. 분석은 `scripts/cuda/spark/s10-hop-trace.py`.
+- **리드(장치가 넘긴 TX 샘플 − 브로커가 돌려준 RX 샘플)가 gNB·UE 모두 0–1 메시지**다. 두 라디오 모두 RX를 받아야 다음 TX를 내놓는다(OAI `zmq_rx_stream::receive`는 TX가 RX 끝까지 정렬되기를 기다리고, 브로커의 TX 요청 → gNB 응답 `pull_rtt`가 슬롯 주기와 같다). 그래서 **슬롯마다 gNB → 브로커 → UE → 브로커 → gNB 고리 한 바퀴를 통째로 기다린다.** 이 고리가 500 µs 안에 돌아야 실시간이다.
+- 기준 실행은 6회 모두 1,466–1,506 슬롯/s였다. 그중 하나(`base100`)에서 브로커가 응답을 보낸 뒤 장치의 다음 RX 요청까지 `rx_turn` 평균 441–469 µs, 브로커 안에서 TX 수신 → RX 송신 relay p50 237–252 µs(방향별). 20 MHz(1 ms 메시지)에서는 같은 고리가 1 ms 안에 들어가 브로커가 실시간으로 페이싱한다.
+
+### 2. 고리가 느린 이유 — ZMQ 전송 한 번이 느린 게 아니라 코어가 잠들어 있다
+
+마이크로벤치(`scripts/cuda/spark/s10-zmq-split.cpp`, 1 B 요청 → 491 KB 응답, 3,000회, GPU·게이트 미실행):
+
+| 조건 | 왕복 p50 / p99 (µs) |
+|---|---|
+| 원시 TCP loopback(ZMQ 없이, 블로킹 소켓) | 35 / 40 |
+| ZMQ, 서버 코어 7,8 / 클라이언트 5,6 | 235–340 / 812–831 |
+| 같은 조건 + 네 코어에 `sched_yield` 스피너(`s10-yieldspin.c`) | **97 / 101** |
+| ZMQ `SO_SNDBUF`/`SO_RCVBUF` 4 MB | 차이 없음(332–584) |
+| ZMQ `ipc://` | 더 느림(768 / 3,168) |
+
+- ZMQ는 메시지 하나를 앱 스레드 ↔ I/O 스레드로 네 번 넘긴다. 491 KB 교환에서는 그 사이 코어가 쉬는 시간이 길어, `menu` 거버너가 가장 깊은 LPI-3(선언 탈출 지연 433 µs, 목표 체류 2,542 µs)을 고른다. 3,000회 왕복 동안 네 코어의 LPI-3 진입이 **약 5,250회**(왕복당 1.75회)였고, 원시 TCP는 같은 횟수에서 약 45회였다. 코어를 깨어 있게 두면 왕복이 1/3이 된다. 메모리 복사 자체는 빠르다(다른 코어가 방금 쓴 491 KB 복사 11–19 µs), 페이지 폴트도 없다.
+- 컨테이너의 `/sys`가 읽기 전용이라 idle 상태를 끄는 직접 대조군(`cpuidle/state3/disable`, `pm_qos_resume_latency_us`)은 못 했다. 호스트 sysctl·sysfs는 바꾸지 않았다.
+- 스피너 주의: `SCHED_IDLE` 스피너는 같은 코어에서 깨어난 스레드를 약 6 ms 늦췄다(커널은 `PREEMPT_LAZY` 빌드, 7.0.0-1019-nvidia). `sched_yield` 스피너는 그렇지 않다.
+
+### 3. 라이브 확인 — 한 번에 하나씩 (100 MHz, zero-copy, 브로커 슬롯/s gnb0 / ue0)
+
+| 조건 | 슬롯/s | 초당 LPI-3 진입(big / little 코어) | 브로커 p99 (µs) |
+|---|---|---|---|
+| 기준(6회) | 1,466–1,506 / 1,424–1,456 | 3,832 / 5,586 | 75–80 |
+| 브로커 대기 poll 50 → 5 µs(`OCG_BROKER_POLL_US`, 3회) | 1,575–1,612 / 1,527–1,566 | 3,491 / 4,532 | 75–80 |
+| OAI RX 대기 100 → 10 µs(`oai-zmq-rx-poll.patch`) | 1,526 / 1,464 | – | 80 |
+| 브로커 ZMQ I/O 스레드 2개(`OCG_ZMQ_IO_THREADS`) | 1,451 / 1,394 | – | 80 |
+| **20코어 전부 `sched_yield` 스피너**(2회) | 1,816–1,850 / 1,758–1,790 | **0 / 0** | 60–80 |
+| 스피너 + 두 poll 수정(2회) | 1,965–1,998 / 1,916 | – | 55–90 |
+| 세 프로세스를 big 코어 10개(5–9, 15–19)에 함께 | 1,759 / 1,703 | 2,487 / 956 | 95 |
+| **gNB 5–9 / 브로커 15,16 / UE 17–19로 나눠 고정** | **2,077 / 1,995** | 1,024 / 806 | 115–130 |
+| 같은 고정 + 두 poll 수정(2회) | **2,060–2,062 / 1,998** | 667 / 647 | 85–185 |
+| 같은 나눔을 little 코어에(gNB 0–4 / 브로커 10,11 / UE 12–14) + poll 수정 | 1,522 / 1,378 | 271 / 1,208 | 205–245 |
+| CUDA gNB(`all`) + MPS, 고정 없음 | 1,489 / 1,440 | – | 80 |
+| **CUDA gNB(`all`) + MPS, 위 big 코어 나눔** | **2,068 / 1,990** | – | 210 |
+
+- 모든 실행 attach·PDU·ping 통과(아래 예외 하나). 고정한 실행에서는 브로커가 실시간 페이싱(`throttle_us` > 0)에 걸린다. 즉 여유가 생겼다.
+- **판정:** 원인은 고리의 스레드 전환이 (a) 깊은 idle 상태에서 코어를 깨우는 비용과 (b) little(A725) 코어에서 도는 시간이다. 둘 다 풀어야 실시간이 된다: 코어를 깨워 두기만 하면 +24%(1,830), big 코어로 모으기만 하면 +19%(1,759), little 코어에 모으면 idle 진입은 줄어도 그대로(1,522), **big 코어에 프로세스별로 모으면 실시간**이다. S9의 가설(491 KB × 4번 전송의 바이트 비용)은 주 원인이 아니다. 같은 491 KB 전송이 코어를 깨워 두면 97 µs다.
+- **남는 비용:** 브로커를 코어 2개에 가두면 emulator 호출 p99가 80 → 85–185 µs(CUDA gNB 210 µs)로 늘었다. 브로커 워커 스레드 6개와 ZMQ I/O 스레드가 두 코어를 나눠 쓴 탓으로 보이며, 코어 3–4개 배분은 시험하지 않았다. 스피너와 고정을 함께 쓰면 gNB가 진행하지 못해 attach가 실패했다(1회, 측정에서 제외).
+- **veth(UE 경로 MTU 1500)는 원인이 아니다:** UE 쪽(veth)과 gNB 쪽(loopback)의 `rx_turn`이 비슷했다(441 vs 469 µs). 그래서 MTU는 시험하지 않았다.
+- **권장:** 100 MHz 라이브는 `OCUDU_NATIVE_GNB_WRAPPER` / `_BROKER_WRAPPER` / `_NRUE_WRAPPER`로 big 코어를 나눠 준다(`taskset -c 5-9` / `15,16` / `17-19`). 호스트 쪽 해결(LPI-3 끄기 또는 `pm_qos_resume_latency_us`)은 공유 장비 설정이라 관리자 합의가 필요하다.
+
+### 바뀐 것
+
+- `src/broker.cpp` — 진단 노브 세 개. 기본값에서는 동작이 같다. `OCG_BROKER_POLL_US`(대기 poll 간격, 설정하면 스레드 timer slack 1 µs), `OCG_ZMQ_IO_THREADS`, `OCG_HOP_TRACE_DIR`(홉 트레이스 CSV).
+- `scripts/native/run-ocudu-oai-1x1-inner.sh` — `OCUDU_NATIVE_NRUE_WRAPPER`(nrUE 명령 앞에 붙는 래퍼; CPU 고정용).
+- `scripts/native/patches/oai-zmq-rx-poll.patch` — OAI RX 대기 poll 간격 노브(`OAI_ZMQ_RX_POLL_US`). S9 패치 위에 적용.
+- `scripts/cuda/spark/s10-hop-trace.py`, `s10-zmq-split.cpp`, `s10-yieldspin.c` — 위 분석과 마이크로벤치.
 
