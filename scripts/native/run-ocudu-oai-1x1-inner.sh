@@ -403,8 +403,9 @@ PY
   # The broker's --duration clock starts with the broker, so a CUDA gNB's
   # device initialisation (~20 s) is added on top of the fixed 25 s window.
   local startup_allowance="${OCUDU_NATIVE_BROKER_STARTUP_ALLOWANCE_SECONDS:-0}"
-  # OCUDU_NATIVE_BROKER_WRAPPER / OCUDU_NATIVE_GNB_WRAPPER prefix the broker or
-  # gNB command with a profiler (a script that ends in `exec ... "$@"`; S9 nsys).
+  # OCUDU_NATIVE_BROKER_WRAPPER / OCUDU_NATIVE_GNB_WRAPPER / OCUDU_NATIVE_NRUE_WRAPPER
+  # prefix the broker, gNB or nrUE command (a script that ends in `exec ... "$@"`):
+  # a profiler (S9 nsys) or a CPU placement (S10 `taskset -c`).
   start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" ${OCUDU_NATIVE_BROKER_WRAPPER:-} "${broker}" --config "${config_dir}/topology.yaml" --duration "$((25 + startup_allowance))s"
   broker_pid="${started_pid}"
   broker_index=$((${#process_pids[@]} - 1))
@@ -450,7 +451,7 @@ PY
   [[ -n "${OCUDU_NATIVE_OAI_UE_RADIO_ARGS:-}" ]] && read -r -a oai_radio <<<"${OCUDU_NATIVE_OAI_UE_RADIO_ARGS}"
   start_group nrue "${log_dir}/nrue.log" nsenter --net="/run/netns/${nested_name}" -- \
     setpriv --bounding-set -sys_nice \
-    "${nrue}" -O "${config_dir}/nrue.conf" \
+    ${OCUDU_NATIVE_NRUE_WRAPPER:-} "${nrue}" -O "${config_dir}/nrue.conf" \
     "${oai_radio[@]}" \
     --ue-fo-compensation \
     --uecap_file "${uecap_file}" \

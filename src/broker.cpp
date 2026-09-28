@@ -22,6 +22,8 @@
 #include <thread>
 #include <vector>
 #include <zmq.h>
+#include <cstdlib>
+#include <sys/prctl.h>
 
 // Concurrent per-direction relay broker, modelled on srsRAN's GNU Radio
 // Companion ZMQ broker (ZMQ REQ source -> Throttle -> channel -> ZMQ REP sink).
@@ -128,6 +130,88 @@ SocketPtr make_socket(void* context, int type)
   set_int_option(socket, ZMQ_SNDHWM, 4);
   return SocketPtr(socket);
 }
+
+// Diagnostics knobs, read once per run from the environment.
+//   OCG_BROKER_POLL_US  sleep between polls of a worker waiting on another
+//                       worker (ring room, input data, output row); default 50.
+//                       Any value also drops the thread's timer slack to 1 us,
+//                       so the sleep is not stretched by the default 50 us.
+//   OCG_ZMQ_IO_THREADS  ZMQ I/O threads in the broker context (default 1). All
+//                       IQ transfers in and out share them, so with one thread
+//                       the uplink and downlink messages queue behind each other.
+//   OCG_HOP_TRACE_DIR   write one timestamped event per ZMQ transfer and per
+//                       producer slot to <dir>/hop-trace.csv at shutdown, to
+//                       split the lock-step cycle into its hops.
+struct BrokerDiagKnobs {
+  std::chrono::microseconds poll{50};
+  bool tight_slack = false;
+  std::string trace_dir;
+  int io_threads = 0;
+};
+
+BrokerDiagKnobs read_diag_knobs()
+{
+  BrokerDiagKnobs knobs;
+  if (const char* poll = std::getenv("OCG_BROKER_POLL_US"); poll != nullptr && *poll != '\0') {
+    knobs.poll = std::chrono::microseconds(std::strtol(poll, nullptr, 10));
+    knobs.tight_slack = true;
+  }
+  if (const char* io = std::getenv("OCG_ZMQ_IO_THREADS"); io != nullptr && *io != '\0') {
+    knobs.io_threads = std::atoi(io);
+  }
+  if (const char* dir = std::getenv("OCG_HOP_TRACE_DIR"); dir != nullptr) {
+    knobs.trace_dir = dir;
+  }
+  return knobs;
+}
+
+void apply_thread_slack(const BrokerDiagKnobs& knobs)
+{
+  if (knobs.tight_slack) {
+    prctl(PR_SET_TIMERSLACK, 1000UL, 0, 0, 0);
+  }
+}
+
+// Hop trace: preallocated per worker, appended by that worker only, read after
+// every worker is joined.
+enum class HopEvent : std::uint32_t {
+  PullReqSent = 0,
+  PullReplyRecv = 1,
+  PullRingPushed = 2,
+  ProduceDataReady = 10,
+  ProducePushed = 11,
+  RepReqRecv = 20,
+  RepRowPopped = 21,
+  RepReplySent = 22,
+};
+
+struct HopRecord {
+  std::int64_t t_ns;
+  std::uint32_t event;
+  std::uint32_t samples;
+};
+
+struct HopTrace {
+  bool enabled = false;
+  std::vector<HopRecord> records;
+
+  void reserve(bool on)
+  {
+    enabled = on;
+    if (on) {
+      records.reserve(1u << 20);
+    }
+  }
+  void add(HopEvent event, std::size_t samples)
+  {
+    if (!enabled || records.size() == records.capacity()) {
+      return;
+    }
+    const auto now = std::chrono::steady_clock::now().time_since_epoch();
+    records.push_back({std::chrono::duration_cast<std::chrono::nanoseconds>(now).count(),
+                       static_cast<std::uint32_t>(event), static_cast<std::uint32_t>(samples)});
+  }
+};
 
 // Returns true if a sample message was received; false on a timeout (EAGAIN).
 bool recv_samples_into(void* socket, std::span<IqSample> out, std::size_t& sample_count)
@@ -488,10 +572,14 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
 {
   stop_requested.store(false);
   SignalGuard signal_guard;
+  const BrokerDiagKnobs knobs = read_diag_knobs();
 
   ContextPtr context(zmq_ctx_new());
   if (context == nullptr) {
     throw std::runtime_error(std::string("zmq_ctx_new failed: ") + zmq_strerror(zmq_errno()));
+  }
+  if (knobs.io_threads > 0 && zmq_ctx_set(context.get(), ZMQ_IO_THREADS, knobs.io_threads) != 0) {
+    throw std::runtime_error(std::string("zmq_ctx_set ZMQ_IO_THREADS failed: ") + zmq_strerror(zmq_errno()));
   }
 
   AtomicStats stats;
@@ -661,6 +749,14 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   std::vector<WorkerDiag> puller_diag(ports.size());
   std::vector<WorkerDiag> producer_diag(nodes.size());
   std::vector<WorkerDiag> rep_diag(ports.size());
+  std::vector<HopTrace> puller_trace(ports.size());
+  std::vector<HopTrace> producer_trace(nodes.size());
+  std::vector<HopTrace> rep_trace(ports.size());
+  for (auto* traces : {&puller_trace, &producer_trace, &rep_trace}) {
+    for (auto& trace : *traces) {
+      trace.reserve(!knobs.trace_dir.empty());
+    }
+  }
   std::vector<ReceiverTimingAccumulator> slot_timing;
   slot_timing.reserve(nodes.size());
   for (const auto& node : nodes) {
@@ -720,6 +816,8 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   // by the node overlay -- pulling is a per-port transport concern.
   const auto run_puller = [&](std::size_t d) {
     WorkerDiag& diag = puller_diag[d];
+    HopTrace& trace = puller_trace[d];
+    apply_thread_slack(knobs);
     try {
       PortRuntime& dev = *ports[d];
       // recv_buf must hold the largest single ZMQ payload the peer can send.
@@ -766,6 +864,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             pushed = dev.tx_ring.push(std::span<const IqSample>(recv_buf.data(), pending));
           }
           if (pushed) {
+            trace.add(HopEvent::PullRingPushed, pending);
             // Wire capture, in ring order: this is what the peer's TX actually
             // put on the wire, before anything of ours reads it.
             append_capture(dev.tx_capture, dev.capture_limit, dev.capture_skip,
@@ -784,7 +883,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               stats.tx_queue_overflows.fetch_add(1);
               pending_counted = true;
             }
-            std::this_thread::sleep_for(std::chrono::microseconds(50));
+            std::this_thread::sleep_for(knobs.poll);
           }
           continue;
         }
@@ -792,7 +891,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         if (room < dev.batch) {
           diag.state.store("wait_room");
           diag.blocked_iters.fetch_add(1);
-          std::this_thread::sleep_for(std::chrono::microseconds(50));
+          std::this_thread::sleep_for(knobs.poll);
           continue;
         }
         if (!request_outstanding) {
@@ -802,6 +901,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             continue; // send timed out; retry
           }
           request_outstanding = true;
+          trace.add(HopEvent::PullReqSent, 0);
         }
         diag.state.store("recv_reply");
         std::size_t sample_count = 0;
@@ -810,6 +910,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           continue; // receive timed out; the request is still outstanding
         }
         request_outstanding = false;
+        trace.add(HopEvent::PullReplyRecv, sample_count);
         pending = sample_count; // hand off to the land-pending branch above
       }
     } catch (const std::exception& e) {
@@ -831,6 +932,8 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   // thread exists that could choose a window.
   const auto run_producer = [&](std::size_t n) {
     WorkerDiag& diag = producer_diag[n];
+    HopTrace& trace = producer_trace[n];
+    apply_thread_slack(knobs);
     try {
       RadioNodeRuntime& node = nodes[n];
       const std::vector<std::size_t>& incoming = node.incoming;
@@ -891,7 +994,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             room_stall_reported = true;
             next_room_report = now + kStallReportInterval;
           }
-          std::this_thread::sleep_for(std::chrono::microseconds(50));
+          std::this_thread::sleep_for(knobs.poll);
         }
         // Only a genuine resume clears; a stop request is a shutdown, not
         // recovery, and must not be logged as one.
@@ -979,7 +1082,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               data_stall_reported = true;
               next_data_report = now + kStallReportInterval;
             }
-            std::this_thread::sleep_for(std::chrono::microseconds(50));
+            std::this_thread::sleep_for(knobs.poll);
           }
           if (data_stall_reported && !stop_requested.load()) {
             report_node_stall_cleared(node, "input_data",
@@ -989,6 +1092,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         if (count == 0) {
           break; // stop requested while waiting for lane data
         }
+        trace.add(HopEvent::ProduceDataReady, count);
         const auto t_read_start = std::chrono::steady_clock::now();
         const double data_us =
             std::chrono::duration<double, std::micro>(t_read_start - t_data_start).count();
@@ -1104,6 +1208,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         }
         const double push_us =
             std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t_push_start).count();
+        trace.add(HopEvent::ProducePushed, count);
 
         store_us(diag.stage_us_bits[kProducerStageRoom], room_us);
         store_us(diag.stage_us_bits[kProducerStageAlign], align_us);
@@ -1130,6 +1235,8 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   // ready.
   const auto run_rep_worker = [&](std::size_t p) {
     WorkerDiag& diag = rep_diag[p];
+    HopTrace& trace = rep_trace[p];
+    apply_thread_slack(knobs);
     try {
       PortRuntime& port = *ports[p];
       IqBuffer reply_buf(port.batch);
@@ -1146,6 +1253,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           }
           throw std::runtime_error(std::string("rx request failed: ") + zmq_strerror(err));
         }
+        trace.add(HopEvent::RepReqRecv, 0);
         const auto t_pop_start = std::chrono::steady_clock::now();
         const double wait_req_us =
             std::chrono::duration<double, std::micro>(t_pop_start - t_wait_req_start).count();
@@ -1173,11 +1281,12 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             break;
           }
           diag.blocked_iters.fetch_add(1);
-          std::this_thread::sleep_for(std::chrono::microseconds(50));
+          std::this_thread::sleep_for(knobs.poll);
         }
         if (take == 0) {
           break; // stop requested while waiting for a row
         }
+        trace.add(HopEvent::RepRowPopped, take);
         const auto t_send_start = std::chrono::steady_clock::now();
         const double pop_us =
             std::chrono::duration<double, std::micro>(t_send_start - t_pop_start).count();
@@ -1195,6 +1304,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         }
         const double send_us =
             std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t_send_start).count();
+        trace.add(HopEvent::RepReplySent, take);
         store_us(diag.stage_us_bits[kRepStageWaitReq], wait_req_us);
         store_us(diag.stage_us_bits[kRepStagePop], pop_us);
         store_us(diag.stage_us_bits[kRepStageSend], send_us);
@@ -1336,6 +1446,28 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   stop_requested.store(true);
   for (auto& worker : workers) {
     worker.join();
+  }
+
+  if (!knobs.trace_dir.empty()) {
+    const std::string path = knobs.trace_dir + "/hop-trace.csv";
+    std::ofstream out(path, std::ios::trunc);
+    if (!out) {
+      throw std::runtime_error("cannot open hop trace: " + path);
+    }
+    out << "role,id,event,t_ns,samples\n";
+    const auto dump = [&out](const char* role, const std::string& id, const HopTrace& trace) {
+      for (const auto& r : trace.records) {
+        out << role << ',' << id << ',' << r.event << ',' << r.t_ns << ',' << r.samples << '\n';
+      }
+    };
+    for (std::size_t d = 0; d != ports.size(); ++d) {
+      dump("puller", ports[d]->config->id, puller_trace[d]);
+      dump("rep", ports[d]->config->id, rep_trace[d]);
+    }
+    for (std::size_t n = 0; n != nodes.size(); ++n) {
+      dump("producer", nodes[n].id, producer_trace[n]);
+    }
+    std::cout << "event=hop_trace path=\"" << path << "\"\n" << std::flush;
   }
 
   // Final per-device worker breakdown, so the relay outcome is legible even
