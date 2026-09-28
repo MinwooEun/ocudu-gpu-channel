@@ -349,9 +349,15 @@ raise SystemExit(2)
 PY
   local window_deadline
   if [[ "${path_mode}" == "broker" ]]; then
+    # WIRECAP in the extra broker arguments stands for this run's capture dir.
+    local broker_extra="${OAI2X2_BROKER_EXTRA:-}"
+    if [[ "${broker_extra}" == *WIRECAP* ]]; then
+      mkdir -p "${log_dir}/wire-capture"
+      broker_extra="${broker_extra//WIRECAP/${log_dir}/wire-capture}"
+    fi
     # shellcheck disable=SC2086
     start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" \
-      "${broker}" --config "${config_dir}/topology.yaml" --duration "${broker_seconds}s" ${OAI2X2_BROKER_EXTRA:-}
+      "${broker}" --config "${config_dir}/topology.yaml" --duration "${broker_seconds}s" ${broker_extra}
     broker_pid="${started_pid}"
     broker_index=$((${#process_pids[@]} - 1))
     wait_log "${log_dir}/broker.log" 'event=radio_node_resolved id=ue0' "${broker_pid}" 15 || usage_error "broker did not become ready"

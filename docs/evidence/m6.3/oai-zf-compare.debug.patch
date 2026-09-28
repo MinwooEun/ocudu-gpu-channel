@@ -1,0 +1,40 @@
+diff --git a/openair1/PHY/NR_UE_TRANSPORT/nr_dlsch_demodulation.c b/openair1/PHY/NR_UE_TRANSPORT/nr_dlsch_demodulation.c
+index ff8d9c7..112bc78 100644
+--- a/openair1/PHY/NR_UE_TRANSPORT/nr_dlsch_demodulation.c
++++ b/openair1/PHY/NR_UE_TRANSPORT/nr_dlsch_demodulation.c
+@@ -1050,6 +1050,35 @@ int nr_rx_pdsch(PHY_VARS_NR_UE *ue,
+                       nvar);
+     }
+   }
++  // M63DBG: compare OAI's fixed-point 2-layer equaliser with a float ZF
++  // computed from the same extracted samples and channel estimates.
++  {
++    static int m63_calls = 0;
++    if (nl == 2 && nb_re_pdsch && m63_calls < 48) {
++      m63_calls++;
++      fprintf(stderr, "M63 f%d.s%d sym%d pilots%d nb_re=%u nb_rb=%d log2_maxh=%d nvar=%u qm=%d\n",
++              frame, nr_slot_rx, symbol, pilots, nb_re_pdsch, nb_rb_pdsch, *log2_maxh, nvar, dlsch->cw_info.qamModOrder);
++      for (int re = 0; re < 6; re++) {
++        double complex H[2][2], y[2];
++        for (int a = 0; a < nbRx && a < 2; a++) {
++          y[a] = rxdataF_ext[a][re].r + I * rxdataF_ext[a][re].i;
++          for (int l = 0; l < 2; l++)
++            H[a][l] = chFext[l][a][re].r + I * chFext[l][a][re].i;
++        }
++        double complex det = H[0][0] * H[1][1] - H[0][1] * H[1][0];
++        double complex x0 = (H[1][1] * y[0] - H[0][1] * y[1]) / det;
++        double complex x1 = (-H[1][0] * y[0] + H[0][0] * y[1]) / det;
++        fprintf(stderr,
++                "M63  re%d y=(%d,%d)(%d,%d) H00=(%d,%d) H01=(%d,%d) H10=(%d,%d) H11=(%d,%d) zf=(%.3f,%.3f)(%.3f,%.3f) oai=(%d,%d)(%d,%d)\n",
++                re, rxdataF_ext[0][re].r, rxdataF_ext[0][re].i, rxdataF_ext[1][re].r, rxdataF_ext[1][re].i,
++                chFext[0][0][re].r, chFext[0][0][re].i, chFext[1][0][re].r, chFext[1][0][re].i,
++                chFext[0][1][re].r, chFext[0][1][re].i, chFext[1][1][re].r, chFext[1][1][re].i,
++                creal(x0), cimag(x0), creal(x1), cimag(x1),
++                rxdataF_comp[symbol][0][re].r, rxdataF_comp[symbol][0][re].i,
++                rxdataF_comp[symbol][1][re].r, rxdataF_comp[symbol][1][re].i);
++      }
++    }
++  }
+   stop_meas_nr_ue_phy(ue, DLSCH_MRC_MMSE_STATS);
+ 
+   if (meas_enabled) {
