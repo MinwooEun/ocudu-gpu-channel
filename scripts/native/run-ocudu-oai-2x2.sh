@@ -14,6 +14,10 @@ set -euo pipefail
 #   OAI2X2_CSI_RS         on (default) | off
 #   OAI2X2_TX_BACKOFF_DB  gNB amplitude_control.tx_gain_backoff (OCUDU default 12)
 #   OAI2X2_TOPOLOGY       topology fixture (default the 2x2 fixture)
+#   OAI2X2_BW_MHZ         cell bandwidth 20 (default) | 30 | 40 | 50 | 100 (100 is
+#                         the n78 TDD 30 kHz cell), as in render-1x1-bw-configs.py
+#   OAI2X2_CUDA_HOST_MEMORY  broker runtime.cuda_host_memory copy | zero_copy | auto
+#                         (unset leaves the topology's default, auto)
 #   OAI2X2_BROKER_SECONDS run window (default 90)
 #   OAI2X2_IPERF_SECONDS  DL UDP iperf length, 0 disables (default 15)
 #   OAI2X2_IPERF_RATE     DL UDP offered rate (default 80M)
@@ -111,6 +115,8 @@ render_args=(--repo-root "${repo_root}" --native-root "${native_root}" --output-
   --topology "${topology}")
 [[ -n "${OAI2X2_MAX_UE_MCS:-}" ]] && render_args+=(--max-ue-mcs "${OAI2X2_MAX_UE_MCS}")
 [[ -n "${OAI2X2_TX_BACKOFF_DB:-}" ]] && render_args+=(--tx-backoff-db "${OAI2X2_TX_BACKOFF_DB}")
+[[ -n "${OAI2X2_BW_MHZ:-}" ]] && render_args+=(--bw-mhz "${OAI2X2_BW_MHZ}")
+[[ -n "${OAI2X2_CUDA_HOST_MEMORY:-}" ]] && render_args+=(--cuda-host-memory "${OAI2X2_CUDA_HOST_MEMORY}")
 /usr/bin/python3 "${renderer}" "${render_args[@]}" >"${log_dir}/render.log" 2>&1 || {
   cat "${log_dir}/render.log" >&2; usage_error "render failed"; }
 "${gnb_binary}" -c "${config_dir}/gnb.yaml" --dryrun \
@@ -128,8 +134,9 @@ cp "${config_dir}"/* "${report_dir}/"
 {
   printf 'timestamp=%s\npath=%s\nmax_rank=%s\ncsi_rs=%s\nmax_ue_mcs=%s\ntx_backoff_db=%s\n' \
     "${timestamp}" "${OAI2X2_PATH}" "${max_rank}" "${csi_rs}" "${OAI2X2_MAX_UE_MCS:-}" "${OAI2X2_TX_BACKOFF_DB:-}"
-  printf 'topology=%s\nlabel=%s\nue_extra=%s\nbroker_extra=%s\nnrue_dir=%s\n' \
-    "${topology}" "${OAI2X2_LABEL:-}" "${OAI2X2_UE_EXTRA:-}" "${OAI2X2_BROKER_EXTRA:-}" "${OAI2X2_NRUE_DIR:-}"
+  printf 'topology=%s\nlabel=%s\nue_extra=%s\nbroker_extra=%s\nnrue_dir=%s\nbw_mhz=%s\ncuda_host_memory=%s\n' \
+    "${topology}" "${OAI2X2_LABEL:-}" "${OAI2X2_UE_EXTRA:-}" "${OAI2X2_BROKER_EXTRA:-}" "${OAI2X2_NRUE_DIR:-}" \
+    "${OAI2X2_BW_MHZ:-20}" "${OAI2X2_CUDA_HOST_MEMORY:-default}"
   printf 'oai_ue=%s\noai_ue_sha256=%s\n' "${OAI_UE_VARIANT}" "${OAI_UE_SHA256}"
   printf 'oai_zmq_module=%s\noai_shlibpath=%s\noai_zmq_module_sha256=%s\n' \
     "${OAI_ZMQ_MODULE_VARIANT}" "${OCUDU_NATIVE_OAI_SHLIBPATH}" "${OAI_ZMQ_MODULE_SHA256}"

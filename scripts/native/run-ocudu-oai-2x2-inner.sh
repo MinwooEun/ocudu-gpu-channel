@@ -387,12 +387,19 @@ PY
   # the 1x1 gate's; see run-ocudu-oai-1x1-inner.sh for why each is needed.
   # 2x2: --ue-nb-ant-rx/tx 2 and a comma list of two ZMQ channels per
   # direction (the syntax of OAI's ci-scripts/yaml_files/5g_zmq_radio_2x2).
+  # 20 MHz band n3 FDD by default; a wider cell's renderer writes the radio
+  # arguments (and, where the stock capability lacks the bandwidth, a
+  # capability file) next to the configs, as for the 1x1 gate.
+  local -a oai_radio=(-E -r 106 --numerology 0 --band 3 -C 1842500000 --ssb 486 --CO -95000000)
+  [[ -f "${config_dir}/nrue-radio.args" ]] && read -r -a oai_radio <"${config_dir}/nrue-radio.args"
+  [[ -f "${config_dir}/uecap.xml" ]] && uecap_file="${config_dir}/uecap.xml"
+  printf 'event=nrue_radio_args %s uecap=%s\n' "${oai_radio[*]}" "${uecap_file}" >"${log_dir}/nrue-radio.log"
   pushd "${log_dir}" >/dev/null
   # shellcheck disable=SC2086
   start_group nrue "${log_dir}/nrue.log" nsenter --net="/run/netns/${nested_name}" -- \
     setpriv --bounding-set -sys_nice \
     "${nrue_pin[@]}" ${OCUDU_NATIVE_NRUE_WRAPPER:-} "${nrue}" -O "${config_dir}/nrue.conf" \
-    -E -r 106 --numerology 0 --band 3 -C 1842500000 --ssb 486 --CO -95000000 \
+    "${oai_radio[@]}" \
     --ue-fo-compensation \
     --ue-nb-ant-rx 2 --ue-nb-ant-tx 2 \
     --uecap_file "${uecap_file}" \

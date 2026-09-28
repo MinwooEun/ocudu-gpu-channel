@@ -37,6 +37,7 @@ def load_module(name: str, filename: str):
 
 
 oai = load_module("render_oai_1x1_configs", "render-oai-1x1-configs.py")
+bw_configs = load_module("render_1x1_bw_configs", "render-1x1-bw-configs.py")
 legacy = oai.legacy
 
 VETH_HOST_IP = oai.VETH_HOST_IP
@@ -137,7 +138,13 @@ def main() -> int:
     parser.add_argument("--csi-rs", choices=("on", "off"), default="on")
     parser.add_argument("--topology", type=Path, required=True)
     parser.add_argument("--tx-backoff-db", type=float)
+    # S12: the same per-bandwidth rewrite as the OAI 1x1 gate
+    # (render-1x1-bw-configs.py apply_bandwidth), applied to the 2x2 render.
+    parser.add_argument("--bw-mhz", type=int, default=20)
+    parser.add_argument("--cuda-host-memory", choices=bw_configs.HOST_MEMORY)
     args = parser.parse_args()
+    if args.bw_mhz not in bw_configs.BANDWIDTHS and args.bw_mhz != 100:
+        legacy.fail(f"--bw-mhz must be one of {sorted(bw_configs.BANDWIDTHS) + [100]}")
 
     repo_root = args.repo_root.resolve(strict=True)
     native_root = args.native_root.resolve(strict=True)
@@ -177,7 +184,12 @@ def main() -> int:
         if legacy.PLACEHOLDER_RE.search(text):
             legacy.fail(f"unresolved placeholder in {name}")
         legacy.write_new(output_dir / name, text)
-    print(f'event=native_oai_2x2_configs_rendered output_dir="{output_dir}" path={args.path} max_rank={args.max_rank}')
+    prb, srate = bw_configs.apply_bandwidth(
+        output_dir, args.bw_mhz, "oai", args.cuda_host_memory or "", native_root,
+        sample_rate_entries=4, uecap_name="uecap_ports2.xml",
+    )
+    print(f'event=native_oai_2x2_configs_rendered output_dir="{output_dir}" path={args.path} max_rank={args.max_rank} '
+          f'bw_mhz={args.bw_mhz} prb={prb} srate_msps={srate} cuda_host_memory={args.cuda_host_memory or "default"}')
     return 0
 
 
