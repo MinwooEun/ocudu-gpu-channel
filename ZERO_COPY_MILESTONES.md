@@ -246,7 +246,7 @@ mvp-2edge 호출 하나로 본 이득(−14.3 µs): H2D IQ −5.3, D2H −9.7, �
 ### Z6 — 2026-09-28 (Jetson AGX Orin, sm_87, CUDA 12.6, MODE_30W)
 
 - **복사본:** `jetson-minwoo:/workspace/gpuch/zc6` = `8d916f3` bundle clone, 코드 diff 없음. 빌드 `builds/zc6-release`(`-j4`). 기본값만 `ZeroCopy`로 바꾼 시험용 복사본 `zc6-default`(config.h `Z6 TEST-ONLY flip`과 `test_config.cpp` 기본값 검사 한 줄, 커밋 대상 아님). 두 트리 모두 게이트 스크립트에 Jetson 전용 패치를 적용했다(Spark 패치와 같음: arch 87, x86 lock 검사 생략, gNB 버전 정규식, `start_group` pgid 폴링, 빌드 `-j4`).
-- **조건:** `MODE_30W`(코어 8/12 online, CPU 최대 1.728 GHz, GPU 최대 612 MHz). `jetson_clocks`는 적용하지 않았다(공유 장비). 측정 중 다른 GPU 작업은 없었다: hyunsoo 브로커 미실행, `nvidia-smi` 프로세스 없음, 호스트 tegrastats 로그를 보존했다. 09-25 라이브 실행에서 남은 우리 컨테이너의 mongod 2개는 종료했다.
+- **조건:** `MODE_30W`(코어 8/12 online, CPU 최대 1.728 GHz, GPU 최대 612 MHz). `jetson_clocks`는 적용하지 않았다(공유 장비). 측정 중 다른 GPU 작업은 없었다: user-a 브로커 미실행, `nvidia-smi` 프로세스 없음, 호스트 tegrastats 로그를 보존했다. 09-25 라이브 실행에서 남은 우리 컨테이너의 mongod 2개는 종료했다.
 - **장치 속성:** `Integrated=1`, `CanMapHostMemory=1`, **`PageableMemoryAccess=0`**, `ConcurrentManagedAccess=0`(D6). 따라서 **Orin의 `auto`는 zero-copy를 고르고, 분할은 `in,out`이다.** `direct`·`direct_in`은 쓸 수 없고, `OCG_ZC_PARTS=direct_in`은 `needs pageable memory access`로 거부된다. 폴백은 설계대로 동작한다. mapped pinned 메모리는 managed 메모리와 다른 경로라서 D6(`cudaErrorInvalidDevice`)은 나타나지 않았다.
 
 **정확성**
@@ -286,7 +286,7 @@ mvp-2edge 호출 하나로 본 이득(−14.3 µs): H2D IQ −5.3, D2H −9.7, �
 | 061214Z | zero-copy | **355 / 1375** | **345 / 1390** | 19.3 / 18.6 | 28 |
 
 - p50 415–455 → **345–360 µs(약 −20%)**, p99 1670–1770 → **1375–1455 µs**. starvation도 줄었다(32–33 → 18–28).
-- **30 W Orin은 23.04 MS/s 라이브에서 여유가 없다.** zero-copy를 써도 p50이 500 µs 슬롯 예산의 70%이고, p95는 약 1 ms로 예산을 넘는다. Spark(p50 40 µs)와 달리 emulator 호출 자체가 크다. 커널만 약 90 µs다(GPU 612 MHz, SM 8개). attach는 통과하지만, 더 높은 대역폭이나 다중 UE 라이브는 MAXN 없이 기대하기 어렵다(MAXN 전환은 hyunsoo 합의 필요, 이번에는 바꾸지 않았다).
+- **30 W Orin은 23.04 MS/s 라이브에서 여유가 없다.** zero-copy를 써도 p50이 500 µs 슬롯 예산의 70%이고, p95는 약 1 ms로 예산을 넘는다. Spark(p50 40 µs)와 달리 emulator 호출 자체가 크다. 커널만 약 90 µs다(GPU 612 MHz, SM 8개). attach는 통과하지만, 더 높은 대역폭이나 다중 UE 라이브는 MAXN 없이 기대하기 어렵다(MAXN 전환은 user-a 합의 필요, 이번에는 바꾸지 않았다).
 
 **Z7에 대한 결론:** 통합 GPU 두 종(GB10, Orin) 모두에서 zero-copy가 bit 동일이고, 벤치·라이브 모두 빠르다. `auto`는 두 플랫폼에서 의도대로 해석된다(GB10 `in,out,direct,direct_in`, Orin `in,out`). 디스크리트는 `auto` → copy로 경로가 바뀌지 않는다. **`auto`를 기본값으로 하는 근거는 이것으로 충분하다.** 남은 Z7 작업은 기본값 전환(`config.h`와 `test_config` 기본값 검사), README·예제 갱신, PR 정리다. 플랫폼별 meta 분할(Orin에서 in,out,meta)은 선택 사항이다.
 
