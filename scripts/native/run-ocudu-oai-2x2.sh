@@ -20,8 +20,10 @@ set -euo pipefail
 #   OAI2X2_BROKER_EXTRA   extra broker arguments (e.g. wire capture)
 #   OAI2X2_UE_EXTRA       extra nr-uesoftmodem arguments
 #   OAI2X2_NRUE_DIR       OAI build directory (default builds/oai-zmq-release)
-#   OCUDU_NATIVE_OAI_SHLIBPATH  directory of the OAI ZMQ radio module (default
-#                         OAI2X2_NRUE_DIR), e.g. the S9 reply-poll patched driver
+#   OCUDU_NATIVE_OAI_ZMQ_MODULE  patched (default: builds/oai-zmq-s9, the S9
+#                         reply-poll driver) or stock (builds/oai-zmq-release)
+#   OCUDU_NATIVE_OAI_SHLIBPATH  explicit ZMQ radio module directory; overrides
+#                         OCUDU_NATIVE_OAI_ZMQ_MODULE
 #   OAI2X2_LABEL          free-text label stored with the run
 #
 # Output: results/{logs,reports}/oai-2x2/<timestamp>/, then
@@ -33,6 +35,8 @@ repo_root="$(cd "${script_dir}/../.." && pwd)"
 source "${script_dir}/env.sh"
 
 native_root="${OCUDU_NATIVE_ROOT}"
+# shellcheck source=oai-zmq-module.sh
+source "${script_dir}/oai-zmq-module.sh"
 physical_gpu="${OCUDU_NATIVE_GPU_DEVICE:-0}"
 cuda_compiler="${CUDACXX:-/usr/local/cuda/bin/nvcc}"
 inner="${script_dir}/run-ocudu-oai-2x2-inner.sh"
@@ -61,6 +65,9 @@ for command_name in unshare nsenter ip mount umount flock cmake ss setsid stdbuf
 done
 [[ "$(git -C "${native_root}/src/ocudu" rev-parse HEAD)" == "${audited_ocudu}" ]] || usage_error "OCUDU revision mismatch"
 [[ "$(git -C "${native_root}/src/oai" rev-parse HEAD)" == "${audited_oai}" ]] || usage_error "OAI revision mismatch"
+# Exports OCUDU_NATIVE_OAI_SHLIBPATH for the inner script (patched by default).
+resolve_oai_zmq_module "${native_root}" || usage_error "OAI ZMQ module selection failed"
+printf 'oai zmq module: %s %s\n' "${OAI_ZMQ_MODULE_VARIANT}" "${OCUDU_NATIVE_OAI_SHLIBPATH}"
 
 exec {lock_fd}<"${script_dir}/run-ocudu-oai-1x1.sh"
 flock -n "${lock_fd}" || usage_error "another native OAI gate is running"
@@ -97,7 +104,8 @@ cp "${config_dir}"/* "${report_dir}/"
     "${timestamp}" "${OAI2X2_PATH}" "${max_rank}" "${csi_rs}" "${OAI2X2_MAX_UE_MCS:-}" "${OAI2X2_TX_BACKOFF_DB:-}"
   printf 'topology=%s\nlabel=%s\nue_extra=%s\nbroker_extra=%s\nnrue_dir=%s\n' \
     "${topology}" "${OAI2X2_LABEL:-}" "${OAI2X2_UE_EXTRA:-}" "${OAI2X2_BROKER_EXTRA:-}" "${OAI2X2_NRUE_DIR:-}"
-  printf 'oai_shlibpath=%s\n' "${OCUDU_NATIVE_OAI_SHLIBPATH:-}"
+  printf 'oai_zmq_module=%s\noai_shlibpath=%s\noai_zmq_module_sha256=%s\n' \
+    "${OAI_ZMQ_MODULE_VARIANT}" "${OCUDU_NATIVE_OAI_SHLIBPATH}" "${OAI_ZMQ_MODULE_SHA256}"
   printf 'channel_head=%s\nchannel_dirty=%s\n' "$(git -C "${repo_root}" rev-parse HEAD)" \
     "$(git -C "${repo_root}" status --porcelain | wc -l)"
 } >"${report_dir}/run-params.txt"

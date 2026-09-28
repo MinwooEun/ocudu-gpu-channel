@@ -84,6 +84,14 @@ for path in "${inner}" "${renderer}" "${verifier}" \
   [[ -e "${path}" ]] || usage_error "missing required path: ${path}"
 done
 [[ -c /dev/net/tun ]] || usage_error "/dev/net/tun is absent"
+# The ZMQ radio module the nrUE loads: the S9 reply-poll patched build unless
+# OCUDU_NATIVE_OAI_ZMQ_MODULE=stock or OCUDU_NATIVE_OAI_SHLIBPATH says otherwise.
+# Exports OCUDU_NATIVE_OAI_SHLIBPATH, which the inner script reads.
+# shellcheck source=oai-zmq-module.sh
+source "${script_dir}/oai-zmq-module.sh"
+resolve_oai_zmq_module "${native_root}" || usage_error "OAI ZMQ module selection failed"
+printf 'oai zmq module: %s %s (sha256 %s)\n' "${OAI_ZMQ_MODULE_VARIANT}" \
+  "${OCUDU_NATIVE_OAI_SHLIBPATH}" "${OAI_ZMQ_MODULE_SHA256}"
 [[ "$(git -C "${native_root}/src/ocudu" rev-parse HEAD)" == "${audited_ocudu}" ]] || usage_error "OCUDU revision mismatch"
 [[ "$(git -C "${native_root}/src/oai" rev-parse HEAD)" == "${audited_oai}" ]] || usage_error "OAI revision mismatch"
 [[ "$(git -C "${native_root}/src/open5gs" rev-parse HEAD)" == "${audited_open5gs}" ]] || usage_error "Open5GS revision mismatch"
@@ -196,6 +204,7 @@ grep -Eq 'OCUDU 5G gNB version .*\(a1916edcd\)|OCUDU gNB \(commit a1916ed[0-9a-f
   "${audited_open5gs}" <<'PY'
 import hashlib
 import json
+import os
 import pathlib
 import sys
 
@@ -216,7 +225,7 @@ configs = pathlib.Path(config_root)
 binary_paths = {
     "gnb": native / "builds/ocudu-zmq-release/apps/gnb/gnb",
     "nrue": native / "builds/oai-zmq-release/nr-uesoftmodem",
-    "oai_zmq_module": native / "builds/oai-zmq-release/liboai_zmqdevif.so",
+    "oai_zmq_module": pathlib.Path(os.environ["OCUDU_NATIVE_OAI_SHLIBPATH"]) / "liboai_zmqdevif.so",
     "open5gs_5gc": native / "builds/open5gs-v2.7.6/tests/app/5gc",
     "mongod": native / "install/mongodb-6.0.29/bin/mongod",
     "broker": build / "ocudu-gpu-channel",
@@ -236,6 +245,8 @@ data = {
         "oai": oai_commit,
         "open5gs": open5gs_commit,
     },
+    "oai_zmq_module_variant": os.environ["OAI_ZMQ_MODULE_VARIANT"],
+    "oai_zmq_module_dir": os.environ["OCUDU_NATIVE_OAI_SHLIBPATH"],
     "binary_sha256": {name: digest(path) for name, path in binary_paths.items()},
     "config_sha256": {name: digest(path) for name, path in config_paths.items()},
     "claim_boundary": {

@@ -288,9 +288,9 @@ run_stack()
   for binary in "${gnb}" "${nrue}" "${fivegc}" "${mongod}" "${broker}"; do
     [[ -x "${binary}" ]] || usage_error "missing executable: ${binary}"
   done
-  # OCUDU_NATIVE_OAI_SHLIBPATH loads the ZMQ radio module from another
-  # directory, e.g. one built with scripts/native/patches/
-  # oai-zmq-tx-reply-poll.patch (S9); the nrUE binary stays ${oai_build}'s.
+  # The outer script resolves the ZMQ radio module (oai-zmq-module.sh; the S9
+  # reply-poll patched build by default) and exports OCUDU_NATIVE_OAI_SHLIBPATH;
+  # the nrUE binary stays ${oai_build}'s.
   local zmq_module_dir="${OCUDU_NATIVE_OAI_SHLIBPATH:-${oai_build}}"
   [[ -f "${zmq_module_dir}/liboai_zmqdevif.so" ]] || usage_error "missing OAI ZMQ radio module"
   # ports2 = the UE advertises 2 DL MIMO layers (maxMIMO-Layers 2) and 2-port
