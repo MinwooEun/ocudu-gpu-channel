@@ -321,7 +321,10 @@ run_stack()
   done
   local gnb="${OCUDU_NATIVE_GNB_BINARY:-${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb}"
   local nrue="${native_root}/builds/oai-zmq-release/nr-uesoftmodem"
-  local oai_build="${native_root}/builds/oai-zmq-release"
+  # OCUDU_NATIVE_OAI_SHLIBPATH points the nrUE at another module directory,
+  # e.g. one holding the ZMQ driver built with scripts/native/patches/
+  # oai-zmq-tx-reply-poll.patch (S9).
+  local oai_build="${OCUDU_NATIVE_OAI_SHLIBPATH:-${native_root}/builds/oai-zmq-release}"
   local fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
   local mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
   local broker="${OCUDU_NATIVE_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-cuda-release}/ocudu-gpu-channel"
@@ -400,7 +403,9 @@ PY
   # The broker's --duration clock starts with the broker, so a CUDA gNB's
   # device initialisation (~20 s) is added on top of the fixed 25 s window.
   local startup_allowance="${OCUDU_NATIVE_BROKER_STARTUP_ALLOWANCE_SECONDS:-0}"
-  start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${broker}" --config "${config_dir}/topology.yaml" --duration "$((25 + startup_allowance))s"
+  # OCUDU_NATIVE_BROKER_WRAPPER / OCUDU_NATIVE_GNB_WRAPPER prefix the broker or
+  # gNB command with a profiler (a script that ends in `exec ... "$@"`; S9 nsys).
+  start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" ${OCUDU_NATIVE_BROKER_WRAPPER:-} "${broker}" --config "${config_dir}/topology.yaml" --duration "$((25 + startup_allowance))s"
   broker_pid="${started_pid}"
   broker_index=$((${#process_pids[@]} - 1))
   # Absolute bound: the fixed 25-second run plus ten seconds for grouped
@@ -408,7 +413,7 @@ PY
   # and ping complete.
   broker_exit_deadline=$((SECONDS + 35 + startup_allowance))
   wait_log "${log_dir}/broker.log" 'event=radio_node_resolved id=ue0' "${broker_pid}" 15 || usage_error "broker did not become ready"
-  start_group gnb "${log_dir}/gnb-console.log" "${gnb}" -c "${config_dir}/gnb.yaml"
+  start_group gnb "${log_dir}/gnb-console.log" ${OCUDU_NATIVE_GNB_WRAPPER:-} "${gnb}" -c "${config_dir}/gnb.yaml"
   gnb_pid="${started_pid}"
   wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" "${OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS:-15}" || usage_error "gNB did not start"
   sleep 3
