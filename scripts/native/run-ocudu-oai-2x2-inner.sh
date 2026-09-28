@@ -386,7 +386,11 @@ PY
   window_deadline=$((SECONDS + broker_seconds + startup_allowance))
   start_group gnb "${log_dir}/gnb-console.log" "${gnb_pin[@]}" ${OCUDU_NATIVE_GNB_WRAPPER:-} "${gnb}" -c "${config_dir}/gnb.yaml"
   gnb_pid="${started_pid}"
-  wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" "${OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS:-20}" || usage_error "gNB did not start"
+  # A CUDA gNB initialises its GPU pipelines before the banner and needs well
+  # over 20 s (two D10 runs on the 5090 hit the 20 s limit, 2026-09-29).
+  local gnb_start_default=20
+  [[ "${OAI_GATE_GNB_USES_CUDA:-0}" == "1" ]] && gnb_start_default=90
+  wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" "${OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS:-${gnb_start_default}}" || usage_error "gNB did not start"
   sleep 3
   # Cell identity and the three M6.2 fixes (setpriv, --CO, absolute uecap) are
   # the 1x1 gate's; see run-ocudu-oai-1x1-inner.sh for why each is needed.
