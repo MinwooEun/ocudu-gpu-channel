@@ -120,6 +120,46 @@ for binary in \
   fi
   rm -f "${ldd_report}"
 done
+# Gate defaults that keep a run at real time (SPARK_MILESTONES.md S9-S11). Each
+# has an opt-out, and each choice is written to run-params.json below.
+#
+# 1. A CUDA gNB shares the GPU with the broker; without MPS the two contexts
+#    time-slice and the broker's kernel start waits ~150 us at p99 (S9). Re-run
+#    this gate under one MPS server, which with-cuda-mps.py always shuts down.
+#    This comes first so the re-run resolves 2. and 3. from a clean slate.
+#    OCUDU_NATIVE_MPS=off opts out, =on forces it for a CPU gNB too.
+mps_choice="${OCUDU_NATIVE_MPS:-auto}"
+[[ "${mps_choice}" =~ ^(auto|on|off)$ ]] || usage_error "OCUDU_NATIVE_MPS must be auto, on or off"
+gnb_uses_cuda=0
+ldd "${gnb_binary}" 2>/dev/null | grep -Eq 'libcudart|libcuda\.so' && gnb_uses_cuda=1
+if [[ -z "${CUDA_MPS_PIPE_DIRECTORY:-}" ]] && \
+   [[ "${mps_choice}" == "on" || ( "${mps_choice}" == "auto" && "${gnb_uses_cuda}" -eq 1 ) ]]; then
+  export OCUDU_NATIVE_MPS_REASON="${mps_choice}:gnb_uses_cuda=${gnb_uses_cuda}"
+  exec /usr/bin/python3 "${repo_root}/scripts/cuda/with-cuda-mps.py" -- bash "${BASH_SOURCE[0]}"
+fi
+# 2. The OAI ZMQ radio module: the patched build from oai-zmq-module.lock.json
+#    (the stock driver paces the lock-step chain to ~0.3x real time).
+#    OCUDU_NATIVE_OAI_ZMQ_MODULE=stock loads the release module instead; an
+#    explicit OCUDU_NATIVE_OAI_SHLIBPATH still wins over both.
+oai_zmq_choice="${OCUDU_NATIVE_OAI_ZMQ_MODULE:-patched}"
+if [[ -n "${OCUDU_NATIVE_OAI_SHLIBPATH:-}" ]]; then
+  oai_zmq_choice="custom"
+elif [[ "${oai_zmq_choice}" == "patched" ]]; then
+  OCUDU_NATIVE_ROOT="${native_root}" /usr/bin/python3 "${script_dir}/build-oai-zmq-patched.py" --verify \
+    >/dev/null || usage_error "patched OAI ZMQ module missing or stale (scripts/native/build-oai-zmq-patched.py)"
+  OCUDU_NATIVE_OAI_SHLIBPATH="${native_root}/builds/oai-zmq-patched"
+elif [[ "${oai_zmq_choice}" == "stock" ]]; then
+  OCUDU_NATIVE_OAI_SHLIBPATH="${native_root}/builds/oai-zmq-release"
+else
+  usage_error "OCUDU_NATIVE_OAI_ZMQ_MODULE must be patched or stock"
+fi
+export OCUDU_NATIVE_OAI_SHLIBPATH
+# 3. CPU placement from platform-profiles.json (a no-op on an unknown host;
+#    OCUDU_NATIVE_PLATFORM=none turns it off, per-role *_CPUS override it).
+platform_shell="$(/usr/bin/python3 "${script_dir}/platform-profile.py" --shell)" || \
+  usage_error "platform profile resolution failed"
+eval "${platform_shell}"
+export OCUDU_NATIVE_PLATFORM_PROFILE OCUDU_NATIVE_GNB_CPUS OCUDU_NATIVE_BROKER_CPUS OCUDU_NATIVE_NRUE_CPUS
 # The stack runs in its own network namespace, so a host listener on these
 # ports cannot collide with it. The check stays on by default; a host that runs
 # its own Open5GS/MongoDB (this workstation does) sets
@@ -168,6 +208,43 @@ source_manifest_after="${report_dir}/channel-source-manifest.after-build.tsv"
 source_evidence="${report_dir}/source-evidence.json"
 preserved_configs="${report_dir}/configs"
 write_channel_manifest "${source_manifest}"
+# What this run actually used for the S9-S11 defaults.
+/usr/bin/python3 - "${report_dir}/run-params.json" "${oai_zmq_choice}" "${OCUDU_NATIVE_OAI_SHLIBPATH}" \
+  "${gnb_uses_cuda}" "${script_dir}/platform-profile.py" <<'PY'
+import hashlib
+import json
+import os
+import subprocess
+import sys
+
+path, choice, shlib, gnb_uses_cuda, profile_script = sys.argv[1:]
+module = os.path.join(shlib, "liboai_zmqdevif.so")
+manifest = os.path.join(shlib, "manifest.json")
+data = {
+    "schema": "ocudu-native-oai-1x1-run-params/v1",
+    "oai_zmq_module": {
+        "choice": choice,
+        "path": module,
+        "sha256": hashlib.sha256(open(module, "rb").read()).hexdigest(),
+        "manifest": json.load(open(manifest)) if os.path.isfile(manifest) else None,
+    },
+    "platform": json.loads(subprocess.check_output(["/usr/bin/python3", profile_script, "--json"], text=True)),
+    "cpus_applied": {role: os.environ.get(f"OCUDU_NATIVE_{role.upper()}_CPUS", "") for role in ("gnb", "broker", "nrue")},
+    "mps": {
+        "gnb_uses_cuda": gnb_uses_cuda == "1",
+        "requested": os.environ.get("OCUDU_NATIVE_MPS", "auto"),
+        "active": bool(os.environ.get("CUDA_MPS_PIPE_DIRECTORY")),
+        "evidence": os.environ.get("OCUDU_NATIVE_MPS_EVIDENCE"),
+    },
+}
+with open(path, "x", encoding="utf-8") as output:
+    json.dump(data, output, indent=2, sort_keys=True)
+    output.write("\n")
+PY
+printf 'event=oai_gate_defaults oai_zmq_module=%s platform=%s gnb_cpus=%s broker_cpus=%s nrue_cpus=%s mps=%s\n' \
+  "${oai_zmq_choice}" "${OCUDU_NATIVE_PLATFORM_PROFILE}" "${OCUDU_NATIVE_GNB_CPUS:-any}" \
+  "${OCUDU_NATIVE_BROKER_CPUS:-any}" "${OCUDU_NATIVE_NRUE_CPUS:-any}" \
+  "$([[ -n "${CUDA_MPS_PIPE_DIRECTORY:-}" ]] && echo on || echo off)" | tee "${log_dir}/gate-defaults.log"
 channel_head="$(git -C "${repo_root}" rev-parse HEAD)"
 channel_diff_sha256="$(git -C "${repo_root}" diff --binary -- . | sha256sum | awk '{print $1}')"
 
@@ -190,6 +267,9 @@ mkdir "${preserved_configs}"
 cp "${config_dir}/gnb.yaml" "${config_dir}/topology.yaml" \
   "${config_dir}/open5gs.yaml" "${config_dir}/nrue.conf" \
   "${config_dir}/subscriber.csv" "${preserved_configs}/"
+for optional in nrue-radio.args uecap.xml; do
+  if [[ -f "${config_dir}/${optional}" ]]; then cp "${config_dir}/${optional}" "${preserved_configs}/"; fi
+done
 "${gnb_binary}" --version \
   >"${report_dir}/gnb-version.txt" 2>&1
 grep -Eq "OCUDU 5G gNB version .*\(${audited_gnb_commit}|OCUDU gNB \(commit ${audited_gnb_commit:0:7}[0-9a-f]*\)" "${report_dir}/gnb-version.txt" || \
@@ -200,6 +280,7 @@ grep -Eq "OCUDU 5G gNB version .*\(${audited_gnb_commit}|OCUDU gNB \(commit ${au
   "${audited_open5gs}" "${gnb_binary}" <<'PY'
 import hashlib
 import json
+import os
 import pathlib
 import sys
 
@@ -220,7 +301,7 @@ configs = pathlib.Path(config_root)
 binary_paths = {
     "gnb": pathlib.Path(gnb_binary),
     "nrue": native / "builds/oai-zmq-release/nr-uesoftmodem",
-    "oai_zmq_module": native / "builds/oai-zmq-release/liboai_zmqdevif.so",
+    "oai_zmq_module": pathlib.Path(os.environ["OCUDU_NATIVE_OAI_SHLIBPATH"]) / "liboai_zmqdevif.so",
     "open5gs_5gc": native / "builds/open5gs-v2.7.6/tests/app/5gc",
     "mongod": native / "install/mongodb-6.0.29/bin/mongod",
     "broker": build / "ocudu-gpu-channel",

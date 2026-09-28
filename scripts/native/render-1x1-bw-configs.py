@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -47,7 +48,9 @@ BANDWIDTHS = {
 # 15 kHz only). dl_arfcn 637212 is the one OCUDU's own 100 MHz n78 example
 # (configs/gnb_ru_ran550_tdd_n78_100mhz_4x2.yml) uses, and PRACH index 159
 # is that example's TDD PRACH. The SSB ARFCN is the gNB-printed value.
-TDD_100 = {"prb": 273, "srate": "122.88", "dl_arfcn": 637212, "ssb_arfcn": None}
+# 634464 is the SSB ARFCN the gNB derives for that cell and prints at start-up
+# (S8/S10 runs); the renderer uses it for the nrUE --ssb offset.
+TDD_100 = {"prb": 273, "srate": "122.88", "dl_arfcn": 637212, "ssb_arfcn": 634464}
 BASES = {
     "legacy": "render-legacy-1x1-configs.py",
     "oai": "render-oai-1x1-configs.py",
@@ -101,7 +104,6 @@ def oai_uecap_with_bw(src: Path, dst: Path, bw: int) -> None:
     cell needs one. It is a copy of the 15 kHz 40 MHz entry with the bandwidth
     changed.
     """
-    import re
     text = src.read_text(encoding="utf-8")
     blocks = re.findall(r"            <FeatureSetDownlinkPerCC>.*?</FeatureSetDownlinkPerCC>\n", text, re.S)
     if any("<kHz15/>" in b and f"<mhz{bw}/>" in b for b in blocks):
@@ -214,6 +216,25 @@ def main() -> int:
             raise ValueError("broker host memory: runtime anchor missing or knob already set")
         text = text.replace("\n  gpu_device: 0\n", f"\n  gpu_device: 0\n  cuda_host_memory: {host_memory}\n")
         topology.write_text(text, encoding="utf-8")
+    if base == "oai" and bw != 20:
+        # S11: the gate reads the nrUE radio arguments and, where the stock
+        # capability lacks the cell's bandwidth, the capability file from the
+        # rendered configs, so a run needs no per-bandwidth environment.
+        if bw == 100:
+            radio = oai_tdd100_args(TDD_100["ssb_arfcn"])
+        else:
+            sampling = oai_sampling_flag(bw)
+            radio = (("-E " if sampling == "-E" else "") +
+                     f"-r {prb} --numerology 0 --band 3 -C {int(DL_CENTER_HZ)} "
+                     f"--ssb {oai_ssb_offset(bw)} --CO -95000000")
+        (out / "nrue-radio.args").write_text(radio + "\n", encoding="utf-8")
+        if bw in BANDWIDTHS:
+            native_root = Path(argv[argv.index("--native-root") + 1])
+            stock = native_root / "src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF/uecap_ports1.xml"
+            per_cc = re.findall(r"<FeatureSetDownlinkPerCC>.*?</FeatureSetDownlinkPerCC>",
+                                stock.read_text(encoding="utf-8"), re.S)
+            if not any("<kHz15/>" in b and f"<mhz{bw}/>" in b for b in per_cc):
+                oai_uecap_with_bw(stock, out / "uecap.xml", bw)
     print(f"event=native_bw_configs_rendered base={base} bw_mhz={bw} prb={prb} srate_msps={srate} "
           f"cuda_host_memory={host_memory or 'default'}")
     return 0

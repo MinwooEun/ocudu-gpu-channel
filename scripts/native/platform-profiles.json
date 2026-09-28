@@ -1,0 +1,18 @@
+{
+  "schema": "ocudu-native-platform-profiles/v1",
+  "why": "The gNB <-> broker <-> UE chain is lock-step: every slot waits one full round of thread handoffs. On a big.LITTLE host with deep idle states, handoffs that land on little cores or wake a core from its deepest idle state push the round past the slot period. Pinning the three processes to separate big-core sets is what brought 100 MHz on GB10 from 0.72x to real time (SPARK_MILESTONES.md S10).",
+  "profiles": {
+    "spark-gb10": {
+      "detect": {
+        "gpu_name": "NVIDIA GB10",
+        "fastest_cpus": "5-9,15-19"
+      },
+      "cpus": {
+        "gnb": "5-9",
+        "broker": "15,16",
+        "nrue": "17-19"
+      },
+      "evidence": "SPARK_MILESTONES.md S10 (100 MHz OAI 1x1: 1,424-1,506 -> 1,995-2,077 slots/s)"
+    }
+  }
+}

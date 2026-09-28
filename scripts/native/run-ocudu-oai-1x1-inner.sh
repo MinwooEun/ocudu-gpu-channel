@@ -341,7 +341,11 @@ run_stack()
     [[ -x "${binary}" ]] || usage_error "missing executable: ${binary}"
   done
   [[ -f "${oai_build}/liboai_zmqdevif.so" ]] || usage_error "missing OAI ZMQ radio module"
-  local uecap_file="${OCUDU_NATIVE_OAI_UECAP_FILE:-${native_root}/src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF/uecap_ports1.xml}"
+  # A rendered uecap.xml (render-1x1-bw-configs.py, for a bandwidth the stock
+  # capability does not list) wins over the stock file; the env knob over both.
+  local uecap_default="${native_root}/src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF/uecap_ports1.xml"
+  [[ -f "${config_dir}/uecap.xml" ]] && uecap_default="${config_dir}/uecap.xml"
+  local uecap_file="${OCUDU_NATIVE_OAI_UECAP_FILE:-${uecap_default}}"
   [[ -f "${uecap_file}" ]] || usage_error "missing OAI UE capability file: ${uecap_file}"
 
   prepare_namespace
@@ -413,7 +417,13 @@ PY
   # OCUDU_NATIVE_BROKER_WRAPPER / OCUDU_NATIVE_GNB_WRAPPER / OCUDU_NATIVE_NRUE_WRAPPER
   # prefix the broker, gNB or nrUE command (a script that ends in `exec ... "$@"`):
   # a profiler (S9 nsys) or a CPU placement (S10 `taskset -c`).
-  start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" ${OCUDU_NATIVE_BROKER_WRAPPER:-} "${broker}" --config "${config_dir}/topology.yaml" --duration "$((25 + startup_allowance))s"
+  # Platform CPU placement resolved by the outer gate (platform-profile.py);
+  # empty on a host without a profile, which leaves the scheduler alone.
+  local broker_pin=() gnb_pin=() nrue_pin=()
+  [[ -n "${OCUDU_NATIVE_BROKER_CPUS:-}" ]] && broker_pin=(taskset -c "${OCUDU_NATIVE_BROKER_CPUS}")
+  [[ -n "${OCUDU_NATIVE_GNB_CPUS:-}" ]] && gnb_pin=(taskset -c "${OCUDU_NATIVE_GNB_CPUS}")
+  [[ -n "${OCUDU_NATIVE_NRUE_CPUS:-}" ]] && nrue_pin=(taskset -c "${OCUDU_NATIVE_NRUE_CPUS}")
+  start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${broker_pin[@]}" ${OCUDU_NATIVE_BROKER_WRAPPER:-} "${broker}" --config "${config_dir}/topology.yaml" --duration "$((25 + startup_allowance))s"
   broker_pid="${started_pid}"
   broker_index=$((${#process_pids[@]} - 1))
   # Absolute bound: the fixed 25-second run plus ten seconds for grouped
@@ -421,7 +431,7 @@ PY
   # and ping complete.
   broker_exit_deadline=$((SECONDS + 35 + startup_allowance))
   wait_log "${log_dir}/broker.log" 'event=radio_node_resolved id=ue0' "${broker_pid}" 15 || usage_error "broker did not become ready"
-  start_group gnb "${log_dir}/gnb-console.log" ${OCUDU_NATIVE_GNB_WRAPPER:-} "${gnb}" -c "${config_dir}/gnb.yaml"
+  start_group gnb "${log_dir}/gnb-console.log" "${gnb_pin[@]}" ${OCUDU_NATIVE_GNB_WRAPPER:-} "${gnb}" -c "${config_dir}/gnb.yaml"
   gnb_pid="${started_pid}"
   wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" "${OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS:-15}" || usage_error "gNB did not start"
   sleep 3
@@ -455,14 +465,20 @@ PY
   [[ "${OCUDU_NATIVE_OAI_UE_SAMPLING:--E}" == "-" ]] && oai_sampling=()
   local oai_radio=("${oai_sampling[@]}" -r "${OCUDU_NATIVE_OAI_UE_PRB:-106}" --numerology 0 --band 3
     -C 1842500000 --ssb "${OCUDU_NATIVE_OAI_UE_SSB:-486}" --CO -95000000)
+  # The renderer writes nrue-radio.args for any bandwidth but 20 MHz; the
+  # per-value knobs above or OCUDU_NATIVE_OAI_UE_RADIO_ARGS still override it.
+  if [[ -z "${OCUDU_NATIVE_OAI_UE_RADIO_ARGS:-}${OCUDU_NATIVE_OAI_UE_PRB:-}" && -f "${config_dir}/nrue-radio.args" ]]; then
+    read -r -a oai_radio <"${config_dir}/nrue-radio.args"
+  fi
   [[ -n "${OCUDU_NATIVE_OAI_UE_RADIO_ARGS:-}" ]] && read -r -a oai_radio <<<"${OCUDU_NATIVE_OAI_UE_RADIO_ARGS}"
+  printf 'event=nrue_radio_args %s uecap=%s\n' "${oai_radio[*]}" "${uecap_file}" >"${log_dir}/nrue-radio.log"
   # The UE writes nrL1_UE_stats-0.log (and friends) into its working directory
   # and asserts if it cannot. Inside the userns the gate's cwd may belong to an
   # unmapped uid, so start the UE from the log directory the gate owns.
   pushd "${log_dir}" >/dev/null
   start_group nrue "${log_dir}/nrue.log" nsenter --net="/run/netns/${nested_name}" -- \
     setpriv --bounding-set -sys_nice \
-    ${OCUDU_NATIVE_NRUE_WRAPPER:-} "${nrue}" -O "${config_dir}/nrue.conf" \
+    "${nrue_pin[@]}" ${OCUDU_NATIVE_NRUE_WRAPPER:-} "${nrue}" -O "${config_dir}/nrue.conf" \
     "${oai_radio[@]}" \
     --ue-fo-compensation \
     --uecap_file "${uecap_file}" \
