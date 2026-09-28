@@ -745,9 +745,9 @@ public:
       check(cudaMalloc(reinterpret_cast<void**>(&sp.device_row_begin),
                        (sp.rows + 1) * sizeof(int)),
             "cudaMalloc superpose row_begin");
-      check(cudaMemcpy(sp.device_row_begin, sp.host_row_begin.data(),
-                       (sp.rows + 1) * sizeof(int), cudaMemcpyHostToDevice),
-            "cudaMemcpy superpose row_begin H2D");
+      check(cudaMemcpyAsync(sp.device_row_begin, sp.host_row_begin.data(),
+                            (sp.rows + 1) * sizeof(int), cudaMemcpyHostToDevice, sp.stream),
+            "cudaMemcpyAsync superpose row_begin H2D");
 
       // Optional receiver model (a thermal-noise floor) applied after the sum.
       // One state here, which is correct while Nr = 1 -- and Nr > 1 is still
@@ -966,14 +966,23 @@ public:
         check(cudaMalloc(reinterpret_cast<void**>(&sp.device_correlation_groups),
                          groups.size() * sizeof(DeviceCorrelationGroup)),
               "cudaMalloc superpose correlation groups");
-        check(cudaMemcpy(sp.device_correlation_groups, groups.data(),
-                         groups.size() * sizeof(DeviceCorrelationGroup), cudaMemcpyHostToDevice),
-              "cudaMemcpy correlation groups H2D");
+        check(cudaMemcpyAsync(sp.device_correlation_groups, groups.data(),
+                              groups.size() * sizeof(DeviceCorrelationGroup), cudaMemcpyHostToDevice,
+                              sp.stream),
+              "cudaMemcpyAsync correlation groups H2D");
       }
 
-      check(cudaMemcpy(sp.device_link_states, sp.host_link_states.data(),
-                       incoming * sizeof(DeviceLinkState), cudaMemcpyHostToDevice),
-            "cudaMemcpy device_link_states H2D");
+      // The initial uploads go on sp.stream, not the legacy default stream.
+      // sp.stream is non-blocking, so it is not ordered after legacy-stream
+      // work, and a cudaMemcpy from pageable memory may return before its DMA
+      // lands. The first slot's snap-refresh D2H then read the device state
+      // before it arrived (all zeros, has_tdl=0) whenever another CUDA context
+      // delayed that DMA, and the late DMA later overwrote the refreshed
+      // state. Synchronize here so prepare() returns with the state resident.
+      check(cudaMemcpyAsync(sp.device_link_states, sp.host_link_states.data(),
+                            incoming * sizeof(DeviceLinkState), cudaMemcpyHostToDevice, sp.stream),
+            "cudaMemcpyAsync device_link_states H2D");
+      check(cudaStreamSynchronize(sp.stream), "cudaStreamSynchronize superpose prepare");
       } catch (...) {
         auto it = superpose_states_.find(node.id);
         if (it != superpose_states_.end()) {

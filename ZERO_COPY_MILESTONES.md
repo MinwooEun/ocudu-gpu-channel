@@ -299,3 +299,12 @@ mvp-2edge 호출 하나로 본 이득(−14.3 µs): H2D IQ −5.3, D2H −9.7, �
   - 워크스테이션 5090(CUDA 13.0, sm_120): 같은 벤치 → `cuda_zero_copy,0`(copy 유지).
 - **별도 발견 — 5090 ctest 간헐 실패 (Z7과 무관):** 5090에서 `matrix_profile_history`가 간헐적으로 실패한다(`FAIL: long-delay CUDA echo must match CPU`, `FAIL: delayed echo must survive a gain/phase or identical matrix update`). `processing`도 한 번 실패했다. 같은 GPU에서 다른 브로커 프로세스(OAI 2×2 트랙)가 돌고 있었다. 8회 반복 기준 실패 횟수: `a07b8a9`(zero-copy 이전) 6/8, `6fab580` 3/8, `285fad6` 5/8. zero-copy 이전부터 있던 문제이고, 단독 실행이던 Z1 때는 12/12였다. GPU를 공유할 때 드러나는 타이밍 의존으로 보이지만 원인은 확인하지 않았다. OAI 트랙이 끝나 GPU가 빈 뒤 `c3bde7f`로 12회 반복하니 12/12 통과했다. 실패는 GPU 공유 조건에서만 난다. 원인 분리는 남아 있다.
 
+
+### 5090 ctest 간헐 실패의 원인 — 2026-09-28 (브랜치 `fix-contention-flake`)
+
+- **원인:** `prepare()`가 노드 상태를 올릴 때 legacy default stream의 동기 `cudaMemcpy`를 썼다(`src/cuda_backend.cu`의 `device_link_states`, `device_row_begin`, `device_correlation_groups` 업로드). 원본이 pageable 메모리(`std::vector`)면 `cudaMemcpy`는 스테이징 버퍼에 복사만 하고 DMA가 끝나기 전에 돌아올 수 있다. 슬롯 경로의 `sp.stream`은 `cudaStreamNonBlocking`이라 legacy stream 작업 뒤로 순서가 보장되지 않는다. 그래서 첫 슬롯의 snap-refresh D2H가 아직 도착하지 않은 상태(전부 0, `has_tdl=0`)를 읽었다. 그러면 호스트 사본의 `has_tdl`이 0이 되어 그 뒤 계수 갱신이 이 edge에 전혀 반영되지 않는다. 늦게 도착한 초기 DMA는 갱신된 상태를 다시 덮어썼다.
+- **왜 GPU 공유 때만 나나:** 다른 CUDA 컨텍스트가 있으면 time-slicing 때문에 그 DMA가 늦어진다. 블록 1개짜리 바쁜 커널만 다른 프로세스에서 돌려도 매번 재현된다. CPU만 부하를 주면 재현되지 않는다. `CUDA_LAUNCH_BLOCKING=1`로도 사라지지 않았다(커널 순서 문제가 아니라 복사 순서 문제). `compute-sanitizer initcheck`은 0건이었다(메모리는 초기화돼 있었고, 도착 시점만 늦었다).
+- **증거:** 계측 로그. 경합 시 첫 snap-refresh 직후 호스트 사본은 `gain=0 has_tdl=0 n_taps=0`이었고 장치 쪽은 `gain=1 n_taps=1`이었다. 유휴 시에는 둘 다 1이었다. `prepare()` 끝에 `cudaDeviceSynchronize()`를 넣는 실험만으로 경합 시 10/10 통과로 바뀌었다(넣지 않으면 5/5 실패).
+- **수정:** 세 업로드를 `sp.stream`의 `cudaMemcpyAsync`로 바꾸고, `prepare()` 끝에서 `cudaStreamSynchronize(sp.stream)`로 기다린다.
+- **판정 (5090, 다른 프로세스에서 블록 1개짜리 바쁜 커널을 돌리는 조건, 전체 ctest):** 수정 후 **30/30 통과**, 수정 전(음성 대조군, 같은 소스에서 수정만 뺌) **0/30**(매번 `matrix_profile_history`와 `processing` 실패). 유휴 GPU에서 수정본은 3/3 통과.
+- **영향:** 플랫폼과 무관하게 CUDA 백엔드 전체에 해당한다. copy·zero-copy 모두 같은 업로드 경로를 쓴다. 증상이 나려면 `prepare()`와 첫 슬롯 사이 간격이 초기 DMA보다 짧아야 한다. 라이브 브로커는 기동 뒤 gNB 연결까지 수 초가 걸려 걸릴 가능성이 낮지만, 원리상 가능하다. 특히 CUDA gNB가 같은 GPU를 쓰는 구성(S7 다중 gNB, S8 100 MHz CUDA gNB)이 그렇다. 걸리면 조용히 틀린다: 그 edge는 초기 계수에 고정되고 제어 갱신이 무시된다. 첫 슬롯의 `row_begin`이 늦으면 superpose 행 경계도 틀릴 수 있다. 라이브에서 관측된 적은 없다.
