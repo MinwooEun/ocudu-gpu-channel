@@ -36,6 +36,7 @@ WG1이 문서에 적은 검증은 **이 기종**에서 나왔다. 앞의 두 플
 | **S6** | 측정 — 20 MHz 1-layer와 WG 수치 구성(100 MHz 4-layer) | WG 표의 21.20×(PUSCH) 등 재현 여부. **여기서부터 성능 주장 가능** | **완료 2026-09-25** — 100 MHz 4L: 감도·PDSCH 문서와 일치, **PUSCH 22×(CPU 빅 코어 고정; 미고정 40×는 착시)**. 20 MHz 1L: PDSCH 문서와 일치, PUSCH는 고정 시 1.1×(미고정 2.3×는 착시). 라이브 20 MHz 1L에서는 GPU가 느리다 |
 | **S7** | **채널 에뮬레이터 경유 + 멀티 gNB** — CUDA gNB를 emulator에 붙이고, CUDA gNB 프로세스 2개(2셀, 셀 간 간섭)를 한 GPU에서 | CUDA 1×1 emulator 게이트 통과, CPU 2셀 기준선 통과, CUDA 2셀에서 UE마다 자기 셀에 붙어 RRC/PDU/ping, 카운터 0, late 0 | **완료 2026-09-27** — 셋 다 통과. CUDA gNB 1개당 GPU 메모리 9,545 MiB. MPS 없이 시간 분할로 동작. zero-copy 브로커와 조합해도 통과했고(copy·zero-copy 각 2회), 브로커 p50이 30–35 µs, p99가 50–60 µs 줄었다 |
 | **S8** | **셀 대역폭 확장** — 20 MHz를 넘는 라이브 셀을 emulator 경유로, 브로커 copy vs zero-copy | 대역폭마다 attach·PDU·ping, 브로커 p50/p99, 막히는 곳은 메커니즘까지 | **완료 2026-09-28** — srsUE는 20 MHz가 한계(30 MHz PRACH 불가, 40/50 MHz 크래시). **OAI nrUE로 30/40/50 MHz(n3 FDD 15 kHz)와 100 MHz(n78 TDD 30 kHz) 전부 통과**, CUDA gNB(`all`) 100 MHz도 통과. zero-copy 브로커 p50은 20→100 MHz에서 40–45 µs로 거의 그대로, copy는 60 → 90 µs |
+| **S9** | **S8 관측의 원인 규명** — OAI 실행이 실시간보다 느린 이유, CUDA gNB 100 MHz의 브로커 p99 증가, zero-copy에서 ring 단계가 길어지는 이유 | 원인마다 증거와 되돌리는 조작 | **완료 2026-09-28** — (1) OAI ZMQ 드라이버가 TX 응답을 최대 10 ms 늦춤, 패치 후 20 MHz 256–382 → 1000 슬롯/s(실시간), starvation 3,335 → 1. (2) GPU 컨텍스트 time-slicing, MPS로 p99 195 → 80 µs(CPU gNB와 같음). (3) GPU가 만진 pageable 버퍼의 CPU memcpy가 3–6배 느려짐 |
 
 ## 진행 기록
 
@@ -659,3 +660,55 @@ D9 수정은 `pusch_codeblock_decoder_cuda_batch.cpp`의 `min_sum_scale`을 0.75
 - **OAI 실행은 실시간보다 느리다.** 루프가 255–365 슬롯/s로 돈다(srsUE 실행은 약 965/s). `top` 스냅샷에서 nrUE `radio` 스레드가 코어 하나를 100% 쓴다. rx_starvations 약 3,000(CUDA gNB 약 7,000)은 대역폭과 모드에 무관하다. UE 쪽 페이싱이 원인으로 보이지만, 확인하지 않았다. 워크스테이션(x86)에서 OAI 루프 속도를 같이 재지 않았으므로 aarch64 탓인지는 모른다.
 - **부수:** 09-26 게이트에서 남은 srsUE 프로세스가 컨테이너에서 이틀 동안 코어 하나의 약 10%를 쓰고 있었다. 06:06에 정리했다. 그 전의 srsUE 실행(20–50 MHz)은 이 프로세스와 겹쳤다.
 - **아직 안 한 것:** 트래픽 부하(iperf)에서 브로커 지연, OAI 루프 속도의 원인, 100 MHz에서 BLER/SINR, CUDA gNB 30–50 MHz, 워크스테이션(5090)과 같은 대역폭 비교.
+
+## S9 — S8 관측의 원인 규명 (2026-09-28)
+
+S8에서 원인을 확인하지 않은 세 가지를 Spark(GB10)에서 풀었다. 모든 실행에서 시작·종료 시점에 다른 사용자의 GPU 프로세스는 없었다. 실행 스크립트와 원자료는 Spark `/workspace/gpuch/s9/`에 있다. 도구: 호스트의 `perf`(7.0.0-1019-nvidia)와 Nsight Systems 2025.3.2를 컨테이너 `/opt`에 복사해 컨테이너 root로 썼다(컨테이너의 `/usr/local/cuda/bin/nsys`는 설치되지 않은 스텁이다).
+
+### 1. OAI 실행이 실시간보다 느린 이유 — OAI ZMQ 드라이버의 10 ms 대기
+
+- **누가 바쁜가.** 20 MHz 실행 중 시스템 전체 `perf record`(6 s)에서 샘플의 58%가 idle이었다. 스레드별 CPU는 gNB `radio` 95–100%, 브로커 ZMQ I/O 약 6%, nrUE 전체 약 17%였다. 계산에 묶인 프로세스가 없다 → 기다림에 묶인 것이다. S8에서 "nrUE radio 스레드가 코어 하나를 쓴다"고 적은 것은 잘못 읽은 것이다. 그 `radio` 스레드는 gNB(OCUDU)의 ZMQ 라디오 스레드이고, 폴링 루프라 속도와 상관없이 항상 코어 하나를 쓴다(100 MHz perf: `send_response` 19%, `receive_response` 5%, 나머지는 poll·시계·재예약).
+- **원인(코드).** OAI `radio/zmq/zmq_radio.cpp`의 `tx_poll_thread`는 브로커의 REQ를 받았을 때 보낼 TX 샘플이 아직 큐에 없으면 `reply_requested`만 세우고 `zmq_poll(..., 10)`으로 돌아간다. REP 소켓은 응답하기 전에는 새 입력이 오지 않으므로 이 poll은 매번 10 ms 타임아웃까지 잔다. lock-step 체인에서는 이 지연이 gNB RX → gNB TX → UE RX로 그대로 전파된다. 브로커의 `rx_starvations`(입력 레인이 비어 기다린 슬롯)는 이 지연의 증상이다.
+- **확인(되돌리는 조작).** 응답이 밀려 있는 동안에는 20 µs마다 큐를 다시 보도록 드라이버만 고쳐(`scripts/native/patches/oai-zmq-tx-reply-poll.patch`) 별도 모듈 디렉터리로 빌드하고, 게이트에 `OCUDU_NATIVE_OAI_SHLIBPATH`로 넘겼다. 핀된 OAI 소스와 빌드는 그대로다. 20 MHz, copy 브로커, 원본/패치 교대 2쌍, 4회 모두 통과:
+
+| UE 드라이버 | 슬롯/s (gnb0 / ue0) | rx_starvations | 브로커 p50 / p99 (µs) |
+|---|---|---|---|
+| 원본 | 355 / 256, 382 / 316 | 3,335, 3,375 | 50–60 / 100 |
+| **패치** | **1,048 / 999, 1,000 / 1,000** | **1, 1** | 60 / 95 |
+
+  패치 후에는 브로커의 실시간 페이싱(`throttle_us` > 0)이 속도를 정한다. 워크스테이션 M6.4의 0.275× 실행도 같은 드라이버라 같은 원인일 가능성이 높지만, 거기서는 확인하지 않았다.
+- **100 MHz는 패치 후에도 실시간의 약 0.72×다**(슬롯 0.5 ms 기준 실시간 2,000/s 대비 1,410–1,480/s, `throttle_us` ≈ 0). `runtime.rx_ring_batches` 2 → 4는 효과가 없었다(1,475 → 1,481/s). 바쁜 스레드는 gNB `radio` 95%(대부분 폴링), 브로커 ZMQ I/O 60%(대부분 커널 TCP), gNB `phy_worker` 58%로 어느 것도 포화가 아니다. 슬롯마다 방향별 491 KB(cf32)를 TCP loopback으로 네 번 주고받는 lock-step 체인의 지연 합이 원인으로 추정되지만 분리하지 않았다(**열림**).
+
+### 2. CUDA gNB 100 MHz의 브로커 p99 증가 — GPU 컨텍스트 time-slicing
+
+- **재현(패치된 UE, 100 MHz, 교대 2쌍).** zero-copy 브로커 p99: CPU gNB 80 µs, CUDA gNB 195–200 µs. copy 브로커: 140 vs 240–245 µs. p50은 같다(45 / 90 µs).
+- **분해(nsys, 브로커, 8 s, 각 약 24,000 호출).** 커널 실행 시간은 같다(`apply_channel_kernel` p50 6.7 / 7.0, p99 16.3 / 16.3 µs). CPU 쪽 API 시간도 같다(`cudaLaunchKernel` p99 16.8 / 16.3 µs). 달라진 것은 **launch → 커널 시작 대기**뿐이다: p99 6–17 µs → **149–161 µs**. 그 결과 `cudaStreamSynchronize` p99가 23 → 169 µs가 된다. CPU 경합이면 API 시간이, 메모리 대역폭이면 커널 시간이 늘어야 하므로 둘 다 아니다. 다른 프로세스(gNB)의 GPU 컨텍스트가 시간 조각을 쓰는 동안 브로커 커널이 기다리는 것이다.
+- **확인.** `scripts/cuda/with-cuda-mps.py`로 gNB와 브로커를 한 MPS 서버의 클라이언트로 돌렸다(MPS `ps`에 `gnb`, `ocudu-gpu-channel` 모두 확인). MPS/비 MPS 교대 2쌍, 4회 모두 통과:
+
+| | 브로커 p50 / p99 (µs, gnb0·ue0) | 슬롯/s |
+|---|---|---|
+| MPS 없음 | 45 / 195–200 | 1,483, 1,493 |
+| **MPS** | **45 / 80** | 1,534, 1,528 |
+
+  MPS에서 p99가 CPU gNB 실행과 같아졌다. S7의 2-gNB 실행에서 본 p99 +55 µs도 같은 메커니즘으로 보이지만 거기서 MPS로 확인하지는 않았다.
+
+### 3. zero-copy에서 ring read/push가 길어지는 이유 — GPU가 만진 버퍼의 CPU 복사
+
+- zero-copy(`direct_in`, `direct`)에서는 GPU가 브로커의 입력 창을 직접 읽고 출력 행에 직접 쓴다. 다음 슬롯에 CPU가 ring → 입력 창(쓰기), 출력 행 → RX ring(읽기)을 `memcpy`하는데, 그 캐시 라인이 GPU 쪽에 있다.
+- **마이크로벤치** `scripts/cuda/spark/s9-coherence-bench.cu`(pageable 버퍼, 2,000회, 코어 5 고정, GPU 유휴): 
+
+| 크기 | CPU만 쓴 버퍼 | GPU가 읽은 창에 CPU 쓰기 | GPU가 쓴 행을 CPU 읽기 |
+|---|---|---|---|
+| 184 KB (20 MHz 1 ms) | 1.6 µs | 7.5 µs | 9.3 µs |
+| 983 KB (100 MHz 1 ms) | 12.6–13.1 µs | 40.5 µs | 44.8 µs |
+
+  라이브에서 본 증가(20 MHz copy 3.5–6 → zero-copy 9–14 µs, 100 MHz 약 10 → 26–29 µs)와 크기·방향이 맞는다. GB10의 CPU–GPU 일관성(coherence) 비용으로 보이며, 원인 수준(스누프·무효화)까지는 확인하지 않았다. 슬롯 전체(read + process + push)는 여전히 zero-copy가 짧다(S8: 100 MHz 94–97 vs 112–118 µs). 이 복사까지 없애려면 ring을 거치지 않는 경로가 필요하다(`ZERO_COPY_MILESTONES.md` 다음 후보 3).
+- 라이브 커널·H2D가 벤치보다 큰 이유는 따로 보지 않았다(**열림**).
+
+### 바뀐 것
+
+- `scripts/native/patches/oai-zmq-tx-reply-poll.patch` — 위 1의 드라이버 수정. 업스트림 제보 후보.
+- `scripts/native/run-ocudu-oai-1x1-inner.sh` — `OCUDU_NATIVE_OAI_SHLIBPATH`(nrUE 모듈 디렉터리), `OCUDU_NATIVE_BROKER_WRAPPER` / `OCUDU_NATIVE_GNB_WRAPPER`(프로파일러 래퍼). 기본값에서는 동작이 같다.
+- `scripts/cuda/spark/s9-coherence-bench.cu` — 위 3의 마이크로벤치.
+- **실험 기록:** 첫 100 MHz 실행 1회는 실행 중에 inner 스크립트를 고쳐 bash 구문 오류로 실패했다(측정에서 제외). nsys `--kill=none` 실행은 gNB가 남아 GPU를 잡아서 직접 종료했다. 이후 `--kill=sigterm`을 썼다.
+
