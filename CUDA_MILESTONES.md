@@ -45,6 +45,7 @@ WG 문서의 자체 실측이다.
 |---|---|---|---|
 | **C0** | **하드웨어 격차 확정 (패치 없이)** — WG 소스를 그대로 빌드하고 **WG가 문서에 적어둔 자체 검증**을 우리 하드웨어에서 돌린다. 통합 작업은 하지 않는다 | 빌드 성공 + 아키 120 확인. WG 문서의 12개 CUDA PHY 테스트와 8개 OFH 압축 테스트를 문서의 `ctest -R` 정규식 그대로 실행하고 **테스트별 판정 기록**. 실패는 각각 **소스 수준 메커니즘까지** 규명(단순 "실패" 기록은 불가) | **완료 2026-09-10** |
 | **C1** | **벤더 패치 + 업스트림 제보** — C0가 찾은 결함만 고친다. 단일 패치 파일, 해시락 | WG 12+8 테스트 전부 통과. 수정마다 음성 대조군이 **exit≠0**. 패치가 SPDX 헤더를 훼손하지 않음. **WG1에 재현 절차 포함 이슈 제출 완료** | **수정·검증 완료 2026-09-10 / 제보 제출 대기** |
+| **C1-D10** | **D10 역이식 (RTX 5090)** — GB10(S13)에서 찾은 GPU TB 인코더 결함을 C1 계열에 적용 | 결함 재현(수정 전 강제 TBS 9,474 B 실패) → 수정 → WG 14+OFH 16 통과, 음성 대조군, 라이브에서 CPU gNB와 NACK·처리량 동일 | **완료 2026-09-28** — 아래 D10 절 |
 | **C2** | **부가 프로비저닝** — CUDA 전용 lock, 빌드 스크립트, 프로파일 해석기. 전부 신규 파일 | `git diff f2e02f9` 가 기존 파일에 대해 **빈 출력**. 기존 공유 검사기가 무수정으로 통과하고 `OCUDU_NATIVE_GNB_PROFILE` 에 반응하지 않음. 기존 1×1 CPU 게이트 라이브 무회귀 | **완료 2026-09-10** |
 | **C3** | **부가 CUDA 게이트** — 신규 러너. 기존 게이트 무수정 | 바이트 동일 증명. CUDA 게이트가 **전 모드 `disabled`** 로 attach+PDU+ping 3/3 (parity 대조군). 기존 1×1 게이트 재실행 green | **완료 2026-09-11** |
 | **C4** | **단계별 가속 활성화** — `low_phy_rx` → `low_phy_tx` → `pusch` → `pdsch(enabled)` → `prach` → `srs`. 각 단계 별 run | 단계마다 C3 게이트 재통과. CPU 대비 BLER 차 ≤1%p, SINR 차 ≤0.5 dB. **런타임 로그로 백엔드가 실제 선택됐음을 확인**(조용한 CPU 폴백 배제). late/dropped slot 0 | **완료 2026-09-11 / lower-PHY TX는 하드웨어 제약으로 degraded, 종결** |
@@ -295,6 +296,30 @@ RTX 5090 한 장에 브로커 CUDA 커널 + Sionna RT(OptiX) + CUDA gNB 세 컨�
 이 통합의 목적이다. 상주 PUSCH는 device LLR을 fp16으로 유지하고 CRC 실패 시 export한다. 등화 후 심볼/LLR을 device에서 직접 읽을 수 있으면 신경 수신기·학습 채널추정 실험을 붙일 수 있고, Sionna RT가 이미 GPU에 있으므로 "학습된 채널 → 에뮬레이션 → 상주 수신기"가 프로세스 경계 없이 이어진다.
 
 WG의 "AI-RAN tensors" 인터페이스가 나오면 자체 훅 대신 그것을 쓴다.
+
+### D10 — GPU TB 인코더의 filler 0 결함, RTX 5090 역이식 (2026-09-28)
+
+**배경:** S13(Spark)에서 CUDA gNB를 2×2 게이트에 붙이자 PDSCH 가속을 켠 순간 rank 1 NACK 45%가 났다. 원인은 벤더 `lib/phy/cuda/src/transport_block.cu`의 `tb_encoder_configure`·`tb_batch_encoder_configure`였다. CPU 세그멘터가 LDPC filler 0을 넘기면 "값 없음"으로 보고 GPU가 스스로 계산한 filler를 써서, filler가 0인 다중 코드블록 TB(예: 9,474 B = BG1 9 CB, Z=384)가 틀린 K로 부호화된다. 하드웨어와 무관한 벤더 결함이라 C1 계열(워크스테이션)에도 있어야 한다.
+
+**재현 (수정 전):** 체크아웃 `src/ocudu-cuda-c1d10`(pin `5830c9cb` + C1 패치 `d2579af2`)에 D10의 **테스트 부분만** 넣고(`pdsch_gpu_e2e_test`에 강제 TBS 9,474 B 1포트·2포트, 10,247 B F>0 대조) 빌드했다. 결과: 9,474 B 두 케이스만 실패, 나머지 58개 통과(10,247 B 대조 포함). 5090 C1 빌드에도 결함이 있다. 이 실행이 음성 대조군을 겸한다.
+
+**수정:** D10의 `lib/` 부분을 얹었다. 패치 `scripts/cuda/patches/c1-d10-ocudu-cuda-discrete.patch`(pin 대비 C1 + D10 전체, sha256 `1696d8a2…`), lock `scripts/cuda/cuda-workspace.c1-d10.lock.json`, 빌드 `builds/c1-d10-cuda-patched`(`c1-cuda-patched`는 C1 증거 빌드로 그대로 둔다). D8/D9는 이 계열에 넣지 않았다. `resolve-cuda-gnb.py` 감사 통과(gNB sha256 `3891425a…`).
+
+**오프라인:** C1 검증 스크립트 그대로 WG 14개 PHY 테스트 exit 0, OFH 16/16, 로그 판정 pass, 블라인드스팟 마커 두 개 PASS(`results/cuda-rebuild/c1-d10-20260928T161542Z`).
+
+**라이브 (OAI 2×2 게이트, unitary H, 20 MHz, 기본값, 다른 GPU 프로세스 없음):**
+
+| gNB | rank | NACK | DL (Mb/s) | 실시간 비율 |
+|---|---|---|---|---|
+| CPU | 2 | 0.0 | 80.0 | 0.999 |
+| CUDA C1+D10 (`all`, MPS) | 2 | 0.0 | 80.0 | 0.993 |
+| CPU | 1 | 0.0 | 74.1 | 0.999 |
+| CUDA C1+D10 | 1 | 0.0 | 74.1 | 1.000 |
+| CUDA C1 (대조, 결함 있음) | 1 | **0.447** | 1.3 | 0.999 |
+
+- rank 2의 80 Mb/s는 이 실행의 iperf 제시율 상한이다(셀 용량은 148 Mb/s). CPU와 CUDA가 같은 조건이다.
+- srsUE legacy 1×1 CUDA 게이트(`run-ocudu-cuda-1x1.sh`, `all`, C1+D10 lock): **통과**, rx_starvations 18.
+- **처음 실패한 것:** CUDA gNB 2×2 실행 두 번(D10, C1 대조 모두)이 `gNB did not start`로 끝났다. 2×2 게이트의 gNB 시작 대기 기본값이 20 s인데 CUDA gNB는 PHY 초기화에 그보다 오래 걸린다. `OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS=90`으로 다시 돌려 통과했다(1×1 CUDA 러너는 자체적으로 늘려 둔다).
 
 ## 이 통합이 주는 것과 주지 않는 것
 

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "comment": "RTX 5090 lock for the C1+D10 CUDA build (CUDA_MILESTONES.md D10): the C1 patch d2579af2 plus D10 (GPU TB encoder kept its own LDPC filler count when the CPU segmenter supplied F=0, so zero-filler multi-CB TBs such as 9474 bytes = 9 BG1 CBs were encoded with the wrong K; found on GB10 in S13). D8/D9 are not in this lineage. Separate checkout src/ocudu-cuda-c1d10 and build; builds/c1-cuda-patched stays the C1 evidence build.",
+  "source": {
+    "name": "ocudu-cuda",
+    "path": "src/ocudu-cuda-c1d10",
+    "commit": "5830c9cb7813393b5d518dd5ee2b6641071be4ad",
+    "url": "https://gitlab.com/ocudu/work_groups/wg1_hw_accel/cuda_accelerated_ocudu.git",
+    "branch": "nvcuda_accel_02",
+    "patch": {
+      "path": "scripts/cuda/patches/c1-d10-ocudu-cuda-discrete.patch",
+      "sha256": "1696d8a26fe7efd53fc8383c7fc883e6d1916b6fb49b96a3e24d3236781949b7"
+    }
+  },
+  "build": {
+    "build_dir": "builds/c1-d10-cuda-patched",
+    "cuda_architectures": "120"
+  }
+}
