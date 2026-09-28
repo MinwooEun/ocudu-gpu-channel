@@ -35,6 +35,7 @@ WG1이 문서에 적은 검증은 **이 기종**에서 나왔다. 앞의 두 플
 | **S5** | BLER/SINR 정합 + 이슈 6(16QAM CRC 상승) 재현 여부 | CPU 대비 BLER ≤1%p, SINR ≤0.5 dB, 이슈 6 판정 | **완료 2026-09-25** — C1: 할당 일치 PASS지만 합산 BLER 6배 → 원인 D8(1 PRB SINR) + D9(LDPC 계수). **C1+D8+D9: 교차 6회 ΔBLER −0.00%p, ΔSINR −0.19 dB, 16QAM `[0,17)` 1.90 vs 1.89%** |
 | **S6** | 측정 — 20 MHz 1-layer와 WG 수치 구성(100 MHz 4-layer) | WG 표의 21.20×(PUSCH) 등 재현 여부. **여기서부터 성능 주장 가능** | **완료 2026-09-25** — 100 MHz 4L: 감도·PDSCH 문서와 일치, **PUSCH 22×(CPU 빅 코어 고정; 미고정 40×는 착시)**. 20 MHz 1L: PDSCH 문서와 일치, PUSCH는 고정 시 1.1×(미고정 2.3×는 착시). 라이브 20 MHz 1L에서는 GPU가 느리다 |
 | **S7** | **채널 에뮬레이터 경유 + 멀티 gNB** — CUDA gNB를 emulator에 붙이고, CUDA gNB 프로세스 2개(2셀, 셀 간 간섭)를 한 GPU에서 | CUDA 1×1 emulator 게이트 통과, CPU 2셀 기준선 통과, CUDA 2셀에서 UE마다 자기 셀에 붙어 RRC/PDU/ping, 카운터 0, late 0 | **완료 2026-09-27** — 셋 다 통과. CUDA gNB 1개당 GPU 메모리 9,545 MiB. MPS 없이 시간 분할로 동작. zero-copy 브로커와 조합해도 통과했고(copy·zero-copy 각 2회), 브로커 p50이 30–35 µs, p99가 50–60 µs 줄었다 |
+| **S8** | **셀 대역폭 확장** — 20 MHz를 넘는 라이브 셀을 emulator 경유로, 브로커 copy vs zero-copy | 대역폭마다 attach·PDU·ping, 브로커 p50/p99, 막히는 곳은 메커니즘까지 | **완료 2026-09-28** — srsUE는 20 MHz가 한계(30 MHz PRACH 불가, 40/50 MHz 크래시). **OAI nrUE로 30/40/50 MHz(n3 FDD 15 kHz)와 100 MHz(n78 TDD 30 kHz) 전부 통과**, CUDA gNB(`all`) 100 MHz도 통과. zero-copy 브로커 p50은 20→100 MHz에서 40–45 µs로 거의 그대로, copy는 60 → 90 µs |
 
 ## 진행 기록
 
@@ -621,3 +622,40 @@ D9 수정은 `pusch_codeblock_decoder_cuda_batch.cpp`의 `min_sum_scale`을 0.75
 - **rx_starvations는 모드와 무관하게 18–22다.** 브로커 모드가 원인이 아니다. CPU gNB 2셀은 2였으므로 CUDA gNB 쪽 타이밍과 관련 있어 보이지만, 확인하지 않았다.
 - **GPU 메모리는 모드와 무관하게 gNB당 9,545 MiB다.**
 - **아직 안 한 것:** MPS 켠 비교, 3셀 이상, 트래픽 부하에서 BLER/SINR, 장시간 실행.
+
+### S8 — 셀 대역폭 확장 (2026-09-28)
+
+지금까지의 라이브는 전부 20 MHz(n3 FDD, 15 kHz, 106 PRB, 23.04 MS/s) 셀이었다. 이번에 셀 대역폭을 올리면서 channel emulator를 거친 라이브를 돌렸다. 브로커는 `gb10-zero-copy`+Z8 트리(`/workspace/gpuch/zc9`, 빌드 `gpuch-zc9-release`)이고, 실행마다 `runtime.cuda_host_memory`를 `copy` 또는 `zero_copy`로 명시했다. 전체 표는 워크스테이션 `~/ocudu-work/perf-platform/compare-bw-live.md`에 있다. 모든 실행의 시작과 끝에 다른 GPU 프로세스가 없었다.
+
+**렌더러.** `scripts/native/render-1x1-bw-configs.py`를 새로 만들었다. 기존 1×1 렌더러(srsUE legacy 또는 OAI)를 그대로 돌린 뒤, 대역폭에서 따라 나오는 값만 바꾼다: gNB `channel_bandwidth_MHz`·`srate`·`base_srate`, srsUE `srate`·`nof_prb`·`ssb_nr_arfcn`, 브로커 `sample_rate_hz`와 1 ms 배치. 밴드, ARFCN, 채널 모델, 코어는 그대로라서 대역폭만 바뀐다. 20 MHz 렌더는 기존 렌더러 출력과 바이트 단위로 같다(두 base 모두 확인). OAI 게이트(`run-ocudu-oai-1x1.sh`)에는 노브를 더했다: 렌더러, 채널 빌드·CUDA arch, gNB 바이너리·커밋(CUDA gNB용), UE 무선 인자, UE capability 파일, 브로커 기동 여유.
+
+**srsUE: 20 MHz가 한계다.** srsUE NR은 15 kHz SCS만 받는다(`rrc_nr_procedures.cc`가 다른 MIB SCS를 거부한다). 그래서 30/40/50 MHz(15 kHz)를 시도했다.
+- **30 MHz(160 PRB, 30.72 MS/s):** 셀 검색과 SIB1 복호까지 된다. 그다음 `Converting carrier to cell for PRACH (-5)`가 나오고, PRACH를 한 번도 보내지 않는다. NR PRACH가 LTE PRACH 코드를 쓰는데, 그 코드가 110 PRB를 넘으면 에러를 낸다(`srsran_symbol_sz`). 버퍼도 30.72 MS/s 기준으로 잡혀 있다(`prach.cc`). 소스 한계라서 설정으로는 우회할 수 없다.
+- **40/50 MHz(46.08/61.44 MS/s):** SFN 동기 중에 `srsran_pbch_nr_decode`에서 SIGSEGV가 난다(backtrace를 addr2line으로 풀었다).
+- **FFTW 계획 시간:** 처음 실행하면 FFT 계획 한 개에 수 초에서 30 초가 걸려서, gate 창 안에 PHY 초기화가 끝나지 않는다. `/root/.srsran_fftwisdom`을 미리 채운 뒤에 쟀다.
+- **SSB 위치:** srsUE는 SSB를 찾지 않고 `ssb_nr_arfcn`(기본 368410, 20 MHz 값)에 맞춘다. 첫 30–50 MHz 실행은 이 값 때문에 셀을 못 찾았다. 렌더러가 대역폭마다 gNB가 출력한 SSB ARFCN을 넣는다.
+- 30 MHz에서 브로커는 attach 없이도 실시간으로 돌았다(962 슬롯/s). 여기서 copy p50/p99는 70/115 µs, zero-copy는 40–45/80–105 µs다.
+
+**OAI nrUE: 100 MHz까지 통과.** OAI(`2b69bde`, M6과 같은 핀)를 Spark(aarch64)에서 빌드했다. 추가로 설치한 패키지는 `liblapacke-dev libblas-dev libnuma-dev libcap-dev xxd`이고, 빌드는 2분 남짓 걸렸다. **GB10에서 OAI nrUE를 처음 붙인 것이다.** 셀은 15 kHz n3 FDD 20/30/40/50 MHz와 30 kHz n78 TDD 100 MHz(273 PRB, 122.88 MS/s)다. 100 MHz 셀은 OCUDU 예제 `gnb_ru_ran550_tdd_n78_100mhz_4x2.yml`의 `dl_arfcn 637212`와 PRACH 159를 따랐다. 각 대역폭에서 copy와 zero-copy를 교대로 돌렸다. 대역폭마다 막힌 곳과 해결은 다음과 같다.
+- **샘플레이트:** nrUE는 PRB 수로 샘플레이트를 정하고, `-E`를 주면 FFT의 3/4을 쓴다. 160 PRB와 270 PRB에 `-E`를 주면 46.08/92.16 MS/s가 되어 gNB(30.72/61.44)와 어긋난다. 실측으로 확인했다(`synch Failed`). 렌더러가 대역폭마다 `-E` 사용 여부를 정한다.
+- **SSB 오프셋:** `--ssb`는 point A부터 센 SSB 첫 부반송파 번호다. gNB가 출력한 SSB ARFCN에서 계산한다. 계산식은 기존 20 MHz 값 486을 그대로 재현한다.
+- **50 MHz:** OAI `uecap_ports1.xml`에는 15 kHz 50 MHz feature set이 없다. 그래서 max MIMO layers가 0이 되고, 첫 DCI 1_1에서 `max_mimo_layers > 0` assert가 난다. 15 kHz 40 MHz 항목을 복사해 50 MHz로 바꾼 capability 파일을 쓴다(`oai_uecap`).
+- **Spark 전용 조치:** gate는 컨테이너 root가 매핑된 user namespace에서 돈다. 그래서 dev 소유 디렉터리에서 실행하면 nrUE가 cwd에 통계 파일을 못 만들고 abort한다. cwd를 `/tmp/s8-oai-cwd`로 옮겨서 해결했다. 이 밖에 x86 lock 검사 생략, `bc88865` 부재 허용, 26.04 배너 허용, `start_group` pgid 대기는 legacy 게이트와 같은 Spark 전용 미커밋 패치다.
+
+| 대역폭 (MS/s) | gNB | 결과 (copy / zero-copy) | 브로커 UE 노드 p50/p99, copy | zero-copy | emulator 호출 중앙값 copy → zero-copy (gNB 노드) | rx_starvations |
+|---|---|---|---|---|---|---|
+| 20 MHz (23.04) | CPU | 2/2 · 2/2 | 60/100–105 | **40/80** | 55–58 → 34–36 µs | 3370–3405 |
+| 30 MHz (30.72) | CPU | 2/2 · 2/2 | 60–70/110 | **40/80** | 56–61 → 33–34 µs | 3347–3391 |
+| 40 MHz (46.08) | CPU | 2/2 · 2/2 | 75/120 | **40–45/85** | 60–73 → 34–37 µs | 3274–3309 |
+| 50 MHz (61.44) | CPU | 2/2 · 2/2 | 70–90/130–140 | **45/85** | (조각 호출)* → 41–42 µs | 3243–3273 |
+| 100 MHz (122.88, TDD) | CPU | 2/2 · 2/2 | 90/135–140 | **45/85** | 86–91 → 41 µs | 2981–3014 |
+| 100 MHz (122.88, TDD) | **CUDA `all`** | 2/2 · 2/2 | 90–95/230–235 | **45/185–195** | 90–92 → 44–45 µs | 6716–7094 |
+
+\* 50 MHz copy 두 번은 gNB 노드 호출의 절반가량이 샘플 수가 적은 조각 호출이라(gNB 노드 슬롯/s가 UE의 2배) 중앙값이 38–40 µs로 낮게 나온다. UE 노드와 p99로 비교한다.
+
+- **zero-copy 브로커의 지연은 대역폭에 거의 무관하다.** p50은 20 MHz 40 µs에서 100 MHz 45 µs, p99는 80–85 µs다. copy는 p50 60 → 90 µs, p99 105 → 135–140 µs로 는다. 없앤 복사가 바이트 수에 비례하기 때문이다. 벤치의 대역폭 스케일링(ZERO_COPY_MILESTONES.md)이 라이브에서도 같은 방향으로 나타났다.
+- **ring 단계는 zero-copy에서 대역폭과 함께 커진다.** gNB 노드 ring 읽기와 쓰기는 각각 20 MHz 10 µs에서 100 MHz 25–29 µs다(copy는 5 → 15/11 µs). Z8에서 관찰한 "zero-copy에서 ring 단계가 길다"는 현상이 바이트 수에 비례해 커진다. 100 MHz 한 슬롯(ring 읽기 + emulator + ring 쓰기)은 copy 112–118 µs, zero-copy 94–97 µs다.
+- **CUDA gNB 100 MHz (C1+D8+D9, `all`):** 4회(copy·zero-copy 각 2회) 모두 통과했다. gNB 로그에서 GPU 경로 선택을 확인했다: UL 그리드 direct writer, PDSCH direct grid writer, PUSCH owned CUDA snapshot. GPU 메모리는 gNB 9,751 MiB, 브로커 176–180 MiB다. 브로커 p99가 CPU gNB 대비 +50–100 µs다. GPU를 CUDA gNB와 나눠 쓰는 것과 관련 있어 보이지만, 분리하지 않았다. zero-copy는 여기서도 p50 90 → 45 µs, p99 230 → 185–195 µs다.
+- **OAI 실행은 실시간보다 느리다.** 루프가 255–365 슬롯/s로 돈다(srsUE 실행은 약 965/s). `top` 스냅샷에서 nrUE `radio` 스레드가 코어 하나를 100% 쓴다. rx_starvations 약 3,000(CUDA gNB 약 7,000)은 대역폭과 모드에 무관하다. UE 쪽 페이싱이 원인으로 보이지만, 확인하지 않았다. 워크스테이션(x86)에서 OAI 루프 속도를 같이 재지 않았으므로 aarch64 탓인지는 모른다.
+- **부수:** 09-26 게이트에서 남은 srsUE 프로세스가 컨테이너에서 이틀 동안 코어 하나의 약 10%를 쓰고 있었다. 06:06에 정리했다. 그 전의 srsUE 실행(20–50 MHz)은 이 프로세스와 겹쳤다.
+- **아직 안 한 것:** 트래픽 부하(iperf)에서 브로커 지연, OAI 루프 속도의 원인, 100 MHz에서 BLER/SINR, CUDA gNB 30–50 MHz, 워크스테이션(5090)과 같은 대역폭 비교.
