@@ -297,10 +297,10 @@ mvp-2edge 호출 하나로 본 이득(−14.3 µs): H2D IQ −5.3, D2H −9.7, �
 - **검증:**
   - Jetson(`/workspace/gpuch/zc7`, sm_87, CUDA 12.6): ctest 12/12. `cuda_host_memory`가 없는 `topology.mvp.cuda.yaml`로 벤치 → `cuda_zero_copy,1`.
   - 워크스테이션 5090(CUDA 13.0, sm_120): 같은 벤치 → `cuda_zero_copy,0`(copy 유지).
-- **별도 발견 — 5090 ctest 간헐 실패 (Z7과 무관):** 5090에서 `matrix_profile_history`가 간헐적으로 실패한다(`FAIL: long-delay CUDA echo must match CPU`, `FAIL: delayed echo must survive a gain/phase or identical matrix update`). `processing`도 한 번 실패했다. 같은 GPU에서 다른 브로커 프로세스(OAI 2×2 트랙)가 돌고 있었다. 8회 반복 기준 실패 횟수: `a07b8a9`(zero-copy 이전) 6/8, `6fab580` 3/8, `285fad6` 5/8. zero-copy 이전부터 있던 문제이고, 단독 실행이던 Z1 때는 12/12였다. GPU를 공유할 때 드러나는 타이밍 의존으로 보이지만 원인은 확인하지 않았다. OAI 트랙이 끝나 GPU가 빈 뒤 `c3bde7f`로 12회 반복하니 12/12 통과했다. 실패는 GPU 공유 조건에서만 난다. 원인 분리는 남아 있다.
+- **별도 발견 — 5090 ctest 간헐 실패 (Z7과 무관):** 5090에서 `matrix_profile_history`가 간헐적으로 실패한다(`FAIL: long-delay CUDA echo must match CPU`, `FAIL: delayed echo must survive a gain/phase or identical matrix update`). `processing`도 한 번 실패했다. 같은 GPU에서 다른 브로커 프로세스(OAI 2×2 트랙)가 돌고 있었다. 8회 반복 기준 실패 횟수: `a07b8a9`(zero-copy 이전) 6/8, `6fab580` 3/8, `285fad6` 5/8. zero-copy 이전부터 있던 문제이고, 단독 실행이던 Z1 때는 12/12였다. GPU를 공유할 때 드러나는 타이밍 의존으로 보이지만 원인은 확인하지 않았다. OAI 트랙이 끝나 GPU가 빈 뒤 `c3bde7f`로 12회 반복하니 12/12 통과했다. 실패는 GPU 공유 조건에서만 난다. 원인은 아래 절에서 찾았다(백엔드의 stream 순서 버그, `7f26454`로 수정).
 
 
-### 5090 ctest 간헐 실패의 원인 — 2026-09-28 (브랜치 `fix-contention-flake`)
+### 5090 ctest 간헐 실패의 원인 — 2026-09-28 (`fix-contention-flake` `3e110a0`, 이 브랜치 `7f26454`)
 
 - **원인:** `prepare()`가 노드 상태를 올릴 때 legacy default stream의 동기 `cudaMemcpy`를 썼다(`src/cuda_backend.cu`의 `device_link_states`, `device_row_begin`, `device_correlation_groups` 업로드). 원본이 pageable 메모리(`std::vector`)면 `cudaMemcpy`는 스테이징 버퍼에 복사만 하고 DMA가 끝나기 전에 돌아올 수 있다. 슬롯 경로의 `sp.stream`은 `cudaStreamNonBlocking`이라 legacy stream 작업 뒤로 순서가 보장되지 않는다. 그래서 첫 슬롯의 snap-refresh D2H가 아직 도착하지 않은 상태(전부 0, `has_tdl=0`)를 읽었다. 그러면 호스트 사본의 `has_tdl`이 0이 되어 그 뒤 계수 갱신이 이 edge에 전혀 반영되지 않는다. 늦게 도착한 초기 DMA는 갱신된 상태를 다시 덮어썼다.
 - **왜 GPU 공유 때만 나나:** 다른 CUDA 컨텍스트가 있으면 time-slicing 때문에 그 DMA가 늦어진다. 블록 1개짜리 바쁜 커널만 다른 프로세스에서 돌려도 매번 재현된다. CPU만 부하를 주면 재현되지 않는다. `CUDA_LAUNCH_BLOCKING=1`로도 사라지지 않았다(커널 순서 문제가 아니라 복사 순서 문제). `compute-sanitizer initcheck`은 0건이었다(메모리는 초기화돼 있었고, 도착 시점만 늦었다).
