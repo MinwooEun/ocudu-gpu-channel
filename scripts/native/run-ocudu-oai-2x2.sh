@@ -20,6 +20,8 @@ set -euo pipefail
 #   OAI2X2_BROKER_EXTRA   extra broker arguments (e.g. wire capture)
 #   OAI2X2_UE_EXTRA       extra nr-uesoftmodem arguments
 #   OAI2X2_NRUE_DIR       OAI build directory (default builds/oai-zmq-release)
+#   OCUDU_NATIVE_OAI_SHLIBPATH  directory of the OAI ZMQ radio module (default
+#                         OAI2X2_NRUE_DIR), e.g. the S9 reply-poll patched driver
 #   OAI2X2_LABEL          free-text label stored with the run
 #
 # Output: results/{logs,reports}/oai-2x2/<timestamp>/, then
@@ -95,6 +97,7 @@ cp "${config_dir}"/* "${report_dir}/"
     "${timestamp}" "${OAI2X2_PATH}" "${max_rank}" "${csi_rs}" "${OAI2X2_MAX_UE_MCS:-}" "${OAI2X2_TX_BACKOFF_DB:-}"
   printf 'topology=%s\nlabel=%s\nue_extra=%s\nbroker_extra=%s\nnrue_dir=%s\n' \
     "${topology}" "${OAI2X2_LABEL:-}" "${OAI2X2_UE_EXTRA:-}" "${OAI2X2_BROKER_EXTRA:-}" "${OAI2X2_NRUE_DIR:-}"
+  printf 'oai_shlibpath=%s\n' "${OCUDU_NATIVE_OAI_SHLIBPATH:-}"
   printf 'channel_head=%s\nchannel_dirty=%s\n' "$(git -C "${repo_root}" rev-parse HEAD)" \
     "$(git -C "${repo_root}" status --porcelain | wc -l)"
 } >"${report_dir}/run-params.txt"

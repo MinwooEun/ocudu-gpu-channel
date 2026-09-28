@@ -288,7 +288,11 @@ run_stack()
   for binary in "${gnb}" "${nrue}" "${fivegc}" "${mongod}" "${broker}"; do
     [[ -x "${binary}" ]] || usage_error "missing executable: ${binary}"
   done
-  [[ -f "${oai_build}/liboai_zmqdevif.so" ]] || usage_error "missing OAI ZMQ radio module"
+  # OCUDU_NATIVE_OAI_SHLIBPATH loads the ZMQ radio module from another
+  # directory, e.g. one built with scripts/native/patches/
+  # oai-zmq-tx-reply-poll.patch (S9); the nrUE binary stays ${oai_build}'s.
+  local zmq_module_dir="${OCUDU_NATIVE_OAI_SHLIBPATH:-${oai_build}}"
+  [[ -f "${zmq_module_dir}/liboai_zmqdevif.so" ]] || usage_error "missing OAI ZMQ radio module"
   # ports2 = the UE advertises 2 DL MIMO layers (maxMIMO-Layers 2) and 2-port
   # SRS/PUSCH; OAI's own 2x2 ZMQ CI job uses this same file.
   local uecap_file="${native_root}/src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF/uecap_ports2.xml"
@@ -381,7 +385,7 @@ PY
     --ue-nb-ant-rx 2 --ue-nb-ant-tx 2 \
     --uecap_file "${uecap_file}" \
     --device.name oai_zmqdevif \
-    --loader.oai_zmqdevif.shlibpath "${oai_build}" \
+    --loader.oai_zmqdevif.shlibpath "${zmq_module_dir}" \
     --zmq.'[0]'.tx_channels tcp://10.201.0.2:2101,tcp://10.201.0.2:2103 \
     --zmq.'[0]'.rx_channels tcp://10.201.0.1:2100,tcp://10.201.0.1:2102 \
     ${OAI2X2_UE_EXTRA:-}
