@@ -844,3 +844,4 @@ UE 노드 기준, 같은 대역폭의 S8 값과 비교(전체 표는 `compare-bw
 - 50 MHz ue0 p99(100–120 µs)는 2코어 배치에서 잰 값이다. B 배치로 다시 재지 않았다.
 - 워크스테이션에서 패치 모듈을 쓰려면 거기서 `build-oai-zmq-patched.py`를 한 번 돌려야 한다(x86 release 빌드의 플래그를 그대로 쓴다). 워크스테이션에서는 프로파일이 맞지 않아 CPU 배치가 적용되지 않는다(5090 프로파일은 따로 정해야 한다).
 
+- **통합 후 이름 (2026-09-28, `integration-0928`):** S11의 `oai-zmq-module.lock.json`은 `oai-local-patches.lock.json`의 `zmq_module` 항목이 됐고(UE 패치도 같은 파일), 게이트 기본값 코드는 `oai-gate-defaults.sh`로 옮겨 OAI 2×2 게이트도 같이 쓴다. 빌드 manifest 필드가 바뀌었으므로 Spark의 `builds/oai-zmq-patched`는 `build-oai-zmq-patched.py`로 한 번 다시 빌드해야 한다. 자세한 대응표는 `docs/plans/m6-rank2-su-mimo-live.md` §8.8.

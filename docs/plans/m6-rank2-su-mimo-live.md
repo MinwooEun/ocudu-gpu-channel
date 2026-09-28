@@ -381,3 +381,21 @@ docker exec ocudu-minwoo bash -c 'cd ~minwoo/ocudu-work/ocudu-oai-mimo && env HO
 
 드라이버·원시 데이터: `~/ocudu-work/perf-platform/oai2x2-f/`(git 밖). 계측 클론 `~/ocudu-work/oai-debug`에는 계측 코드와 이 패치가 함께 적용되어 있다.
 
+
+### 8.8 브랜치 통합 — OAI 로컬 패치 도구 하나로 (2026-09-28, `integration-0928`)
+
+`oai-2x2`와 `gb10-zero-copy`(S7–S11)를 합치면서, 두 브랜치가 따로 만든 "패치한 OAI ZMQ 모듈" 도구를 하나로 정리했다. §8.5–§8.7의 이름(`build-oai-zmq-module.sh`, `oai-zmq-module.sh`, `builds/oai-zmq-s9`)은 당시 기록으로 남기고, 지금 쓰는 이름은 아래다.
+
+| 역할 | 남긴 것 | 없앤 것 |
+|---|---|---|
+| 패치 목록·sha256 (단일 출처) | `scripts/native/oai-local-patches.lock.json` — `zmq_module`(tx-reply-poll; rx-poll은 `optional`), `ue`(nr-dlsch-mmse-scale) | `oai-zmq-module.lock.json`(이름 변경·확장), `oai-local-patches.sh` 안의 하드코딩 배열 |
+| ZMQ 모듈 빌드 | `build-oai-zmq-patched.py` → `builds/oai-zmq-patched` (manifest.json, lock 항목 digest·패치 파일·모듈 해시 대조, `-ffile-prefix-map`으로 재빌드 바이트 동일, release의 다른 모듈 symlink) | `build-oai-zmq-module.sh` → `builds/oai-zmq-s9` |
+| 패치 UE 빌드 | `build-oai-ue-local.sh` → `builds/oai-zmq-local` (변경 없음, 목록만 lock에서 읽음) | — |
+| 선택기 | `oai-local-patches.sh`의 `resolve_oai_zmq_module`(`OCUDU_NATIVE_OAI_ZMQ_MODULE=patched\|stock`)과 `resolve_oai_ue_build`(`OCUDU_NATIVE_OAI_UE=local\|stock`) | `oai-zmq-module.sh`, 1×1 게이트 안의 인라인 선택 코드 |
+| 게이트 기본값 | `oai-gate-defaults.sh` — MPS 재실행, 플랫폼 CPU 배치, 기본값 로그 한 줄. OAI 1×1과 2×2가 같이 쓴다 | 1×1 게이트 안의 인라인 MPS·배치 코드 |
+| 점검 | `check-oai-local-patches.sh` — optional 패치까지 해시·적용 확인, ZMQ 모듈은 `build-oai-zmq-patched.py --verify` | `builds/oai-zmq-s9/MODULE-MANIFEST.txt` 대조 |
+
+- **Python 빌더를 남긴 이유:** lock과 패치 파일 자체를 모두 대조하고, 두 번 빌드해도 바이트가 같으며(S11에서 확인), release 빌드의 다른 모듈을 옆에 symlink해 shlibpath 하나로 로더가 모두 찾는다. 셸 빌더는 패치 파일 해시만 봤다.
+- **워크스테이션 영향:** 기존 `builds/oai-zmq-s9`는 더 이상 쓰지 않는다. 게이트 전에 한 번 `build-oai-zmq-patched.py`로 `builds/oai-zmq-patched`를 만들어야 한다. Spark의 기존 `builds/oai-zmq-patched`는 manifest 필드가 `lock_sha256` → `lock_section_sha256`으로 바뀌어 `--verify`가 stale로 거부하므로 한 번 다시 빌드한다(같은 입력이라 모듈 바이트는 같아야 한다).
+- **2×2 게이트:** 1×1과 같은 기본값(CUDA gNB면 MPS, 플랫폼 CPU 배치, `OCUDU_NATIVE_{GNB,BROKER,NRUE}_WRAPPER`)과 `OCUDU_NATIVE_GNB_BINARY`, `OCUDU_NATIVE_CUDA_ARCH`(GB10은 121), `OCUDU_NATIVE_CHANNEL_BUILD`, `OCUDU_NATIVE_BROKER_STARTUP_ALLOWANCE_SECONDS`를 받는다. 무엇을 적용했는지 `run-params.txt`와 `gate-defaults.log`에 남는다. 이 조합은 아직 라이브로 돌리지 않았다(Spark 2×2, CUDA gNB 2×2).
+- **rank-1 2×1/4×1 게이트:** 이 히스토리에 없는 anchor `bc88865` 대신 `f93386b`(해당 fixture·드라이버를 마지막으로 바꾼 커밋)로 대조한다.
