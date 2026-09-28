@@ -54,11 +54,41 @@ oai_gate_platform()
   export OCUDU_NATIVE_PLATFORM_PROFILE OCUDU_NATIVE_GNB_CPUS OCUDU_NATIVE_BROKER_CPUS OCUDU_NATIVE_NRUE_CPUS
 }
 
+# oai_gate_ue_rx_gain
+#   The OAI ZMQ radio has no AGC, and the nrUE's fixed-point receive chain is
+#   sized for ~TARGET_RX_POWER (50 dB). An OCUDU gNB at its default 12 dB
+#   back-off reaches the UE near 55 dB, where 64QAM PDSCH NACKs 69-89% at rank
+#   1 and rank 2 (SPARK_MILESTONES.md S12). With the patched module
+#   (oai-zmq-rx-gain.patch) the gate sets zmq.[0].rx_gain_db, the role an RF
+#   receive gain plays on a radio: default -12 dB, i.e. the level of a 24 dB
+#   gNB back-off, measured clean at rank 1 and 2.
+#   OCUDU_NATIVE_OAI_UE_RX_GAIN_DB=<dB> overrides it (0 disables). The stock
+#   module has no such parameter, so nothing is passed there.
+#   Exports OAI_GATE_UE_RX_GAIN_DB (empty when not applied).
+oai_gate_ue_rx_gain()
+{
+  OAI_GATE_UE_RX_GAIN_DB=""
+  local value="${OCUDU_NATIVE_OAI_UE_RX_GAIN_DB:--12}"
+  if [[ ! "${value}" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+    printf 'error: OCUDU_NATIVE_OAI_UE_RX_GAIN_DB must be a number of dB\n' >&2
+    return 1
+  fi
+  if [[ "${OAI_ZMQ_MODULE_VARIANT:-}" == "patched" ]]; then
+    OAI_GATE_UE_RX_GAIN_DB="${value}"
+  elif [[ -n "${OCUDU_NATIVE_OAI_UE_RX_GAIN_DB:-}" && "${OAI_ZMQ_MODULE_VARIANT:-}" == "stock" ]]; then
+    printf 'error: OCUDU_NATIVE_OAI_UE_RX_GAIN_DB needs the patched ZMQ module\n' >&2
+    return 1
+  elif [[ -n "${OCUDU_NATIVE_OAI_UE_RX_GAIN_DB:-}" ]]; then
+    OAI_GATE_UE_RX_GAIN_DB="${value}"  # custom module: the caller asked for it
+  fi
+  export OAI_GATE_UE_RX_GAIN_DB
+}
+
 # oai_gate_defaults_line: one log line naming every default this run applied.
 oai_gate_defaults_line()
 {
-  printf 'event=oai_gate_defaults oai_zmq_module=%s oai_ue=%s platform=%s gnb_cpus=%s broker_cpus=%s nrue_cpus=%s mps=%s\n' \
-    "${OAI_ZMQ_MODULE_VARIANT:-?}" "${OAI_UE_VARIANT:-n/a}" "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" \
+  printf 'event=oai_gate_defaults oai_zmq_module=%s ue_rx_gain_db=%s oai_ue=%s platform=%s gnb_cpus=%s broker_cpus=%s nrue_cpus=%s mps=%s\n' \
+    "${OAI_ZMQ_MODULE_VARIANT:-?}" "${OAI_GATE_UE_RX_GAIN_DB:-none}" "${OAI_UE_VARIANT:-n/a}" "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" \
     "${OCUDU_NATIVE_GNB_CPUS:-any}" "${OCUDU_NATIVE_BROKER_CPUS:-any}" "${OCUDU_NATIVE_NRUE_CPUS:-any}" \
     "$([[ -n "${CUDA_MPS_PIPE_DIRECTORY:-}" ]] && echo on || echo off)"
 }

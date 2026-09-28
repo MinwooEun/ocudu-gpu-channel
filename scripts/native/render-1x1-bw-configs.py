@@ -115,6 +115,80 @@ def oai_uecap_with_bw(src: Path, dst: Path, bw: int) -> None:
     dst.write_text(text, encoding="utf-8")
 
 
+def apply_bandwidth(out: Path, bw: int, base: str, host_memory: str, native_root: Path | None,
+                    sample_rate_entries: int = 2, uecap_name: str = "uecap_ports1.xml") -> tuple[int, str]:
+    """Rewrite rendered configs in `out` for `bw` MHz; returns (PRB, sample rate).
+
+    Shared by this 1x1 renderer and the OAI 2x2 one (render-oai-2x2-configs.py),
+    which has four broker ports (`sample_rate_entries`) and starts from the
+    2-port UE capability file (`uecap_name`).
+    """
+    if bw == 100:
+        prb, srate, ssb_arfcn = TDD_100["prb"], TDD_100["srate"], None
+    else:
+        prb, srate, ssb_arfcn = BANDWIDTHS[bw]
+    samples = int(round(float(srate) * 1000))
+    # The broker queue must exceed OCUDU's fixed ZMQ stream buffer (614400
+    # samples) at any rate; the audited 2457600 already does.
+    if bw != 20:
+        rewrite(out / "gnb.yaml", [
+            ("base_srate=23.04e6", f"base_srate={srate}e6", 1, "gNB base_srate"),
+            ("  srate: 23.04\n", f"  srate: {srate}\n", 1, "gNB srate"),
+            ("  channel_bandwidth_MHz: 20\n", f"  channel_bandwidth_MHz: {bw}\n", 1, "gNB bandwidth"),
+        ])
+        if bw == 100:
+            rewrite(out / "gnb.yaml", [
+                ("  dl_arfcn: 368500\n", f"  dl_arfcn: {TDD_100['dl_arfcn']}\n", 1, "gNB n78 ARFCN"),
+                ("  band: 3\n", "  band: 78\n", 1, "gNB band"),
+                ("  common_scs: 15\n", "  common_scs: 30\n", 1, "gNB SCS"),
+                # CORESET#0 12 / SS#0 0 are 15 kHz FDD table entries; let the
+                # gNB pick them for the 30 kHz cell.
+                ("  pdcch:\n    common:\n      ss0_index: 0\n      coreset0_index: 12\n", "", 1,
+                 "gNB 15 kHz CORESET#0 removal"),
+                ("    prach_config_index: 1\n", "    prach_config_index: 159\n", 1, "gNB TDD PRACH"),
+            ])
+        if base == "legacy":
+            rewrite(out / "srsue.conf", [
+                ("srate = 23.04e6\n", f"srate = {srate}e6\n", 1, "srsUE srate"),
+                ("base_srate=23.04e6", f"base_srate={srate}e6", 1, "srsUE base_srate"),
+                ("max_nof_prb = 106\n", f"max_nof_prb = {prb}\n", 1, "srsUE max_nof_prb"),
+                ("\nnof_prb = 106\n", f"\nnof_prb = {prb}\nssb_nr_arfcn = {ssb_arfcn}\n", 1, "srsUE nof_prb"),
+            ])
+        rewrite(out / "topology.yaml", [
+            ("  batch_samples: 23040\n", f"  batch_samples: {samples}\n", 1, "broker batch"),
+            ("    sample_rate_hz: 23040000\n", f"    sample_rate_hz: {samples * 1000}\n", sample_rate_entries,
+             "broker sample rate"),
+        ])
+    if host_memory:
+        topology = out / "topology.yaml"
+        text = topology.read_text(encoding="utf-8")
+        if text.count("\n  gpu_device: 0\n") != 1 or "cuda_host_memory" in text:
+            raise ValueError("broker host memory: runtime anchor missing or knob already set")
+        text = text.replace("\n  gpu_device: 0\n", f"\n  gpu_device: 0\n  cuda_host_memory: {host_memory}\n")
+        topology.write_text(text, encoding="utf-8")
+    if base == "oai" and bw != 20:
+        # S11: the gate reads the nrUE radio arguments and, where the stock
+        # capability lacks the cell's bandwidth, the capability file from the
+        # rendered configs, so a run needs no per-bandwidth environment.
+        if bw == 100:
+            radio = oai_tdd100_args(TDD_100["ssb_arfcn"])
+        else:
+            sampling = oai_sampling_flag(bw)
+            radio = (("-E " if sampling == "-E" else "") +
+                     f"-r {prb} --numerology 0 --band 3 -C {int(DL_CENTER_HZ)} "
+                     f"--ssb {oai_ssb_offset(bw)} --CO -95000000")
+        (out / "nrue-radio.args").write_text(radio + "\n", encoding="utf-8")
+        if bw in BANDWIDTHS:
+            if native_root is None:
+                raise ValueError("--native-root is needed to find the stock UE capability file")
+            stock = native_root / "src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF" / uecap_name
+            per_cc = re.findall(r"<FeatureSetDownlinkPerCC>.*?</FeatureSetDownlinkPerCC>",
+                                stock.read_text(encoding="utf-8"), re.S)
+            if not any("<kHz15/>" in b and f"<mhz{bw}/>" in b for b in per_cc):
+                oai_uecap_with_bw(stock, out / "uecap.xml", bw)
+    return prb, srate
+
+
 def load_base(name: str, repo_root: Path):
     for candidate in (
         Path(__file__).resolve().parent / name,
@@ -174,67 +248,8 @@ def main() -> int:
         return rc
     out = Path(argv[argv.index("--output-dir") + 1])
 
-    if bw == 100:
-        prb, srate, ssb_arfcn = TDD_100["prb"], TDD_100["srate"], None
-    else:
-        prb, srate, ssb_arfcn = BANDWIDTHS[bw]
-    samples = int(round(float(srate) * 1000))
-    # The broker queue must exceed OCUDU's fixed ZMQ stream buffer (614400
-    # samples) at any rate; the audited 2457600 already does.
-    if bw != 20:
-        rewrite(out / "gnb.yaml", [
-            ("base_srate=23.04e6", f"base_srate={srate}e6", 1, "gNB base_srate"),
-            ("  srate: 23.04\n", f"  srate: {srate}\n", 1, "gNB srate"),
-            ("  channel_bandwidth_MHz: 20\n", f"  channel_bandwidth_MHz: {bw}\n", 1, "gNB bandwidth"),
-        ])
-        if bw == 100:
-            rewrite(out / "gnb.yaml", [
-                ("  dl_arfcn: 368500\n", f"  dl_arfcn: {TDD_100['dl_arfcn']}\n", 1, "gNB n78 ARFCN"),
-                ("  band: 3\n", "  band: 78\n", 1, "gNB band"),
-                ("  common_scs: 15\n", "  common_scs: 30\n", 1, "gNB SCS"),
-                # CORESET#0 12 / SS#0 0 are 15 kHz FDD table entries; let the
-                # gNB pick them for the 30 kHz cell.
-                ("  pdcch:\n    common:\n      ss0_index: 0\n      coreset0_index: 12\n", "", 1,
-                 "gNB 15 kHz CORESET#0 removal"),
-                ("    prach_config_index: 1\n", "    prach_config_index: 159\n", 1, "gNB TDD PRACH"),
-            ])
-        if base == "legacy":
-            rewrite(out / "srsue.conf", [
-                ("srate = 23.04e6\n", f"srate = {srate}e6\n", 1, "srsUE srate"),
-                ("base_srate=23.04e6", f"base_srate={srate}e6", 1, "srsUE base_srate"),
-                ("max_nof_prb = 106\n", f"max_nof_prb = {prb}\n", 1, "srsUE max_nof_prb"),
-                ("\nnof_prb = 106\n", f"\nnof_prb = {prb}\nssb_nr_arfcn = {ssb_arfcn}\n", 1, "srsUE nof_prb"),
-            ])
-        rewrite(out / "topology.yaml", [
-            ("  batch_samples: 23040\n", f"  batch_samples: {samples}\n", 1, "broker batch"),
-            ("    sample_rate_hz: 23040000\n", f"    sample_rate_hz: {samples * 1000}\n", 2, "broker sample rate"),
-        ])
-    if host_memory:
-        topology = out / "topology.yaml"
-        text = topology.read_text(encoding="utf-8")
-        if text.count("\n  gpu_device: 0\n") != 1 or "cuda_host_memory" in text:
-            raise ValueError("broker host memory: runtime anchor missing or knob already set")
-        text = text.replace("\n  gpu_device: 0\n", f"\n  gpu_device: 0\n  cuda_host_memory: {host_memory}\n")
-        topology.write_text(text, encoding="utf-8")
-    if base == "oai" and bw != 20:
-        # S11: the gate reads the nrUE radio arguments and, where the stock
-        # capability lacks the cell's bandwidth, the capability file from the
-        # rendered configs, so a run needs no per-bandwidth environment.
-        if bw == 100:
-            radio = oai_tdd100_args(TDD_100["ssb_arfcn"])
-        else:
-            sampling = oai_sampling_flag(bw)
-            radio = (("-E " if sampling == "-E" else "") +
-                     f"-r {prb} --numerology 0 --band 3 -C {int(DL_CENTER_HZ)} "
-                     f"--ssb {oai_ssb_offset(bw)} --CO -95000000")
-        (out / "nrue-radio.args").write_text(radio + "\n", encoding="utf-8")
-        if bw in BANDWIDTHS:
-            native_root = Path(argv[argv.index("--native-root") + 1])
-            stock = native_root / "src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF/uecap_ports1.xml"
-            per_cc = re.findall(r"<FeatureSetDownlinkPerCC>.*?</FeatureSetDownlinkPerCC>",
-                                stock.read_text(encoding="utf-8"), re.S)
-            if not any("<kHz15/>" in b and f"<mhz{bw}/>" in b for b in per_cc):
-                oai_uecap_with_bw(stock, out / "uecap.xml", bw)
+    prb, srate = apply_bandwidth(out, bw, base, host_memory,
+                                 Path(argv[argv.index("--native-root") + 1]) if "--native-root" in argv else None)
     print(f"event=native_bw_configs_rendered base={base} bw_mhz={bw} prb={prb} srate_msps={srate} "
           f"cuda_host_memory={host_memory or 'default'}")
     return 0

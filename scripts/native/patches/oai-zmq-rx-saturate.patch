@@ -1,0 +1,35 @@
+OAI ZMQ radio (pin 2b69bde6): saturate the scalar float->int16 RX conversion.
+Without AVX2 (aarch64: DGX Spark, Jetson) every received sample goes through
+the cleanup loop of convert_samples_avx512_rx, which computes
+(int16_t)(x * 32767 + 0.5f): samples beyond full scale wrap and change sign,
+and negative samples are biased. The AVX2/AVX-512 paths round and saturate
+(packs_epi32, cvtsepi32_epi16). The loop now does the same.
+Apply in the OAI source root: patch -p1 < oai-zmq-rx-saturate.patch
+
+--- a/radio/zmq/zmq_simd.h
++++ b/radio/zmq/zmq_simd.h
+@@ -11,6 +11,7 @@
+ #include "common/platform_types.h"
+ #include <limits>
+ #include <algorithm>
++#include <cmath>
+ 
+ constexpr float c16_t_to_cf_t_factor = 32767.0f;
+ 
+@@ -94,9 +95,14 @@
+   }
+ #endif
+ 
+-  // Cleanup loop for remaining elements
++  // Cleanup loop for remaining elements. Without AVX2 (aarch64) this loop
++  // converts every sample, so it must match the SIMD paths above: round to
++  // nearest and saturate to int16 (packs_epi32 / cvtsepi32_epi16), instead of
++  // truncating a biased value into int16, which wraps samples beyond full
++  // scale and flips their sign.
+   for (; i < total_elements; i++) {
+-    output_ints[i] = (int16_t)(input_floats[i] * factor + 0.5f);
++    const long v = lrintf(input_floats[i] * factor);
++    output_ints[i] = (int16_t)std::clamp<long>(v, std::numeric_limits<int16_t>::min(), std::numeric_limits<int16_t>::max());
+   }
+ }
+ 

@@ -138,6 +138,7 @@ oai_gate_mps_reexec "${gnb_binary}" "${BASH_SOURCE[0]}" || usage_error "MPS sele
 gnb_uses_cuda="${OAI_GATE_GNB_USES_CUDA}"
 # Exports OCUDU_NATIVE_OAI_SHLIBPATH, which the inner script reads.
 resolve_oai_zmq_module "${native_root}" || usage_error "OAI ZMQ module selection failed"
+oai_gate_ue_rx_gain || usage_error "UE RX gain selection failed"
 oai_zmq_choice="${OAI_ZMQ_MODULE_VARIANT}"
 printf 'oai zmq module: %s %s (sha256 %s)\n' "${OAI_ZMQ_MODULE_VARIANT}" \
   "${OCUDU_NATIVE_OAI_SHLIBPATH}" "${OAI_ZMQ_MODULE_SHA256}"
@@ -212,6 +213,7 @@ data = {
     },
     "platform": json.loads(subprocess.check_output(["/usr/bin/python3", profile_script, "--json"], text=True)),
     "cpus_applied": {role: os.environ.get(f"OCUDU_NATIVE_{role.upper()}_CPUS", "") for role in ("gnb", "broker", "nrue")},
+    "ue_rx_gain_db": os.environ.get("OAI_GATE_UE_RX_GAIN_DB") or None,
     "mps": {
         "gnb_uses_cuda": gnb_uses_cuda == "1",
         "requested": os.environ.get("OCUDU_NATIVE_MPS", "auto"),
