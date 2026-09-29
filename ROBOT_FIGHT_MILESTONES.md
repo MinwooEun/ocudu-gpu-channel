@@ -57,7 +57,7 @@ brain-B ──(N6/tun)── gNB ═══╣  links: gnb→ueA, ueA→gnb, gnb�
 |---|---|---|---|
 | **R0** | **Spark에서 Sionna 검증** — venv 고정, cuda variant 확인, `run-ocudu-sionna-1x1.sh` 게이트, `channel_generation_ms` 실측 | Sionna 1x1 live gate PASS(rrc/pdu/ping, 카운터 0), 갱신 1회당 solve 시간 | **완료 2026-09-29** — live-ready rrc/pdu/ping 1/1/1, 106 s 동안 Sionna 갱신 10 Hz 적용(control batch 1,043), solve 49–52 ms, 브로커 kernel 23.6 µs, ping RTT 20–39 ms(avg 29) |
 | **R1** | **링 씬** — 링 + 기둥/차폐물 Mitsuba XML, gNB 1 + UE 2 + crosstalk 시나리오 JSON, 커버리지 맵으로 LOS/NLOS 비대칭 확인 | 브리지 dry-run에서 링 위치별 탭이 물리적으로 말이 됨, 6링크 solve 시간이 갱신 주기 예산 안 | **완료 2026-09-29** — `scenes/robot_ring` + `robot-ring.json`(4링크, FDD) / `robot-ring-crosstalk.json`(6링크). GB10 solve 46–53 ms(링크 수 무관, 방향당 1회), 10 Hz 예산 안. LOS −0.5…−2.9 dB, 기둥 그림자 −27…−36 dB(refraction on; 끄면 outage). 발견: 4-UE 커밋 이후 Sionna multi-UE 렌더러가 2-UE 시나리오를 거부 → R4 전 수정 필요 |
-| **R2** | **로봇 아레나** — MuJoCo 스모봇 2대, ring-out 규칙, 두뇌 프로세스, UDP 프로토콜(seq+timestamp), 위치 PUB. 무선 없음 | 로컬 루프로 경기 완주, MuJoCo wall-clock 스텝, 명령 부재 정책 정의, 동일 두뇌 승률 50±x% 노이즈 플로어(N≥30) | |
+| **R2** | **로봇 아레나** — MuJoCo 스모봇 2대, ring-out 규칙, 두뇌 프로세스, UDP 프로토콜(seq+timestamp), 위치 PUB. 무선 없음 | 로컬 루프로 경기 완주, MuJoCo wall-clock 스텝, 명령 부재 정책 정의, 동일 두뇌 승률 50±x% 노이즈 플로어(N≥30) | **완료 2026-09-29** — `scripts/robot_fight/` (protocol/arena/brain/fight), 테스트 6개 통과. 30판 노이즈 플로어 5:5:20(승률 0.5, 95% CI 0.24–0.76), RTF 1.000. 핸디캡: +100 ms 편도 → 11:2:5(승률 0.85), +50 ms·손실 10/30% → 잡음 안. **무승부 67–83%가 문제**, R4 전 정책 손질 필요 |
 | **R3** | **위치 → Sionna live** — 브리지 `update_positions`를 외부 입력(ZMQ SUB)으로 교체, MuJoCo → 브리지 → 브로커 | 로봇이 기둥 뒤로 가면 KPI 패널의 채널이 따라옴, 위치→적용 지연 < 예산 | **부분 완료 2026-09-29** — 브리지 `--position-endpoint` + 게이트 env 배선, 단위 테스트 11개, Spark dry-run에서 원 궤도 추종 오차 0 m, solve 유지(링 씬 6링크 53 ms). MuJoCo→KPI 실물 연결은 R2/R4에서 |
 | **R4** | **무선 폐루프** — srsUE 2대 attach(`run-ocudu-sionna-multi-ue.sh` 기반), 제어 루프가 tun 통과, RTT/손실 로그를 브로커 슬롯 로그와 조인 | strict-realtime on, RTF = 1.0 로그, 경기 완주, RTT 분포, 무효 판 규칙 적용 | |
 | **R5** | **스케줄링 배틀** — 브로커 2개(셀 2개), GPU 경합원(Sionna 버스트 + CUDA gNB), 스케줄링 off vs on, N판 | 스케줄링 유무로 승률이 뒤집히고 p99/starvation/`control_updates_dropped_realtime`가 그 이유를 설명 | |
@@ -96,6 +96,39 @@ R0–R2는 서로 독립(병렬 가능), R3부터 직렬.
 - **이 차이가 20 MHz srsUE 링크에 의미가 있으려면 잡음 바닥이 있어야 한다.** Sionna 모드 토폴로지는 `sionna_rt` 모델 체인에 tdl 탭만 있고 AWGN 단계가 없다(fixed-TDL multi-UE 토폴로지는 `awgn snr_db 30/15`가 있음). 잡음이 없으면 −27 dB 탭도 float IQ 경로에서는 그냥 디코딩된다. **R4에서 sionna 모델 체인에 `awgn` 단계를 넣어 LOS에서 SNR ~25 dB, 그림자에서 ~0 dB가 되게 잡는다.** 절대 레벨 자체는 검증 범위 안: 브리지 기본 `--gain-offset-db 60`에서 LOS 최강 탭 −0.5…−3 dB는 legacy fixture(−3 dB)와 같고, 마스트를 15 m 밖에 둔 이유가 이것이다(펜스 옆이면 0 dB를 넘는다).
 - **발견(스코프 밖, R4 차단 요인):** `scripts/native/render-sionna-multi-ue-configs.py`가 4-UE 옵션 커밋 `9043202` 이후 `legacy.UES` 전체(ue0–ue3)와 비교해서 **2-UE Sionna 시나리오를 거부한다** — 기존 `sionna-multi-ue-sutd.json`도 같은 이유로 거부됨(`run-ocudu-sionna-multi-ue.sh`는 `OCUDU_NATIVE_MUE_UE_COUNT=2` 고정인데 렌더러는 그 슬라이스를 안 본다). `tests/test_robot_ring_scene.py`는 2-UE 슬라이스로 형태 검사를 통과시키고 이 사실을 주석에 남겼다.
 - 테스트: `tests/test_robot_ring_scene.py`(시나리오 링크 집합·refraction·씬 해석·지오메트리·생성기 결정성·렌더러 형태) + 기존 `test_sionna_launcher/test_sionna_rt_adapter/test_build_osm_scene/test_demo_topology` 모두 `/usr/bin/python3 -m unittest`로 OK. 워크스테이션 5090 대조 실행은 Sionna venv가 호스트에도 컨테이너에도 없어 생략.
+
+### R2 — 2026-09-29 (로봇 아레나, 워크스테이션 로컬)
+
+**만든 것.** `scripts/robot_fight/` — `protocol.py`(와이어 포맷), `arena.py`(MuJoCo 월드 + 심판 + 로봇별 UDP 서버 + 위치 PUB), `brain.py`(로봇당 제어기 프로세스), `fight.py`(N판 러너 + 핸디캡 프록시 + 요약), `README.md`. 테스트 `tests/test_robot_fight_protocol.py`(5) + `tests/test_robot_fight_smoke.py`(5 s 헤드리스 1판, RTF 0.9–1.1 확인) — venv `~/ocudu-work/venvs/robot`(mujoco 3.14.0, numpy 2.5.3, pyzmq 27.2, pytest)에서 6/6 통과.
+
+**프로토콜 (R3·R4 공유).**
+- UDP 제어면: 32 B 헤더 `magic RF, version 1, kind(1 STATE/2 CMD), robot_id, seq u32, t_send_us u64, echo_seq u32, t_echo_us u64`. STATE(로봇→두뇌, 100 Hz, 92 B): sim time, 내 pose/속도, 상대 pose/속도(심판이 주는 전역 관측), 링 반지름, 가장자리까지 거리, flags(running/over/won/lost). CMD(두뇌→로봇, 50 Hz, 44 B): 좌/우 바퀴 각속도 + `ttl_ms`. 아레나는 STATE마다 가장 새 CMD를 echo하므로 **RTT = now − t_echo_us**를 시계 동기 없이 양쪽에서 잰다. 편도는 같은 시계일 때만 유효.
+- 위치면: ZMQ PUB(아레나 bind, 브리지 connect), 기본 `tcp://127.0.0.1:5570`, 20 Hz, `{"event":"positions","t_unix_ms","frame":"arena","nodes":{"ue0":{"position_m":[x,y,z],"velocity_mps":[..]},"ue1":…}}`. 링 중심 원점, z 위, 미터, z = 안테나 높이 0.3 m. SUB 쪽으로 실측 19 Hz, R3의 `parse` 계약과 일치. `ipc://` 엔드포인트도 그대로 됨(R3 게이트 배선).
+
+**아레나 설계.** 링 반지름 **2.0 m**(4 m 링에선 40 s 안에 아무도 못 밀어냄), 스폰 ±0.5R 마주 보기 + 시드 지터. 봇: 30×24×8 cm 섀시 4 kg(2 kg은 바닥 밸러스트), 반지름 6 cm 구동 바퀴 2개(속도 액추에이터 ±30 rad/s → 1.8 m/s), 캐스터는 바닥에서 4 mm 띄움(**처음엔 캐스터가 무게를 받아 바퀴가 헛돌았다** — 6 s에 0.5 m), 앞판은 낮고(섀시 중심 아래 1 cm) 미끄럽게(μ 0.05; 그전엔 접촉이 걸려 상대가 뒤집혔다). 심판: 몸 중심이 링 밖 → ring_out, 기울기 up<0.3 → fall, 시간 제한(60 s) → draw. **Wall-clock 스텝**: 1 ms 루프마다 물리를 `sim0 + 경과 wall`까지 전진, `rtf`/`late_loops`(>2 ms 뒤처짐)/`max_lag_ms` 기록. `--lockstep`은 디버그 전용, 결과 JSON에 `lockstep: true`로 남는다. 명령 부재 정책 `--stale-policy` **coast**(기본, 모터 드라이버 off = 바퀴가 자유 회전, 밀리는 상태) / zero(제동) / hold(마지막 명령 유지) — 처음 fresh 명령 이후부터 stale 구간을 센다.
+
+**두뇌.** `pusher`: 같은 봇끼리 정면 밀기는 교착이라(head-on 프로브: 6 s 동안 둘 다 제자리) **측면 돌아가 옆구리 밀기** — 상대 진행 방향에 수직인 0.7 m 지점으로 간 뒤 상대 heading에서 55° 이상 벗어나면 돌진, 접촉 1.5 s 지나면 0.6 s 후진하며 반대 측면으로. 가장자리 0.45 m 안에서 바깥 방향이면 감속. 시드로 파라미터 ±10 % 지터 + heading 잡음. `--policy module:callable` 훅(LLM은 나중). 수신 스레드 분리(도착 시각이 틱에 양자화되지 않게), RTT 샘플은 명령당 첫 echo만.
+
+**측정 (워크스테이션, 6판 병렬, 각 프로세스 wall-clock).**
+
+| 배치 | 설정 | ue0:ue1:draw | ue0 승률(결정된 판) | 이유 | ue1 RTT p50 |
+|---|---|---|---|---|---|
+| 노이즈 플로어 | 링 2.5 m, v 1.2, 60 s, N=30 | 5:5:20 | 0.50 (CI 0.24–0.76) | ring_out 10, timeout 20 | 10 ms |
+| +50 ms 편도 (ue1) | 같은 설정, N=12 | 1:1:10 | 0.50 | | 106 ms |
+| +100 ms 편도 (ue1) | 같은 설정, N=12 | 3:0:9 | 1.00 (CI 0.44–1) | | 206 ms |
+| 손실 10 % (ue1) | 같은 설정, N=12 | 3:1:8 | 0.75 | | 6 ms, cmd gap 257 |
+| 손실 30 % (ue1) | 같은 설정, N=12 | 1:2:9 | 0.33 | stale 4.2회/0.13 s | 7 ms, cmd gap 812 |
+| 노이즈 플로어 t2 | **링 2.0 m, v 1.6**(현재 기본값), N=18 | 2:1:15 | 0.67 (CI 0.21–0.94) | | 5.5 ms |
+| +50 ms t2 | N=18 | 1:2:15 | 0.33 | | 106 ms |
+| +100 ms t2 | N=18 | **11:2:5** | **0.85 (CI 0.58–0.96)** | ring_out 13 | 206 ms |
+
+- RTF 모든 판 1.000(min 0.9999), late_loops 판당 13–62(1 ms 루프가 2 ms 넘게 밀린 횟수, max_lag 10–60 ms — 6판 병렬 시 OS 스케줄링), 두뇌 deadline miss ≤0.3회/판. CPU: 아레나 ~12 %/프로세스, 두뇌 ~4 %, 6판 병렬 전체 부하 ~30 %(24코어).
+- 로컬 루프 RTT p50 5.5–10 ms = STATE 주기(10 ms) 양자화 + 두뇌 틱(20 ms)의 합이고 링크 자체는 0.6 ms(편도 p50). 즉 무선 없이 제어 루프의 기본 지연이 ~10 ms — R4에서 무선 RTT(R0 ping 29 ms)가 그 위에 얹힌다.
+- **정책이 링크에 민감한가**: +100 ms 편도(RTT 206 ms)에서 승률 0.85로 명확히 뒤집힘. +50 ms(RTT 106 ms)와 손실 30 %는 잡음 안. 50 Hz 제어에서 이 정책의 민감도 문턱은 RTT 100–200 ms 사이 — R4의 무선 RTT ~30 ms는 이 정책으로는 그대로 보이지 않는다. 링크 차이를 보이려면 (a) 정책을 더 빠른 반응에 의존하게(회피/카운터, 저속 마찰), (b) 제어 주기를 100 Hz로, (c) 스케줄링 배틀(R5)에서 드롭·starvation을 유도해 stale 구간을 만들기 — 셋 중 R4 착수 전에 결정.
+- **무승부 67–83 %가 가장 큰 결함.** 동등한 봇은 대부분 60 s 안에 결판이 안 난다. 승률 통계의 N을 잡아먹으므로 R4 전에 정책 손질(측면 진입 각·후진 규칙) 또는 규칙 변경(제한 시간 뒤 가장자리 거리로 판정) 필요. 후자는 한 줄이고 잡음이 적어 추천.
+- 결과: `results/robot-fight/r2-{noise-floor,handicap-d50,handicap-d100,handicap-l10,handicap-l30,t2-nf,t2-d50,t2-d100}/` (fight별 arena/brain JSONL + summary.json/md; git 제외).
+
+**R4가 알아야 할 것.** 아레나는 UE 쪽(로봇마다 소켓 하나, `--robot-bind ue0=<ue0 tun ip>:6000,ue1=<ue1 tun ip>:6001` — srsUE 둘이 각자 netns면 아레나를 둘로 쪼개거나 두 netns에 닿는 곳에서 bind), 두뇌는 gNB/N6 쪽에서 `--robot <ue ip>:port`로 보낸다. 아레나는 첫 CMD에서 두뇌 주소를 배우므로 NAT/tun 뒤여도 된다(`--state-dest`로 고정 가능). 위치 PUB `--positions-endpoint`는 브리지가 있는 netns에서 닿는 `ipc://` 경로로. 편도 지연 로그는 아레나·두뇌가 같은 호스트 시계일 때만 의미 있다. 두뇌는 STATE의 over 플래그에서 종료.
 
 ### R3 — 2026-09-29 (브리지 외부 위치 입력, Spark dry-run)
 

@@ -1,0 +1,308 @@
+#!/usr/bin/env python3
+"""Fight runner: N local fights (arena + two brains on loopback), summary.
+
+Each fight is one arena process and two brain processes with their own
+seeds. Fights can run in parallel (--parallel) on distinct port blocks; every
+process still runs on the wall clock, so keep the parallelism well under the
+core count.
+
+--handicap inserts a UDP proxy on robot 1's path (both directions) that adds a
+fixed one-way delay and/or random loss. It is a local smoke test of link
+sensitivity, not a measurement of the radio path: over the air (R4) the
+proxy is replaced by gNB -> channel emulator -> UE.
+
+Outputs under --out: per-fight arena/brain logs and result JSONs, plus
+summary.json and summary.md.
+"""
+
+from __future__ import annotations
+
+import argparse
+import heapq
+import json
+import pathlib
+import random
+import select
+import socket
+import subprocess
+import sys
+import threading
+import time
+from dataclasses import dataclass
+
+import numpy as np
+
+HERE = pathlib.Path(__file__).resolve().parent
+
+
+@dataclass
+class Handicap:
+    robot: int = 1
+    delay_ms: float = 0.0
+    loss: float = 0.0
+    seed: int = 0
+
+
+class UdpProxy(threading.Thread):
+    """Delay/loss proxy between one brain and its robot socket in the arena.
+
+    brain -> (listen) proxy -> arena_addr ; arena -> proxy (arena-facing socket) -> brain."""
+
+    def __init__(self, listen: tuple[str, int], arena_addr: tuple[str, int], handicap: Handicap) -> None:
+        super().__init__(name="udp-proxy", daemon=True)
+        self.brain_side = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.brain_side.bind(listen)
+        self.arena_side = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.arena_side.bind((listen[0], 0))
+        self.arena_addr = arena_addr
+        self.handicap = handicap
+        self.rng = random.Random(handicap.seed)
+        self.brain_addr: tuple[str, int] | None = None
+        self.stop = threading.Event()
+        self.queue: list[tuple[float, int, socket.socket, tuple[str, int], bytes]] = []
+        self.counter = 0
+        self.forwarded = 0
+        self.dropped = 0
+
+    def schedule(self, sock: socket.socket, addr: tuple[str, int], data: bytes) -> None:
+        if self.handicap.loss > 0 and self.rng.random() < self.handicap.loss:
+            self.dropped += 1
+            return
+        self.counter += 1
+        heapq.heappush(self.queue, (time.perf_counter() + self.handicap.delay_ms / 1000.0, self.counter, sock, addr, data))
+
+    def run(self) -> None:
+        socks = [self.brain_side, self.arena_side]
+        while not self.stop.is_set():
+            timeout = 0.005
+            if self.queue:
+                timeout = max(0.0, min(timeout, self.queue[0][0] - time.perf_counter()))
+            readable, _, _ = select.select(socks, [], [], timeout)
+            for sock in readable:
+                try:
+                    data, addr = sock.recvfrom(2048)
+                except OSError:
+                    continue
+                if sock is self.brain_side:
+                    self.brain_addr = addr
+                    self.schedule(self.arena_side, self.arena_addr, data)
+                elif self.brain_addr is not None:
+                    self.schedule(self.brain_side, self.brain_addr, data)
+            now = time.perf_counter()
+            while self.queue and self.queue[0][0] <= now:
+                _, _, sock, addr, data = heapq.heappop(self.queue)
+                try:
+                    sock.sendto(data, addr)
+                    self.forwarded += 1
+                except OSError:
+                    pass
+        self.brain_side.close()
+        self.arena_side.close()
+
+
+def run_fight(args: argparse.Namespace, index: int, seed: int, port_base: int, out: pathlib.Path) -> dict:
+    python = sys.executable
+    fight_dir = out / f"fight-{index:03d}"
+    fight_dir.mkdir(parents=True, exist_ok=True)
+    arena_ports = (port_base, port_base + 1)
+    pub_port = port_base + 2
+    proxy = None
+    handicap = args.handicap_obj
+    brain_targets = [("127.0.0.1", arena_ports[0]), ("127.0.0.1", arena_ports[1])]
+    if handicap is not None and (handicap.delay_ms > 0 or handicap.loss > 0):
+        listen = ("127.0.0.1", port_base + 3)
+        proxy = UdpProxy(listen, ("127.0.0.1", arena_ports[handicap.robot]), Handicap(handicap.robot, handicap.delay_ms, handicap.loss, seed))
+        proxy.start()
+        brain_targets[handicap.robot] = listen
+    arena_cmd = [
+        python, str(HERE / "arena.py"), "--seed", str(seed), "--time-limit", str(args.time_limit),
+        "--robot-bind", f"ue0=127.0.0.1:{arena_ports[0]},ue1=127.0.0.1:{arena_ports[1]}",
+        "--positions-endpoint", f"tcp://127.0.0.1:{pub_port}" if args.publish_positions else "",
+        "--stale-policy", args.stale_policy, "--ring-radius", str(args.ring_radius),
+        "--log", str(fight_dir / "arena.jsonl"), "--result", str(fight_dir / "arena.json"),
+    ]
+    arena = subprocess.Popen(arena_cmd, stdout=(fight_dir / "arena.out").open("w"), stderr=subprocess.STDOUT)
+    time.sleep(0.4)
+    brains = []
+    for robot in range(2):
+        cmd = [
+            python, str(HERE / "brain.py"), "--robot-id", str(robot), "--robot", f"{brain_targets[robot][0]}:{brain_targets[robot][1]}",
+            "--rate-hz", str(args.rate_hz), "--ttl-ms", str(args.ttl_ms), "--seed", str(seed * 2 + robot),
+            "--param-jitter", str(args.param_jitter), "--max-seconds", str(args.time_limit + 15),
+            "--log", str(fight_dir / f"brain{robot}.jsonl"), "--result", str(fight_dir / f"brain{robot}.json"),
+        ]
+        if args.brain_params:
+            cmd += ["--params", args.brain_params]
+        brains.append(subprocess.Popen(cmd, stdout=(fight_dir / f"brain{robot}.out").open("w"), stderr=subprocess.STDOUT))
+    arena.wait(timeout=args.time_limit + 60)
+    for b in brains:
+        try:
+            b.wait(timeout=20)
+        except subprocess.TimeoutExpired:
+            b.kill()
+    if proxy is not None:
+        proxy.stop.set()
+        proxy.join(timeout=1)
+    result = json.loads((fight_dir / "arena.json").read_text())
+    result["fight"] = index
+    result["brains"] = []
+    for robot in range(2):
+        path = fight_dir / f"brain{robot}.json"
+        result["brains"].append(json.loads(path.read_text()) if path.exists() else None)
+    if proxy is not None:
+        result["proxy"] = {"robot": handicap.robot, "delay_ms": handicap.delay_ms, "loss": handicap.loss,
+                           "forwarded": proxy.forwarded, "dropped": proxy.dropped}
+    (fight_dir / "fight.json").write_text(json.dumps(result, indent=2) + "\n")
+    return result
+
+
+def summarize(results: list[dict], args: argparse.Namespace) -> dict:
+    n = len(results)
+    wins = [sum(1 for r in results if r["winner"] == i) for i in range(2)]
+    draws = sum(1 for r in results if r["winner"] is None)
+    ttw = [r["sim_time_s"] for r in results if r["winner"] is not None]
+    rtf = [r["rtf"] for r in results]
+    late = [r["late_loops"] for r in results]
+    reasons: dict[str, int] = {}
+    for r in results:
+        reasons[r["reason"]] = reasons.get(r["reason"], 0) + 1
+
+    def robot_stat(i: int, key: str):
+        vals = [r["robots"][i][key] for r in results]
+        return {"mean": float(np.mean(vals)), "max": float(np.max(vals))}
+
+    def brain_rtt(i: int, q: str):
+        vals = [r["brains"][i]["rtt_us"][q] for r in results if r["brains"][i]]
+        return float(np.median(vals)) / 1000.0 if vals else None
+
+    def brain_stat(i: int, key: str):
+        vals = [r["brains"][i][key] for r in results if r["brains"][i]]
+        return float(np.mean(vals)) if vals else None
+
+    # 95% Wilson interval for robot 0's win share among decided fights
+    decided = wins[0] + wins[1]
+    ci = None
+    if decided:
+        p = wins[0] / decided
+        z = 1.96
+        denom = 1 + z * z / decided
+        centre = (p + z * z / (2 * decided)) / denom
+        half = z * ((p * (1 - p) / decided + z * z / (4 * decided * decided)) ** 0.5) / denom
+        ci = [round(centre - half, 3), round(centre + half, 3)]
+    return {
+        "fights": n, "time_limit_s": args.time_limit, "rate_hz": args.rate_hz, "ttl_ms": args.ttl_ms,
+        "stale_policy": args.stale_policy, "handicap": args.handicap, "parallel": args.parallel,
+        "wins": {"ue0": wins[0], "ue1": wins[1]}, "draws": draws, "reasons": reasons,
+        "ue0_win_share_of_decided": None if not decided else round(wins[0] / decided, 3),
+        "ue0_win_share_ci95": ci,
+        "time_to_win_s": None if not ttw else {"mean": round(float(np.mean(ttw)), 2), "min": round(min(ttw), 2), "max": round(max(ttw), 2)},
+        "rtf": {"mean": round(float(np.mean(rtf)), 4), "min": round(float(np.min(rtf)), 4)},
+        "late_loops": {"mean": round(float(np.mean(late)), 1), "max": int(np.max(late))},
+        "robots": [{
+            "node": f"ue{i}",
+            "stale_intervals": robot_stat(i, "stale_intervals"),
+            "stale_total_s": robot_stat(i, "stale_total_s"),
+            "cmd_seq_gaps": robot_stat(i, "cmd_seq_gaps"),
+            "cmd_one_way_ms_p50_median": round(float(np.median([r["robots"][i]["one_way_us"]["p50"] for r in results])) / 1000.0, 3),
+            "brain_rtt_ms_p50_median": brain_rtt(i, "p50"),
+            "brain_rtt_ms_p99_median": brain_rtt(i, "p99"),
+            "brain_deadline_misses_mean": brain_stat(i, "deadline_misses"),
+            "brain_state_gaps_mean": brain_stat(i, "state_seq_gaps"),
+        } for i in range(2)],
+    }
+
+
+def summary_markdown(s: dict) -> str:
+    r0, r1 = s["robots"]
+    ttw = s["time_to_win_s"]
+    lines = [
+        f"| fights | ue0 wins | ue1 wins | draws | ue0 share (95% CI) | time-to-win s | RTF mean/min | late loops mean/max |",
+        f"|---|---|---|---|---|---|---|---|",
+        f"| {s['fights']} | {s['wins']['ue0']} | {s['wins']['ue1']} | {s['draws']} | "
+        f"{s['ue0_win_share_of_decided']} {s['ue0_win_share_ci95']} | "
+        f"{'-' if not ttw else f'{ttw['mean']} ({ttw['min']}-{ttw['max']})'} | "
+        f"{s['rtf']['mean']}/{s['rtf']['min']} | {s['late_loops']['mean']}/{s['late_loops']['max']} |",
+        "",
+        "| robot | cmd one-way p50 ms | brain RTT p50/p99 ms | stale intervals mean | stale s mean | cmd gaps mean | brain deadline misses |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for r in (r0, r1):
+        lines.append(f"| {r['node']} | {r['cmd_one_way_ms_p50_median']} | {r['brain_rtt_ms_p50_median']}/{r['brain_rtt_ms_p99_median']} | "
+                     f"{r['stale_intervals']['mean']:.1f} | {r['stale_total_s']['mean']:.2f} | {r['cmd_seq_gaps']['mean']:.1f} | {r['brain_deadline_misses_mean']} |")
+    return "\n".join(lines) + "\n"
+
+
+def parse_handicap(text: str | None) -> Handicap | None:
+    if not text:
+        return None
+    h = Handicap()
+    for item in text.split(","):
+        key, _, value = item.partition("=")
+        key = key.strip()
+        if key == "robot":
+            h.robot = int(value)
+        elif key == "delay_ms":
+            h.delay_ms = float(value)
+        elif key == "loss":
+            h.loss = float(value)
+        else:
+            raise SystemExit(f"unknown handicap key {key!r} (robot=, delay_ms=, loss=)")
+    return h
+
+
+def parse_args(argv=None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--fights", type=int, default=10)
+    p.add_argument("--seed", type=int, default=1, help="first seed; fight i uses seed+i")
+    p.add_argument("--time-limit", type=float, default=30.0)
+    p.add_argument("--rate-hz", type=float, default=50.0)
+    p.add_argument("--ttl-ms", type=int, default=100)
+    p.add_argument("--stale-policy", choices=("coast", "zero", "hold"), default="coast")
+    p.add_argument("--ring-radius", type=float, default=2.0)
+    p.add_argument("--param-jitter", type=float, default=0.1)
+    p.add_argument("--brain-params", default=None, help="JSON overrides passed to both brains")
+    p.add_argument("--handicap", default=None, help="robot=1,delay_ms=50,loss=0.1 (one-way delay each direction)")
+    p.add_argument("--parallel", type=int, default=1)
+    p.add_argument("--port-base", type=int, default=6100)
+    p.add_argument("--publish-positions", action="store_true", help="also bind the position PUB per fight")
+    p.add_argument("--out", default="results/robot-fight")
+    return p.parse_args(argv)
+
+
+def main(argv=None) -> int:
+    args = parse_args(argv)
+    args.handicap_obj = parse_handicap(args.handicap)
+    out = pathlib.Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    results: list[dict] = [None] * args.fights  # type: ignore[list-item]
+    lock = threading.Lock()
+    pending = list(range(args.fights))
+
+    def worker(slot: int) -> None:
+        while True:
+            with lock:
+                if not pending:
+                    return
+                i = pending.pop(0)
+            r = run_fight(args, i, args.seed + i, args.port_base + 10 * slot, out)
+            with lock:
+                results[i] = r
+                print(json.dumps({"fight": i, "seed": args.seed + i, "winner": r["winner"], "reason": r["reason"],
+                                  "t": r["sim_time_s"], "rtf": r["rtf"], "late": r["late_loops"]}), flush=True)
+
+    threads = [threading.Thread(target=worker, args=(slot,)) for slot in range(max(1, args.parallel))]
+    for t in threads:
+        t.start()
+        time.sleep(0.2)
+    for t in threads:
+        t.join()
+    summary = summarize(results, args)
+    (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+    md = summary_markdown(summary)
+    (out / "summary.md").write_text(md)
+    print(md)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
