@@ -31,6 +31,9 @@ sionna_scenario_config=""
 sionna_status_jsonl=""
 sionna_update_hz="10"
 sionna_ready_seconds="180"
+sionna_position_endpoint=""
+sionna_position_offset=""
+sionna_position_timeout_s=""
 
 usage_error()
 {
@@ -60,6 +63,9 @@ while [[ "$#" -gt 0 ]]; do
     --sionna-status-jsonl) sionna_status_jsonl="${2:-}"; shift 2 ;;
     --sionna-update-hz) sionna_update_hz="${2:-}"; shift 2 ;;
     --sionna-ready-seconds) sionna_ready_seconds="${2:-}"; shift 2 ;;
+    --sionna-position-endpoint) sionna_position_endpoint="${2:-}"; shift 2 ;;
+    --sionna-position-offset) sionna_position_offset="${2:-}"; shift 2 ;;
+    --sionna-position-timeout-s) sionna_position_timeout_s="${2:-}"; shift 2 ;;
     *) usage_error "unexpected argument: $1" ;;
   esac
 done
@@ -86,6 +92,20 @@ if [[ "${channel_mode}" == "sionna" ]]; then
     usage_error "missing Sionna scenario: ${sionna_scenario_config}"
   [[ "${sionna_update_hz}" =~ ^[0-9]+(\.[0-9]+)?$ ]] || \
     usage_error "invalid Sionna update rate: ${sionna_update_hz}"
+  # tcp://127.0.0.1 would be this namespace's own loopback; only a filesystem
+  # socket bound by the arena outside reaches the bridge in here.
+  [[ -z "${sionna_position_endpoint}" || "${sionna_position_endpoint}" == ipc:///* ]] || \
+    usage_error "Sionna position endpoint must be ipc://"
+fi
+# Extra bridge arguments for the live position feed; empty without a feed so
+# the scripted-route runs keep their exact command line.
+sionna_position_args=()
+if [[ -n "${sionna_position_endpoint}" ]]; then
+  sionna_position_args+=(--position-endpoint "${sionna_position_endpoint}")
+  [[ -n "${sionna_position_offset}" ]] && \
+    sionna_position_args+=(--position-frame-offset "${sionna_position_offset}")
+  [[ -n "${sionna_position_timeout_s}" ]] && \
+    sionna_position_args+=(--position-timeout-s "${sionna_position_timeout_s}")
 fi
 [[ "$(readlink /proc/self/ns/net)" != "${parent_netns}" ]] || usage_error "network namespace was not isolated"
 [[ "$(readlink /proc/self/ns/mnt)" != "${parent_mntns}" ]] || usage_error "mount namespace was not isolated"
@@ -381,7 +401,8 @@ if [[ "${channel_mode}" == "sionna" ]]; then
     env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${sionna_python}" "${sionna_bridge}" \
     --scenario-config "${sionna_scenario_config}" \
     --control-endpoint "${control_endpoint}" --duration 0 \
-    --update-hz "${sionna_update_hz}" --status-jsonl "${sionna_status_jsonl}"
+    --update-hz "${sionna_update_hz}" --status-jsonl "${sionna_status_jsonl}" \
+    ${sionna_position_args[@]+"${sionna_position_args[@]}"}
   sionna_pid="${started_pid}"
   wait_log "${log_dir}/sionna-bridge.log" '"event":"sionna_rt_update"' \
     "${sionna_pid}" "${sionna_ready_seconds}" || \

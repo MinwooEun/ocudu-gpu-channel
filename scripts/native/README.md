@@ -150,7 +150,25 @@ export OCUDU_NATIVE_SIONNA_DURATION_SECONDS=150
 Optional settings are `OCUDU_NATIVE_WEB_PORT` (default `8080`),
 `OCUDU_NATIVE_SIONNA_UPDATE_HZ` (default `10`), and
 `OCUDU_NATIVE_SIONNA_READY_SECONDS` (default `120`). The Web server is
-restricted to loopback. A remote browser can use SSH port forwarding:
+restricted to loopback.
+
+Node positions can come from a live publisher instead of the scenario's
+scripted routes (the robot arena of `ROBOT_FIGHT_MILESTONES.md`):
+`OCUDU_NATIVE_SIONNA_POSITION_ENDPOINT` is passed to the bridge as
+`--position-endpoint`, with the optional `OCUDU_NATIVE_SIONNA_POSITION_OFFSET`
+(`x,y,z`, arena origin in scene metres) and
+`OCUDU_NATIVE_SIONNA_POSITION_TIMEOUT_S` (default `1`). The bridge runs inside
+the gate's `unshare --net` namespace, so a `tcp://127.0.0.1` publisher on the
+host is unreachable from it: the endpoint must be an absolute `ipc://` socket
+that the publisher **binds** on the shared filesystem, for example
+`ipc:///workspace/ocudu-spark/run/arena/positions.sock`, and the bridge
+connects to it (the same rule as the control and telemetry sockets). The
+message is one JSON frame per update,
+`{"event":"positions","t_unix_ms":…,"frame":"arena","nodes":{"ue0":{"position_m":[x,y,z],"velocity_mps":[vx,vy,vz]}}}`;
+nodes it omits keep their scripted route, unknown node ids are ignored with
+one warning, and after the timeout the last positions are kept and flagged
+`stale` in the `sionna_rt_update` status record (`position_source`,
+`position_status`). The same variables apply to `run-ocudu-sionna-multi-ue.sh`. A remote browser can use SSH port forwarding:
 
 ```bash
 ssh -L 8080:127.0.0.1:8080 YOUR_USER@GPU_HOST

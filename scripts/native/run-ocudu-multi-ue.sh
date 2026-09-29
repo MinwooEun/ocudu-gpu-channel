@@ -28,6 +28,12 @@ channel_mode="${OCUDU_NATIVE_CHANNEL_MODE:-legacy}"
 sionna_scenario="${OCUDU_NATIVE_SIONNA_SCENARIO:-}"
 sionna_python="${OCUDU_NATIVE_SIONNA_PYTHON:-}"
 sionna_update_hz="${OCUDU_NATIVE_SIONNA_UPDATE_HZ:-10}"
+# Live node positions for the bridge (robot arena). The bridge runs inside the
+# inner network namespace, so the publisher must bind an ipc:// socket on the
+# shared filesystem; a tcp://127.0.0.1 endpoint would not reach it.
+sionna_position_endpoint="${OCUDU_NATIVE_SIONNA_POSITION_ENDPOINT:-}"
+sionna_position_offset="${OCUDU_NATIVE_SIONNA_POSITION_OFFSET:-}"
+sionna_position_timeout_s="${OCUDU_NATIVE_SIONNA_POSITION_TIMEOUT_S:-}"
 web_port="${OCUDU_NATIVE_WEB_PORT:-8080}"
 if [[ "${channel_mode}" == "sionna" ]]; then
   renderer="${script_dir}/render-sionna-multi-ue-configs.py"
@@ -54,6 +60,14 @@ if [[ "${channel_mode}" == "sionna" ]]; then
     usage_error "OCUDU_NATIVE_SIONNA_PYTHON must point at the Sionna interpreter"
   [[ "${web_port}" =~ ^[1-9][0-9]*$ && "${web_port}" -le 65535 ]] || \
     usage_error "invalid OCUDU_NATIVE_WEB_PORT: ${web_port}"
+  if [[ -n "${sionna_position_endpoint}" ]]; then
+    [[ "${sionna_position_endpoint}" == ipc:///* ]] || \
+      usage_error "OCUDU_NATIVE_SIONNA_POSITION_ENDPOINT must be an absolute ipc:// socket (the bridge runs in its own network namespace)"
+    [[ -z "${sionna_position_offset}" || "${sionna_position_offset}" =~ ^-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$ ]] || \
+      usage_error "OCUDU_NATIVE_SIONNA_POSITION_OFFSET must be x,y,z"
+    [[ -z "${sionna_position_timeout_s}" || "${sionna_position_timeout_s}" =~ ^[0-9]+([.][0-9]+)?$ ]] || \
+      usage_error "OCUDU_NATIVE_SIONNA_POSITION_TIMEOUT_S must be a number"
+  fi
 fi
 [[ "${physical_gpu}" =~ ^(0|[1-9][0-9]*)$ && "${physical_gpu}" -le 255 ]] || usage_error "invalid GPU device"
 [[ -x "${cuda_compiler}" ]] || usage_error "missing CUDA compiler: ${cuda_compiler}"
@@ -169,6 +183,9 @@ if [[ "${channel_mode}" == "sionna" ]]; then
     --sionna-scenario-config "${sionna_scenario}"
     --sionna-status-jsonl "${sionna_status_jsonl}"
     --sionna-update-hz "${sionna_update_hz}"
+    --sionna-position-endpoint "${sionna_position_endpoint}"
+    --sionna-position-offset "${sionna_position_offset}"
+    --sionna-position-timeout-s "${sionna_position_timeout_s}"
   )
   # Read-only observer. It tails the status JSONL the bridge writes and
   # subscribes to broker telemetry; it never touches the control socket.
