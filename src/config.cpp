@@ -125,6 +125,8 @@ void apply_runtime(RuntimeConfig& runtime, const std::string& key, const std::st
     runtime.queue_samples = parse_size(value, key);
   } else if (key == "rx_ring_batches") {
     runtime.rx_ring_batches = parse_size(value, key);
+  } else if (key == "cuda_host_memory") {
+    runtime.cuda_host_memory = parse_cuda_host_memory(value);
   } else {
     throw std::runtime_error("unknown runtime key: " + key);
   }
@@ -1553,6 +1555,20 @@ Backend parse_backend(const std::string& value)
     return Backend::Cuda;
   }
   throw std::runtime_error("unsupported backend: " + value);
+}
+
+CudaHostMemory parse_cuda_host_memory(const std::string& value)
+{
+  if (value == "copy") {
+    return CudaHostMemory::Copy;
+  }
+  if (value == "zero_copy") {
+    return CudaHostMemory::ZeroCopy;
+  }
+  if (value == "auto") {
+    return CudaHostMemory::Auto;
+  }
+  throw std::runtime_error("unsupported runtime.cuda_host_memory: " + value + " (copy, zero_copy, auto)");
 }
 
 ModelStepType parse_model_step_type(const std::string& value)

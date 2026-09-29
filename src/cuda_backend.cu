@@ -9,6 +9,7 @@
 #include "ocudu_gpu_channel/runtime_control.h"
 #include <algorithm>
 #include <chrono>
+#include <cstdlib>
 #include <deque>
 #include <cmath>
 #include <cuda_runtime.h>
@@ -172,7 +173,21 @@ __global__ void apply_steps_kernel(const IqSample* input,
 // model. `staged` holds the edges' input batches back to back: edge k's
 // sample idx is staged[k*count+idx]. `step_meta` packs the per-edge step
 // offsets in [0,link_count) and step counts in [link_count,2*link_count).
-__global__ void superpose_kernel(IqSample* dst,
+// Output rows: contiguous (base + r * count) when `ptr[0]` is null, else the
+// caller's own rows wherever they live -- zc_direct writes each row of a
+// multi-port node into its own RX ring (S15), so they are not adjacent.
+constexpr int kMaxDirectRows = 16;
+struct OutputRowTable {
+  IqSample* base = nullptr;
+  IqSample* ptr[kMaxDirectRows] = {};
+};
+
+__device__ __host__ inline IqSample* output_row(const OutputRowTable& t, int r, std::size_t count)
+{
+  return t.ptr[0] != nullptr ? t.ptr[r] : t.base + static_cast<std::size_t>(r) * count;
+}
+
+__global__ void superpose_kernel(const __grid_constant__ OutputRowTable dst,
                                  std::size_t count,
                                  int link_count,
                                  int nr,
@@ -199,7 +214,7 @@ __global__ void superpose_kernel(IqSample* dst,
     acc_i += i;
     acc_q += q;
   }
-  dst[static_cast<std::size_t>(r) * count + idx] = {acc_i, acc_q};
+  output_row(dst, r, count)[idx] = {acc_i, acc_q};
 }
 
 void check(cudaError_t status, const char* operation)
@@ -340,6 +355,36 @@ struct CudaSuperposeState {
   std::vector<int> source_first_edge;
   IqSample* host_source_iq = nullptr;
   IqSample* device_source_iq = nullptr;
+  // Zero-copy (runtime.cuda_host_memory): host_source_iq, host_next_slot_start
+  // and host_output are mapped, and their device_* twins are the GPU's view of
+  // the SAME memory, not separate allocations -- free_superpose_state must not
+  // cudaFree them. device_staged stays a real device buffer, because the
+  // device-channel path uses it as GPU-only scratch; the host-stage path reads
+  // host_staged through mapped_staged instead.
+  //
+  // Which buffers are zero-copy (Z4 splits them to measure each part):
+  //   zc_in:     source_iq, next_slot_start, staged (kernel inputs)
+  //   zc_out:    output (kernel result)
+  //   zc_meta:   steps, step_meta, rx_steps (per-slot chain metadata); the
+  //              mapped_host_* arrays are their CPU side
+  //   zc_direct: with zc_out and one output row, the kernels write the
+  //              CALLER's row directly (needs pageable memory access), so the
+  //              host_output -> caller copy disappears too. Since S15 this
+  //              covers nodes with up to kMaxDirectRows rows
+  //              (OCG_ZC_MULTIROW_DIRECT=0 restores the one-row limit).
+  bool zc_in = false;
+  bool zc_out = false;
+  bool zc_meta = false;
+  bool zc_direct = false;
+  // zc_direct_in (Z8): the channel kernels read each source straight from the
+  // caller's input span (DeviceSourceTable direct layout), so the host no
+  // longer packs host_source_iq. Device-channel path only, and only while the
+  // node's source count fits the table.
+  bool zc_direct_in = false;
+  IqSample* mapped_staged = nullptr;
+  GpuStep* mapped_host_steps = nullptr;
+  int* mapped_host_step_meta = nullptr;
+  GpuStep* mapped_host_rx_steps = nullptr;
   // Dispatch gate: true when every incoming edge of this destination has a
   // leading tdl step (with or without fading -- the device fading kernel
   // landed in D3 and handles both branches internally). True path:
@@ -378,6 +423,23 @@ void free_superpose_state(CudaSuperposeState& state)
   if (state.stream != nullptr)         { cudaStreamDestroy(state.stream);        state.stream = nullptr; }
   if (state.device_correlation_groups != nullptr) { cudaFree(state.device_correlation_groups); state.device_correlation_groups = nullptr; }
   if (state.device_fading_grid != nullptr)     { cudaFree(state.device_fading_grid);         state.device_fading_grid = nullptr; }
+  // Zero-copy aliases point into the mapped host buffers freed below.
+  if (state.zc_in) {
+    state.device_next_slot_start = nullptr;
+    state.device_source_iq = nullptr;
+  }
+  if (state.zc_out) {
+    state.device_output = nullptr;
+  }
+  if (state.zc_meta) {
+    state.device_steps = nullptr;
+    state.device_step_meta = nullptr;
+    state.device_rx_steps = nullptr;
+  }
+  state.mapped_staged = nullptr;
+  if (state.mapped_host_steps != nullptr)     { cudaFreeHost(state.mapped_host_steps);     state.mapped_host_steps = nullptr; }
+  if (state.mapped_host_step_meta != nullptr) { cudaFreeHost(state.mapped_host_step_meta); state.mapped_host_step_meta = nullptr; }
+  if (state.mapped_host_rx_steps != nullptr)  { cudaFreeHost(state.mapped_host_rx_steps);  state.mapped_host_rx_steps = nullptr; }
   if (state.device_next_slot_start != nullptr) { cudaFree(state.device_next_slot_start);     state.device_next_slot_start = nullptr; }
   if (state.host_next_slot_start != nullptr)   { cudaFreeHost(state.host_next_slot_start);    state.host_next_slot_start = nullptr; }
   if (state.device_source_iq != nullptr)   { cudaFree(state.device_source_iq);    state.device_source_iq = nullptr; }
@@ -402,6 +464,11 @@ void free_superpose_state(CudaSuperposeState& state)
   state.correlation_group_owner.clear();
   state.correlation_group_owner.shrink_to_fit();
   state.use_device_channel = false;
+  state.zc_in = false;
+  state.zc_out = false;
+  state.zc_meta = false;
+  state.zc_direct = false;
+  state.zc_direct_in = false;
   state.host_link_states.clear();
   state.host_link_states.shrink_to_fit();
   state.source_first_edge.clear();
@@ -410,6 +477,104 @@ void free_superpose_state(CudaSuperposeState& state)
   state.host_steps.shrink_to_fit();
   state.host_step_meta.clear();
   state.host_step_meta.shrink_to_fit();
+}
+
+// Resolves runtime.cuda_host_memory against the device. Auto picks zero-copy
+// only on an integrated GPU; an explicit zero_copy is honoured on any device
+// that can map host memory, so the discrete cost can be measured too.
+struct ZeroCopyParts {
+  bool in = false;
+  bool out = false;
+  bool meta = false;
+  bool direct = false;
+  bool direct_in = false;
+};
+
+bool resolve_zero_copy(CudaHostMemory mode, int device)
+{
+  if (mode == CudaHostMemory::Copy) {
+    return false;
+  }
+  int integrated = 0;
+  int can_map = 0;
+  check(cudaDeviceGetAttribute(&integrated, cudaDevAttrIntegrated, device), "cudaDeviceGetAttribute integrated");
+  check(cudaDeviceGetAttribute(&can_map, cudaDevAttrCanMapHostMemory, device),
+        "cudaDeviceGetAttribute canMapHostMemory");
+  if (mode == CudaHostMemory::Auto) {
+    return integrated != 0 && can_map != 0;
+  }
+  if (can_map == 0) {
+    throw std::runtime_error("runtime.cuda_host_memory=zero_copy but device " + std::to_string(device) +
+                             " cannot map host memory");
+  }
+  return true;
+}
+
+// Allocates a pinned host buffer and the pointer the GPU uses for it. In copy
+// mode the GPU side is its own cudaMalloc; in zero-copy mode the host buffer
+// is mapped and the GPU pointer aliases it.
+// Which buffers go zero-copy once cuda_host_memory resolved to it. The default
+// is Z4's measured winner on GB10: inputs and output mapped, output written
+// straight into the caller's row where the device can access pageable memory,
+// and the step metadata left on the copy path -- every thread re-reads it, and
+// reading it from mapped memory cost more kernel time than the ~2 us H2D it
+// saves. OCG_ZC_PARTS=in,out,meta,direct overrides this for measurement only.
+ZeroCopyParts resolve_zero_copy_parts(bool zero_copy, int device)
+{
+  ZeroCopyParts parts;
+  if (!zero_copy) {
+    return parts;
+  }
+  const char* env = std::getenv("OCG_ZC_PARTS");
+  if (env == nullptr) {
+    int pageable = 0;
+    check(cudaDeviceGetAttribute(&pageable, cudaDevAttrPageableMemoryAccess, device),
+          "cudaDeviceGetAttribute pageableMemoryAccess");
+    parts.in = true;
+    parts.out = true;
+    parts.direct = pageable != 0;
+    parts.direct_in = pageable != 0;
+    return parts;
+  }
+  const std::string list = env;
+  const auto has = [&](const char* part) {
+    return ("," + list + ",").find("," + std::string(part) + ",") != std::string::npos;
+  };
+  parts.in = has("in");
+  parts.out = has("out");
+  parts.meta = has("meta");
+  parts.direct = has("direct");
+  parts.direct_in = has("direct_in");
+  if (parts.direct_in) {
+    int pageable = 0;
+    check(cudaDeviceGetAttribute(&pageable, cudaDevAttrPageableMemoryAccess, device),
+          "cudaDeviceGetAttribute pageableMemoryAccess");
+    if (pageable == 0) {
+      throw std::runtime_error("OCG_ZC_PARTS=direct_in needs pageable memory access");
+    }
+  }
+  if (parts.direct) {
+    int pageable = 0;
+    check(cudaDeviceGetAttribute(&pageable, cudaDevAttrPageableMemoryAccess, device),
+          "cudaDeviceGetAttribute pageableMemoryAccess");
+    if (pageable == 0 || !parts.out) {
+      throw std::runtime_error("OCG_ZC_PARTS=direct needs `out` and pageable memory access");
+    }
+  }
+  return parts;
+}
+
+template <typename T>
+void alloc_host_device_pair(bool zero_copy, T** host, T** device, std::size_t bytes, const std::string& what)
+{
+  check(cudaHostAlloc(reinterpret_cast<void**>(host), bytes, zero_copy ? cudaHostAllocMapped : cudaHostAllocDefault),
+        ("cudaHostAlloc " + what).c_str());
+  if (zero_copy) {
+    check(cudaHostGetDevicePointer(reinterpret_cast<void**>(device), *host, 0),
+          ("cudaHostGetDevicePointer " + what).c_str());
+  } else {
+    check(cudaMalloc(reinterpret_cast<void**>(device), bytes), ("cudaMalloc " + what).c_str());
+  }
 }
 
 class CudaChannelProcessor final : public ChannelProcessor {
@@ -434,6 +599,11 @@ public:
   {
     check(cudaSetDevice(config.runtime.gpu_device), "cudaSetDevice");
     device_ = config.runtime.gpu_device;
+    zc_parts_ = resolve_zero_copy_parts(resolve_zero_copy(config.runtime.cuda_host_memory, device_), device_);
+    {
+      const char* multirow = std::getenv("OCG_ZC_MULTIROW_DIRECT");
+      zc_multirow_direct_ = multirow == nullptr || std::string(multirow) != "0";
+    }
 
     // Same resolved lane table the broker serves from, so a lane key can never
     // be missing when process_superposition looks it up.
@@ -543,16 +713,32 @@ public:
       const std::size_t staged_bytes = incoming * capacity * sizeof(IqSample);
       // One row of output per RX port.
       const std::size_t out_bytes = sp.rows * capacity * sizeof(IqSample);
-      check(cudaHostAlloc(reinterpret_cast<void**>(&sp.host_staged), staged_bytes, cudaHostAllocDefault),
+      sp.zc_in = zc_parts_.in;
+      sp.zc_out = zc_parts_.out;
+      sp.zc_meta = zc_parts_.meta;
+      sp.zc_direct = zc_parts_.direct &&
+                     (sp.rows == 1 || (zc_multirow_direct_ && sp.rows <= static_cast<std::size_t>(kMaxDirectRows)));
+      sp.zc_direct_in = zc_parts_.direct_in;
+      check(cudaHostAlloc(reinterpret_cast<void**>(&sp.host_staged), staged_bytes,
+                          sp.zc_in ? cudaHostAllocMapped : cudaHostAllocDefault),
             "cudaHostAlloc superpose staged");
-      check(cudaHostAlloc(reinterpret_cast<void**>(&sp.host_output), out_bytes, cudaHostAllocDefault),
-            "cudaHostAlloc superpose output");
+      if (sp.zc_in) {
+        check(cudaHostGetDevicePointer(reinterpret_cast<void**>(&sp.mapped_staged), sp.host_staged, 0),
+              "cudaHostGetDevicePointer superpose staged");
+      }
       check(cudaMalloc(reinterpret_cast<void**>(&sp.device_staged), staged_bytes), "cudaMalloc superpose staged");
-      check(cudaMalloc(reinterpret_cast<void**>(&sp.device_output), out_bytes), "cudaMalloc superpose output");
-      check(cudaMalloc(reinterpret_cast<void**>(&sp.device_steps), incoming * sp.max_steps * sizeof(GpuStep)),
-            "cudaMalloc superpose steps");
-      check(cudaMalloc(reinterpret_cast<void**>(&sp.device_step_meta), 2 * incoming * sizeof(int)),
-            "cudaMalloc superpose step meta");
+      alloc_host_device_pair(sp.zc_out, &sp.host_output, &sp.device_output, out_bytes, "superpose output");
+      if (sp.zc_meta) {
+        alloc_host_device_pair(true, &sp.mapped_host_steps, &sp.device_steps,
+                               incoming * sp.max_steps * sizeof(GpuStep), "superpose steps");
+        alloc_host_device_pair(true, &sp.mapped_host_step_meta, &sp.device_step_meta, 2 * incoming * sizeof(int),
+                               "superpose step meta");
+      } else {
+        check(cudaMalloc(reinterpret_cast<void**>(&sp.device_steps), incoming * sp.max_steps * sizeof(GpuStep)),
+              "cudaMalloc superpose steps");
+        check(cudaMalloc(reinterpret_cast<void**>(&sp.device_step_meta), 2 * incoming * sizeof(int)),
+              "cudaMalloc superpose step meta");
+      }
       check(cudaStreamCreateWithFlags(&sp.stream, cudaStreamNonBlocking), "cudaStreamCreateWithFlags superpose");
       check(cudaEventCreate(&sp.h2d_start), "cudaEventCreate superpose h2d_start");
       check(cudaEventCreate(&sp.h2d_done), "cudaEventCreate superpose h2d_done");
@@ -580,9 +766,9 @@ public:
       check(cudaMalloc(reinterpret_cast<void**>(&sp.device_row_begin),
                        (sp.rows + 1) * sizeof(int)),
             "cudaMalloc superpose row_begin");
-      check(cudaMemcpy(sp.device_row_begin, sp.host_row_begin.data(),
-                       (sp.rows + 1) * sizeof(int), cudaMemcpyHostToDevice),
-            "cudaMemcpy superpose row_begin H2D");
+      check(cudaMemcpyAsync(sp.device_row_begin, sp.host_row_begin.data(),
+                            (sp.rows + 1) * sizeof(int), cudaMemcpyHostToDevice, sp.stream),
+            "cudaMemcpyAsync superpose row_begin H2D");
 
       // Optional receiver model (a thermal-noise floor) applied after the sum.
       // One state here, which is correct while Nr = 1 -- and Nr > 1 is still
@@ -597,9 +783,14 @@ public:
           init_model_state(sp.rx_models.emplace_back(), rx->chain.size(),
                            rx_state_key(node.id, static_cast<int>(r), nr));
         }
-        check(cudaMalloc(reinterpret_cast<void**>(&sp.device_rx_steps),
-                         sp.rows * sp.rx_step_capacity * sizeof(GpuStep)),
-              "cudaMalloc superpose rx steps");
+        if (sp.zc_meta) {
+          alloc_host_device_pair(true, &sp.mapped_host_rx_steps, &sp.device_rx_steps,
+                                 sp.rows * sp.rx_step_capacity * sizeof(GpuStep), "superpose rx steps");
+        } else {
+          check(cudaMalloc(reinterpret_cast<void**>(&sp.device_rx_steps),
+                           sp.rows * sp.rx_step_capacity * sizeof(GpuStep)),
+                "cudaMalloc superpose rx steps");
+        }
       }
 
       // Build one DeviceLinkState per incoming edge of this destination,
@@ -648,20 +839,12 @@ public:
 
       // Paired pinned-host + device buffers for the raw-IQ-into-channel-kernel
       // path. Sized by UNIQUE source count (D4), not by edge count.
-      check(cudaHostAlloc(reinterpret_cast<void**>(&sp.host_source_iq),
-                          source_bytes, cudaHostAllocDefault),
-            "cudaHostAlloc superpose source_iq");
-      check(cudaMalloc(reinterpret_cast<void**>(&sp.device_source_iq),
-                       source_bytes),
-            "cudaMalloc superpose source_iq");
+      alloc_host_device_pair(sp.zc_in, &sp.host_source_iq, &sp.device_source_iq, source_bytes,
+                             "superpose source_iq");
       // M2.3: one slot-start value per incoming edge.
       const std::size_t slot_start_bytes = incoming * sizeof(unsigned long long);
-      check(cudaHostAlloc(reinterpret_cast<void**>(&sp.host_next_slot_start),
-                          slot_start_bytes, cudaHostAllocDefault),
-            "cudaHostAlloc superpose next_slot_start");
-      check(cudaMalloc(reinterpret_cast<void**>(&sp.device_next_slot_start),
-                       slot_start_bytes),
-            "cudaMalloc superpose next_slot_start");
+      alloc_host_device_pair(sp.zc_in, &sp.host_next_slot_start, &sp.device_next_slot_start,
+                             slot_start_bytes, "superpose next_slot_start");
       // One grid per edge: kDeviceMaxTaps x kDeviceMaxGridPoints complex, ~8 KB
       // per edge, so a 16-edge node costs ~128 KB of device memory.
       check(cudaMalloc(reinterpret_cast<void**>(&sp.device_fading_grid),
@@ -804,14 +987,23 @@ public:
         check(cudaMalloc(reinterpret_cast<void**>(&sp.device_correlation_groups),
                          groups.size() * sizeof(DeviceCorrelationGroup)),
               "cudaMalloc superpose correlation groups");
-        check(cudaMemcpy(sp.device_correlation_groups, groups.data(),
-                         groups.size() * sizeof(DeviceCorrelationGroup), cudaMemcpyHostToDevice),
-              "cudaMemcpy correlation groups H2D");
+        check(cudaMemcpyAsync(sp.device_correlation_groups, groups.data(),
+                              groups.size() * sizeof(DeviceCorrelationGroup), cudaMemcpyHostToDevice,
+                              sp.stream),
+              "cudaMemcpyAsync correlation groups H2D");
       }
 
-      check(cudaMemcpy(sp.device_link_states, sp.host_link_states.data(),
-                       incoming * sizeof(DeviceLinkState), cudaMemcpyHostToDevice),
-            "cudaMemcpy device_link_states H2D");
+      // The initial uploads go on sp.stream, not the legacy default stream.
+      // sp.stream is non-blocking, so it is not ordered after legacy-stream
+      // work, and a cudaMemcpy from pageable memory may return before its DMA
+      // lands. The first slot's snap-refresh D2H then read the device state
+      // before it arrived (all zeros, has_tdl=0) whenever another CUDA context
+      // delayed that DMA, and the late DMA later overwrote the refreshed
+      // state. Synchronize here so prepare() returns with the state resident.
+      check(cudaMemcpyAsync(sp.device_link_states, sp.host_link_states.data(),
+                            incoming * sizeof(DeviceLinkState), cudaMemcpyHostToDevice, sp.stream),
+            "cudaMemcpyAsync device_link_states H2D");
+      check(cudaStreamSynchronize(sp.stream), "cudaStreamSynchronize superpose prepare");
       } catch (...) {
         auto it = superpose_states_.find(node.id);
         if (it != superpose_states_.end()) {
@@ -829,6 +1021,7 @@ public:
                              std::uint64_t sample_rate_hz,
                              std::span<std::span<IqSample>> outputs) override
   {
+    const auto call_start = std::chrono::steady_clock::now();
     if (outputs.empty()) {
       return;
     }
@@ -906,6 +1099,15 @@ public:
     // suffices for every edge sharing source s, because the broker reads
     // all such edges from the same tx_ring at the same cursor — they
     // carry identical bytes.
+    //
+    // Z8 direct input skips the pack: the kernels read each source's span in
+    // place through the table, and build_steps reads the same span.
+    const bool direct_in =
+        sp.use_device_channel && sp.zc_direct_in && sp.num_sources <= static_cast<std::size_t>(kDeviceMaxDirectSources);
+    DeviceSourceTable source_table;
+    source_table.base = sp.device_source_iq;
+    source_table.direct = direct_in ? 1 : 0;
+    std::vector<const IqSample*> host_source(sp.num_sources, nullptr);
     if (sp.use_device_channel) {
       for (std::size_t s = 0; s < sp.num_sources; ++s) {
         const int k = sp.source_first_edge[s];
@@ -916,8 +1118,14 @@ public:
         if (edge.samples.size() != count) {
           throw std::runtime_error("CUDA superposition input is malformed");
         }
-        IqSample* src_slot = sp.host_source_iq + s * count;
-        std::copy(edge.samples.data(), edge.samples.data() + count, src_slot);
+        if (direct_in) {
+          source_table.ptr[s] = edge.samples.data();
+          host_source[s] = edge.samples.data();
+        } else {
+          IqSample* src_slot = sp.host_source_iq + s * count;
+          std::copy(edge.samples.data(), edge.samples.data() + count, src_slot);
+          host_source[s] = src_slot;
+        }
       }
     }
     // M4.2 -- one snap per LINK per slot, before any of its edges is staged.
@@ -1073,8 +1281,8 @@ public:
         // the same raw_slot pointer here — fine because build_steps is
         // read-only on its input buffer.
         const int src_idx = sp.host_link_states[k].src_index;
-        IqSample* raw_slot = sp.host_source_iq + static_cast<std::size_t>(src_idx) * count;
-        build_steps(ls_it->second.model, *edge.model, raw_slot, count, sample_rate_hz);
+        build_steps(ls_it->second.model, *edge.model, host_source[static_cast<std::size_t>(src_idx)], count,
+                    sample_rate_hz);
       } else {
         // Host stage_link path (legacy).
         IqSample* slot = sp.host_staged + k * count;
@@ -1122,37 +1330,52 @@ public:
     const auto total_start = std::chrono::steady_clock::now();
 
     check(cudaEventRecord(sp.h2d_start, sp.stream), "cudaEventRecord superpose h2d_start");
-    if (sp.use_device_channel) {
+    // Zero-copy: the kernels read the mapped IQ and slot-start buffers in
+    // place, so only the small step metadata below still goes H2D.
+    if (!sp.zc_in && sp.use_device_channel) {
       // Phase 2 D2b + D4: raw IQ H2D into device_source_iq, sized by UNIQUE
       // source count. The channel kernel reads per-edge via
       // DeviceLinkState::src_index and writes device_staged. Bytes saved vs
-      // pre-D4 = (link_count - num_sources) * count * 8.
-      check(cudaMemcpyAsync(sp.device_source_iq, sp.host_source_iq,
-                            sp.num_sources * sample_bytes,
-                            cudaMemcpyHostToDevice, sp.stream),
-            "cudaMemcpyAsync superpose source_iq H2D");
+      // pre-D4 = (link_count - num_sources) * count * 8. Direct input reads
+      // the caller's spans instead, so there is nothing to ship.
+      if (!direct_in) {
+        check(cudaMemcpyAsync(sp.device_source_iq, sp.host_source_iq,
+                              sp.num_sources * sample_bytes,
+                              cudaMemcpyHostToDevice, sp.stream),
+              "cudaMemcpyAsync superpose source_iq H2D");
+      }
       check(cudaMemcpyAsync(sp.device_next_slot_start, sp.host_next_slot_start,
                             static_cast<std::size_t>(link_count) * sizeof(unsigned long long),
                             cudaMemcpyHostToDevice, sp.stream),
             "cudaMemcpyAsync superpose next_slot_start H2D");
-    } else {
+    } else if (!sp.zc_in) {
       check(cudaMemcpyAsync(sp.device_staged, sp.host_staged,
                             static_cast<std::size_t>(link_count) * sample_bytes,
                             cudaMemcpyHostToDevice, sp.stream),
             "cudaMemcpyAsync superpose staged H2D");
     }
-    check(cudaMemcpyAsync(sp.device_steps, sp.host_steps.data(),
-                          static_cast<std::size_t>(total_steps) * sizeof(GpuStep), cudaMemcpyHostToDevice, sp.stream),
-          "cudaMemcpyAsync superpose steps H2D");
-    check(cudaMemcpyAsync(sp.device_step_meta, sp.host_step_meta.data(),
-                          static_cast<std::size_t>(2 * link_count) * sizeof(int), cudaMemcpyHostToDevice, sp.stream),
-          "cudaMemcpyAsync superpose step meta H2D");
-    if (rx_steps != 0) {
-      for (std::size_t r = 0; r != sp.rows; ++r) {
-        check(cudaMemcpyAsync(sp.device_rx_steps + r * rx_stride, sp.rx_models[r].host_steps.data(),
-                              static_cast<std::size_t>(rx_steps) * sizeof(GpuStep),
-                              cudaMemcpyHostToDevice, sp.stream),
-              "cudaMemcpyAsync superpose rx steps H2D");
+    if (sp.zc_meta) {
+      // The previous slot's sync guarantees the GPU is done reading these.
+      std::copy(sp.host_steps.begin(), sp.host_steps.begin() + total_steps, sp.mapped_host_steps);
+      std::copy(sp.host_step_meta.begin(), sp.host_step_meta.begin() + 2 * link_count, sp.mapped_host_step_meta);
+      for (std::size_t r = 0; rx_steps != 0 && r != sp.rows; ++r) {
+        std::copy(sp.rx_models[r].host_steps.begin(), sp.rx_models[r].host_steps.begin() + rx_steps,
+                  sp.mapped_host_rx_steps + r * rx_stride);
+      }
+    } else {
+      check(cudaMemcpyAsync(sp.device_steps, sp.host_steps.data(),
+                            static_cast<std::size_t>(total_steps) * sizeof(GpuStep), cudaMemcpyHostToDevice, sp.stream),
+            "cudaMemcpyAsync superpose steps H2D");
+      check(cudaMemcpyAsync(sp.device_step_meta, sp.host_step_meta.data(),
+                            static_cast<std::size_t>(2 * link_count) * sizeof(int), cudaMemcpyHostToDevice, sp.stream),
+            "cudaMemcpyAsync superpose step meta H2D");
+      if (rx_steps != 0) {
+        for (std::size_t r = 0; r != sp.rows; ++r) {
+          check(cudaMemcpyAsync(sp.device_rx_steps + r * rx_stride, sp.rx_models[r].host_steps.data(),
+                                static_cast<std::size_t>(rx_steps) * sizeof(GpuStep),
+                                cudaMemcpyHostToDevice, sp.stream),
+                "cudaMemcpyAsync superpose rx steps H2D");
+        }
       }
     }
     check(cudaEventRecord(sp.h2d_done, sp.stream), "cudaEventRecord superpose h2d_done");
@@ -1184,7 +1407,7 @@ public:
         check(cudaGetLastError(), "mix_fading_grid_kernel launch");
       }
       launch_apply_channel_kernel_static(sp.device_link_states,
-                                          sp.device_source_iq,
+                                          source_table,
                                           sp.device_fading_grid,
                                           sp.device_staged,
                                           link_count,
@@ -1193,7 +1416,7 @@ public:
                                           sp.stream);
       check(cudaGetLastError(), "apply_channel_kernel launch");
       launch_update_delay_line_kernel(sp.device_link_states,
-                                       sp.device_source_iq,
+                                       source_table,
                                        sp.device_next_slot_start,
                                        link_count,
                                        static_cast<int>(count),
@@ -1209,9 +1432,22 @@ public:
     constexpr int block_size = 256;
     const dim3 grid(static_cast<unsigned>((count + block_size - 1) / block_size),
                     static_cast<unsigned>(sp.rows));
+    // The host-stage path fills host_staged on the CPU; zero-copy reads it
+    // through its mapping instead of the H2D-filled device_staged.
+    const IqSample* staged_in =
+        (sp.zc_in && !sp.use_device_channel) ? sp.mapped_staged : sp.device_staged;
+    // zc_direct: the kernels write the caller's rows in place.
+    OutputRowTable out_rows;
+    if (sp.zc_direct) {
+      for (std::size_t r = 0; r != sp.rows; ++r) {
+        out_rows.ptr[r] = outputs[r].data(); // prepare() capped zc_direct at kMaxDirectRows
+      }
+    } else {
+      out_rows.base = sp.device_output;
+    }
     superpose_kernel<<<grid, block_size, 0, sp.stream>>>(
-        sp.device_output, count, link_count, static_cast<int>(sp.rows), sp.device_row_begin,
-        sp.device_staged, sp.device_steps, sp.device_step_meta);
+        out_rows, count, link_count, static_cast<int>(sp.rows), sp.device_row_begin,
+        staged_in, sp.device_steps, sp.device_step_meta);
     check(cudaGetLastError(), "superpose_kernel launch");
     if (rx_steps != 0) {
       // Receiver model applied in place, once per row against that row's own
@@ -1219,7 +1455,7 @@ public:
       // machinery a row-aware variant of this kernel would need.
       const int row_grid = static_cast<int>((count + block_size - 1) / block_size);
       for (std::size_t r = 0; r != sp.rows; ++r) {
-        IqSample* row = sp.device_output + r * count;
+        IqSample* row = output_row(out_rows, static_cast<int>(r), count);
         apply_steps_kernel<<<row_grid, block_size, 0, sp.stream>>>(
             row, row, count, sp.device_rx_steps + r * rx_stride, rx_steps);
       }
@@ -1227,18 +1463,21 @@ public:
     }
     check(cudaEventRecord(sp.kernel_done, sp.stream), "cudaEventRecord superpose kernel_done");
 
-    check(cudaMemcpyAsync(sp.host_output, sp.device_output, sp.rows * sample_bytes,
-                          cudaMemcpyDeviceToHost, sp.stream),
-          "cudaMemcpyAsync superpose D2H");
+    if (!sp.zc_out) {
+      check(cudaMemcpyAsync(sp.host_output, sp.device_output, sp.rows * sample_bytes,
+                            cudaMemcpyDeviceToHost, sp.stream),
+            "cudaMemcpyAsync superpose D2H");
+    }
     check(cudaEventRecord(sp.d2h_done, sp.stream), "cudaEventRecord superpose d2h_done");
     check(cudaStreamSynchronize(sp.stream), "cudaStreamSynchronize superpose");
-    for (std::size_t r = 0; r != sp.rows; ++r) {
+    const auto out_start = std::chrono::steady_clock::now();
+    for (std::size_t r = 0; !sp.zc_direct && r != sp.rows; ++r) {
       const IqSample* row = sp.host_output + r * count;
       std::copy(row, row + count, outputs[r].begin());
     }
 
-    record_timings(sp.h2d_start, sp.h2d_done, sp.kernel_done, sp.d2h_done, total_start,
-                   sp.use_device_channel);
+    record_timings(sp.h2d_start, sp.h2d_done, sp.kernel_done, sp.d2h_done, call_start, total_start, out_start,
+                   sp.use_device_channel, sp.zc_in || sp.zc_out || sp.zc_meta || sp.zc_direct_in);
   }
 
   ProcessorTimings last_timings() const override
@@ -1271,8 +1510,11 @@ private:
                       cudaEvent_t h2d_done,
                       cudaEvent_t kernel_done,
                       cudaEvent_t d2h_done,
+                      std::chrono::steady_clock::time_point call_start,
                       std::chrono::steady_clock::time_point total_start,
-                      bool used_device_channel)
+                      std::chrono::steady_clock::time_point out_start,
+                      bool used_device_channel,
+                      bool zero_copy)
   {
     float h2d_ms = 0.0F;
     float kernel_ms = 0.0F;
@@ -1280,7 +1522,11 @@ private:
     check(cudaEventElapsedTime(&h2d_ms, h2d_start, h2d_done), "cudaEventElapsedTime H2D");
     check(cudaEventElapsedTime(&kernel_ms, h2d_done, kernel_done), "cudaEventElapsedTime kernel");
     check(cudaEventElapsedTime(&d2h_ms, kernel_done, d2h_done), "cudaEventElapsedTime D2H");
-    const auto total_elapsed = std::chrono::steady_clock::now() - total_start;
+    const auto end = std::chrono::steady_clock::now();
+    const auto total_elapsed = end - total_start;
+    const auto us = [](std::chrono::steady_clock::duration d) {
+      return static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(d).count()) / 1000.0;
+    };
     // process_superposition() can run concurrently for distinct destination
     // nodes; guard the shared last-timings snapshot.
     std::lock_guard<std::mutex> lock(timings_mutex_);
@@ -1290,6 +1536,10 @@ private:
     last_timings_.gpu_process_us =
         static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(total_elapsed).count()) / 1000.0;
     last_timings_.used_device_channel = used_device_channel;
+    last_timings_.zero_copy = zero_copy;
+    last_timings_.host_prep_us = us(total_start - call_start);
+    last_timings_.host_out_us = us(end - out_start);
+    last_timings_.call_us = us(end - call_start);
   }
 
   // Builds a model chain into `ms`, advancing its per-step CFO phase and AWGN
@@ -1373,6 +1623,9 @@ private:
   }
 
   int device_ = 0;
+  // runtime.cuda_host_memory resolved against this device at prepare().
+  ZeroCopyParts zc_parts_;
+  bool zc_multirow_direct_ = false;
   mutable std::mutex timings_mutex_;
   ProcessorTimings last_timings_;
   std::unordered_map<std::string, CudaLinkSlot> link_slots_;

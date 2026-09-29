@@ -251,9 +251,23 @@ void launch_mix_fading_grid_kernel(
     float sample_rate_hz,
     void* stream);
 
+// Where this slot's raw IQ of each source lives, handed to the channel kernels
+// by value (a __grid_constant__ parameter, so indexing it is a constant-bank
+// load, not a per-thread copy). Flat layout: source s at base + s * count, the
+// packed staging buffer. Direct layout (Z8): ptr[s] is the caller's own buffer
+// for source s, read in place on a device with pageable memory access, which
+// removes the host-side packing copy. A node with more sources than fit here
+// keeps the flat layout.
+constexpr int kDeviceMaxDirectSources = 128;
+struct DeviceSourceTable {
+  const IqSample* base = nullptr;
+  int direct = 0;
+  const IqSample* ptr[kDeviceMaxDirectSources] = {};
+};
+
 void launch_apply_channel_kernel_static(
     const DeviceLinkState* states,
-    const IqSample* source_iq,
+    const DeviceSourceTable& sources,
     const float* fading_grid,
     IqSample* out_buffer,
     int n_links,
@@ -279,7 +293,7 @@ void launch_apply_channel_kernel_static(
 // at most kDeviceMaxDelayLine memory ops, trivial.
 void launch_update_delay_line_kernel(
     DeviceLinkState* states,
-    const IqSample* source_iq,
+    const DeviceSourceTable& sources,
     const unsigned long long* next_slot_start,
     int n_links,
     int count,
