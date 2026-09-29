@@ -42,6 +42,7 @@ WG1이 문서에 적은 검증은 **이 기종**에서 나왔다. 앞의 두 플
 | **S12** | **integration-0928 조합 검증** — GB10에서 prepare() 수정 확인, 1x1 회귀, OAI 2×2 rank 2(copy·zero-copy, CUDA gNB, 40–100 MHz, 덜 깨끗한 H) | 게이트 기본값만으로, 실행마다 다른 GPU 프로세스 기록, y=Hx 같은 실행에서 | **완료 2026-09-28** — 20 MHz 2×2 rank 2 copy·zero-copy 2쌍 전부 NACK 0, 148 Mb/s(air), y=Hx 통과, zero-copy가 브로커 p50 70 → 50 µs. **새 결함 2개:** (1) OAI UE가 OCUDU 기본 송신 레벨(12 dB 백오프)에서 64QAM의 69–89%를 NACK(rank 1·2, 1×1 게이트는 ping만 봐서 통과로 보였음) → 로컬 패치 `oai-zmq-rx-gain.patch` + 게이트 기본 UE RX gain −12 dB로 NACK 0. (2) CUDA gNB의 PDSCH 가속이 2포트 셀의 rank 1에서 NACK 45%(rank 2는 5.5%) — 미해결. 40–100 MHz 2×2는 부하 시 실시간 0.24–0.59(UE CPU) |
 | **S13** | **CUDA gNB PDSCH 결함(D10), 넓은 대역 2×2 실시간, 50 MHz rank 2 비율** | CPU·GPU 출력 비교로 위치를 좁히고, 수정은 D-계열 규약(패치·lock·음성 대조군)으로, 라이브는 CPU gNB와 짝지어 | **완료 2026-09-28** — **D10:** GPU TB 인코더가 CPU 세그멘터의 filler 0을 "값 없음"으로 보고 자기 값을 써서, filler 0인 다중 CB TB(예: 9,474 B = BG1 9 CB)가 틀린 K로 부호화됐다. 2포트 문제가 아니었다(1포트도 같음, 게이트가 ping만 봐서 숨음). 수정 후 CUDA gNB 2×2 rank 2 148.2 · rank 1 74.1 Mb/s, NACK 0 = CPU gNB, d8 대조 NACK 45%. **100 MHz 2×2는 코어 배치로 안 풀린다**(0.26 → 최대 0.32): lock-step 한 바퀴가 0.8–0.9 ms(중계 + 장치 턴어라운드, 리드 0–1)로 0.5 ms를 넘는 구조 한계. **50 MHz rank 2 21%**는 스케줄러가 아니라 부하 중 UE가 RI=1을 보고한 결과(원인 미확정) |
 | **S14** | **50 MHz 2×2 rank 2 비율 원인** — 부하 중 UE가 RI=1을 보고하는 이유를 UE 안에서 찾고 로컬 패치로 고친다 | 같은 조건 A/B(이전 UE ↔ 패치 UE) 2쌍, 20·100 MHz 회귀, 반복 점검(`check-oai-local-patches.sh`)에 결함 재현·수정 probe 추가 | **완료 2026-09-28** — 원인은 CSI 설정도 실시간 여부도 아니라 **OAI UE의 RI 추정이 초기화하지 않은 스택 배열에 누적**하는 것(`nr_csi_rs_ri_estimation`의 `csi_rs_estimated_A_MF`). 채널 추정값은 무부하·부하가 같은데 조건수 계산만 스택 잔여값 때문에 틀어진다. 로컬 패치 `oai-csi-ri-amf-init.patch`(memset 한 줄)로 **rank 2 비율 0.207 → 0.998**(2쌍), NACK 0, 50 MHz DL air 234 → 360 Mb/s. 20 MHz 0.999, 100 MHz 0.998 무회귀 |
+| **S15** | **브로커 코드만으로 lock-step 한 바퀴 줄이기** — OAI·OCUDU 드라이버, gNB·UE 설정, 호스트 idle 설정은 그대로 두고 브로커가 소유한 구간만 줄인다 | 홉 추적으로 한 바퀴를 브로커·장치 몫으로 나누고, 바꾼 것마다 같은 바이너리의 노브로 번갈아 A/B, 출력 bit 동일(테스트 + 음성 대조군), 라이브 y=Hx·NACK·1x1·srsUE 회귀 | **완료 2026-09-29** — 100 MHz 2×2 무부하 **0.563–0.571 → 0.673–0.680**, 50 MHz 2×2 무부하 **0.866 → 0.996(실시간)**. 브로커 몫(방향당 p50)은 310 → 약 120 µs. 부하(200M) 중에는 0.25–0.26 그대로다: 그때 한 바퀴는 UE(평균 1.8 ms)·gNB(1.05 ms) 몫이라 브로커로는 못 줄인다. 기본값: 제자리 relay·RX ring 직접 행·다중 행 direct 출력은 코드 기본(`=0`으로 끔), spin 대기는 GB10 프로파일(`broker_env`)로. 브랜치 `broker-round` |
 
 ## 진행 기록
 
@@ -976,3 +977,96 @@ UE 노드 기준, 같은 대역폭의 S8 값과 비교(전체 표는 `compare-bw
 
 **Spark 상태:** 게이트 프로세스·MPS·GPU 앱 없음, 이 트랙의 tmux 세션 종료. 남긴 것: 계측 트리 `src/oai-s14dbg`·빌드 `builds/oai-s14dbg`, A 대조 `builds/oai-zmq-local-s13`, 실행 스크립트와 원자료 `/workspace/gpuch/s14/`. 표는 `~/ocudu-work/perf-platform/compare-s14.md`(git 밖), 캡처 분석 스크립트는 워크스테이션 scratchpad.
 
+## S15 — 브로커 코드만으로 lock-step 한 바퀴 줄이기 (2026-09-29)
+
+**하려던 것:** S10·S13에서 넓은 대역 2×2가 실시간에 못 미치는 것은 gNB → 브로커 → UE → 브로커 → gNB 고리가 메시지마다 한 바퀴를 통째로 기다리기 때문이라고 판정했다. 사용자 결정은 **우리 코드(브로커·에뮬레이터)만** 고치는 것이다. OAI·OCUDU ZMQ 드라이버, gNB·UE 설정, 호스트 idle·sysctl은 건드리지 않았다. 브랜치 `broker-round`(worktree `~/ocudu-work/ocudu-broker-round`, `integration-0928` `9c7f1d7`에서 분기), Spark 트리 `/workspace/gpuch/br15`, 빌드 `builds/gpuch-br15-release`. 모든 라이브 실행은 OAI 2×2 게이트(unitary H, zero-copy, CPU gNB, 게이트 기본값)이고, 실행마다 다른 GPU 프로세스가 없음을 기록했다(전부 없음).
+
+### 1. 한 바퀴가 어디에 쓰이나 — 먼저 잰 것
+
+기존 `s10-hop-trace.py`는 2포트 id(`gnb0_p0`)를 읽지 못해서 `scripts/cuda/spark/s15-critical-path.py`를 새로 썼다. 단계마다 누적 샘플 수로 같은 샘플 경계를 맞추고, 방향마다 브로커 단계와 장치 몫을 나눈다. 장치가 RX 요청을 늦게 보낸 시간(`wait_req`)은 장치 몫이다. 창(`[skip, until]`)을 받아 iperf 부하 구간만 따로 볼 수 있고, gNB TX → UE RX → UE TX → gNB RX → gNB TX 의존 사슬을 거꾸로 따라가 한 바퀴를 나눈다.
+
+100 MHz 2×2 무부하, 기준 브로커(방향당 p50, µs):
+
+| 단계 | DL | UL | 내용 |
+|---|---|---|---|
+| in_ring | 8 | 9 | 수신 메시지 → TX ring |
+| wake_prod | 40 | 45 | 입력 도착 → producer가 깨어남(50 µs sleep poll + timer slack) |
+| produce | 182 | 182 | ring → 입력 창 복사 55–68 + 채널 호출 93(커널 38) + RX ring push 20 |
+| wake_rep | 34 | 41 | 행 준비 → REP 워커가 깨어남 |
+| send | 10 | 10 | `zmq_send`(491 KB 복사) |
+| **브로커 몫** | **310** | **315** | |
+| 장치 turnaround | gNB 446 | UE 455 | RX 응답 송신 → 그 장치의 다음 TX 도착 |
+
+- 한 바퀴는 메시지 2개를 전진한다(lead 1, 사슬 `advance` p50 2). 그래서 브로커 몫이 한 바퀴에 두 번 들어간다. 기준 루프는 메시지당 914 µs(평균)였다.
+- 채널 호출 93 µs 중 커널은 38 µs다. 나머지 대부분은 **2행 노드의 출력이 `device_output`을 거쳐 호출자 행으로 CPU 복사**되는 부분이다. Z8의 direct 출력은 1행 노드에만 적용됐다(`sp.rows == 1`). 커널이 행이 연속이라고 가정(`out_dev + r * count`)했기 때문이다.
+
+### 2. 바꾼 것 — 하나씩 A/B (100 MHz 2×2 무부하 1M, 게이트 `rt_factor`)
+
+| 변경 | 노브 | rt (실행별) | 브로커 몫 p50 (DL/UL µs) | 판정 |
+|---|---|---|---|---|
+| 기준 | — | 0.563, 0.570, 0.571, 0.569 | 310 / 315 | — |
+| **spin 대기** — 워커가 sleep 대신 소켓을 non-blocking으로 폴링하고 `sched_yield` | `OCG_BROKER_SPIN=1` | 0.599, 0.605 | 254 / 255 | 채택(프로파일) |
+| **복사 줄이기** — puller는 ZMQ 메시지에서 바로 ring으로, producer는 TX ring을 제자리에서 읽고, REP는 RX ring에서 바로 송신 | `OCG_BROKER_FEWER_COPIES` | 아래와 함께 0.620, 0.616 | 209 / 214 | 채택(기본) |
+| **행을 RX ring에 직접** — 채널이 RX ring 꼬리에 바로 씀 | `OCG_BROKER_DIRECT_ROWS` | (위와 함께) | | 채택(기본) |
+| spin + 두 복사 변경 | | 0.641, 0.652, 0.623, 0.644 | 136–206 / 139–241 | |
+| **다중 행 direct 출력** — 커널이 행 포인터 표로 호출자 행에 직접 씀 | `OCG_ZC_MULTIROW_DIRECT` | 0.680, 0.665 | 140–204 / 115–117 | 채택(기본) |
+| + spin 예산 50 µs | `OCG_BROKER_SPIN_US=50` | 0.638, 0.644 | 176–179 / 183–184 | 기각 |
+| + ZMQ I/O 스레드 2 | `OCG_ZMQ_IO_THREADS=2` | 0.683, 0.667, 0.670, 0.686 | 117–131 / 115–148 | 기각(잡음 수준) |
+| 소켓은 block, 내부 대기만 spin | `OCG_BROKER_SPIN=2` | 0.666, 0.659 | 121–130 / 150–156 | 기각 |
+| **최종 기본값**(코드 기본 + 프로파일 spin) | 없음 | **0.673, 0.680, 0.679** | 116–205 / 116–127 | |
+
+- 다중 행 direct 출력으로 채널 호출 p50이 95 → 50 µs가 됐다(커널 35, 메타 H2D 4).
+- **spin의 대가:** 브로커의 고정 코어 3개(15–17)를 100% 쓴다. 그래서 코드 기본값으로 두지 않고 `platform-profiles.json`의 `spark-gb10`에 `broker_env: {OCG_BROKER_SPIN: "1"}`로 넣었다. `platform-profile.py`가 `OCUDU_NATIVE_BROKER_ENV`로 내보내고, OAI 1x1·2x2 게이트가 브로커 앞에 붙이며 `gate-defaults.log`·`run-params`에 기록한다. `OCUDU_NATIVE_BROKER_ENV=`(빈 값)로 끈다. Jetson은 재지 않았으므로 넣지 않았다.
+- **spin이 전부는 아니다:** 워커 10개 + ZMQ I/O 스레드가 코어 3개를 나눠 써서, 한쪽 방향의 REP 깨어남·송신 꼬리가 p90 약 220 µs까지 갔다(실행마다 방향이 바뀜). spin 예산과 모드 2는 이 경쟁을 줄이려 했지만 sleep·block으로 돌아가는 지연이 더 컸다.
+- 남은 브로커 몫(최종, 방향당 p50 약 120 µs): in_ring 12, produce 49(채널 호출 46), REP 깨어남 24, 송신 23. 송신이 10 → 23 µs로 는 것은 GPU가 쓴 메모리를 CPU가 처음 읽는 일관성 비용(S9)이 push에서 `zmq_send` 복사로 옮겨 왔기 때문이다.
+
+### 3. 브로커만으로 어디까지 가나 — 바닥
+
+| 조건 | 루프(메시지당 평균) | 브로커 몫(메시지당) | 장치 몫 | 브로커 몫이 0이면 |
+|---|---|---|---|---|
+| 100 MHz 무부하, 기준 | 914 µs | 약 313 | 약 600 | — |
+| 100 MHz 무부하, 최종 | 737 µs | 약 133 | 약 604 | 약 0.83배 |
+| 100 MHz 부하 200M | 약 2,100 µs | 약 130–150 | 약 1,950 | 약 0.25배 |
+
+- **부하 중에는 장치가 한 바퀴를 정한다.** iperf 구간(12–24 s)만 보면 UE turnaround 평균 1.7–1.8 ms(p90 4.4–4.8 ms), gNB 1.05–1.1 ms이고, UE의 RX 요청이 행 준비보다 평균 724 µs 늦다. 브로커 produce를 190 → 95 µs로 줄이고 깨어남을 없애도 초당 실시간 비율은 0.24–0.26 그대로였다(기준·최종 모두). 이 구간은 브로커 코드로 줄일 수 없다.
+- **조각 단위 처리는 드라이버를 바꾸지 않고는 불가능하다.** 장치는 포트마다 TX를 0.5 ms = 61,440샘플짜리 ZMQ 메시지 하나로 보낸다(홉 추적에서 메시지의 99.9%가 정확히 61,440). ZMQ는 메시지를 통째로만 넘기므로 브로커가 더 일찍 시작할 수 없다. REP 응답은 요청 하나에 메시지 하나라서, 응답을 쪼개려면 장치가 RX 요청을 더 보내야 한다.
+
+### 4. 대역폭별 결과 (최종 기본값, 기준은 노브를 모두 끈 같은 바이너리)
+
+| 조건 | 기준 | 최종 | 비고 |
+|---|---|---|---|
+| 2×2 100 MHz 무부하 | 0.563–0.571 | 0.673–0.680 | NACK 0 |
+| 2×2 100 MHz 부하 200M | 0.242–0.258 | 0.259(최종), 0.277–0.279(다중 행 direct 전 노브) | 장치 한계 |
+| 2×2 50 MHz 무부하 | 0.866 | **0.996, 0.996** | 실시간 도달 |
+| 2×2 50 MHz 부하 | 0.363 | 0.372 | |
+| 2×2 20 MHz | — | 무부하 1.000, 부하 0.894 | S12와 같음 |
+| 1x1 100 MHz(OAI) | 1,984 슬롯/s | 2,001 슬롯/s | 둘 다 실시간, NACK 0 |
+
+### 5. 정확성
+
+- **출력 bit 동일:** 새 broker 테스트는 2포트 gNB·UE 노드를 고정 2×2로 잇고 포트마다 다른 램프를 lock-step으로 흘려, 노브를 끈 실행과 켠 실행의 RX 스트림을 비교한다. 4포트 2,460만–2,620만 샘플 bit 동일. **음성 대조군:** REP의 ring view를 한 샘플 밀면 `port 0 sample 0 differs`로 실패한다. 새 processing 테스트는 2행 노드를 copy·zero-copy·다중 행 direct에서 bit 단위로 비교한다. **GB10 음성 대조군:** direct 행 포인터를 뒤바꾸면 실패(rc 1), 원복하면 통과.
+- **ring 테스트:** `view()`/`reserve()`/`commit()`과, ring을 비울 때 꼬리 위치를 유지하는 것을 검사한다(예전 `discard_before`는 비울 때 `start_`를 0으로 돌려, 예약된 꼬리가 움직일 수 있었다).
+- ctest: 워크스테이션 5090 12/12(노브 각각·전부 켠 상태 포함), GB10 12/12 무부하 3회, GPU 경쟁(`busy`) 중 10/10. 9단계 시퀀스: GB10 무부하 통과, 경쟁 중 + `OCG_BROKER_SPIN=1` 통과.
+- **라이브 y=Hx**(워크스테이션 host python, UE 2번 TX 포트는 M6.4와 같이 선언된 무송신): 100 MHz DL 최대 오차 4.6e-8·2.4e-8, UL 2.0e-10·7.7e-11. 20 MHz도 통과. 모든 2×2 실행 NACK 0 또는 0.0006–0.0013(몇 실행).
+- 회귀: OAI 1x1 20 MHz 기본값 3/3·노브 끔 3/3·spin만 끔 1/1 통과(NACK 0), 100 MHz 둘 다 통과. srsUE legacy 1x1 통과(starvation 1).
+
+### 6. 무엇이 터졌고 왜
+
+- **분석기가 너무 느렸다.** 첫 버전은 단계마다 시간 목록을 다시 만들어 O(n²)라 10분을 넘겼다. 캐시해서 4초가 됐다.
+- **다중 행 direct의 첫 수정이 제한을 새로 만들었다.** 행 포인터 표 크기(16)를 넘는 노드를 direct가 아닐 때도 거부했다. 연속 행(`base + r * count`)을 기본으로 두고 direct일 때만 표를 쓰게 고쳤다.
+- **batch 2 시작이 워크스테이션에서 실행됐다.** ssh 인용이 깨져 heredoc 본문이 로컬에서 돌았다. `run.sh`가 없어 아무 실행도 되지 않았고, 워크스테이션 `ocudu-integration`에 빈 `hop/` 디렉터리만 생겨 지웠다. 이후에는 스크립트를 로컬에서 쓰고 복사했다.
+- **Spark 빌드 디렉터리가 root 소유**(게이트가 만듦)라 dev로는 빌드가 안 됐다. 컨테이너 root로 빌드했다.
+- **batch 4에서 게이트 5개가 시작하지 못했다.** 50 MHz 무부하 실행의 teardown에서 open5gs `5gc`가 abort(core dump)하고, 자식 `open5gs-scpd`가 남아 게이트의 `flock` fd를 물고 있었다. 이후 게이트는 전부 `another native OAI gate is running`으로 거부됐다. 남은 프로세스를 끄고 나머지를 batch 4b로 다시 돌렸고, 실행 전마다 우리 컨테이너의 남은 코어망·gNB·UE 프로세스를 기록하고 끄는 점검을 넣었다. **게이트 teardown 누수 자체는 고치지 않았다**(범위 밖, 기록만).
+- **OAI 1x1 20 MHz가 한 번 실패했다**(`ue_stack_blocker_no_attach`: RRC 연결, Registration Request 4회, AMF 도착은 25 s 실행의 21 s째). 바로 이어서 기본값·노브 끔을 3회씩 번갈아 돌렸고 모두 통과했다. 재현되지 않아 원인은 모른다.
+
+### 7. 커밋 (`broker-round`, push 안 함)
+
+| 커밋 | 내용 |
+|---|---|
+| `2757db1` | 노브 3개(spin, 복사 줄이기, RX ring 직접 행), `IqRing::view/reserve/commit`, ring·relay parity 테스트, `s15-critical-path.py` |
+| `9e49bb2` | 다중 행 direct 출력(`OutputRowTable`), 2행 parity 테스트 |
+| `f2085e0` | spin 예산, 분석 창, `s15-summary.sh` |
+| `0725977` | spin 모드 2, 의존 사슬 분석 |
+| `70a9a99` | 기본값: 제자리 relay·직접 행·다중 행 direct 켬, GB10 프로파일 `broker_env`(spin), 게이트가 브로커 env를 넘기고 기록 |
+
+**남은 것:** 부하 중 한 바퀴의 대부분은 OAI UE(2레이어 100 MHz 복호)와 gNB 몫이라, 브로커만으로는 무부하 약 0.83배·부하 약 0.25배가 바닥이다. 남은 브로커 몫 약 120 µs/방향 중 REP 깨어남 24 µs는 코어 3개에서 스레드가 경쟁해서 생긴다(워커 구조를 바꿔야 함). 송신 23 µs는 일관성 비용이다(`zmq_msg_init_data`로 복사를 없애도 커널 TCP 복사가 같은 비용을 낸다). 게이트 teardown의 open5gs 누수와 1회성 1x1 실패는 기록만 했다. 표 전체는 `~/ocudu-work/perf-platform/compare-s15.md`(git 밖), 원자료는 Spark `/workspace/gpuch/s15/`(홉 추적 `hop/`는 gzip).
