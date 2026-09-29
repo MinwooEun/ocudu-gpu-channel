@@ -173,7 +173,21 @@ __global__ void apply_steps_kernel(const IqSample* input,
 // model. `staged` holds the edges' input batches back to back: edge k's
 // sample idx is staged[k*count+idx]. `step_meta` packs the per-edge step
 // offsets in [0,link_count) and step counts in [link_count,2*link_count).
-__global__ void superpose_kernel(IqSample* dst,
+// Output rows: contiguous (base + r * count) when `ptr[0]` is null, else the
+// caller's own rows wherever they live -- zc_direct writes each row of a
+// multi-port node into its own RX ring (S15), so they are not adjacent.
+constexpr int kMaxDirectRows = 16;
+struct OutputRowTable {
+  IqSample* base = nullptr;
+  IqSample* ptr[kMaxDirectRows] = {};
+};
+
+__device__ __host__ inline IqSample* output_row(const OutputRowTable& t, int r, std::size_t count)
+{
+  return t.ptr[0] != nullptr ? t.ptr[r] : t.base + static_cast<std::size_t>(r) * count;
+}
+
+__global__ void superpose_kernel(const __grid_constant__ OutputRowTable dst,
                                  std::size_t count,
                                  int link_count,
                                  int nr,
@@ -200,7 +214,7 @@ __global__ void superpose_kernel(IqSample* dst,
     acc_i += i;
     acc_q += q;
   }
-  dst[static_cast<std::size_t>(r) * count + idx] = {acc_i, acc_q};
+  output_row(dst, r, count)[idx] = {acc_i, acc_q};
 }
 
 void check(cudaError_t status, const char* operation)
@@ -355,7 +369,8 @@ struct CudaSuperposeState {
   //              mapped_host_* arrays are their CPU side
   //   zc_direct: with zc_out and one output row, the kernels write the
   //              CALLER's row directly (needs pageable memory access), so the
-  //              host_output -> caller copy disappears too
+  //              host_output -> caller copy disappears too. OCG_ZC_MULTIROW_DIRECT=1
+  //              (S15) extends it to nodes with up to kMaxDirectRows rows.
   bool zc_in = false;
   bool zc_out = false;
   bool zc_meta = false;
@@ -584,6 +599,10 @@ public:
     check(cudaSetDevice(config.runtime.gpu_device), "cudaSetDevice");
     device_ = config.runtime.gpu_device;
     zc_parts_ = resolve_zero_copy_parts(resolve_zero_copy(config.runtime.cuda_host_memory, device_), device_);
+    {
+      const char* multirow = std::getenv("OCG_ZC_MULTIROW_DIRECT");
+      zc_multirow_direct_ = multirow != nullptr && std::string(multirow) == "1";
+    }
 
     // Same resolved lane table the broker serves from, so a lane key can never
     // be missing when process_superposition looks it up.
@@ -696,7 +715,8 @@ public:
       sp.zc_in = zc_parts_.in;
       sp.zc_out = zc_parts_.out;
       sp.zc_meta = zc_parts_.meta;
-      sp.zc_direct = zc_parts_.direct && sp.rows == 1;
+      sp.zc_direct = zc_parts_.direct &&
+                     (sp.rows == 1 || (zc_multirow_direct_ && sp.rows <= static_cast<std::size_t>(kMaxDirectRows)));
       sp.zc_direct_in = zc_parts_.direct_in;
       check(cudaHostAlloc(reinterpret_cast<void**>(&sp.host_staged), staged_bytes,
                           sp.zc_in ? cudaHostAllocMapped : cudaHostAllocDefault),
@@ -1415,10 +1435,17 @@ public:
     // through its mapping instead of the H2D-filled device_staged.
     const IqSample* staged_in =
         (sp.zc_in && !sp.use_device_channel) ? sp.mapped_staged : sp.device_staged;
-    // zc_direct: the kernels write the caller's single row in place.
-    IqSample* out_dev = sp.zc_direct ? outputs[0].data() : sp.device_output;
+    // zc_direct: the kernels write the caller's rows in place.
+    OutputRowTable out_rows;
+    if (sp.zc_direct) {
+      for (std::size_t r = 0; r != sp.rows; ++r) {
+        out_rows.ptr[r] = outputs[r].data(); // prepare() capped zc_direct at kMaxDirectRows
+      }
+    } else {
+      out_rows.base = sp.device_output;
+    }
     superpose_kernel<<<grid, block_size, 0, sp.stream>>>(
-        out_dev, count, link_count, static_cast<int>(sp.rows), sp.device_row_begin,
+        out_rows, count, link_count, static_cast<int>(sp.rows), sp.device_row_begin,
         staged_in, sp.device_steps, sp.device_step_meta);
     check(cudaGetLastError(), "superpose_kernel launch");
     if (rx_steps != 0) {
@@ -1427,7 +1454,7 @@ public:
       // machinery a row-aware variant of this kernel would need.
       const int row_grid = static_cast<int>((count + block_size - 1) / block_size);
       for (std::size_t r = 0; r != sp.rows; ++r) {
-        IqSample* row = out_dev + r * count;
+        IqSample* row = output_row(out_rows, static_cast<int>(r), count);
         apply_steps_kernel<<<row_grid, block_size, 0, sp.stream>>>(
             row, row, count, sp.device_rx_steps + r * rx_stride, rx_steps);
       }
@@ -1597,6 +1624,7 @@ private:
   int device_ = 0;
   // runtime.cuda_host_memory resolved against this device at prepare().
   ZeroCopyParts zc_parts_;
+  bool zc_multirow_direct_ = false;
   mutable std::mutex timings_mutex_;
   ProcessorTimings last_timings_;
   std::unordered_map<std::string, CudaLinkSlot> link_slots_;

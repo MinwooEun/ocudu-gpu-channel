@@ -1493,6 +1493,43 @@ int main()
                                        std::span<std::span<ocg::IqSample>>(crows));
       require_near_buffer(row0, c0, "M1.6: CUDA row 0 matches CPU at 1e-3");
       require_near_buffer(row1, c1, "M1.6: CUDA row 1 matches CPU at 1e-3");
+
+      // S15: a 2-row node in copy, zero-copy, and zero-copy with the rows
+      // written in place (OCG_ZC_MULTIROW_DIRECT=1) must agree bit for bit.
+      // The rows are separate buffers, as the broker's RX rings are.
+      ocg::IqBuffer ramp0(8), ramp1(8);
+      for (std::size_t k = 0; k != 8; ++k) {
+        ramp0[k] = {0.125F * static_cast<float>(k), 1.0F - 0.0625F * static_cast<float>(k)};
+        ramp1[k] = {-0.25F * static_cast<float>(k), 0.5F + 0.03125F * static_cast<float>(k)};
+      }
+      auto ramp_lanes = lanes;
+      for (auto& lane : ramp_lanes) {
+        lane.samples = lane.tx_port == 0 ? std::span<const ocg::IqSample>(ramp0) : std::span<const ocg::IqSample>(ramp1);
+      }
+      std::vector<std::vector<ocg::IqBuffer>> by_mode;
+      for (int mode = 0; mode != 3; ++mode) {
+        ocg::TopologyConfig mcfg = cuda_cfg;
+        mcfg.runtime.cuda_host_memory = mode == 0 ? ocg::CudaHostMemory::Copy : ocg::CudaHostMemory::ZeroCopy;
+        if (mode == 2) {
+          setenv("OCG_ZC_MULTIROW_DIRECT", "1", 1);
+        }
+        auto proc = ocg::create_channel_processor(mcfg);
+        unsetenv("OCG_ZC_MULTIROW_DIRECT");
+        ocg::IqBuffer r0(8), r1(8);
+        std::span<ocg::IqSample> mrows[2] = {r0, r1};
+        proc->process_superposition("ue", ramp_lanes, nullptr, 23040000,
+                                    std::span<std::span<ocg::IqSample>>(mrows));
+        by_mode.push_back({r0, r1});
+      }
+      for (int mode = 1; mode != 3; ++mode) {
+        for (std::size_t r = 0; r != 2; ++r) {
+          for (std::size_t k = 0; k != 8; ++k) {
+            const auto& a = by_mode[0][r][k];
+            const auto& b = by_mode[static_cast<std::size_t>(mode)][r][k];
+            require(a.i == b.i && a.q == b.q, "S15: 2-row output must be bit-identical in copy, zero-copy and multi-row direct");
+          }
+        }
+      }
     }
 #endif
   }
