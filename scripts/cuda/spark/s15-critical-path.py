@@ -16,7 +16,8 @@ per direction (DL = gnb0 TX -> ue0 RX, UL = ue0 TX -> gnb0 RX):
 
 and per device the turnaround: RX reply sent (last port) -> that device's next
 TX message received by the puller (first port). The cycle is the time between
-successive TX messages of one device. usage: s15-critical-path.py <csv> [skip_s]
+successive TX messages of one device.
+usage: s15-critical-path.py <csv> [skip_s] [until_s]  (window in s after the first event)
 """
 import bisect
 import collections
@@ -24,6 +25,7 @@ import sys
 
 path = sys.argv[1]
 skip = float(sys.argv[2]) if len(sys.argv) > 2 else 10.0
+until = float(sys.argv[3]) if len(sys.argv) > 3 else 1e9  # window end, s after the first event
 ev = collections.defaultdict(list)
 for line in open(path):
     if line.startswith("role"):
@@ -37,6 +39,7 @@ for role, dev, _ in ev:
         ports[dev.split("_p")[0]].add(dev)
 t0 = min(v[0][0] for v in ev.values() if v)
 lo = t0 + skip * 1e9
+hi = t0 + until * 1e9
 
 
 def cum(role, dev, e):
@@ -69,7 +72,7 @@ def pct(xs):
     if not xs:
         return "n=0"
     q = lambda f: xs[int(f * (len(xs) - 1))]
-    return f"n={len(xs):6d} mean={sum(xs)/len(xs):7.1f} p50={q(.5):7.1f} p90={q(.9):7.1f} p99={q(.99):7.1f}"
+    return f"n={len(xs)} mean={sum(xs)/len(xs):.1f} p50={q(.5):.1f} p90={q(.9):.1f} p99={q(.99):.1f}"
 
 
 cache = {}
@@ -87,7 +90,7 @@ def pct(xs):
     if not xs:
         return "n=0"
     q = lambda f: xs[int(f * (len(xs) - 1))]
-    return f"n={len(xs):6d} mean={sum(xs)/len(xs):7.1f} p50={q(.5):7.1f} p90={q(.9):7.1f} p99={q(.99):7.1f}"
+    return f"n={len(xs)} mean={sum(xs)/len(xs):.1f} p50={q(.5):.1f} p90={q(.9):.1f} p99={q(.99):.1f}"
 
 
 def last_port(role, node, e, s):
@@ -124,12 +127,12 @@ def req_for(node, s):
     return max(out)
 
 
-span_end = max(v[-1][0] for v in ev.values() if v)
+span_end = min(hi, max(v[-1][0] for v in ev.values() if v))
 span = (span_end - lo) / 1e9
 summary = {}
 for src, dst, name in (("gnb0", "ue0", "DL"), ("ue0", "gnb0", "UL")):
     rx0 = sorted(ports[src])[0]
-    bounds = [s for s, t in c("puller", rx0, 1) if t >= lo]
+    bounds = [s for s, t in c("puller", rx0, 1) if lo <= t < hi]
     seg = collections.defaultdict(list)
     for s in bounds:
         t_in = last("puller", src, 1, s)
@@ -158,8 +161,8 @@ for src, dst, name in (("gnb0", "ue0", "DL"), ("ue0", "gnb0", "UL")):
 
 for d in ("gnb0", "ue0"):
     tx0 = sorted(ports[d])[0]
-    tx = [t for t in times("puller", tx0, 1) if t >= lo]
-    sent_last = [t for t in (last("rep", d, 22, s) for s, _ in c("rep", sorted(ports[d])[0], 22)) if t and t >= lo]
+    tx = [t for t in times("puller", tx0, 1) if lo <= t < hi]
+    sent_last = [t for t in (last("rep", d, 22, s) for s, _ in c("rep", sorted(ports[d])[0], 22)) if t and lo <= t < hi]
     turn = []
     for t in sent_last:
         i = bisect.bisect_right(tx, t)

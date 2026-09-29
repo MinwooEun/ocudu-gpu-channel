@@ -149,6 +149,10 @@ SocketPtr make_socket(void* context, int type)
 //                       polls, so a handoff between broker threads does not
 //                       wait for a sleeping core to wake. Costs the broker's
 //                       own cores at 100%; pin the broker (the gate does).
+//   OCG_BROKER_SPIN_US  with SPIN, spin at most this long per wait before
+//                       falling back to the blocking/sleeping wait (default 0
+//                       = spin without limit). Bounds how many workers spin at
+//                       once when the broker has fewer cores than workers.
 //   OCG_BROKER_FEWER_COPIES
 //                       relay IQ with fewer CPU copies: the puller lands the
 //                       ZMQ message in the TX ring directly, the producer
@@ -165,6 +169,7 @@ struct BrokerDiagKnobs {
   std::string trace_dir;
   int io_threads = 0;
   bool spin = false;
+  std::chrono::microseconds spin_budget{0};
   bool fewer_copies = false;
   bool direct_rows = false;
 };
@@ -189,15 +194,21 @@ BrokerDiagKnobs read_diag_knobs()
     knobs.trace_dir = dir;
   }
   knobs.spin = env_flag("OCG_BROKER_SPIN");
+  if (const char* budget = std::getenv("OCG_BROKER_SPIN_US"); budget != nullptr && *budget != '\0') {
+    knobs.spin_budget = std::chrono::microseconds(std::strtol(budget, nullptr, 10));
+  }
   knobs.fewer_copies = env_flag("OCG_BROKER_FEWER_COPIES");
   knobs.direct_rows = env_flag("OCG_BROKER_DIRECT_ROWS");
   return knobs;
 }
 
-// One wait step of a worker whose peer has not produced yet.
-void wait_tick(const BrokerDiagKnobs& knobs)
+// One wait step of a worker whose peer has not produced yet. `since` is when
+// the current wait began: with a spin budget the worker spins only that long.
+void wait_tick(const BrokerDiagKnobs& knobs,
+               std::chrono::steady_clock::time_point since = std::chrono::steady_clock::time_point::max())
 {
-  if (knobs.spin) {
+  if (knobs.spin && (knobs.spin_budget.count() == 0 || since == std::chrono::steady_clock::time_point::max() ||
+                     std::chrono::steady_clock::now() - since < knobs.spin_budget)) {
     sched_yield();
   } else {
     std::this_thread::sleep_for(knobs.poll);
@@ -207,16 +218,29 @@ void wait_tick(const BrokerDiagKnobs& knobs)
 // Spin mode's replacement for a blocking receive: poll without blocking,
 // yielding between polls, for at most the socket's 100 ms receive timeout so
 // the caller still observes its stop flag. `try_once` returns true on success.
+// With a spin budget, the poll after the budget blocks on the socket (zmq_poll)
+// for the rest of the 100 ms, so an idle worker stops occupying a core.
 template <class TryOnce>
-bool spin_receive(TryOnce&& try_once, const std::atomic<bool>& stop)
+bool spin_receive(TryOnce&& try_once, const std::atomic<bool>& stop, void* socket,
+                  std::chrono::microseconds budget)
 {
-  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(100);
+  const auto start = std::chrono::steady_clock::now();
+  const auto deadline = start + std::chrono::milliseconds(100);
   while (!stop.load(std::memory_order_relaxed)) {
     if (try_once()) {
       return true;
     }
-    if (std::chrono::steady_clock::now() >= deadline) {
+    const auto now = std::chrono::steady_clock::now();
+    if (now >= deadline) {
       return false;
+    }
+    if (budget.count() != 0 && now - start >= budget) {
+      zmq_pollitem_t item{socket, 0, ZMQ_POLLIN, 0};
+      const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - now).count();
+      if (zmq_poll(&item, 1, static_cast<long>(std::max<long long>(1, left))) <= 0) {
+        return try_once();
+      }
+      continue;
     }
     sched_yield();
   }
@@ -1000,7 +1024,9 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           const auto once = [&](int flags) {
             return recv_samples_msg(dev.tx_req.get(), held, recv_buf.size(), sample_count, flags);
           };
-          got = knobs.spin ? spin_receive([&] { return once(ZMQ_DONTWAIT); }, stop_requested) : once(0);
+          got = knobs.spin ? spin_receive([&] { return once(ZMQ_DONTWAIT); }, stop_requested, dev.tx_req.get(),
+                                          knobs.spin_budget)
+                           : once(0);
           if (got) {
             pending_data = static_cast<const IqSample*>(zmq_msg_data(&held));
           }
@@ -1008,7 +1034,9 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           const auto once = [&](int flags) {
             return recv_samples_into(dev.tx_req.get(), recv_buf, sample_count, flags);
           };
-          got = knobs.spin ? spin_receive([&] { return once(ZMQ_DONTWAIT); }, stop_requested) : once(0);
+          got = knobs.spin ? spin_receive([&] { return once(ZMQ_DONTWAIT); }, stop_requested, dev.tx_req.get(),
+                                          knobs.spin_budget)
+                           : once(0);
           pending_data = recv_buf.data();
         }
         if (!got) {
@@ -1102,7 +1130,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             room_stall_reported = true;
             next_room_report = now + kStallReportInterval;
           }
-          wait_tick(knobs);
+          wait_tick(knobs, t_room_start);
         }
         // Only a genuine resume clears; a stop request is a shutdown, not
         // recovery, and must not be logged as one.
@@ -1190,7 +1218,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               data_stall_reported = true;
               next_data_report = now + kStallReportInterval;
             }
-            wait_tick(knobs);
+            wait_tick(knobs, wait_start);
           }
           if (data_stall_reported && !stop_requested.load()) {
             report_node_stall_cleared(node, "input_data",
@@ -1379,7 +1407,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
                 received = zmq_recv(port.rx_rep.get(), &dummy, sizeof(dummy), ZMQ_DONTWAIT);
                 return received >= 0 || (zmq_errno() != EAGAIN && zmq_errno() != EINTR);
               },
-              stop_requested);
+              stop_requested, port.rx_rep.get(), knobs.spin_budget);
           if (received < 0 && zmq_errno() != EAGAIN && zmq_errno() != EINTR && zmq_errno() != EFSM) {
             throw std::runtime_error(std::string("rx request failed: ") + zmq_strerror(zmq_errno()));
           }
@@ -1431,7 +1459,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             break;
           }
           diag.blocked_iters.fetch_add(1);
-          wait_tick(knobs);
+          wait_tick(knobs, t_pop_start);
         }
         if (take == 0) {
           break; // stop requested while waiting for a row
