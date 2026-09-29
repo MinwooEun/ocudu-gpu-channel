@@ -168,7 +168,32 @@ message is one JSON frame per update,
 nodes it omits keep their scripted route, unknown node ids are ignored with
 one warning, and after the timeout the last positions are kept and flagged
 `stale` in the `sionna_rt_update` status record (`position_source`,
-`position_status`). The same variables apply to `run-ocudu-sionna-multi-ue.sh`. A remote browser can use SSH port forwarding:
+`position_status`). The same variables apply to `run-ocudu-sionna-multi-ue.sh`.
+
+The Sionna multi-UE gate (`run-ocudu-sionna-multi-ue.sh`, the R4 base of
+`ROBOT_FIGHT_MILESTONES.md`) has these further knobs; every default keeps the
+run the gate always did:
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `OCUDU_NATIVE_SIONNA_AWGN_SNR_DB` | `40` (`off` = none) | Absolute receiver noise floor on every node (`rx_model`, an `awgn` step with `noise_power`), sized so a unit-gain link sees this SNR: `noise = tx_power / 10^(snr/10)` with the transmit levels measured on the wire (`render-sionna-multi-ue-configs.py` `TX_POWER_DL`/`TX_POWER_UL`, `wire-capture-power.py`). A `snr_db` step would size its noise against the *faded* signal and give a shadowed UE the same SNR as one in line of sight; the absolute floor is what makes Sionna's path loss reach the decoder. On the ring scene 40 dB reads as 34 dB (LOS) / ~16 dB (pillar shadow) at srsUE; 26.6 and 34.6 break srsUE's initial access and sync in the shadow. Sionna mode only. |
+| `OCUDU_NATIVE_SIONNA_TX_POWER_DL` / `_UL` | renderer constants | Override the measured transmit levels (mean `\|x\|^2` of active samples). |
+| `OCUDU_NATIVE_MUE_DURATION_SECONDS` | `240` (min 160) | Broker `--duration`; the attach window is the first 150 s. |
+| `OCUDU_NATIVE_MUE_STRICT_REALTIME` | `0` | Pass `--strict-realtime` to the broker (it then exits 1 if any starvation/overflow/gap counter is non-zero, which fails the gate). |
+| `OCUDU_NATIVE_MUE_UE_EXEC` | unset | A `bash -c` template started inside each UE's network namespace right after that UE's ping passes (the tun and its address exist only then). Placeholders: `{ue_id}` (ue0…), `{ue_ip}` (10.45.1.2…), `{ue_index}`, `{ue_netns}`, `{ue_gateway}`, `{log_dir}`, `{run_dir}`, `{config_dir}`. Only the network namespace is entered, so the filesystem (ipc sockets, logs) is shared with the stack. Logged to `ue-exec-<ue>.log`, stopped first at teardown. |
+| `OCUDU_NATIVE_MUE_ROOT_EXEC` | unset | The same for one command in the stack's own namespace (where `ogstun` 10.45.1.1, the broker and the bridge live), started as soon as `ogstun` exists — the place for a robot brain the UEs reach at `{ue_gateway}`. Placeholders: `{ue_ids}`, `{ue_ips}`, `{ue_gateway}`, `{log_dir}`, `{run_dir}`, `{config_dir}`. Logged to `root-exec.log`. |
+| `OCUDU_NATIVE_MUE_WIRE_CAPTURE_SAMPLES` / `_SKIP_SECONDS` | `0` / `60` | Broker wire capture per port and direction into `<log_dir>/wire-capture`; `wire-capture-power.py` reads it. |
+| `OCUDU_NATIVE_MUE_PIN_UES` | `1` | With a platform profile, the srsUEs are pinned to the profile's UE cores like the OAI gates' nrUE; `0` leaves them unpinned. |
+
+The gate also applies the platform CPU placement of `platform-profiles.json`
+(`OCUDU_NATIVE_PLATFORM=none` turns it off), writes every srsUE's per-second
+metrics to `srsue-metrics-<ue>.csv` (with `srsue-<ue>.start_unix_ms` for the
+wall clock), records what it applied in `run-parameters.json`, and its
+`attach-summary.json` carries the control-plane counters, the last broker
+heartbeat per device and the Sionna feed status next to the verdict.
+`analyze-sionna-multi-ue-run.py --log-dir …` joins the UE metrics with the
+bridge's positions and per-link gains and reports the link quality in line of
+sight against the shadow. A remote browser can use SSH port forwarding:
 
 ```bash
 ssh -L 8080:127.0.0.1:8080 YOUR_USER@GPU_HOST

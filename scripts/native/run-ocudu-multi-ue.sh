@@ -35,6 +35,34 @@ sionna_position_endpoint="${OCUDU_NATIVE_SIONNA_POSITION_ENDPOINT:-}"
 sionna_position_offset="${OCUDU_NATIVE_SIONNA_POSITION_OFFSET:-}"
 sionna_position_timeout_s="${OCUDU_NATIVE_SIONNA_POSITION_TIMEOUT_S:-}"
 web_port="${OCUDU_NATIVE_WEB_PORT:-8080}"
+# Receiver noise floor for the Sionna links (R4a): the SNR a unit-gain link
+# sees against an absolute per-node floor, so a shadowed UE really decodes
+# worse than one in line of sight. 40 dB puts a line-of-sight UE of the ring
+# scene (tap -2.5 dB) at a reported 34 dB and the pillar shadow (-27 dB) at
+# ~16 dB, which srsUE keeps in sync; 26.6 (shadow ~0 dB) and 34.6 (~8 dB)
+# both break its initial access and sync there (ROBOT_FIGHT_MILESTONES.md
+# R4a). `off` renders the floor-less topology the Sionna mode always had.
+# Only the scenario-driven (sionna) renderer honours it; the fixed-TDL
+# fixtures carry their own awgn steps.
+sionna_awgn_snr_db="${OCUDU_NATIVE_SIONNA_AWGN_SNR_DB:-40}"
+sionna_tx_power_dl="${OCUDU_NATIVE_SIONNA_TX_POWER_DL:-}"
+sionna_tx_power_ul="${OCUDU_NATIVE_SIONNA_TX_POWER_UL:-}"
+# Run length (the broker's --duration), and what runs next to the stack:
+# OCUDU_NATIVE_MUE_UE_EXEC starts a command inside each UE's netns once that
+# UE has pinged the core (placeholders {ue_id} {ue_ip} {ue_index} {ue_netns}
+# {log_dir} {run_dir} {config_dir}), OCUDU_NATIVE_MUE_ROOT_EXEC one command in
+# the stack's own namespace as soon as ogstun exists ({ue_ids} {ue_ips}
+# {log_dir} {run_dir} {config_dir}). Both are `bash -c` templates, torn down
+# by the gate's cleanup, empty by default.
+mue_duration_seconds="${OCUDU_NATIVE_MUE_DURATION_SECONDS:-240}"
+mue_ue_exec="${OCUDU_NATIVE_MUE_UE_EXEC:-}"
+mue_root_exec="${OCUDU_NATIVE_MUE_ROOT_EXEC:-}"
+mue_strict_realtime="${OCUDU_NATIVE_MUE_STRICT_REALTIME:-0}"
+# Broker wire capture (samples per port per direction, after a skip in
+# seconds of run time); 0 = off. Used to measure the transmit level the
+# noise floor is sized against.
+mue_wire_capture_samples="${OCUDU_NATIVE_MUE_WIRE_CAPTURE_SAMPLES:-0}"
+mue_wire_capture_skip_seconds="${OCUDU_NATIVE_MUE_WIRE_CAPTURE_SKIP_SECONDS:-60}"
 if [[ "${channel_mode}" == "sionna" ]]; then
   renderer="${script_dir}/render-sionna-multi-ue-configs.py"
 else
@@ -71,6 +99,28 @@ if [[ "${channel_mode}" == "sionna" ]]; then
 fi
 [[ "${physical_gpu}" =~ ^(0|[1-9][0-9]*)$ && "${physical_gpu}" -le 255 ]] || usage_error "invalid GPU device"
 [[ -x "${cuda_compiler}" ]] || usage_error "missing CUDA compiler: ${cuda_compiler}"
+number_re='^-?[0-9]+([.][0-9]+)?([eE][-+]?[0-9]+)?$'
+[[ "${sionna_awgn_snr_db}" == "off" || "${sionna_awgn_snr_db}" =~ ${number_re} ]] || \
+  usage_error "OCUDU_NATIVE_SIONNA_AWGN_SNR_DB must be a number or off"
+[[ -z "${sionna_tx_power_dl}" || "${sionna_tx_power_dl}" =~ ${number_re} ]] || \
+  usage_error "OCUDU_NATIVE_SIONNA_TX_POWER_DL must be a number"
+[[ -z "${sionna_tx_power_ul}" || "${sionna_tx_power_ul}" =~ ${number_re} ]] || \
+  usage_error "OCUDU_NATIVE_SIONNA_TX_POWER_UL must be a number"
+# The attach window is 150 s of the run; anything shorter cannot verify.
+[[ "${mue_duration_seconds}" =~ ^[1-9][0-9]*$ && "${mue_duration_seconds}" -ge 160 ]] || \
+  usage_error "OCUDU_NATIVE_MUE_DURATION_SECONDS must be an integer >= 160"
+[[ "${mue_strict_realtime}" =~ ^[01]$ ]] || usage_error "OCUDU_NATIVE_MUE_STRICT_REALTIME must be 0 or 1"
+[[ "${mue_wire_capture_samples}" =~ ^(0|[1-9][0-9]*)$ ]] || \
+  usage_error "OCUDU_NATIVE_MUE_WIRE_CAPTURE_SAMPLES must be a non-negative integer"
+[[ "${mue_wire_capture_skip_seconds}" =~ ^(0|[1-9][0-9]*)$ ]] || \
+  usage_error "OCUDU_NATIVE_MUE_WIRE_CAPTURE_SKIP_SECONDS must be a non-negative integer"
+# CPU placement from platform-profiles.json (spark-gb10: gNB 5-9, broker
+# 15-17, UEs 18,19; a no-op on an unknown host; OCUDU_NATIVE_PLATFORM=none
+# turns it off). The same resolver the OAI gates use, so the pinned runs
+# here and there mean the same thing.
+# shellcheck source=oai-gate-defaults.sh
+source "${script_dir}/oai-gate-defaults.sh"
+oai_gate_platform || usage_error "platform profile resolution failed"
 for command_name in unshare nsenter ip mount umount flock cmake ctest ss setsid stdbuf; do
   command -v "${command_name}" >/dev/null 2>&1 || usage_error "missing command: ${command_name}"
 done
@@ -121,15 +171,17 @@ declare -a renderer_args=(
   --output-dir "${config_dir}" --log-dir "${log_dir}"
 )
 [[ "${channel_mode}" == "sionna" ]] && renderer_args+=(--scenario-config "${sionna_scenario}")
-# UE count: 2 (default) or 4 (topology.ocudu-docker.multi-ue-quad). The fixed-TDL
-# renderer supports both; the Sionna renderer is two-UE only.
+# UE count: 2 (default) or 4 (topology.ocudu-docker.multi-ue-quad). Both
+# renderers take it; the Sionna one checks the scenario names that many UEs.
 ue_count="${OCUDU_NATIVE_MUE_UE_COUNT:-2}"
 [[ "${ue_count}" =~ ^(2|4)$ ]] || usage_error "OCUDU_NATIVE_MUE_UE_COUNT must be 2 or 4"
-if [[ "${ue_count}" != 2 ]]; then
-  [[ "${channel_mode}" != "sionna" ]] || usage_error "OCUDU_NATIVE_MUE_UE_COUNT=${ue_count} needs the fixed-TDL channel mode"
-  renderer_args+=(--ue-count "${ue_count}")
-fi
+[[ "${ue_count}" == 2 ]] || renderer_args+=(--ue-count "${ue_count}")
 export OCUDU_NATIVE_MUE_UE_COUNT="${ue_count}"
+if [[ "${channel_mode}" == "sionna" && "${sionna_awgn_snr_db}" != "off" ]]; then
+  renderer_args+=(--awgn-snr-db "${sionna_awgn_snr_db}")
+  [[ -z "${sionna_tx_power_dl}" ]] || renderer_args+=(--tx-power-dl "${sionna_tx_power_dl}")
+  [[ -z "${sionna_tx_power_ul}" ]] || renderer_args+=(--tx-power-ul "${sionna_tx_power_ul}")
+fi
 "/usr/bin/python3" "${renderer}" "${renderer_args[@]}" >"${log_dir}/render.log" 2>&1 || {
   cat "${log_dir}/render.log" >&2; usage_error "config rendering failed"
 }
@@ -164,7 +216,41 @@ declare -a inner_args=(
   --channel-build "${channel_build}"
   --parent-netns "${parent_netns}" --parent-mntns "${parent_mntns}"
   --outer-uid "$(id -u)"
+  --run-duration-seconds "${mue_duration_seconds}"
+  --strict-realtime "${mue_strict_realtime}"
+  --ue-exec "${mue_ue_exec}" --root-exec "${mue_root_exec}"
+  --wire-capture-samples "${mue_wire_capture_samples}"
+  --wire-capture-skip-seconds "${mue_wire_capture_skip_seconds}"
 )
+# What this run applied, next to the verdict it will produce.
+/usr/bin/python3 - "${report_dir}/run-parameters.json" <<'PY' \
+  "${channel_mode}" "${ue_count}" "${mue_duration_seconds}" "${mue_strict_realtime}" \
+  "${sionna_awgn_snr_db}" "${sionna_tx_power_dl}" "${sionna_tx_power_ul}" \
+  "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" "${OCUDU_NATIVE_GNB_CPUS:-}" \
+  "${OCUDU_NATIVE_BROKER_CPUS:-}" "${OCUDU_NATIVE_NRUE_CPUS:-}" "${OCUDU_NATIVE_BROKER_ENV:-}" \
+  "${mue_ue_exec}" "${mue_root_exec}" "${mue_wire_capture_samples}" "${mue_wire_capture_skip_seconds}" \
+  "${sionna_scenario}" "${sionna_position_endpoint}"
+import json, sys
+(out, channel_mode, ue_count, duration, strict, awgn, tx_dl, tx_ul, profile, gnb_cpus,
+ broker_cpus, ue_cpus, broker_env, ue_exec, root_exec, cap_samples, cap_skip,
+ scenario, position_endpoint) = sys.argv[1:]
+json.dump({
+    "channel_mode": channel_mode, "ue_count": int(ue_count),
+    "run_duration_seconds": int(duration), "strict_realtime": int(strict),
+    "sionna_awgn_snr_db": None if awgn == "off" or channel_mode != "sionna" else float(awgn),
+    "sionna_tx_power_dl": float(tx_dl) if tx_dl else None,
+    "sionna_tx_power_ul": float(tx_ul) if tx_ul else None,
+    "platform_profile": profile,
+    "cpus": {"gnb": gnb_cpus, "broker": broker_cpus, "ue": ue_cpus},
+    "broker_env": broker_env, "ue_exec": ue_exec, "root_exec": root_exec,
+    "wire_capture": {"samples": int(cap_samples), "skip_seconds": int(cap_skip)},
+    "sionna_scenario": scenario or None, "sionna_position_endpoint": position_endpoint or None,
+}, open(out, "w"), indent=2, sort_keys=True)
+PY
+printf 'event=native_multi_ue_gate_parameters duration=%ss strict_realtime=%s platform=%s gnb_cpus=%s broker_cpus=%s ue_cpus=%s awgn_snr_db=%s\n' \
+  "${mue_duration_seconds}" "${mue_strict_realtime}" "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" \
+  "${OCUDU_NATIVE_GNB_CPUS:-}" "${OCUDU_NATIVE_BROKER_CPUS:-}" "${OCUDU_NATIVE_NRUE_CPUS:-}" \
+  "${sionna_awgn_snr_db}"
 web_pid=""
 if [[ "${channel_mode}" == "sionna" ]]; then
   # ipc:// under the run directory, so the control and telemetry sockets live

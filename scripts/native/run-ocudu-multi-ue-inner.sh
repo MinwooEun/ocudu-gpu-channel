@@ -34,6 +34,14 @@ sionna_ready_seconds="180"
 sionna_position_endpoint=""
 sionna_position_offset=""
 sionna_position_timeout_s=""
+# R4a: run length, strict-realtime pass-through, side processes and wire
+# capture. The defaults are the values this gate always used.
+run_duration_seconds="240"
+strict_realtime="0"
+ue_exec=""
+root_exec=""
+wire_capture_samples="0"
+wire_capture_skip_seconds="60"
 
 usage_error()
 {
@@ -66,6 +74,12 @@ while [[ "$#" -gt 0 ]]; do
     --sionna-position-endpoint) sionna_position_endpoint="${2:-}"; shift 2 ;;
     --sionna-position-offset) sionna_position_offset="${2:-}"; shift 2 ;;
     --sionna-position-timeout-s) sionna_position_timeout_s="${2:-}"; shift 2 ;;
+    --run-duration-seconds) run_duration_seconds="${2:-}"; shift 2 ;;
+    --strict-realtime) strict_realtime="${2:-}"; shift 2 ;;
+    --ue-exec) ue_exec="${2:-}"; shift 2 ;;
+    --root-exec) root_exec="${2:-}"; shift 2 ;;
+    --wire-capture-samples) wire_capture_samples="${2:-}"; shift 2 ;;
+    --wire-capture-skip-seconds) wire_capture_skip_seconds="${2:-}"; shift 2 ;;
     *) usage_error "unexpected argument: $1" ;;
   esac
 done
@@ -107,6 +121,11 @@ if [[ -n "${sionna_position_endpoint}" ]]; then
   [[ -n "${sionna_position_timeout_s}" ]] && \
     sionna_position_args+=(--position-timeout-s "${sionna_position_timeout_s}")
 fi
+[[ "${run_duration_seconds}" =~ ^[1-9][0-9]*$ && "${run_duration_seconds}" -ge 160 ]] || \
+  usage_error "invalid run duration: ${run_duration_seconds}"
+[[ "${strict_realtime}" =~ ^[01]$ ]] || usage_error "invalid strict-realtime flag: ${strict_realtime}"
+[[ "${wire_capture_samples}" =~ ^(0|[1-9][0-9]*)$ && "${wire_capture_skip_seconds}" =~ ^(0|[1-9][0-9]*)$ ]] || \
+  usage_error "invalid wire capture request"
 [[ "$(readlink /proc/self/ns/net)" != "${parent_netns}" ]] || usage_error "network namespace was not isolated"
 [[ "$(readlink /proc/self/ns/mnt)" != "${parent_mntns}" ]] || usage_error "mount namespace was not isolated"
 # /proc/self/uid_map is column-aligned with leading whitespace, so compare
@@ -224,7 +243,7 @@ cleanup()
   local index wanted cleanup_failed=0
   # Stop broker admission first while both radio requesters are still alive,
   # then the radio peers, then their core/database dependencies.
-  for wanted in broker srsue gnb open5gs mongod; do
+  for wanted in ue-exec root-exec broker srsue gnb open5gs mongod; do
     for ((index=0; index<${#process_pids[@]}; index++)); do
       if [[ "${process_names[index]}" == "${wanted}"* ]]; then
         if stop_group "${index}"; then process_pids[index]="0"; else cleanup_failed=1; fi
@@ -321,6 +340,27 @@ for name in "${ue_netns[@]}"; do
   nsenter --net="/run/netns/${name}" -- ip link set lo up
 done
 
+# Side processes (R4a). A template is expanded with the run's placeholders
+# and run through `bash -c`, so it can be a pipeline or a script path with
+# arguments. Started with start_group: same logs, same teardown.
+run_dir="${netns_dir%/netns}"
+expand_exec_template()
+{
+  local text="$1"
+  text="${text//\{log_dir\}/${log_dir}}"
+  text="${text//\{run_dir\}/${run_dir}}"
+  text="${text//\{config_dir\}/${config_dir}}"
+  text="${text//\{ue_ids\}/${ue_ids[*]}}"
+  text="${text//\{ue_ips\}/${ue_ipv4[*]}}"
+  text="${text//\{ue_gateway\}/${ue_gateway}}"
+  printf '%s' "${text}"
+}
+if [[ -n "${root_exec}" ]]; then
+  root_exec_command="$(expand_exec_template "${root_exec}")"
+  printf 'event=root_exec_start command=%q\n' "${root_exec_command}"
+  start_group root-exec "${log_dir}/root-exec.log" bash -c "${root_exec_command}"
+fi
+
 # --- core -------------------------------------------------------------------
 start_group mongod "${log_dir}/mongod-console.log" "${mongod}" \
   --dbpath "${data_dir}" --bind_ip 127.0.0.1 --port 27017 --logpath "${log_dir}/mongod.log"
@@ -362,9 +402,28 @@ raise SystemExit(2)
 PY
 
 # --- broker, gNB, UEs -------------------------------------------------------
+# CPU placement resolved by the outer gate (platform-profile.py); empty on a
+# host without a profile, which leaves the scheduler alone. The two srsUEs
+# share the UE core set.
+broker_pin=() gnb_pin=() ue_pin=()
+[[ -n "${OCUDU_NATIVE_BROKER_CPUS:-}" ]] && broker_pin=(taskset -c "${OCUDU_NATIVE_BROKER_CPUS}")
+[[ -n "${OCUDU_NATIVE_GNB_CPUS:-}" ]] && gnb_pin=(taskset -c "${OCUDU_NATIVE_GNB_CPUS}")
+# OCUDU_NATIVE_MUE_PIN_UES=0 leaves the srsUEs unpinned (the profile's UE set
+# was sized for one OAI nrUE, not two srsUEs).
+[[ -n "${OCUDU_NATIVE_NRUE_CPUS:-}" && "${OCUDU_NATIVE_MUE_PIN_UES:-1}" == "1" ]] && \
+  ue_pin=(taskset -c "${OCUDU_NATIVE_NRUE_CPUS}")
 declare -a broker_args=(
-  "${broker}" --config "${config_dir}/topology.yaml" --duration 240s
+  "${broker}" --config "${config_dir}/topology.yaml" --duration "${run_duration_seconds}s"
 )
+[[ "${strict_realtime}" == "1" ]] && broker_args+=(--strict-realtime)
+if [[ "${wire_capture_samples}" -gt 0 ]]; then
+  mkdir -p "${log_dir}/wire-capture"
+  broker_args+=(
+    --wire-capture-dir "${log_dir}/wire-capture"
+    --wire-capture-samples "${wire_capture_samples}"
+    --wire-capture-skip "$((wire_capture_skip_seconds * 23040000))"
+  )
+fi
 if [[ "${channel_mode}" == "sionna" ]]; then
   broker_args+=(
     --control-endpoint "${control_endpoint}"
@@ -372,13 +431,14 @@ if [[ "${channel_mode}" == "sionna" ]]; then
     --telemetry-rate-hz 500
   )
 fi
+# shellcheck disable=SC2086  # OCUDU_NATIVE_BROKER_ENV is a KEY=VALUE list
 start_group broker "${log_dir}/broker.log" \
-  env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${broker_args[@]}"
+  env CUDA_VISIBLE_DEVICES="${physical_gpu}" ${OCUDU_NATIVE_BROKER_ENV:-} "${broker_pin[@]}" "${broker_args[@]}"
 broker_pid="${started_pid}"
 broker_index=$((${#process_pids[@]} - 1))
-# The fixed 240 s run plus ten seconds for grouped drain and orderly shutdown.
-# It must exceed staggered attach + per-UE ping, or a ping races the broker exit.
-broker_exit_deadline=$((SECONDS + 250))
+# The run plus ten seconds for grouped drain and orderly shutdown. It must
+# exceed staggered attach + per-UE ping, or a ping races the broker exit.
+broker_exit_deadline=$((SECONDS + run_duration_seconds + 10))
 # Every UE row must resolve before the gNB is admitted, otherwise a UE could
 # attach against a broker that has not finished standing its node up.
 # event=socket_ready is used rather than event=radio_node_resolved because the
@@ -409,7 +469,7 @@ if [[ "${channel_mode}" == "sionna" ]]; then
     usage_error "Sionna RT did not publish its first matrix profile update"
 fi
 
-start_group gnb "${log_dir}/gnb-console.log" "${gnb}" -c "${config_dir}/gnb.yaml"
+start_group gnb "${log_dir}/gnb-console.log" "${gnb_pin[@]}" "${gnb}" -c "${config_dir}/gnb.yaml"
 gnb_pid="${started_pid}"
 wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" 15 || usage_error "gNB did not start"
 sleep 3
@@ -452,7 +512,14 @@ for index in "${!ue_ids[@]}"; do
   if [[ "${srsue_variant}" == "local" && "${srsue_preambles}" == "distinct" ]]; then
     srsue_env=(env "SRSUE_PRACH_PREAMBLE_INDEX=$((index * 8))")
   fi
-  start_group "srsue-${id}" "${log_dir}/srsue-${id}.log" "${srsue_env[@]}" "${srsue}" "${config_dir}/srsue-${id}.conf"
+  # Per-second UE metrics (rsrp, dl_snr, dl_mcs, dl_bler, ul_bler, ...) as CSV,
+  # the link-quality record the R4 analysis joins with the bridge positions.
+  # The CSV clock is seconds since this UE started, so its start is recorded.
+  date -u +%s%3N >"${log_dir}/srsue-${id}.start_unix_ms"
+  start_group "srsue-${id}" "${log_dir}/srsue-${id}.log" "${srsue_env[@]}" "${ue_pin[@]}" "${srsue}" \
+    --general.metrics_csv_enable 1 --general.metrics_period_secs 1 \
+    --general.metrics_csv_filename "${log_dir}/srsue-metrics-${id}.csv" \
+    "${config_dir}/srsue-${id}.conf"
   srsue_pids+=("${started_pid}")
 done
 
@@ -475,6 +542,18 @@ while [[ "${SECONDS}" -lt "${deadline}" ]]; do
           ping -I tun_srsue -c 3 -W 2 "${ue_gateway}" \
           >"${log_dir}/ue-ping-${ue_ids[index]}.log" 2>&1; then
         ping_ok[index]=1
+        if [[ -n "${ue_exec}" ]]; then
+          # The UE's tun and address exist only now. Only the network namespace
+          # is entered: the filesystem (and any ipc:// socket on it) is shared.
+          ue_exec_command="$(expand_exec_template "${ue_exec}")"
+          ue_exec_command="${ue_exec_command//\{ue_id\}/${ue_ids[index]}}"
+          ue_exec_command="${ue_exec_command//\{ue_ip\}/${ue_ipv4[index]}}"
+          ue_exec_command="${ue_exec_command//\{ue_index\}/${index}}"
+          ue_exec_command="${ue_exec_command//\{ue_netns\}/${ue_netns[index]}}"
+          printf 'event=ue_exec_start ue=%s command=%q\n' "${ue_ids[index]}" "${ue_exec_command}"
+          start_group "ue-exec-${ue_ids[index]}" "${log_dir}/ue-exec-${ue_ids[index]}.log" \
+            nsenter --net="/run/netns/${ue_netns[index]}" -- bash -c "${ue_exec_command}"
+        fi
       fi
     fi
     [[ "${ping_ok[index]}" -eq 1 ]] || all_done=0
@@ -547,6 +626,62 @@ summary = {
 summary.update({k: counters.get(k, -1) for k in
                 ("tx_pulls", "rx_requests", "rx_starvations",
                  "tx_queue_overflows", "tx_sequence_gaps", "zmq_errors")})
+# Recorded, not gated (R4a): the control plane and Sionna feed counters, the
+# last heartbeat per device (its puller idle / producer stall counts are the
+# per-device view of rx_starvations), and how the run was configured.
+summary["control"] = {k: counters.get(k) for k in
+                      ("control_msgs_received", "control_updates_applied",
+                       "control_updates_rejected", "control_batches_committed",
+                       "control_batches_aborted", "telemetry_frames", "telemetry_drops")
+                      if k in counters}
+heartbeats = {}
+for line in (log_dir / "broker.log").read_text(encoding="utf-8", errors="replace").splitlines():
+    if line.startswith("event=heartbeat ") and "puller[" in line:
+        dev = re.search(r" dev=([A-Za-z0-9_-]+) ring=", line)
+        if dev:
+            heartbeats[dev.group(1)] = {
+                "t": int((re.search(r" t=(\d+)", line) or [0, 0])[1]),
+                "puller_idle": int((re.search(r"puller\[[^\]]*idle=(\d+)", line) or [0, -1])[1]),
+                "puller_room_stall": int((re.search(r"puller\[[^\]]*room_stall=(\d+)", line) or [0, -1])[1]),
+                "producer_stall": int((re.search(r"producer\[[^\]]*stall=(\d+)", line) or [0, -1])[1]),
+            }
+summary["last_heartbeat"] = heartbeats
+status_jsonl = log_dir / "sionna-status.jsonl"
+if status_jsonl.exists():
+    updates = 0
+    last = None
+    for line in status_jsonl.read_text(encoding="utf-8", errors="replace").splitlines():
+        if '"sionna_rt_update"' in line:
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if record.get("event") == "sionna_rt_update":
+                updates += 1
+                last = record
+    position = (last or {}).get("position_status") or {}
+    summary["sionna"] = {
+        "updates": updates,
+        "position_source": (last or {}).get("position_source"),
+        "position_messages_received": position.get("messages_received"),
+        "position_stale": position.get("stale"),
+        "last_channel_generation_ms": ((last or {}).get("timing_ms") or {}).get("channel_generation"),
+    }
+shape_json = pathlib.Path(log_dir).parent.parent.parent / "configs" / "ocudu-multi-ue-native" / timestamp / "sionna-multi-ue-shape.json"
+if shape_json.exists():
+    try:
+        summary["rx_noise"] = json.loads(shape_json.read_text(encoding="utf-8")).get("rx_noise")
+    except (OSError, json.JSONDecodeError):
+        pass
+parameters = pathlib.Path(out_path).parent / "run-parameters.json"
+if parameters.exists():
+    try:
+        summary["run_parameters"] = json.loads(parameters.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        pass
+capture = log_dir / "wire-capture" / "wire-capture.json"
+if capture.exists():
+    summary["wire_capture"] = str(capture)
 out = pathlib.Path(out_path)
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")

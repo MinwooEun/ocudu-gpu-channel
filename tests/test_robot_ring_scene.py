@@ -118,13 +118,8 @@ class RobotRingScenarioTest(unittest.TestCase):
 
     def test_multi_ue_renderer_accepts_shape(self):
         renderer = load_module(RENDERER, "render_sionna_multi_ue_configs_for_test")
-        # Since the four-UE option (9043202) the Sionna renderer compares the
-        # scenario against every record in render-multi-ue-configs.py instead
-        # of the gate's OCUDU_NATIVE_MUE_UE_COUNT slice, so a two-UE scenario
-        # (this one and sionna-multi-ue-sutd.json alike) is refused. The R4
-        # gate needs that fixed in the renderer; here the two-UE slice is what
-        # the shape is checked against.
-        renderer.legacy.UES = renderer.legacy.UES[:2]
+        # The renderer checks the scenario against the gate's UE-count slice
+        # (two by default), not against every record the legacy table knows.
         shape = renderer.load_live_shape(SCENARIO)
         self.assertEqual(len(shape.nodes), 3)
         self.assertEqual(

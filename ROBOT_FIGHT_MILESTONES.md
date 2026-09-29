@@ -59,7 +59,7 @@ brain-B ──(N6/tun)── gNB ═══╣  links: gnb→ueA, ueA→gnb, gnb�
 | **R1** | **링 씬** — 링 + 기둥/차폐물 Mitsuba XML, gNB 1 + UE 2 + crosstalk 시나리오 JSON, 커버리지 맵으로 LOS/NLOS 비대칭 확인 | 브리지 dry-run에서 링 위치별 탭이 물리적으로 말이 됨, 6링크 solve 시간이 갱신 주기 예산 안 | **완료 2026-09-29** — `scenes/robot_ring` + `robot-ring.json`(4링크, FDD) / `robot-ring-crosstalk.json`(6링크). GB10 solve 46–53 ms(링크 수 무관, 방향당 1회), 10 Hz 예산 안. LOS −0.5…−2.9 dB, 기둥 그림자 −27…−36 dB(refraction on; 끄면 outage). 발견: 4-UE 커밋 이후 Sionna multi-UE 렌더러가 2-UE 시나리오를 거부 → R4 전 수정 필요 |
 | **R2** | **로봇 아레나** — MuJoCo 스모봇 2대, ring-out 규칙, 두뇌 프로세스, UDP 프로토콜(seq+timestamp), 위치 PUB. 무선 없음 | 로컬 루프로 경기 완주, MuJoCo wall-clock 스텝, 명령 부재 정책 정의, 동일 두뇌 승률 50±x% 노이즈 플로어(N≥30) | **완료 2026-09-29** — `scripts/robot_fight/` (protocol/arena/brain/fight), 테스트 6개 통과. 30판 노이즈 플로어 5:5:20(승률 0.5, 95% CI 0.24–0.76), RTF 1.000. 핸디캡: +100 ms 편도 → 11:2:5(승률 0.85), +50 ms·손실 10/30% → 잡음 안. **무승부 67–83%가 문제**, R4 전 정책 손질 필요 |
 | **R3** | **위치 → Sionna live** — 브리지 `update_positions`를 외부 입력(ZMQ SUB)으로 교체, MuJoCo → 브리지 → 브로커 | 로봇이 기둥 뒤로 가면 KPI 패널의 채널이 따라옴, 위치→적용 지연 < 예산 | **부분 완료 2026-09-29** — 브리지 `--position-endpoint` + 게이트 env 배선, 단위 테스트 11개, Spark dry-run에서 원 궤도 추종 오차 0 m, solve 유지(링 씬 6링크 53 ms). MuJoCo→KPI 실물 연결은 R2/R4에서 |
-| **R4** | **무선 폐루프** — srsUE 2대 attach(`run-ocudu-sionna-multi-ue.sh` 기반), 제어 루프가 tun 통과, RTT/손실 로그를 브로커 슬롯 로그와 조인 | strict-realtime on, RTF = 1.0 로그, 경기 완주, RTT 분포, 무효 판 규칙 적용 | |
+| **R4** | **무선 폐루프** — srsUE 2대 attach(`run-ocudu-sionna-multi-ue.sh` 기반), 제어 루프가 tun 통과, RTT/손실 로그를 브로커 슬롯 로그와 조인 | strict-realtime on, RTF = 1.0 로그, 경기 완주, RTT 분포, 무효 판 규칙 적용 | **부분 완료 2026-09-29 (R4a 무선 절반)** — 2-UE Sionna 렌더러 수정, 절대 수신 잡음 바닥(`OCUDU_NATIVE_SIONNA_AWGN_SNR_DB`, 기본 40), 게이트 훅(`MUE_UE_EXEC`/`ROOT_EXEC`/duration/strict/핀/캡처/UE metrics CSV). 링 씬 walk 시나리오 PASS: LOS UE 34 dB, 그림자 UE 31→16 dB(r=0.42), ping 32/37 ms. 아레나 절반(R4b)은 미착수 |
 | **R5** | **스케줄링 배틀** — 브로커 2개(셀 2개), GPU 경합원(Sionna 버스트 + CUDA gNB), 스케줄링 off vs on, N판 | 스케줄링 유무로 승률이 뒤집히고 p99/starvation/`control_updates_dropped_realtime`가 그 이유를 설명 | |
 | **R6** | **데모 패키징** — 영상, KPI 패널 동기 재생, 선택: LLM 두뇌 / G1 / Isaac | 발표용 영상 1편 | |
 
@@ -160,3 +160,44 @@ R0–R2는 서로 독립(병렬 가능), R3부터 직렬.
 - 링 씬 6링크가 53 ms로 1x1(49 ms)과 거의 같다 — Sionna는 방향(주파수)당 한 번 풀고 링크 수는 후처리라, 위험 항목의 "6링크 ~150 ms" 예상은 **빗나갔다(좋은 쪽으로)**. 10 Hz 예산 안.
 - 위치→채널 적용 지연의 R3 몫은 poll 직후 resolve라 <1 ms; 전체 지연은 피드 주기 + solve(~50 ms) + control ack(0.5 ms) + 슬롯 경계. R4에서 브로커 `control_update` 슬롯과 조인해 측정.
 - 남은 것(R2/R4): 실제 MuJoCo 아레나가 `ipc://` 소켓을 bind해 위 메시지를 보내고, 게이트 env로 브리지에 연결한 뒤 KPI 패널에서 채널이 따라오는 것을 확인. 게이트에는 이미 `OCUDU_NATIVE_SIONNA_DURATION_SECONDS`가 있어 sionna 1x1 게이트를 자동 종료시킬 수 있다(R0 교훈의 Ctrl-C 문제 회피).
+
+### R4a — 2026-09-29 (무선 절반: 2-UE Sionna 게이트를 링 씬에서, Spark GB10)
+
+R4의 무선 쪽 준비다. 아레나·두뇌(R2)를 붙이는 R4b는 별도. 결과 디렉터리는 전부 Spark `/workspace/ocudu-spark/results/{logs,reports}/ocudu-multi-ue/<ts>`, 래퍼 `/workspace/gpuch/r4a-run.sh <tag> [ENV=..]`, 분석 JSON `/workspace/gpuch/r4a-*-analysis.json`. GPU에 다른 프로세스 없음(런마다 `r4a-<tag>.gpu-before` 기록).
+
+**고친 것 두 가지(R1이 찾은 차단 요인).**
+1. `render-sionna-multi-ue-configs.py`가 4-UE 커밋 `9043202` 이후 2-UE 시나리오를 거부했다(테이블 전체 ue0–ue3와 비교, 그리고 `validate_subscriber`를 옛 시그니처로 호출해 TypeError). 이제 `--ue-count`(게이트의 `OCUDU_NATIVE_MUE_UE_COUNT`) 슬라이스와 비교하고 그 슬라이스의 가입자 fixture를 쓴다. 4-UE Sionna도 시나리오가 ue0–ue3를 이름 짓기만 하면 통과한다(self-test + `tests/test_sionna_multi_ue_renderer.py`).
+2. Sionna 모드 토폴로지에 잡음이 없어 −27 dB 그림자도 무잡음으로 디코딩됐다. **`awgn snr_db` 스텝으로는 못 고친다** — 두 백엔드 모두 σ를 *현재(페이딩 후) 입력 전력*에서 유도하므로(`cpu_backend.cpp` Awgn, `cuda_backend.cu` build_steps) 그림자 UE도 같은 SNR을 받는다. 그래서 노드마다 `rx_model`(합산 수신 신호에 한 번 적용)에 **절대 `noise_power`** 를 둔다. `profile_swap`은 링크의 선행 tdl만 갈아끼우므로 바닥은 갱신 후에도 남는다(라이브 2,391회 갱신 동안 유지 확인). 코드 변경 없음(`noise_power`는 YAML-only 절대값으로 이미 있었다; `topology.sionna-multi-gnb.cuda.yaml`의 "reference power 1.0으로 SNR 변환" 주석은 코드와 맞지 않는다 — config.cpp는 부호 검사만 한다).
+
+**잡음 바닥의 근거.** `noise = tx_power / 10^(ref_snr/10)`, ref_snr = 0 dB 탭 링크가 보는 SNR(`OCUDU_NATIVE_SIONNA_AWGN_SNR_DB`), tx_power는 **wire capture로 잰 실제 송신 레벨**(새 `OCUDU_NATIVE_MUE_WIRE_CAPTURE_SAMPLES`, `wire-capture-power.py`; 활성 샘플 = 피크 전력의 1e-3 초과, 유휴 슬롯 제외). 보정 런 `20260929T130021Z`(잡음 off, capture 4.6M 샘플 @100 s):
+
+| 포트 | 방향 | 활성 비율 | 활성 평균 |x|² | 피크 진폭 |
+|---|---|---|---|---|
+| gnb0 | tx_in (OCUDU gNB 송신) | 5.0 % | **1.12e-2 (−19.5 dB)** | 0.39 |
+| ue0 / ue1 | tx_in (srsUE 송신) | 0.7 % | **2.8e4 / 3.3e4 (+44/+45 dB)** | 313 |
+| ue0 (LOS, −2.5 dB) | rx_out | 5.0 % | 1.13e-2 (−19.5 dB) | 0.39 |
+| ue1 (그림자, −27 dB) | rx_out | 3.6 % | 1.9e-5 (−47.2 dB) | 0.015 |
+
+srsUE의 ZMQ 라디오는 `[rf] tx_gain = 50`을 수치로 곱한다(10^(50/20) ≈ 316 = 피크 313), 그래서 UL은 DL보다 64 dB 크다. 워크스테이션 c4 캡처(CUDA gNB 4T4R)의 gNB 송신 −20.2 dB와 일치. 렌더러 상수 `TX_POWER_DL = 1.12e-2`, `TX_POWER_UL = 3.0e4`, env로 덮어쓸 수 있다. UL 기준은 ping만 있는 런의 PUCCH/SRS/작은 PUSCH 활동이라 광대역 PUSCH 기준으로는 보수적(잡음이 상대적으로 큼)일 수 있다 — R4b에서 트래픽이 생기면 gNB 쪽 UL BLER로 재확인.
+
+**ref_snr 선택 — 실측(같은 링 씬, srsUE가 보고한 `dl_snr`).** 처음 목표(LOS 25 / 그림자 0 dB)는 srsUE가 못 버틴다.
+
+| 런 | ref | 경로 | ue0 (LOS −2.5 dB) | ue1 (기둥 쪽) | 판정 |
+|---|---|---|---|---|---|
+| `130021Z` cal | off | robot-ring 1 m/s | 38 (포화) | 38, 그림자에서도 38 | PASS, 무잡음 |
+| `130540Z` n1 | 26.6 | 〃 | **27** (공칭 24) | RRC만, PDU 실패, snr −10…+10 | FAIL |
+| `131059Z` n2 | 34.6 | 〃 | 31 (공칭 32) | RRC 없음. gNB는 preamble 8을 검출(metric 45, 15 dB)해 RAR을 보냈지만 UE가 못 받음 — 첫 1 s 안에 기둥 그림자로 들어가며 RAR/Msg3이 그림자에 떨어진다(1 m/s면 LOS 틈이 레그당 ~0.5 s) | FAIL |
+| `131640Z` n3 | 40 | 〃 | 34 (공칭 37.5) | RRC 없음(같은 이유) | FAIL |
+| `132216Z` w1 | 34.6 | **robot-ring-walk** 0.2 m/s, LOS에서 출발 | 31 | attach 됨. LOS 틈 중앙 6.9 / 그림자 9.5 (재동기 상태가 섞임), out-of-sync 5,540줄(10 s마다 60–390), RRC Release 1회, ping 863 ms | PASS지만 불건전 |
+| `132714Z` w2 | **40** | 〃 | **34** | **LOS 중앙 31 / 그림자 중앙 16, r(gain, snr) = 0.42**, out-of-sync 1,500줄(가장 깊은 −40…−44 dB 지점에서만 버스트), Release 없음, ping 37 ms, dl_bler 그림자 평균 3.2 % | **PASS — 기본값** |
+
+- 보고값과 공칭값: 26.6 → 27(+3), 34.6 → 31(−1), 40 → 34(−3.5). srsUE의 추정이 고 SNR에서 눌린다. 그림자(공칭 ref − 27)는 40에서 16 dB로 읽힌다.
+- **왜 1 m/s 시나리오로는 안 되나.** x = −2 선을 따라 기둥 그림자(|y| ∈ [1.5, 2.0], [−0.25, 0.25]…)와 LOS 틈이 ~1 m마다 번갈아 든다(R1 coverage: −27 ↔ −2.9 dB). srsUE의 초기 접속(PRACH → RAR → Msg3 → RRC)은 25 dB 계단을 몇 초마다 맞으면 끝나지 않는다. 그래서 `examples/sionna/robot-ring-walk.json`(R1 씬 그대로, 두 UE가 LOS 끝 y = ±3.4에서 출발해 0.2 m/s로 왕복)을 만들었다. R4b의 아레나는 로봇을 LOS에서 스폰하면 된다.
+- 잡음 바닥이 GPU에 주는 비용: 브로커 kernel p50 19.6 → 23.9 µs(노드 3개 × AddNoise), p90 26 µs. `rx_starvations`는 cal 5 / w2 51(전부 attach 구간, heartbeat idle 52–53으로 세 장치가 같음).
+- 회귀: 이전 기본 시나리오 `sionna-multi-ue-sutd.json`을 새 기본값(40)으로 `133230Z` — **PASS**(두 UE attach·ping, 카운터 0, starvation 5). ue0(차량) gain −16…−7.5 dB ↔ snr 20–30, r = 0.84. ue1(보행자)은 Sionna가 경로를 못 주는 구간(−100 dB)에서 out-of-sync — 바닥이 없을 때는 그 −100 dB 탭도 무잡음으로 디코딩됐으니, 이제 "통과"의 뜻이 물리적으로 맞아졌다.
+
+**게이트 확장(`run-ocudu-multi-ue.sh` / `-inner.sh`, 기본값은 이전과 동일).** `OCUDU_NATIVE_SIONNA_AWGN_SNR_DB`(40, `off`), `OCUDU_NATIVE_SIONNA_TX_POWER_DL/UL`, `OCUDU_NATIVE_MUE_DURATION_SECONDS`(240, ≥160), `OCUDU_NATIVE_MUE_STRICT_REALTIME`, `OCUDU_NATIVE_MUE_UE_EXEC`(UE netns 안, ping 통과 직후, `{ue_id} {ue_ip} {ue_index} {ue_netns} {ue_gateway} {log_dir} {run_dir} {config_dir}`), `OCUDU_NATIVE_MUE_ROOT_EXEC`(스택 루트 ns, ogstun 직후, `{ue_ids} {ue_ips} …`), `OCUDU_NATIVE_MUE_WIRE_CAPTURE_SAMPLES/_SKIP_SECONDS`, `OCUDU_NATIVE_MUE_PIN_UES`. OAI 게이트와 같은 `platform-profile.py` 배치(spark-gb10: gNB 5-9 / 브로커 15-17 + `OCG_BROKER_SPIN=1` / srsUE 2대 18,19 공유 — 여섯 런 모두 rf_o/u/l = 0). srsUE마다 `--general.metrics_csv_enable`로 초당 metrics(`srsue-metrics-<ue>.csv` + `srsue-<ue>.start_unix_ms`). `attach-summary.json`에 control 카운터, 장치별 마지막 heartbeat, Sionna 갱신 수·position_source, rx_noise, `run-parameters.json`을 기록(판정은 그대로). 새 도구 `analyze-sionna-multi-ue-run.py`(metrics CSV ↔ 브리지 위치·링크 gain 조인, LOS/그림자 통계·상관), `wire-capture-power.py`. 문서 `scripts/native/README.md`.
+
+**R4b가 쓸 것.** 아레나는 스택 루트 ns에서 `OCUDU_NATIVE_MUE_ROOT_EXEC`로(브로커·브리지·ogstun 10.45.1.1과 같은 netns → 위치 PUB는 `tcp://127.0.0.1`도 되지만 게이트는 `ipc://` 절대경로만 받는다: `OCUDU_NATIVE_SIONNA_POSITION_ENDPOINT=ipc:///workspace/ocudu-spark/run/arena/positions.sock`, offset은 링 원점이 씬 원점이라 `0,0,0`), 로봇 쪽 모뎀/릴레이는 `OCUDU_NATIVE_MUE_UE_EXEC`로 UE netns 안에서 `{ue_ip}`(10.45.1.2/.3)에 bind하고 두뇌는 `{ue_gateway}` 10.45.1.1. 시나리오는 `robot-ring-walk.json`을 외부 위치 입력으로 덮어쓰는 형태(스폰은 LOS 쪽). 브로커 ping RTT 기준선 30–37 ms.
+
+**열린 것.** (1) legacy 1x1 Sionna 게이트는 "immutable legacy topology"를 그대로 profile_swap하므로 잡음 바닥 env를 받지 않는다 — 필요하면 렌더 후 `rx_model` 패치로. (2) 기둥 가장자리의 −40…−44 dB 지점에서는 40 dB 기준으로도 srsUE가 잠깐 동기를 잃는다; 더 부드러운 대비가 필요하면 R1의 재질 손잡이(glass −15 dB) 또는 ref 45. (3) 그림자에서의 BLER·MCS 저하는 트래픽이 있어야 보인다(지금은 ping뿐이라 MCS 0) — R4b의 50–100 Hz 제어 루프가 그 트래픽이다. (4) UL 잡음 기준의 보수성(위).
