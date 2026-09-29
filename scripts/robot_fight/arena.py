@@ -64,9 +64,56 @@ PLATE_Z = -0.01          # plate centred just below the chassis centre so pushes
 WHEEL_MAX_RAD_S = 30.0  # actuator ctrl range; 30 rad/s * 0.06 m = 1.8 m/s
 TIMESTEP = 0.001
 
+# Balance bot (--bot balance): a two-wheeled inverted pendulum with no local
+# balance controller -- the brain closes the balance loop over the link, so the
+# link's delay and its stale intervals decide whether the bot stands. Wheel
+# motors are torque actuators. The mass sits high (head at 0.95 m, CoM ~0.6 m,
+# growth rate sqrt(g / l_com) ~4 rad/s). Tuned in closed loop through a delay
+# (R2c): stands with 60 ms one-way delay at rest and 45 ms while driving at
+# 0.6 m/s, survives a 300 ms blackout while driving, falls at 400 ms.
+BAL_BASE_HALF = (0.08, 0.10, 0.02)
+BAL_BASE_MASS = 1.0
+BAL_POLE_RADIUS = 0.02
+BAL_HEAD_Z = 0.95          # head centre above the axle
+BAL_HEAD_HALF = 0.06
+BAL_HEAD_MASS = 2.0
+BAL_PLATE_HALF = (0.02, 0.12, 0.03)
+BAL_TORQUE_MAX = 1.5       # N m per wheel
+BAL_WHEEL_DAMPING = 0.02   # caps the free-running wheel speed at torque_max / damping
+BAL_FALL_UP = 0.64         # body z axis below cos(50 deg) -> fallen (unrecoverable for the pendulum)
+SUMO_FALL_UP = 0.3
 
-def build_model_xml(ring_radius: float, wheel_max: float = WHEEL_MAX_RAD_S) -> str:
+
+def build_model_xml(ring_radius: float, wheel_max: float = WHEEL_MAX_RAD_S, bot_type: str = "sumo",
+                    torque_max: float = BAL_TORQUE_MAX) -> str:
+    def balance_bot(name: str, rgba: str) -> str:
+        return f"""
+    <body name="{name}" pos="0 0 {WHEEL_RADIUS}">
+      <freejoint name="{name}_free"/>
+      <geom name="{name}_chassis" type="box" size="{BAL_BASE_HALF[0]} {BAL_BASE_HALF[1]} {BAL_BASE_HALF[2]}"
+            mass="{BAL_BASE_MASS}" rgba="{rgba}" friction="0.3 0.005 0.0001"/>
+      <geom name="{name}_plate" type="box" pos="{BAL_BASE_HALF[0] + BAL_PLATE_HALF[0]} 0 0"
+            size="{BAL_PLATE_HALF[0]} {BAL_PLATE_HALF[1]} {BAL_PLATE_HALF[2]}" mass="0.2" rgba="{rgba}"
+            friction="0.05 0.005 0.0001"/>
+      <geom name="{name}_pole" type="capsule" fromto="0 0 {BAL_BASE_HALF[2]} 0 0 {BAL_HEAD_Z - BAL_HEAD_HALF}"
+            size="{BAL_POLE_RADIUS}" mass="0.3" rgba="{rgba}"/>
+      <geom name="{name}_head" type="box" pos="0 0 {BAL_HEAD_Z}" size="{BAL_HEAD_HALF} {BAL_HEAD_HALF} {BAL_HEAD_HALF}"
+            mass="{BAL_HEAD_MASS}" rgba="{rgba}"/>
+      <body name="{name}_wheel_l" pos="0 {WHEEL_Y} 0">
+        <joint name="{name}_wl" type="hinge" axis="0 1 0" damping="{BAL_WHEEL_DAMPING}"/>
+        <geom type="cylinder" size="{WHEEL_RADIUS} {WHEEL_HALF_WIDTH}" euler="90 0 0" mass="0.2"
+              rgba="0.1 0.1 0.1 1" friction="1.2 0.005 0.0001" condim="4"/>
+      </body>
+      <body name="{name}_wheel_r" pos="0 {-WHEEL_Y} 0">
+        <joint name="{name}_wr" type="hinge" axis="0 1 0" damping="{BAL_WHEEL_DAMPING}"/>
+        <geom type="cylinder" size="{WHEEL_RADIUS} {WHEEL_HALF_WIDTH}" euler="90 0 0" mass="0.2"
+              rgba="0.1 0.1 0.1 1" friction="1.2 0.005 0.0001" condim="4"/>
+      </body>
+    </body>"""
+
     def bot(name: str, rgba: str) -> str:
+        if bot_type == "balance":
+            return balance_bot(name, rgba)
         return f"""
     <body name="{name}" pos="0 0 {WHEEL_RADIUS}">
       <freejoint name="{name}_free"/>
@@ -93,6 +140,14 @@ def build_model_xml(ring_radius: float, wheel_max: float = WHEEL_MAX_RAD_S) -> s
       </body>
     </body>"""
 
+    if bot_type == "balance":
+        actuators = "\n".join(
+            f'    <motor name="bot{i}_{w}" joint="bot{i}_w{w}" ctrlrange="-{torque_max} {torque_max}" gear="1"/>'
+            for i in range(2) for w in ("l", "r"))
+    else:
+        actuators = "\n".join(
+            f'    <velocity name="bot{i}_{w}" joint="bot{i}_w{w}" kv="2.0" ctrlrange="-{wheel_max} {wheel_max}" forcerange="-3 3"/>'
+            for i in range(2) for w in ("l", "r"))
     return f"""
 <mujoco model="sumo_arena">
   <option timestep="{TIMESTEP}" gravity="0 0 -9.81" integrator="implicitfast"/>
@@ -114,10 +169,7 @@ def build_model_xml(ring_radius: float, wheel_max: float = WHEEL_MAX_RAD_S) -> s
     {bot("bot1", "0.9 0.5 0.15 1")}
   </worldbody>
   <actuator>
-    <velocity name="bot0_l" joint="bot0_wl" kv="2.0" ctrlrange="-{wheel_max} {wheel_max}" forcerange="-3 3"/>
-    <velocity name="bot0_r" joint="bot0_wr" kv="2.0" ctrlrange="-{wheel_max} {wheel_max}" forcerange="-3 3"/>
-    <velocity name="bot1_l" joint="bot1_wl" kv="2.0" ctrlrange="-{wheel_max} {wheel_max}" forcerange="-3 3"/>
-    <velocity name="bot1_r" joint="bot1_wr" kv="2.0" ctrlrange="-{wheel_max} {wheel_max}" forcerange="-3 3"/>
+{actuators}
   </actuator>
 </mujoco>"""
 
@@ -219,7 +271,16 @@ class Arena:
             raise SystemExit("--node-ids must name exactly two robots")
         self.ring_radius = float(args.ring_radius)
         self.wheel_max = float(args.wheel_max_rad_s)
-        self.model = mujoco.MjModel.from_xml_string(build_model_xml(self.ring_radius, self.wheel_max))
+        self.bot_type = args.bot
+        self.torque_max = float(args.torque_max)
+        self.ctrl_max = self.torque_max if self.bot_type == "balance" else self.wheel_max
+        self.fall_up = BAL_FALL_UP if self.bot_type == "balance" else SUMO_FALL_UP
+        # Balance bots are held upright by the "starter" until both brains have
+        # sent a fresh command (or --hold-max-s), so neither falls before its
+        # brain is connected; the release time goes into the result.
+        self.holding = self.bot_type == "balance"
+        self.hold_release_sim_s: float | None = None
+        self.model = mujoco.MjModel.from_xml_string(build_model_xml(self.ring_radius, self.wheel_max, self.bot_type, self.torque_max))
         self.data = mujoco.MjData(self.model)
         self.rng = random.Random(args.seed)
         self.log_path = pathlib.Path(args.log)
@@ -277,7 +338,7 @@ class Arena:
             self.data.qpos[a:a + 3] = (x, y, WHEEL_RADIUS + 0.002)
             self.data.qpos[a + 3:a + 7] = yaw_to_quat(yaw)
         mujoco.mj_forward(self.model, self.data)
-        self.emit({"event": "spawn", "seed": self.args.seed, "ring_radius_m": self.ring_radius,
+        self.emit({"event": "spawn", "seed": self.args.seed, "ring_radius_m": self.ring_radius, "bot": self.bot_type,
                    "robots": [self.pose_dict(i) for i in range(2)], "node_ids": self.node_ids,
                    "stale_policy": self.args.stale_policy, "time_limit_s": self.args.time_limit,
                    "timeout_margin_m": self.args.timeout_margin_m,
@@ -299,11 +360,44 @@ class Arena:
         wz = float(self.data.qvel[v + 5])
         return x, y, z, quat_to_yaw(quat), vx, vy, vz, wz, quat_up_z(quat)
 
+    def lean(self, i: int) -> tuple[float, float, float, float]:
+        """(pitch, pitch_rate, wheel_left, wheel_right): lean of the body about the
+        axle, + = leaning forward (toward its heading); the free joint's angular
+        velocity is in the body frame, so its y component is the pitch rate."""
+        a = self.qpos_addr[i]
+        v = self.qvel_addr[i]
+        w, qx, qy, qz = self.data.qpos[a + 3:a + 7]
+        # body z axis in world: third column of R(q); its component along the heading
+        up_x = 2 * (qx * qz + w * qy)
+        up_y = 2 * (qy * qz - w * qx)
+        yaw = quat_to_yaw((w, qx, qy, qz))
+        forward = up_x * math.cos(yaw) + up_y * math.sin(yaw)
+        pitch = math.asin(max(-1.0, min(1.0, forward)))
+        pitch_rate = float(self.data.qvel[v + 4])
+        wl = float(self.data.qvel[self.wheel_dof[i][0]])
+        wr = float(self.data.qvel[self.wheel_dof[i][1]])
+        return pitch, pitch_rate, wl, wr
+
     def pose_dict(self, i: int) -> dict:
         x, y, z, yaw, vx, vy, vz, wz, up = self.pose(i)
+        pitch, pitch_rate, _, _ = self.lean(i)
         return {"robot": i, "x": round(x, 4), "y": round(y, 4), "z": round(z, 4), "yaw": round(yaw, 4),
                 "vx": round(vx, 4), "vy": round(vy, 4), "wz": round(wz, 4), "up": round(up, 4),
+                "pitch": round(pitch, 4), "pitch_rate": round(pitch_rate, 3),
                 "dist_to_edge_m": round(self.ring_radius - math.hypot(x, y), 4)}
+
+    def hold_upright(self) -> None:
+        """Starter's hand: keep both balance bots vertical (yaw kept, roll/pitch and
+        their rates zeroed) until both brains are connected."""
+        for i in range(2):
+            a = self.qpos_addr[i]
+            v = self.qvel_addr[i]
+            yaw = quat_to_yaw(self.data.qpos[a + 3:a + 7])
+            self.data.qpos[a + 2] = WHEEL_RADIUS
+            self.data.qpos[a + 3:a + 7] = yaw_to_quat(yaw)
+            self.data.qvel[v:v + 6] = 0.0
+            self.data.qvel[self.wheel_dof[i][0]] = 0.0
+            self.data.qvel[self.wheel_dof[i][1]] = 0.0
 
     # -- network ----------------------------------------------------------
     def drain_commands(self) -> None:
@@ -359,6 +453,7 @@ class Arena:
             if robot.dest is None:
                 continue
             me, opp = poses[robot.index], poses[1 - robot.index]
+            pitch, pitch_rate, wl, wr = self.lean(robot.index)
             robot.state_seq += 1
             header = protocol.Header(protocol.KIND_STATE, robot.index, robot.state_seq, now,
                                      robot.last_cmd_seq, robot.last_cmd_t_send_us)
@@ -366,7 +461,7 @@ class Arena:
                 float(self.data.time), me[0], me[1], me[3], me[4], me[5], me[7],
                 opp[0], opp[1], opp[3], opp[4], opp[5], self.ring_radius,
                 self.ring_radius - math.hypot(me[0], me[1]), self.ring_radius - math.hypot(opp[0], opp[1]),
-                flags_per_robot[robot.index])
+                pitch, pitch_rate, wl, wr, flags_per_robot[robot.index])
             try:
                 robot.sock.sendto(protocol.pack_state(header, state), robot.dest)
             except OSError:
@@ -406,16 +501,17 @@ class Arena:
                     self.emit({"event": "stale_begin", "robot": robot.index, "last_seq": robot.last_cmd_seq})
                 if self.args.stale_policy == "hold" and cmd is not None:
                     left, right = cmd.wheel_left, cmd.wheel_right
-                elif self.args.stale_policy == "coast":
+                elif self.args.stale_policy == "coast" and self.bot_type != "balance":
                     # Motor driver off: servo each wheel to its current speed so it
                     # free-wheels (rolling resistance only) instead of braking.
                     left = float(self.data.qvel[self.wheel_dof[robot.index][0]])
                     right = float(self.data.qvel[self.wheel_dof[robot.index][1]])
                 else:
+                    # zero; for a torque bot coast == zero: a starved link delivers no torque
                     left, right = 0.0, 0.0
             base = robot.index * 2
-            self.data.ctrl[base] = max(-self.wheel_max, min(self.wheel_max, left))
-            self.data.ctrl[base + 1] = max(-self.wheel_max, min(self.wheel_max, right))
+            self.data.ctrl[base] = max(-self.ctrl_max, min(self.ctrl_max, left))
+            self.data.ctrl[base + 1] = max(-self.ctrl_max, min(self.ctrl_max, right))
 
     def referee(self) -> tuple[int | None, str] | None:
         """None while the fight runs; otherwise (winner index or None, reason).
@@ -430,7 +526,7 @@ class Arena:
             radial.append(r)
             if r > self.ring_radius:
                 out.append(i)
-            if up < 0.3 or z < -0.5:
+            if (up < self.fall_up or z < -0.5) and not self.holding:
                 fallen.append(i)
         if fallen:
             if len(fallen) == 2:
@@ -461,6 +557,12 @@ class Arena:
         while verdict is None:
             self.loops += 1
             self.drain_commands()
+            if self.holding:
+                self.hold_upright()
+                if all(r.ever_fresh for r in self.robots) or float(self.data.time) >= self.args.hold_max_s:
+                    self.holding = False
+                    self.hold_release_sim_s = float(self.data.time)
+                    self.emit({"event": "hold_release", "both_connected": all(r.ever_fresh for r in self.robots)})
             if self.args.lockstep:
                 # DEBUG ONLY: advance one loop period per received command pair.
                 # Not real time; forbidden for validation fights.
@@ -476,6 +578,8 @@ class Arena:
                 steps = 0
                 while float(self.data.time) < target and steps < self.args.max_catchup_steps:
                     self.apply_controls()
+                    if self.holding:
+                        self.hold_upright()
                     mujoco.mj_step(self.model, self.data)
                     steps += 1
             sim_t = float(self.data.time)
@@ -517,6 +621,8 @@ class Arena:
             "wall_time_s": round(wall, 4), "rtf": round(rtf, 4), "late_loops": self.late_loops,
             "loops": self.loops, "max_lag_ms": round(self.max_lag_s * 1000, 3), "lockstep": bool(self.args.lockstep),
             "stale_policy": self.args.stale_policy, "ring_radius_m": self.ring_radius, "wheel_max_rad_s": self.wheel_max,
+            "bot": self.bot_type, "torque_max_nm": self.torque_max if self.bot_type == "balance" else None,
+            "hold_release_sim_s": None if self.hold_release_sim_s is None else round(self.hold_release_sim_s, 4),
             "robots": [self.robot_summary(r) for r in self.robots],
         }
         self.emit({"event": "rtf", **{k: result[k] for k in ("rtf", "late_loops", "loops", "max_lag_ms", "wall_time_s")}})
@@ -567,6 +673,12 @@ def parse_args(argv=None) -> argparse.Namespace:
                    help="ZMQ PUB endpoint for the Sionna bridge ('' to disable)")
     p.add_argument("--antenna-height", type=float, default=0.3, help="published z above the floor, metres")
     p.add_argument("--ring-radius", type=float, default=2.0)
+    p.add_argument("--bot", choices=("sumo", "balance"), default="sumo",
+                   help="sumo: low wheeled pusher, CMD = wheel speeds; balance: two-wheeled inverted pendulum "
+                        "balanced by the brain over the link, CMD = wheel torques")
+    p.add_argument("--torque-max", type=float, default=BAL_TORQUE_MAX, help="balance bot wheel torque limit, N m")
+    p.add_argument("--hold-max-s", type=float, default=5.0,
+                   help="balance bots are held upright until both brains sent a command, at most this long")
     p.add_argument("--wheel-max-rad-s", type=float, default=WHEEL_MAX_RAD_S, help="actuator limit; 30 rad/s = 1.8 m/s")
     p.add_argument("--spawn-fraction", type=float, default=0.5, help="spawn at +-fraction*radius on the x axis")
     p.add_argument("--time-limit", type=float, default=60.0, help="seconds of sim time before a draw")

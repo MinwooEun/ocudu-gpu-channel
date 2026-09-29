@@ -231,3 +231,39 @@ srsUE의 ZMQ 라디오는 `[rf] tx_gain = 50`을 수치로 곱한다(10^(50/20) 
 - **R4·R5에 대한 함의.** (a) 경기는 워크로드·시각화이지 ≤100 ms 급 링크 차이를 보는 계측기가 아니다. R5의 GPU 스케줄링 효과는 S9에서 p99 150 µs 급이었다 — 슬롯 드롭·RLF로 번지지 않는 한 **경기로는 절대 보이지 않는다**. R5의 "스케줄링 off" 조건은 브로커가 실제로 슬롯을 놓쳐 UE가 굶는(starvation → 재접속) 수준의 부하여야 하고, 1차 지표는 링크 지표(RTT, stale 구간, `rx_starvations`)로 두고 승률은 그 위의 데모로 둔다. (b) 승률 자체를 링크에 민감하게 만들려면 물리를 바꿔야 한다 — 반응 시간이 결판을 정하는 규칙(예: 심판 신호 후 X ms 안의 대응, 또는 밀기 힘이 상대 접촉점 추적 정확도에 비례) — 스모 물리 위에서 파라미터를 조정해서는 나오지 않았다.
 
 **파일.** 수정: `scripts/robot_fight/arena.py`(타이브레이크, `--robot-unix`, `--timeout-margin-m`, `--wheel-max-rad-s`, STATE 기본 200 Hz), `brain.py`(`reactive` 기본, 100 Hz, ttl 60), `fight.py`(`--policy`, `--state-hz`, `--modem`, `--wheel-max-rad-s`, 핸디캡 `outage_ms`/`outage_period_ms`), `README.md`(netns 실행 레시피), `tests/test_robot_fight_smoke.py`. 신규: `scripts/robot_fight/modem.py`, `tests/test_robot_fight_referee.py`, `tests/test_robot_fight_modem.py`. 테스트 12 통과 + 1 skip(netns, Spark root에서 통과). 결과: `results/robot-fight/r2b-sweep{,2,3,4}/`(git 제외). Spark `/workspace/gpuch/int0928`에 동기화.
+
+### R2c — 2026-09-29 (반응 결정형 물리: 원격 밸런스 봇, 링크 민감도 달성)
+
+R2b의 결론 — 스모 밀기 물리에서는 ≤100 ms 지연이 승률을 못 바꾼다 — 에 대한 답. **`--bot balance`**: 두 바퀴 역진자(축 위 베이스 1 kg, 0.95 m 높이에 2 kg 머리, CoM ≈ 0.6 m, 성장률 √(g/l) ≈ 4 rad/s, 바퀴 토크 모터 ±1.5 N m)이고 **로봇에 로컬 밸런스 제어기가 없다.** 두뇌가 링크 너머에서 100 Hz로 밸런스 루프를 닫는다(STATE v2에 `pitch`, `pitch_rate`, `wheel_left/right` 추가, 108 B; CMD는 바퀴 토크). 토크 하나하나가 링크를 건너므로 지연은 위상 여유를 깎고, stale 구간(토크 0 — `zero`/`coast` 모두 0 토크, 굶은 링크는 아무것도 주지 않는다)은 진자를 자유 낙하시킨다. 규칙은 그대로(넘어짐·링 아웃 = 패, 시간 초과 → 가장자리 타이브레이크). 아레나는 두 두뇌가 모두 명령을 보낼 때까지 봇을 세워 잡고(`hold_release_sim_s`), 넘어짐 판정은 몸 축이 50° 넘게 기울면.
+
+**두뇌 `--policy balance`** = 선형 전상태 피드백 `u = k_pitch·pitch + k_pitch_rate·pitch_rate + k_v·(v − v_ref)` + 요 차동, 위에 전략(`strategy`: **`ram`** 기본 — 상대에게 돌진, 가장자리 근처에서 중심으로; `reactive`/`pusher`/`stand`)이 `v_ref`/`w_ref`를 준다. 기준값은 저역통과(τ 0.25 s) + slew 제한(1.5 m/s²)이라 전략의 목표 점프가 치명적 기울기를 요구하지 못하고, 밸런스 토크가 조향보다 우선한다. `fight.py --bot balance`는 두뇌 정책을 자동으로 `balance`로 바꾸고 `--policy`를 전략으로 넘긴다. 이득은 지연을 낀 오프라인 폐루프에서 격자 탐색(k_pitch 8, k_pitch_rate 4.5, k_v 3.0; 머리 높이 0.55/0.75/0.95 m 비교 후 0.95 채택 — 높을수록 느려서 지연 허용이 오히려 커진다).
+
+**루프 허용 한계(오프라인, 네트워크 없음, `tests/test_robot_fight_balance.py`가 양 끝을 고정):**
+
+| 조건 | 편도 지연 허용 | 단일 블랙아웃 허용 | 옆 밀기 허용(100 ms) |
+|---|---|---|---|
+| 정지 | 60 ms | 400 ms 이상(정지한 진자는 아무것도 안 건드린다) | 60 N |
+| 0.3 m/s 주행 | 45 ms | 400 ms | 60 N |
+| 0.6 m/s 주행 | 45 ms | 300 ms(400 ms에 넘어짐) | 60 N |
+
+무선 기본 RTT ~30 ms(편도 15 ms)는 3–4배 여유 안.
+
+**dose–response(로컬 프록시, ue1 핸디캡, 24판/점, 6판 병렬, 30 s, RTF 전부 1.000, `ram` 전략):**
+
+| 핸디캡(ue1) | ue0:ue1 | ue0 승률 (95 % CI) | 패인 |
+|---|---|---|---|
+| 없음 | 11:13 | 0.46 (0.28–0.65) | 양쪽 ring_out(12/10), 넘어짐 0 |
+| 편도 +20 ms (RTT 43) | 16:8 | 0.67 (0.47–0.82) | ue1 fall 13 |
+| 편도 +40 ms (RTT 83) | 21:3 | **0.88 (0.69–0.96)** | ue1 fall 21, ue0 fall 3 |
+| 편도 +60 ms (RTT 123) | 24:0 | **1.00 (0.86–1.0)** | ue1 fall 24, 1.9 s 안에 |
+| 편도 +100 ms (RTT 203) | 24:0 | 1.00 (0.86–1.0) | ue1 fall 24, 1.6 s 안에 |
+| 정전 60/100/150/200 ms per 500 ms | 9:15 / 6:18 / 10:13 / 6:18 | 0.38 / 0.25 / 0.44 / 0.25 | ue0 ring_out 15/16/12/13 |
+| 단일 블랙아웃 200/400/600 ms @2.5 s (12판) | 7:5 / 7:5 / 9:3 | 0.58 / 0.58 / 0.75 | ue1 넘어짐은 600 ms에서 1회뿐 |
+
+- **지연 축은 목표 달성:** 단조이고, +0/+20은 노이즈 안, **+40 ms에서 뒤집히고 +60 ms에서 결정적**(전부 넘어짐). 패인이 `fall`로 바뀌므로 "링크 때문에 졌다"가 로그에 그대로 찍힌다. 이제 경기가 링크를 잰다.
+- **블랙아웃 축은 반대로 움직인다**(R2b와 같은 "축 늘어짐" 효과): 20 % duty 정전이나 ≤600 ms 단일 정전은 봇을 넘어뜨리지 못하고(정지에 가까운 진자는 400 ms 무토크에도 선다) 대신 정지시켜서, 돌진해 온 ue0이 튕겨 링 밖으로 나간다. 즉 **스케줄링 실패가 "몇백 ms 정전"의 형태이면 이 물리로도 승률에 안 보이고, "지속적 지연 증가"(슬롯 밀림 누적, 큐잉)의 형태이면 40 ms부터 보인다.** R5는 경합이 브로커에 어느 쪽 형태로 나타나는지(gpu_timings p99가 수십 ms로 올라가 RTT를 밀어올리나, 아니면 starvation 버스트인가)를 먼저 확인해야 하고, 정전형이면 승률 대신 링크 지표가 1차 지표다(R2b 결론 유지).
+- 노이즈 플로어 0.46, 무승부 0, 평균 결판 10.5 s.
+
+**기본값 변경 권고 — R5용으로 `--bot balance`를 기본으로 뒤집을 것을 권고하되, 이 커밋에서는 뒤집지 않았다** (`fight.py`/`arena.py` 기본은 여전히 `sumo`, R4b 게이트 작업이 현재 기본을 쓰고 있어서). 게이트가 아레나를 띄울 때 `--bot balance`를 넘기면 된다. **프로토콜 버전은 1 → 2로 올렸다**(STATE 108 B): 아레나·두뇌·모뎀 테스트를 같이 갱신했고, 옛 두뇌와 새 아레나는 버전 검사에서 거부된다 — Spark 복사본을 같이 동기화해야 한다.
+
+**파일.** 수정: `scripts/robot_fight/protocol.py`(v2 STATE), `arena.py`(`--bot`, `--torque-max`, `--hold-max-s`, 역진자 모델, `lean()`, 세워 잡기, 봇별 넘어짐 임계), `brain.py`(`balance` 정책, `ram` 전략, 기준값 slew/저역통과, 토크 우선), `fight.py`(`--bot`, `--torque-max`, 전략 자동 매핑, 핸디캡 `outage_once_ms/at_ms`, 요약에 `bot`·`lost_by`), `README.md`, `tests/test_robot_fight_protocol.py`, `tests/test_robot_fight_modem.py`. 신규: `tests/test_robot_fight_balance.py`. 테스트 14 통과 + 1 skip(netns). 결과: `results/robot-fight/r2c-sweep/`(git 제외). Spark에 동기화하지 않음(R4b 진행 중인 트리를 건드리지 않기 위해).

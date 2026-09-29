@@ -33,6 +33,7 @@ UE's network namespace that relays to the arena over a unix datagram socket
 | `../../tests/test_robot_fight_smoke.py` | one 5 s headless fight, checks RTF ≈ 1 and the streams. |
 | `../../tests/test_robot_fight_referee.py` | ring-out / fall / timeout tie-break rules on a constructed world. |
 | `../../tests/test_robot_fight_modem.py` | relay bytes + overhead; the netns case runs when `unshare -n` is allowed (gate container as root). |
+| `../../tests/test_robot_fight_balance.py` | balance bots stand through a short fight; the offline loop falls at 150 ms one-way delay and not at 15 ms. |
 
 Interpreter: `~/ocudu-work/venvs/robot/bin/python` (mujoco, numpy, pyzmq, pytest).
 
@@ -59,11 +60,14 @@ sample includes up to one STATE period of quantisation). One-way latency
 (`now − t_send_us`) is valid when both ends share a clock (same host, or
 the Spark with brains and arena in different network namespaces).
 
-STATE payload: `sim_time_s f64; x y yaw f32; vx vy wz f32; opp_x opp_y opp_yaw f32;
-opp_vx opp_vy f32; ring_radius_m dist_to_edge_m opp_dist_to_edge_m f32; flags u32`
-(flags: 1 running, 2 over, 4 this robot won, 8 this robot lost). 92 bytes.
+STATE payload (version 2): `sim_time_s f64; x y yaw f32; vx vy wz f32; opp_x opp_y opp_yaw f32;
+opp_vx opp_vy f32; ring_radius_m dist_to_edge_m opp_dist_to_edge_m f32;
+pitch pitch_rate wheel_left wheel_right f32; flags u32`
+(flags: 1 running, 2 over, 4 this robot won, 8 this robot lost). 108 bytes.
+`pitch` is the body's lean toward its heading (+ forward); ~0 for a sumo bot.
 
-CMD payload: `wheel_left wheel_right f32 (rad/s); ttl_ms u16; pad`. 44 bytes.
+CMD payload: `wheel_left wheel_right f32; ttl_ms u16; pad`. 44 bytes. Sumo bot:
+wheel angular-velocity targets (rad/s); balance bot: wheel torques (N m).
 
 ### ZMQ position plane (arena → Sionna bridge)
 
@@ -99,6 +103,36 @@ antenna height (`--antenna-height`, 0.3 m). Node ids come from `--node-ids`
 - Per-fight JSONL (`--log`): `spawn`, `brain_learned`, `first_command`, `cmd` (seq, one-way µs,
   brain turnaround µs), `stale_begin/end`, `pose` (20 Hz, both robots), `result`, `rtf`.
   Result JSON (`--result`): winner, reason, rtf, per-robot command/stale/latency stats.
+
+## Balance bot (`--bot balance`, R2c)
+
+The sumo bot's fights are decided by shove physics, not by the link (R2b).
+`--bot balance` replaces it with a two-wheeled **inverted pendulum** (base at
+the axle, 2 kg head 0.95 m up, CoM ≈ 0.6 m, wheel torque motors ±1.5 N m)
+that has **no local balance controller**: the brain closes the balance loop
+over the link at 100 Hz on the STATE fields `pitch`, `pitch_rate`, `wheel_*`
+(protocol version 2) and sends wheel *torques* as CMD. Every torque crosses
+the link, so link delay eats the loop's phase margin and a stale interval
+(`zero`/`coast` both mean torque 0 — a starved link delivers nothing) lets
+the pendulum fall freely. Fall = loss, ring-out = loss, timeout → edge
+tie-break as before. The arena holds the bots upright ("starter's hand")
+until both brains have sent a command (`hold_release_sim_s` in the result).
+
+Brain `--policy balance` = linear full-state feedback
+`u = k_pitch·pitch + k_pitch_rate·pitch_rate + k_v·(v − v_ref)` plus a yaw
+differential, with a *strategy* on top that supplies `v_ref`/`w_ref`
+(`strategy` param: `ram` default — drive into the opponent, turn back near
+the edge; `reactive`, `pusher`, `stand`). References are low-passed and slew
+limited so the strategy's target jumps cannot demand a fatal lean; balance
+torque has priority over steering. `fight.py --bot balance` selects the
+balance policy automatically and takes `--policy` as the strategy.
+
+Tolerance of the loop (offline closed loop through a one-way delay, no
+network; `tests/test_robot_fight_balance.py` pins the ends): stands with
+60 ms one-way delay at rest and 45 ms while driving at 0.6 m/s; survives a
+300 ms blackout while driving and falls at 400 ms (a blackout while standing
+still is harmless up to 400 ms — nothing moves a balanced pendulum). The
+radio's ~30 ms RTT (15 ms one-way) sits inside that with a 3–4× margin.
 
 ## Brain
 
@@ -140,8 +174,9 @@ STATE seq gaps (loss), RTT p50/p90/p99, STATE one-way p50/p99.
 ```
 
 `--handicap robot=1,delay_ms=D,loss=P` puts a UDP proxy on robot 1's path in
-both directions (one-way delay D each way, drop probability P). It is a local
-smoke test of link sensitivity, not a radio measurement. `--modem 1` routes
+both directions (one-way delay D each way, drop probability P;
+`outage_ms=,outage_period_ms=` for a periodic blackout, `outage_once_ms=,outage_once_at_ms=`
+for a single one). It is a local smoke test of link sensitivity, not a radio measurement. `--modem 1` routes
 robot 1 through `modem.py` over a unix socket (relay overhead check). Each
 fight uses a port block `--port-base + 10·slot` (arena 0/1, PUB 2, proxy 3).
 

@@ -41,7 +41,7 @@ def _cmd(seq: int) -> bytes:
 
 def _state(seq: int) -> bytes:
     header = protocol.Header(protocol.KIND_STATE, 0, seq, protocol.now_us(), 0, 0)
-    return protocol.pack_state(header, protocol.State(1.0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2.0, 2.0, 1.0, protocol.FLAG_RUNNING))
+    return protocol.pack_state(header, protocol.State(1.0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2.0, 2.0, 1.0, 0, 0, 0, 0, protocol.FLAG_RUNNING))
 
 
 def _wait_ready(proc: subprocess.Popen, timeout: float = 5.0) -> dict:
@@ -178,7 +178,7 @@ print(json.dumps({{'ok': ok}}))
                 assert hdr.kind == protocol.KIND_CMD and hdr.robot_id == 1
                 assert body.wheel_left == pytest.approx(hdr.seq)
                 reply_hdr = protocol.Header(protocol.KIND_STATE, 1, hdr.seq, protocol.now_us(), hdr.seq, hdr.t_send_us)
-                arena.sendto(protocol.pack_state(reply_hdr, protocol.State(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 1)), modem_path)
+                arena.sendto(protocol.pack_state(reply_hdr, protocol.State(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 1)), modem_path)
                 answered += 1
         finally:
             out, err = proc.communicate(timeout=30)

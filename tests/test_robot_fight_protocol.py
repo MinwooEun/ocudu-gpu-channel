@@ -14,7 +14,7 @@ import protocol  # noqa: E402
 def test_state_round_trip():
     header = protocol.Header(protocol.KIND_STATE, 1, 42, 1_790_000_000_000_000, 7, 1_789_999_999_990_000)
     state = protocol.State(12.5, 0.5, -0.25, 1.5, 0.1, -0.2, 0.3, -1.0, 0.75, -2.0, 0.0, 0.05, 2.5, 1.9, 0.4,
-                           protocol.FLAG_RUNNING)
+                           0.02, -0.5, 10.0, 11.0, protocol.FLAG_RUNNING)
     data = protocol.pack_state(header, state)
     assert len(data) == protocol.STATE_SIZE
     got_header, got = protocol.unpack(data)
@@ -22,6 +22,8 @@ def test_state_round_trip():
     assert isinstance(got, protocol.State)
     assert got.sim_time_s == pytest.approx(12.5)
     assert got.opp_yaw == pytest.approx(-2.0)
+    assert got.pitch == pytest.approx(0.02)
+    assert got.wheel_right == pytest.approx(11.0)
     assert got.flags == protocol.FLAG_RUNNING
 
 
@@ -37,7 +39,7 @@ def test_command_round_trip():
 
 def test_kind_mismatch_and_malformed():
     with pytest.raises(protocol.ProtocolError):
-        protocol.pack_state(protocol.Header(protocol.KIND_CMD, 0, 1, 1, 0, 0), protocol.State(*([0.0] * 15), 0))
+        protocol.pack_state(protocol.Header(protocol.KIND_CMD, 0, 1, 1, 0, 0), protocol.State(*([0.0] * 19), 0))
     with pytest.raises(protocol.ProtocolError):
         protocol.unpack(b"XX" + bytes(protocol.STATE_SIZE - 2))
     with pytest.raises(protocol.ProtocolError):

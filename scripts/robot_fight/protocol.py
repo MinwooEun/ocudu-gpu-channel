@@ -31,11 +31,16 @@ Two planes:
        ring_radius_m     f32
        dist_to_edge_m    f32   ring_radius - |own xy|
        opp_dist_to_edge_m f32
+       pitch, pitch_rate f32   own body lean about the axle (rad, rad/s; + = leaning forward).
+                               ~0 for a sumo bot; the balance bot's brain closes its balance
+                               loop on these two numbers (version 2)
+       wheel_left, wheel_right f32   own wheel angular velocities, rad/s (version 2)
        flags             u32   FLAG_* bits (fight running / over / this robot won or lost)
 
    CMD payload (brain -> robot)::
 
-       wheel_left, wheel_right  f32   wheel angular-velocity targets, rad/s
+       wheel_left, wheel_right  f32   sumo bot: wheel angular-velocity targets, rad/s;
+                                      balance bot: wheel torques, N m (the arena's --bot decides)
        ttl_ms                   u16   how long the robot may keep applying this command
        pad                      2x
 
@@ -60,7 +65,7 @@ import time
 from dataclasses import dataclass
 
 MAGIC = b"RF"
-PROTOCOL_VERSION = 1
+PROTOCOL_VERSION = 2   # 2: STATE carries pitch, pitch_rate and the wheel speeds (balance bot)
 KIND_STATE = 1
 KIND_CMD = 2
 
@@ -70,7 +75,7 @@ FLAG_WON = 1 << 2
 FLAG_LOST = 1 << 3
 
 _HEADER = struct.Struct("<2sBBB3xIQI4xQ")
-_STATE = struct.Struct("<d3f3f3f2f3fI")
+_STATE = struct.Struct("<d3f3f3f2f3f4fI")
 _CMD = struct.Struct("<2fH2x")
 
 HEADER_SIZE = _HEADER.size
@@ -111,6 +116,10 @@ class State:
     ring_radius_m: float
     dist_to_edge_m: float
     opp_dist_to_edge_m: float
+    pitch: float
+    pitch_rate: float
+    wheel_left: float
+    wheel_right: float
     flags: int
 
 
@@ -149,7 +158,8 @@ def pack_state(header: Header, state: State) -> bytes:
     return _pack_header(header) + _STATE.pack(
         state.sim_time_s, state.x, state.y, state.yaw, state.vx, state.vy, state.wz,
         state.opp_x, state.opp_y, state.opp_yaw, state.opp_vx, state.opp_vy,
-        state.ring_radius_m, state.dist_to_edge_m, state.opp_dist_to_edge_m, state.flags,
+        state.ring_radius_m, state.dist_to_edge_m, state.opp_dist_to_edge_m,
+        state.pitch, state.pitch_rate, state.wheel_left, state.wheel_right, state.flags,
     )
 
 

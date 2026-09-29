@@ -267,7 +267,109 @@ def reactive(state: protocol.State, params: dict, rng: random.Random) -> tuple[f
     return steer_to(tx, ty)
 
 
-POLICIES = {"pusher": (pusher, DEFAULT_PARAMS), "reactive": (reactive, REACTIVE_PARAMS)}
+BALANCE_PARAMS = {
+    "strategy": "ram",       # where the bot wants to go: ram | reactive | pusher | stand
+    "v_cmd_max": 0.7,        # m/s the strategy may ask for (its own v_max is overridden)
+    "w_cmd_max": 2.5,        # rad/s
+    "ref_tau_s": 0.25,       # low-pass on the strategy's wishes: a chasing reference excites the slow pendulum mode
+    # Gains from a grid search in closed loop through a one-way delay (R2c, head
+    # at 0.95 m): stands with 60 ms one-way delay at rest, 45 ms at 0.6 m/s.
+    "k_pitch": 8.0,          # N m per rad of lean            (all gains same sign: the base
+    "k_pitch_rate": 4.5,     # N m per rad/s                   drives under the falling body)
+    "k_v": 3.0,              # N m per m/s of speed error (too fast -> push base ahead -> lean back -> slow)
+    "k_yaw": 0.15,           # N m differential per rad/s of yaw-rate error (balance torque has priority)
+    "v_lean_limit": 1.0,     # |v - v_ref| is clipped here so a big speed error cannot demand a fatal lean
+    "v_ref_accel": 1.5,      # m/s^2 slew limit on the speed reference: a step would demand a fatal lean
+    "w_ref_accel": 8.0,      # rad/s^2 slew limit on the yaw-rate reference
+    "noise_rad": 0.02,
+}
+
+
+def stand(state: protocol.State, params: dict, rng: random.Random) -> tuple[float, float]:
+    """Strategy that only stands still (probe runs)."""
+    return 0.0, 0.0
+
+
+RAM_PARAMS = {
+    "v_max": 0.7, "w_max": 2.5, "k_heading": 4.0, "lead_s": 0.15,
+    "edge_margin_m": 0.45,   # heading outward with less ring than this -> turn back in
+    "noise_rad": 0.02,
+}
+
+
+def ram(state: protocol.State, params: dict, rng: random.Random) -> tuple[float, float]:
+    """Strategy for the balance bot: drive into the opponent, keep away from
+    the edge. The collision is the test -- a shove is a disturbance the remote
+    balance loop has to catch, and the loop with the older state loses."""
+    mem = params.setdefault("_mem", {"pushes": 0, "brakes": 0})
+    tx = state.opp_x + state.opp_vx * params["lead_s"]
+    ty = state.opp_y + state.opp_vy * params["lead_s"]
+    my_rad = math.hypot(state.x, state.y)
+    if my_rad > 1e-3 and state.dist_to_edge_m < params["edge_margin_m"]:
+        outward = (math.cos(state.yaw) * state.x + math.sin(state.yaw) * state.y) / my_rad
+        if outward > 0.2:
+            mem["brakes"] += 1
+            tx, ty = -state.x, -state.y      # aim at the centre
+    heading_err = wrap_angle(math.atan2(ty - state.y, tx - state.x) - state.yaw)
+    if params["noise_rad"] > 0:
+        heading_err += rng.gauss(0.0, params["noise_rad"])
+    w = max(-params["w_max"], min(params["w_max"], params["k_heading"] * heading_err))
+    v = params["v_max"] * max(0.0, math.cos(heading_err))
+    mem["pushes"] += 1
+    return diff_drive(v, w)
+
+
+def balance(state: protocol.State, params: dict, rng: random.Random) -> tuple[float, float]:
+    """Remote balance of the two-wheeled inverted pendulum (--bot balance) plus a
+    fighting strategy on top. Returns wheel TORQUES (N m).
+
+    The strategy (``reactive`` by default) produces wheel speed targets as for
+    the sumo bot; they are turned into a body speed / yaw-rate reference. The
+    balance law is a linear full-state feedback on (pitch, pitch rate, speed
+    error): ``u = k_pitch*pitch + k_pitch_rate*pitch_rate + k_v*(v - v_ref)``,
+    the classic segway loop. Nothing here is local to the robot: every torque
+    crosses the link, so link delay lowers the loop's phase margin and a stale
+    interval (torque 0) lets the pendulum fall freely."""
+    mem = params.setdefault("_mem", {})
+    if "strategy_params" not in mem:
+        name = params["strategy"]
+        base = {"ram": RAM_PARAMS, "reactive": REACTIVE_PARAMS, "pusher": DEFAULT_PARAMS, "stand": {}}[name]
+        sp = dict(base)
+        sp.update({"v_max": params["v_cmd_max"], "w_max": params["w_cmd_max"], "noise_rad": params["noise_rad"]})
+        mem["strategy_params"] = sp
+        mem["strategy_fn"] = {"ram": ram, "reactive": reactive, "pusher": pusher, "stand": stand}[name]
+    left_ref, right_ref = mem["strategy_fn"](state, mem["strategy_params"], rng)
+    v_want = (left_ref + right_ref) / 2.0 * WHEEL_RADIUS
+    w_want = (right_ref - left_ref) * WHEEL_RADIUS / WHEEL_BASE
+    v_want = max(-params["v_cmd_max"], min(params["v_cmd_max"], v_want))
+    w_want = max(-params["w_cmd_max"], min(params["w_cmd_max"], w_want))
+    # Slew the references: the strategy switches targets abruptly, and a speed
+    # step through k_v would demand a lean the pendulum cannot recover from.
+    t = state.sim_time_s
+    dt = max(0.0, min(0.05, t - mem.get("t_prev", t)))
+    mem["t_prev"] = t
+    v_ref = mem.get("v_ref", 0.0)
+    w_ref = mem.get("w_ref", 0.0)
+    alpha = dt / (params["ref_tau_s"] + dt) if params["ref_tau_s"] > 0 else 1.0
+    dv, dw = params["v_ref_accel"] * dt, params["w_ref_accel"] * dt
+    v_ref += max(-dv, min(dv, alpha * (v_want - v_ref)))
+    w_ref += max(-dw, min(dw, alpha * (w_want - w_ref)))
+    mem["v_ref"], mem["w_ref"] = v_ref, w_ref
+    v = state.vx * math.cos(state.yaw) + state.vy * math.sin(state.yaw)
+    v_err = max(-params["v_lean_limit"], min(params["v_lean_limit"], v - v_ref))
+    u = params["k_pitch"] * state.pitch + params["k_pitch_rate"] * state.pitch_rate + params["k_v"] * v_err
+    d = params["k_yaw"] * (w_ref - state.wz)
+    # Balance has priority over steering: the differential may only use what
+    # the common torque leaves inside the motor limit.
+    limit = params.get("torque_max", 1.5)
+    u = max(-limit, min(limit, u))
+    room = limit - abs(u)
+    d = max(-room, min(room, d))
+    return u - d, u + d
+
+
+POLICIES = {"pusher": (pusher, DEFAULT_PARAMS), "reactive": (reactive, REACTIVE_PARAMS),
+            "balance": (balance, BALANCE_PARAMS)}
 
 
 def load_policy(spec: str):
@@ -288,8 +390,9 @@ class Brain:
         if args.params:
             self.params.update(json.loads(args.params))
         if args.seed is not None and args.param_jitter > 0:
-            for key in ("v_max", "k_heading", "flank_m"):
-                self.params[key] *= 1.0 + self.rng.uniform(-args.param_jitter, args.param_jitter)
+            for key in ("v_max", "k_heading", "flank_m", "v_cmd_max"):
+                if key in self.params:
+                    self.params[key] *= 1.0 + self.rng.uniform(-args.param_jitter, args.param_jitter)
         self.policy = load_policy(args.policy)
         host, _, port = args.robot.rpartition(":")
         self.robot_addr = (host, int(port))
@@ -424,6 +527,8 @@ class Brain:
         elif self.over_flags & protocol.FLAG_OVER:
             outcome = "draw"
         mem = self.params.get("_mem", {})
+        if "strategy_params" in mem:   # balance: the reflex counters live in the strategy's memory
+            mem = mem["strategy_params"].get("_mem", {})
         result = {
             "robot_id": self.robot_id, "policy": self.args.policy, "seed": self.args.seed,
             "params": {k: v for k, v in self.params.items() if not k.startswith("_")},
@@ -452,7 +557,9 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--bind", default=None, help="local host:port to bind (default: ephemeral)")
     p.add_argument("--rate-hz", type=float, default=100.0)
     p.add_argument("--ttl-ms", type=int, default=60, help="how long the robot may keep applying a command")
-    p.add_argument("--policy", default="reactive", help="'reactive' (default), 'pusher', or module:callable")
+    p.add_argument("--policy", default="reactive",
+                   help="'reactive' (default), 'pusher', 'balance' (for --bot balance arenas; its 'strategy' "
+                        "param picks reactive/pusher/stand on top of the balance loop), or module:callable")
     p.add_argument("--params", default=None, help="JSON overrides for policy params")
     p.add_argument("--param-jitter", type=float, default=0.1, help="seeded +-fraction applied to v_max/k_heading/flank_m")
     p.add_argument("--seed", type=int, default=None)
