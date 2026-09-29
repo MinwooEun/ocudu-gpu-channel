@@ -208,6 +208,30 @@ wait_log()
 }
 
 srsue="${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue"
+# srsUE with the local patches (srsue-local-patches.lock.json) by default: the
+# pinned one always sends preamble 0 and a UE that loses contention still
+# completes RA, so two UEs on one lock-step broker merge onto one C-RNTI (S16).
+# OCUDU_NATIVE_SRSUE=stock runs the pinned build.
+srsue_variant="${OCUDU_NATIVE_SRSUE:-local}"
+case "${srsue_variant}" in
+  stock) ;;
+  local)
+    srsue="${native_root}/builds/srsran4g-zmq-local/srsue/src/srsue"
+    srsue_manifest="${native_root}/builds/srsran4g-zmq-local/BUILD-MANIFEST.txt"
+    [[ -f "${srsue_manifest}" ]] || usage_error "local srsUE is not built: run scripts/native/build-srsue-local.sh (or OCUDU_NATIVE_SRSUE=stock)"
+    while read -r srsue_patch_path srsue_patch_sha; do
+      grep -qx "patch=${srsue_patch_path##*/} sha256=${srsue_patch_sha}" "${srsue_manifest}" || \
+        usage_error "local srsUE was built from other patches than srsue-local-patches.lock.json; rebuild it"
+    done < <(/usr/bin/python3 -c 'import json,sys
+for p in json.load(open(sys.argv[1]))["patches"]: print(p["path"], p["sha256"])' "${repo_root}/scripts/native/srsue-local-patches.lock.json")
+    ;;
+  *) usage_error "OCUDU_NATIVE_SRSUE must be local or stock" ;;
+esac
+# Preamble per UE: distinct (default, deterministic) or random (the patch's
+# own per-attempt choice). Only the local build reads SRSUE_PRACH_PREAMBLE_INDEX.
+srsue_preambles="${OCUDU_NATIVE_SRSUE_PREAMBLES:-distinct}"
+[[ "${srsue_preambles}" =~ ^(distinct|random)$ ]] || usage_error "OCUDU_NATIVE_SRSUE_PREAMBLES must be distinct or random"
+printf 'event=srsue_select variant=%s preambles=%s binary=%s\n' "${srsue_variant}" "${srsue_preambles}" "${srsue}"
 fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
 mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
 broker="${channel_build:-${native_root}/builds/ocudu-gpu-channel-cuda-release}/ocudu-gpu-channel"
@@ -359,7 +383,11 @@ for index in "${!ue_ids[@]}"; do
     done
     sleep 2
   fi
-  start_group "srsue-${id}" "${log_dir}/srsue-${id}.log" "${srsue}" "${config_dir}/srsue-${id}.conf"
+  srsue_env=()
+  if [[ "${srsue_variant}" == "local" && "${srsue_preambles}" == "distinct" ]]; then
+    srsue_env=(env "SRSUE_PRACH_PREAMBLE_INDEX=$((index * 8))")
+  fi
+  start_group "srsue-${id}" "${log_dir}/srsue-${id}.log" "${srsue_env[@]}" "${srsue}" "${config_dir}/srsue-${id}.conf"
   srsue_pids+=("${started_pid}")
 done
 

@@ -98,6 +98,37 @@ else
   report FAIL "builds/oai-zmq-local manifest" "missing or stale; run build-oai-ue-local.sh"
 fi
 
+# srsUE local patches (srsue-local-patches.lock.json, S16): same checks, own pin.
+srsue_lock="${script_dir}/srsue-local-patches.lock.json"
+srsue_pinned="${native_root}/src/srsRAN_4G"
+srsue_pin="$(/usr/bin/python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["srsran_commit"])' "${srsue_lock}")"
+if [[ "$(git -C "${srsue_pinned}" rev-parse HEAD 2>/dev/null)" == "${srsue_pin}" ]] && git -C "${srsue_pinned}" diff --quiet; then
+  report PASS "srsRAN_4G pinned tree" "${srsue_pin:0:8}, clean"
+else
+  report FAIL "srsRAN_4G pinned tree" "expected ${srsue_pin:0:8} and no local changes"
+fi
+srsue_manifest="${native_root}/builds/srsran4g-zmq-local/BUILD-MANIFEST.txt"
+srsue_ok=1
+grep -qx "srsran_pin=${srsue_pin}" "${srsue_manifest}" 2>/dev/null || srsue_ok=0
+while read -r path want; do
+  name="${path##*/}"
+  got="$(sha256sum "${script_dir}/../../${path}" 2>/dev/null | cut -d' ' -f1)"
+  [[ "${got}" == "${want}" ]] && report PASS "${name} sha256" "${got:0:12}" \
+    || report FAIL "${name} sha256" "have ${got:-missing}, recorded ${want:0:12}"
+  patch -d "${srsue_pinned}" -p1 --dry-run -s <"${script_dir}/../../${path}" >/dev/null 2>&1 \
+    && report PASS "${name} applies to pin" "${srsue_pin:0:8}" \
+    || report FAIL "${name} applies to pin" "patch --dry-run failed against ${srsue_pinned}"
+  grep -qx "patch=${name} sha256=${want}" "${srsue_manifest}" 2>/dev/null || srsue_ok=0
+done < <(/usr/bin/python3 -c 'import json,sys
+for p in json.load(open(sys.argv[1]))["patches"]: print(p["path"], p["sha256"])' "${srsue_lock}")
+grep -qx "srsue_sha256=$(sha256sum "${native_root}/builds/srsran4g-zmq-local/srsue/src/srsue" 2>/dev/null | cut -d' ' -f1)" \
+  "${srsue_manifest}" 2>/dev/null || srsue_ok=0
+if [[ "${srsue_ok}" == 1 ]]; then
+  report PASS "builds/srsran4g-zmq-local manifest" "pin, patches and binary hash match"
+else
+  report FAIL "builds/srsran4g-zmq-local manifest" "missing or stale; run build-srsue-local.sh"
+fi
+
 if [[ "${probe}" == 1 ]]; then
   run_probe()
   {
