@@ -51,7 +51,8 @@ oai_gate_platform()
     return 1
   }
   eval "${shell_assignments}"
-  export OCUDU_NATIVE_PLATFORM_PROFILE OCUDU_NATIVE_GNB_CPUS OCUDU_NATIVE_BROKER_CPUS OCUDU_NATIVE_NRUE_CPUS
+  export OCUDU_NATIVE_PLATFORM_PROFILE OCUDU_NATIVE_GNB_CPUS OCUDU_NATIVE_BROKER_CPUS OCUDU_NATIVE_NRUE_CPUS \
+    OCUDU_NATIVE_BROKER_ENV
 }
 
 # oai_gate_ue_rx_gain
@@ -109,8 +110,8 @@ oai_gate_ue_fo_comp()
 # oai_gate_defaults_line: one log line naming every default this run applied.
 oai_gate_defaults_line()
 {
-  printf 'event=oai_gate_defaults oai_zmq_module=%s ue_rx_gain_db=%s ue_cont_fo_comp=%s oai_ue=%s platform=%s gnb_cpus=%s broker_cpus=%s nrue_cpus=%s mps=%s\n' \
+  printf 'event=oai_gate_defaults oai_zmq_module=%s ue_rx_gain_db=%s ue_cont_fo_comp=%s oai_ue=%s platform=%s gnb_cpus=%s broker_cpus=%s nrue_cpus=%s broker_env=%s mps=%s\n' \
     "${OAI_ZMQ_MODULE_VARIANT:-?}" "${OAI_GATE_UE_RX_GAIN_DB:-none}" "${OAI_GATE_UE_CONT_FO_COMP:-off}" "${OAI_UE_VARIANT:-n/a}" "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" \
     "${OCUDU_NATIVE_GNB_CPUS:-any}" "${OCUDU_NATIVE_BROKER_CPUS:-any}" "${OCUDU_NATIVE_NRUE_CPUS:-any}" \
-    "$([[ -n "${CUDA_MPS_PIPE_DIRECTORY:-}" ]] && echo on || echo off)"
+    "${OCUDU_NATIVE_BROKER_ENV:-none}" "$([[ -n "${CUDA_MPS_PIPE_DIRECTORY:-}" ]] && echo on || echo off)"
 }

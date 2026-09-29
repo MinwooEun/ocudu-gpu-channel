@@ -169,6 +169,7 @@ cp "${config_dir}"/* "${report_dir}/"
     "${gnb_binary}" "${OAI_GATE_GNB_USES_CUDA}" "$([[ -n "${CUDA_MPS_PIPE_DIRECTORY:-}" ]] && echo on || echo off)" \
     "${OCUDU_NATIVE_PLATFORM_PROFILE}" "${OCUDU_NATIVE_GNB_CPUS:-any}" "${OCUDU_NATIVE_BROKER_CPUS:-any}" \
     "${OCUDU_NATIVE_NRUE_CPUS:-any}"
+  printf 'broker_env=%s\n' "${OCUDU_NATIVE_BROKER_ENV:-none}"
   printf 'channel_head=%s\nchannel_dirty=%s\n' "$(git -C "${repo_root}" rev-parse HEAD)" \
     "$(git -C "${repo_root}" status --porcelain | wc -l)"
 } >"${report_dir}/run-params.txt"

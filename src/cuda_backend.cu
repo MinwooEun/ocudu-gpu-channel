@@ -369,8 +369,9 @@ struct CudaSuperposeState {
   //              mapped_host_* arrays are their CPU side
   //   zc_direct: with zc_out and one output row, the kernels write the
   //              CALLER's row directly (needs pageable memory access), so the
-  //              host_output -> caller copy disappears too. OCG_ZC_MULTIROW_DIRECT=1
-  //              (S15) extends it to nodes with up to kMaxDirectRows rows.
+  //              host_output -> caller copy disappears too. Since S15 this
+  //              covers nodes with up to kMaxDirectRows rows
+  //              (OCG_ZC_MULTIROW_DIRECT=0 restores the one-row limit).
   bool zc_in = false;
   bool zc_out = false;
   bool zc_meta = false;
@@ -601,7 +602,7 @@ public:
     zc_parts_ = resolve_zero_copy_parts(resolve_zero_copy(config.runtime.cuda_host_memory, device_), device_);
     {
       const char* multirow = std::getenv("OCG_ZC_MULTIROW_DIRECT");
-      zc_multirow_direct_ = multirow != nullptr && std::string(multirow) == "1";
+      zc_multirow_direct_ = multirow == nullptr || std::string(multirow) != "0";
     }
 
     // Same resolved lane table the broker serves from, so a lane key can never

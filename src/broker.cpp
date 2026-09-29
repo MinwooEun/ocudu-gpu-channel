@@ -143,7 +143,8 @@ SocketPtr make_socket(void* context, int type)
 //   OCG_HOP_TRACE_DIR   write one timestamped event per ZMQ transfer and per
 //                       producer slot to <dir>/hop-trace.csv at shutdown, to
 //                       split the lock-step cycle into its hops.
-// Relay-latency knobs (S15), each off unless set to 1:
+// Relay-latency knobs (S15). SPIN is off unless set; FEWER_COPIES and
+// DIRECT_ROWS are on unless set to 0 (bit-identical, measured faster):
 //   OCG_BROKER_SPIN     1: workers never sleep while waiting: they poll their
 //                       sockets without blocking and yield the core between
 //                       polls, so a handoff between broker threads does not
@@ -178,10 +179,11 @@ struct BrokerDiagKnobs {
   bool direct_rows = false;
 };
 
-bool env_flag(const char* name)
+// True unless the variable is set to "0".
+bool env_default_on(const char* name)
 {
   const char* value = std::getenv(name);
-  return value != nullptr && std::strcmp(value, "1") == 0;
+  return value == nullptr || std::strcmp(value, "0") != 0;
 }
 
 BrokerDiagKnobs read_diag_knobs()
@@ -204,8 +206,8 @@ BrokerDiagKnobs read_diag_knobs()
   if (const char* budget = std::getenv("OCG_BROKER_SPIN_US"); budget != nullptr && *budget != '\0') {
     knobs.spin_budget = std::chrono::microseconds(std::strtol(budget, nullptr, 10));
   }
-  knobs.fewer_copies = env_flag("OCG_BROKER_FEWER_COPIES");
-  knobs.direct_rows = env_flag("OCG_BROKER_DIRECT_ROWS");
+  knobs.fewer_copies = env_default_on("OCG_BROKER_FEWER_COPIES");
+  knobs.direct_rows = env_default_on("OCG_BROKER_DIRECT_ROWS");
   return knobs;
 }
 

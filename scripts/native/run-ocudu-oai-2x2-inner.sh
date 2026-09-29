@@ -376,7 +376,7 @@ PY
       broker_extra="${broker_extra//WIRECAP/${log_dir}/wire-capture}"
     fi
     # shellcheck disable=SC2086
-    start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" \
+    start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" ${OCUDU_NATIVE_BROKER_ENV:-} \
       "${broker_pin[@]}" ${OCUDU_NATIVE_BROKER_WRAPPER:-} \
       "${broker}" --config "${config_dir}/topology.yaml" --duration "$((broker_seconds + startup_allowance))s" ${broker_extra}
     broker_pid="${started_pid}"

@@ -524,7 +524,7 @@ void scenario_relay_knobs_bit_identical()
   std::remove(path.c_str());
   const char* knobs[] = {"OCG_BROKER_SPIN", "OCG_BROKER_FEWER_COPIES", "OCG_BROKER_DIRECT_ROWS"};
   for (const char* k : knobs) {
-    ::unsetenv(k);
+    ::setenv(k, "0", 1); // baseline: the pre-S15 relay path
   }
   const auto base = run_parity_relay(config);
   for (const char* k : knobs) {

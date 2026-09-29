@@ -1510,9 +1510,7 @@ int main()
       for (int mode = 0; mode != 3; ++mode) {
         ocg::TopologyConfig mcfg = cuda_cfg;
         mcfg.runtime.cuda_host_memory = mode == 0 ? ocg::CudaHostMemory::Copy : ocg::CudaHostMemory::ZeroCopy;
-        if (mode == 2) {
-          setenv("OCG_ZC_MULTIROW_DIRECT", "1", 1);
-        }
+        setenv("OCG_ZC_MULTIROW_DIRECT", mode == 2 ? "1" : "0", 1);
         auto proc = ocg::create_channel_processor(mcfg);
         unsetenv("OCG_ZC_MULTIROW_DIRECT");
         ocg::IqBuffer r0(8), r1(8);

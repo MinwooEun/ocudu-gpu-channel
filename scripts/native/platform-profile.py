@@ -88,6 +88,20 @@ def resolve():
             record['source'][role] = 'profile'
     for role, cpus in record['cpus'].items():
         cpu_list(cpus)  # reject a malformed list before any process starts
+    # Broker environment the profile asks for (S15: spin waits on the pinned
+    # broker cores). OCUDU_NATIVE_BROKER_ENV, even empty, overrides it.
+    if 'OCUDU_NATIVE_BROKER_ENV' in os.environ:
+        record['broker_env'] = os.environ['OCUDU_NATIVE_BROKER_ENV']
+        record['source']['broker_env'] = 'env'
+    elif record['profile']:
+        env = profiles[record['profile']].get('broker_env', {})
+        record['broker_env'] = ' '.join(f'{k}={v}' for k, v in sorted(env.items()))
+        record['source']['broker_env'] = 'profile'
+    else:
+        record['broker_env'] = ''
+    for item in record['broker_env'].split():
+        if '=' not in item or not item.split('=', 1)[0].replace('_', '').isalnum():
+            sys.exit(f'error: broker env entry is not KEY=VALUE: {item}')
     return record
 
 
@@ -101,6 +115,7 @@ def main():
     print(f"OCUDU_NATIVE_PLATFORM_PROFILE='{record['profile'] or 'none'}'")
     for role in ROLES:
         print(f"OCUDU_NATIVE_{role.upper()}_CPUS='{record['cpus'].get(role, '')}'")
+    print(f"OCUDU_NATIVE_BROKER_ENV='{record['broker_env']}'")
     return 0
 
 
