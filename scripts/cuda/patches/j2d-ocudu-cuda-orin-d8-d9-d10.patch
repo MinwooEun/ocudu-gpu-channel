@@ -1,0 +1,504 @@
+diff --git a/lib/phy/cuda/src/pusch_e2e.cu b/lib/phy/cuda/src/pusch_e2e.cu
+index 6e5061c..14e577f 100644
+--- a/lib/phy/cuda/src/pusch_e2e.cu
++++ b/lib/phy/cuda/src/pusch_e2e.cu
+@@ -4221,6 +4221,68 @@ __global__ void kernel_freq_interpolate_type1(
+  * Each thread handles one (prb, port) pair for one DMRS symbol, applying
+  * the filter across 6 pilot positions and writing 12 smoothed subcarriers.
+  */
++/* One smoothed DM-RS pilot: raised-cosine FIR over the neighbouring pilots of
++ * the same CDM group, with the per-pilot phase step removed first.
++ *
++ * A timing offset rotates the channel linearly across frequency. Averaging
++ * rotated taps shrinks the estimate and the residual is then counted as noise
++ * (SINR -2.5 dB at 1 PRB, -0.6 dB at 6 PRB with 1 us, D8). The step is
++ * estimated inside the filter window, the taps are de-rotated about the output
++ * pilot and filtered, so the output keeps its own phase -- the CPU estimator
++ * reaches the same end with unwrapped-phase virtual pilots. Out-of-range taps
++ * are skipped and the filter renormalised, which also makes one PRB safe.
++ *
++ * Tap t of pilot q lives at sym_base + (q / nof_pilots) * prb_stride + inner +
++ * pusch_dmrs_sc_offset(dmrs_type, cdm, q % nof_pilots). */
++__device__ __forceinline__ float2 fd_smooth_pilot_slope_comp(
++    const __half2* __restrict__ d_estimates,
++    int sym_base, int prb_stride, int inner, int cdm,
++    int dmrs_type, int nof_pilots, int total_pilots, int global_pilot)
++{
++    const int HALF_FILTER = FD_SMOOTH_FILTER_LEN / 2;
++    float tap_re[FD_SMOOTH_FILTER_LEN], tap_im[FD_SMOOTH_FILTER_LEN];
++    bool  tap_ok[FD_SMOOTH_FILTER_LEN];
++
++    #pragma unroll
++    for (int t = 0; t < FD_SMOOTH_FILTER_LEN; t++) {
++        int src_pilot = global_pilot + (t - HALF_FILTER);
++        tap_ok[t] = (src_pilot >= 0 && src_pilot < total_pilots);
++        tap_re[t] = tap_im[t] = 0.0f;
++        if (!tap_ok[t]) continue;
++        int src_idx = sym_base + (src_pilot / nof_pilots) * prb_stride + inner +
++                      pusch_dmrs_sc_offset(dmrs_type, cdm, src_pilot % nof_pilots);
++        __half2 h_src = d_estimates[src_idx];
++        tap_re[t] = __half2float(__low2half(h_src));
++        tap_im[t] = __half2float(__high2half(h_src));
++    }
++
++    float acc_re = 0.0f, acc_im = 0.0f;
++    #pragma unroll
++    for (int t = 0; t + 1 < FD_SMOOTH_FILTER_LEN; t++) {
++        if (!tap_ok[t] || !tap_ok[t + 1]) continue;
++        acc_re += tap_re[t + 1] * tap_re[t] + tap_im[t + 1] * tap_im[t];
++        acc_im += tap_im[t + 1] * tap_re[t] - tap_re[t + 1] * tap_im[t];
++    }
++    const float step = (acc_re != 0.0f || acc_im != 0.0f) ? atan2f(acc_im, acc_re) : 0.0f;
++
++    float sum_re = 0.0f, sum_im = 0.0f, coef_sum = 0.0f;
++    #pragma unroll
++    for (int t = 0; t < FD_SMOOTH_FILTER_LEN; t++) {
++        if (!tap_ok[t]) continue;
++        float c, sn;
++        __sincosf(-step * (float)(t - HALF_FILTER), &sn, &c);
++        sum_re += d_rc_filter[t] * (tap_re[t] * c - tap_im[t] * sn);
++        sum_im += d_rc_filter[t] * (tap_re[t] * sn + tap_im[t] * c);
++        coef_sum += d_rc_filter[t];
++    }
++    if (coef_sum > 1e-6f) {
++        float inv_coef = 1.0f / coef_sum;
++        sum_re *= inv_coef;
++        sum_im *= inv_coef;
++    }
++    return make_float2(sum_re, sum_im);
++}
++
+ __global__ void kernel_fd_smoothing_fp16(
+     __half2* __restrict__ d_estimates,  /* [dmrs_sym, prb, port, 12] in-place */
+     int nof_prb,
+@@ -4247,42 +4309,11 @@ __global__ void kernel_fd_smoothing_fp16(
+     #pragma unroll
+     for (int p = 0; p < 6; p++) {
+         if (p >= nof_pilots) break;
+-        float sum_re = 0.0f;
+-        float sum_im = 0.0f;
+-        float coef_sum = 0.0f;
+-        int global_pilot = pilot_base + p;
+-
+-        for (int t = 0; t < FD_SMOOTH_FILTER_LEN; t++) {
+-            int src_pilot = global_pilot + (t - HALF_FILTER);
+-
+-            /* Skip out-of-range taps (don't clamp) */
+-            if (src_pilot < 0 || src_pilot >= total_pilots) continue;
+-
+-            /* Read from the appropriate PRB's estimates */
+-            int src_prb = src_pilot / nof_pilots;
+-            int src_pos = src_pilot % nof_pilots;
+-            int src_idx = dmrs_sym_idx * re_per_dmrs_sym +
+-                          src_prb * (nof_ports * 12) + port * 12 +
+-                          pusch_dmrs_sc_offset(dmrs_type, 0, src_pos);
+-
+-            __half2 h_src = d_estimates[src_idx];
+-            float r = __half2float(__low2half(h_src));
+-            float i = __half2float(__high2half(h_src));
+-
+-            sum_re += d_rc_filter[t] * r;
+-            sum_im += d_rc_filter[t] * i;
+-            coef_sum += d_rc_filter[t];
+-        }
+-
+-        /* Renormalize to compensate for truncated taps at band edges */
+-        if (coef_sum > 1e-6f) {
+-            float inv_coef = 1.0f / coef_sum;
+-            sum_re *= inv_coef;
+-            sum_im *= inv_coef;
+-        }
+-
+-        smoothed_re[p] = sum_re;
+-        smoothed_im[p] = sum_im;
++        float2 sm = fd_smooth_pilot_slope_comp(d_estimates, dmrs_sym_idx * re_per_dmrs_sym, nof_ports * 12,
++                                               port * 12, 0, dmrs_type, nof_pilots, total_pilots,
++                                               pilot_base + p);
++        smoothed_re[p] = sm.x;
++        smoothed_im[p] = sm.y;
+     }
+ 
+     /* Write back smoothed estimates for all 12 subcarriers */
+@@ -4353,35 +4384,11 @@ __global__ void kernel_mimo_fd_smoothing_fp16(
+     #pragma unroll
+     for (int p = 0; p < 6; p++) {
+         if (p >= nof_pilots) break;
+-        float sum_re = 0.0f;
+-        float sum_im = 0.0f;
+-        float coef_sum = 0.0f;
+-        int global_pilot = pilot_base + p;
+-
+-        for (int t = 0; t < FD_SMOOTH_FILTER_LEN; t++) {
+-            int src_pilot = global_pilot + (t - HALF_FILTER);
+-            if (src_pilot < 0 || src_pilot >= total_pilots) continue;
+-
+-            int src_prb = src_pilot / nof_pilots;
+-            int src_pos = src_pilot % nof_pilots;
+-            int src_sc = pusch_dmrs_sc_offset(dmrs_type, cdm_offset, src_pos);
+-            int src_idx = dmrs_sym_idx * re_per_dmrs_sym +
+-                          src_prb * re_per_prb + port * re_per_port + layer * re_per_layer + src_sc;
+-
+-            __half2 h_src = d_estimates[src_idx];
+-            sum_re += d_rc_filter[t] * __half2float(__low2half(h_src));
+-            sum_im += d_rc_filter[t] * __half2float(__high2half(h_src));
+-            coef_sum += d_rc_filter[t];
+-        }
+-
+-        if (coef_sum > 1e-6f) {
+-            float inv_coef = 1.0f / coef_sum;
+-            sum_re *= inv_coef;
+-            sum_im *= inv_coef;
+-        }
+-
+-        smoothed_re[p] = sum_re;
+-        smoothed_im[p] = sum_im;
++        float2 sm = fd_smooth_pilot_slope_comp(d_estimates, dmrs_sym_idx * re_per_dmrs_sym, re_per_prb,
++                                               port * re_per_port + layer * re_per_layer, cdm_offset, dmrs_type,
++                                               nof_pilots, total_pilots, pilot_base + p);
++        smoothed_re[p] = sm.x;
++        smoothed_im[p] = sm.y;
+     }
+ 
+     __half2 smoothed_pilots[6];
+@@ -4445,34 +4452,10 @@ __global__ void kernel_mimo_fd_smoothing_fp16_wide(
+ 
+     if (sc < nof_pilots) {
+         int p = sc;
+-        float sum_re = 0.0f;
+-        float sum_im = 0.0f;
+-        float coef_sum = 0.0f;
+-        int global_pilot = pilot_base + p;
+-
+-        for (int t = 0; t < FD_SMOOTH_FILTER_LEN; t++) {
+-            int src_pilot = global_pilot + (t - HALF_FILTER);
+-            if (src_pilot < 0 || src_pilot >= total_pilots) continue;
+-
+-            int src_prb = src_pilot / nof_pilots;
+-            int src_pos = src_pilot % nof_pilots;
+-            int src_sc = pusch_dmrs_sc_offset(dmrs_type, cdm_offset, src_pos);
+-            int src_idx = dmrs_sym_idx * re_per_dmrs_sym +
+-                          src_prb * re_per_prb + port * re_per_port + layer * re_per_layer + src_sc;
+-
+-            __half2 h_src = d_estimates[src_idx];
+-            sum_re += d_rc_filter[t] * __half2float(__low2half(h_src));
+-            sum_im += d_rc_filter[t] * __half2float(__high2half(h_src));
+-            coef_sum += d_rc_filter[t];
+-        }
+-
+-        if (coef_sum > 1e-6f) {
+-            float inv_coef = 1.0f / coef_sum;
+-            sum_re *= inv_coef;
+-            sum_im *= inv_coef;
+-        }
+-
+-        s_pilots[p] = __halves2half2(__float2half(sum_re), __float2half(sum_im));
++        float2 sm = fd_smooth_pilot_slope_comp(d_estimates, dmrs_sym_idx * re_per_dmrs_sym, re_per_prb,
++                                               port * re_per_port + layer * re_per_layer, cdm_offset, dmrs_type,
++                                               nof_pilots, total_pilots, pilot_base + p);
++        s_pilots[p] = __halves2half2(__float2half(sm.x), __float2half(sm.y));
+     }
+ 
+     __syncthreads();
+diff --git a/lib/phy/cuda/src/pusch_e2e_api.cu b/lib/phy/cuda/src/pusch_e2e_api.cu
+index 76bad7b..8f3aacf 100644
+--- a/lib/phy/cuda/src/pusch_e2e_api.cu
++++ b/lib/phy/cuda/src/pusch_e2e_api.cu
+@@ -2154,8 +2154,14 @@ nr_ldpc_status_t pusch_e2e_process_full_gpu_optimized(
+      * LSE channel estimates. Operates on pilot positions and
+      * re-interpolates to all 12 subcarriers. Must run before noise
+      * estimation so cross-validation sees smoothed estimates.
++     *
++     * Single-PRB allocations are smoothed too: the cross-validation noise
++     * estimate below is calibrated for smoothed estimates, and skipping this
++     * phase for nof_prb == 1 over-reported SINR by ~2.4 dB, which then drove
++     * the UL link adaptation to MCSs that fail (SPARK_MILESTONES.md, D8).
++     * The kernel skips out-of-range taps and renormalises, so one PRB is safe.
+      * ================================================================ */
+-    if (cfg.nof_prb > 1) {
++    {
+         dim3 smooth_grid(cfg.nof_prb, nof_dmrs_symbols);
+         launch_kernel_fd_smoothing_fp16(smooth_grid, cfg.nof_rx_ports, 0, stream, 
+             handle->d_estimates_fp16,
+@@ -2611,7 +2617,9 @@ nr_ldpc_status_t pusch_e2e_process_full_gpu_optimized_mimo_half(
+             (int)cfg.dmrs_type);
+     }
+ 
+-    if (cfg.nof_prb > 1) {
++    /* Single-PRB allocations are smoothed too (D8): the noise estimate below is
++     * calibrated for smoothed estimates; the smoothing kernels handle one PRB. */
++    {
+         /* Wide-block smoothing variant (same arithmetic, efficient thread mapping).
+          * Enabled by default; set OCUDU_MIMO_FD_SMOOTH_OPT=0 to fall back for A/B. */
+         static const bool fd_smooth_opt = []() {
+diff --git a/lib/phy/cuda/src/transport_block.cu b/lib/phy/cuda/src/transport_block.cu
+index cff517b..81419d5 100644
+--- a/lib/phy/cuda/src/transport_block.cu
++++ b/lib/phy/cuda/src/transport_block.cu
+@@ -1511,7 +1511,11 @@ nr_ldpc_status_t tb_encoder_configure(tb_encoder_handle_t handle,
+ 
+             int Kb_full = (ldpc_cfg->base_graph == 1) ? NR_LDPC_BG1_INFO_NODES : NR_LDPC_BG2_INFO_NODES;
+             int K_prime = Kb_full * new_Z;
+-            ldpc_cfg->num_filler_bits = (cfg->nof_filler_bits > 0) ? cfg->nof_filler_bits : ldpc_cfg->num_filler_bits;
++            // D10: when the CPU segmenter supplies the shape (Z > 0), its filler count is authoritative, including
++            // F = 0. Treating 0 as "not provided" kept the GPU-derived F and shifted K for zero-filler multi-CB TBs.
++            if (cfg->lifting_size > 0 || cfg->nof_filler_bits > 0) {
++                ldpc_cfg->num_filler_bits = cfg->nof_filler_bits;
++            }
+             ldpc_cfg->num_info_bits = K_prime - ldpc_cfg->num_filler_bits;
+             handle->tb_cfg.cb_size_bits = ldpc_cfg->num_info_bits;
+             handle->tb_cfg.filler_bits = ldpc_cfg->num_filler_bits;
+@@ -3405,7 +3409,8 @@ nr_ldpc_status_t tb_batch_encoder_configure(tb_batch_encoder_handle_t handle,
+ 
+         int Kb_full = (ldpc_cfg->base_graph == 1) ? NR_LDPC_BG1_INFO_NODES : NR_LDPC_BG2_INFO_NODES;
+         int K_prime = Kb_full * new_Z;
+-        if (cfg->tb_cfg.nof_filler_bits > 0) {
++        // D10: the CPU segmenter's filler count is authoritative whenever it supplies the shape, including F = 0.
++        if (cfg->tb_cfg.lifting_size > 0 || cfg->tb_cfg.nof_filler_bits > 0) {
+             ldpc_cfg->num_filler_bits = cfg->tb_cfg.nof_filler_bits;
+         }
+         ldpc_cfg->num_info_bits = K_prime - ldpc_cfg->num_filler_bits;
+diff --git a/lib/phy/upper/channel_coding/ldpc/cuda/pusch_codeblock_decoder_cuda_batch.cpp b/lib/phy/upper/channel_coding/ldpc/cuda/pusch_codeblock_decoder_cuda_batch.cpp
+index 1c7626e..7a3cf92 100644
+--- a/lib/phy/upper/channel_coding/ldpc/cuda/pusch_codeblock_decoder_cuda_batch.cpp
++++ b/lib/phy/upper/channel_coding/ldpc/cuda/pusch_codeblock_decoder_cuda_batch.cpp
+@@ -564,10 +564,13 @@ void pusch_codeblock_decoder_cuda_batch::configure_decoder(ldpc_base_graph_type
+   ldpc_decoder_params_init(&dec_params);
+   dec_params.max_iterations    = static_cast<int>(nof_ldpc_iterations);
+   dec_params.early_termination = true;
+-  // Fixed NMS scale=0.75 tracks the CPU BLER waterfall more closely than 0.80
+-  // across the 1L1P PRB/MCS sweep, while keeping the same iteration budget.
++  // Fixed NMS scale 0.80, the CPU decoder's value, with the 0.10 offset below.
++  // In the live configuration (15 kHz, interpolate, MMSE) 0.75 lost ~0.15 dB at
++  // the BLER threshold against the CPU decoder (17 PRB 16QAM: 58% vs 44% at
++  // 4 dB) and live 16QAM [0,17) BLER was 5.3% vs 2.3%; 0.80 gives parity there
++  // and is unchanged for 273 PRB 4-layer BG1 (D9). OCUDU_LDPC_SCALE/OFFSET still override.
+   dec_params.auto_scale    = false;
+-  dec_params.min_sum_scale = 0.75f;
++  dec_params.min_sum_scale = 0.80f;
+   // A small offset compensates the fully resident FP16 LLR handoff without adding work.
+   dec_params.min_sum_offset           = 0.10f;
+   dec_params.deferred_iteration_stats = true; // Enable async iteration tracking
+diff --git a/lib/phy/upper/prach_buffer_cuda_visible_impl.h b/lib/phy/upper/prach_buffer_cuda_visible_impl.h
+index 7236309..db74f25 100644
+--- a/lib/phy/upper/prach_buffer_cuda_visible_impl.h
++++ b/lib/phy/upper/prach_buffer_cuda_visible_impl.h
+@@ -369,14 +369,43 @@ private:
+     return status;
+   }
+ 
++  /// A managed-memory hint (prefetch or advice) that the device does not implement. Devices without
++  /// ConcurrentManagedAccess (e.g. Jetson Orin) return cudaErrorInvalidDevice here rather than
++  /// cudaErrorNotSupported; both mean "no-op", not failure. The error is consumed so that a later,
++  /// unrelated cudaGetLastError() check does not pick it up.
++  static bool managed_hint_unsupported(cudaError_t status, int device)
++  {
++    if (status == cudaErrorNotSupported) {
++      (void)cudaGetLastError();
++      return true;
++    }
++    if (status == cudaErrorInvalidDevice) {
++      int concurrent = 1;
++      if ((cudaDeviceGetAttribute(&concurrent, cudaDevAttrConcurrentManagedAccess, device) == cudaSuccess) &&
++          (concurrent == 0)) {
++        (void)cudaGetLastError();
++        return true;
++      }
++    }
++    return false;
++  }
++
++  /// Best-effort managed-memory advice: a refusal must not leave a pending CUDA error behind.
++  static void advise_best_effort(cudaError_t status)
++  {
++    if (status != cudaSuccess) {
++      (void)cudaGetLastError();
++    }
++  }
++
+   void advise_managed_memory() const
+   {
+     if (managed_data == nullptr) {
+       return;
+     }
+-    (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location());
++    advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location()));
+     if (phy_acceleration_env_flag_enabled("OCUDU_CUDA_VISIBLE_PRACH_BUFFER_PREFER_DEVICE", false)) {
+-      (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location());
++      advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location()));
+     }
+   }
+ 
+@@ -410,7 +439,7 @@ private:
+     cudaError_t status =
+         cudaMemPrefetchAsync(managed_data, managed_bytes, destination, static_cast<cudaStream_t>(stream));
+ #endif
+-    if (status == cudaErrorNotSupported) {
++    if (managed_hint_unsupported(status, device_id)) {
+       return true;
+     }
+     if (status != cudaSuccess) {
+diff --git a/lib/phy/upper/resource_grid_cuda_visible_impl.h b/lib/phy/upper/resource_grid_cuda_visible_impl.h
+index 99254c7..e97760e 100644
+--- a/lib/phy/upper/resource_grid_cuda_visible_impl.h
++++ b/lib/phy/upper/resource_grid_cuda_visible_impl.h
+@@ -96,6 +96,7 @@ public:
+     const cuda_visible_managed_access_policy access =
+         query_cuda_visible_managed_access_policy(device_id, enable_concurrent_downlink_writes);
+     host_reads_device_memory_directly = access.host_reads_device_resident_directly;
++    host_access_waits_for_device_idle = !query_cuda_device_flag(device_id, cudaDevAttrConcurrentManagedAccess);
+     prefetch_enabled =
+         phy_acceleration_env_flag_enabled("OCUDU_CUDA_VISIBLE_GRID_PREFETCH", access.prefetch_by_default);
+     // Concurrent host/device writes to disjoint REs are only safe when prefetch
+@@ -787,6 +788,17 @@ private:
+     if (!wait_for_pending_grid_events_locked()) {
+       return false;
+     }
++    // Without ConcurrentManagedAccess (Jetson Orin) the CPU must not touch any
++    // cudaMemAttachGlobal managed page while any kernel in the context runs --
++    // including kernels that never read this grid (the previous slot's PDSCH on
++    // the same lane). This grid's own events are not enough; wait for the device.
++    if (host_access_waits_for_device_idle) {
++      const cudaError_t status = cudaDeviceSynchronize();
++      if (status != cudaSuccess) {
++        record_host_access_error(status, "device-wide wait before host access (ConcurrentManagedAccess=0)");
++        return false;
++      }
++    }
+     // UL on non-coherent UM: never CPU-touch or prefetch-home the live VA,
+     // even when pages_device_resident is false (that flag is software and
+     // can lag). Host readers must use the pinned snapshot. A live host
+@@ -1444,6 +1456,10 @@ private:
+   /// home first. Queried per device so one binary stays correct on all four.
+   bool host_reads_device_memory_directly{false};
+ 
++  /// True when cudaDevAttrConcurrentManagedAccess is 0: host access to the
++  /// managed grid then waits for all device work, not only this grid's events.
++  bool host_access_waits_for_device_idle{false};
++
+   static cudaError_t cuda_event_synchronize_yielding(cudaEvent_t event)
+   {
+     cudaError_t status;
+@@ -1485,18 +1501,49 @@ private:
+         enable_concurrent_downlink);
+   }
+ 
++
++  /// A managed-memory hint (prefetch or advice) that the device does not implement. Devices without
++  /// ConcurrentManagedAccess (e.g. Jetson Orin) return cudaErrorInvalidDevice here rather than
++  /// cudaErrorNotSupported; both mean "no-op", not failure. The error is consumed so that a later,
++  /// unrelated cudaGetLastError() check does not pick it up.
++  static bool managed_hint_unsupported(cudaError_t status, int device)
++  {
++    if (status == cudaErrorNotSupported) {
++      (void)cudaGetLastError();
++      return true;
++    }
++    if (status == cudaErrorInvalidDevice) {
++      int concurrent = 1;
++      if ((cudaDeviceGetAttribute(&concurrent, cudaDevAttrConcurrentManagedAccess, device) == cudaSuccess) &&
++          (concurrent == 0)) {
++        (void)cudaGetLastError();
++        return true;
++      }
++    }
++    return false;
++  }
++
++  /// Best-effort managed-memory advice: a refusal must not leave a pending CUDA error behind.
++  static void advise_best_effort(cudaError_t status)
++  {
++    if (status != cudaSuccess) {
++      (void)cudaGetLastError();
++    }
++  }
++
+   void advise_managed_memory() const
+   {
+     if (managed_data == nullptr) {
+       return;
+     }
+     // Best-effort hints only. The public resource-grid contract must not depend on managed-memory advice support.
+-    (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location());
++    advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location()));
+     if (prefer_device_memory) {
+-      (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location());
++      advise_best_effort(
++          cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location()));
+       // On coherent systems, CUDA requires this hint for the CPU to access GPU-resident managed pages directly
+       // instead of faulting and migrating them back to host memory.
+-      (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, host_location());
++      advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, host_location()));
+     }
+   }
+ 
+@@ -1532,7 +1579,7 @@ private:
+     cudaError_t status =
+         cudaMemPrefetchAsync(managed_data, managed_bytes, destination, static_cast<cudaStream_t>(stream));
+ #endif
+-    if (status == cudaErrorNotSupported) {
++    if (managed_hint_unsupported(status, device_id)) {
+       return managed_prefetch_status::unsupported;
+     }
+     if (status != cudaSuccess) {
+@@ -1645,11 +1692,17 @@ private:
+ 
+   static bool should_use_managed_grid_auto(int device_id)
+   {
++    // Integrated parts without ConcurrentManagedAccess (older Jetson, Orin) use
++    // pinned grids, as the policy table in phy_acceleration_runtime_options.h
++    // documents: there every host access to a managed grid must wait for the
++    // whole device, which would serialise the DL pipeline.
+     int integrated = 0;
+-    if (cudaDeviceGetAttribute(&integrated, cudaDevAttrIntegrated, device_id) != cudaSuccess) {
++    int concurrent = 0;
++    if ((cudaDeviceGetAttribute(&integrated, cudaDevAttrIntegrated, device_id) != cudaSuccess) ||
++        (cudaDeviceGetAttribute(&concurrent, cudaDevAttrConcurrentManagedAccess, device_id) != cudaSuccess)) {
+       return false;
+     }
+-    return integrated != 0;
++    return (integrated != 0) && (concurrent != 0);
+   }
+ 
+   direction                              grid_direction;
+diff --git a/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp b/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp
+index 8ddeb56..c71aac9 100644
+--- a/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp
++++ b/tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp
+@@ -77,8 +77,16 @@ struct pdsch_gpu_e2e_params {
+   unsigned           start_symbol  = 0;
+   unsigned           nof_symbols   = nof_ofdm_symbols;
+   subcarrier_spacing pdu_scs       = scs;
++  unsigned           forced_tbs_bytes = 0;
+ };
+ 
++// D10 regression: force a TB size (bytes) that the MCS table would not produce, e.g. a zero-filler multi-CB TB.
++static pdsch_gpu_e2e_params with_forced_tbs(pdsch_gpu_e2e_params params, unsigned tbs_bytes)
++{
++  params.forced_tbs_bytes = tbs_bytes;
++  return params;
++}
++
+ namespace ocudu {
+ 
+ std::ostream& operator<<(std::ostream& os, pdsch_mcs_table table)
+@@ -583,6 +591,9 @@ TEST_P(PdschGpuE2eFixture, CpuAndGpuResourceGridsMatch)
+                                dmrs_symbol_mask,
+                                params.nof_cdm_groups_without_data,
+                                params.nof_symbols);
++  if (params.forced_tbs_bytes != 0) {
++    tbs = params.forced_tbs_bytes * 8U;
++  }
+   ASSERT_EQ(tbs % 8, 0U);
+ 
+   pdsch_processor::pdu_t pdu = build_pdsch_pdu(mcs_descr,
+@@ -1469,6 +1480,10 @@ INSTANTIATE_TEST_SUITE_P(
+         pdsch_gpu_e2e_params{pdsch_mcs_table::qam256, sch_mcs_index(20), 162, 1, 0, dmrs_profile::double_symbol, 2},
+         pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(27), 273, 1, 0, dmrs_profile::double_symbol, 2},
+         pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(27), 273, 1, 0, dmrs_profile::double_symbol, 2, 2},
++        // D10: a 9474-byte TB is 9 BG1 codeblocks with zero filler bits (Z=384, K=8448); 10247 bytes has F=224.
++        with_forced_tbs(pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(20), 106, 1, 0, dmrs_profile::double_symbol, 2}, 9474),
++        with_forced_tbs(pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(20), 106, 1, 0, dmrs_profile::double_symbol, 2, 2}, 9474),
++        with_forced_tbs(pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(20), 106, 1, 0, dmrs_profile::double_symbol, 2}, 10247),
+         pdsch_gpu_e2e_params{pdsch_mcs_table::qam64, sch_mcs_index(27), 273, 1, 0, dmrs_profile::double_symbol, 2, 4},
+         pdsch_gpu_e2e_params{pdsch_mcs_table::qam64,
+                              sch_mcs_index(27),

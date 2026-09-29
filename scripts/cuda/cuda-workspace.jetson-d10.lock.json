@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "comment": "Jetson AGX Orin lock for the J9 D10 check (JETSON_MILESTONES.md J9): the J2d checkout -- pin + C1 committed locally -- with the Orin layer (D6 + D7), D8 + D9 and D10 (GPU TB encoder honours a zero LDPC filler count) as the uncommitted diff. j2d = j2c + D10. Paths relative to /workspace/ocudu-jetson.",
+  "source": {
+    "name": "ocudu-cuda",
+    "path": "src/ocudu-cuda-j2d",
+    "commit": "2dbd249cf2ab99f5fd7b0a5802fa2069db43db88",
+    "url": "https://gitlab.com/ocudu/work_groups/wg1_hw_accel/cuda_accelerated_ocudu.git",
+    "branch": "nvcuda_accel_02 @ 5830c9cb + C1 (local commit)",
+    "patch": {
+      "path": "scripts/cuda/patches/j2d-ocudu-cuda-orin-d8-d9-d10.patch",
+      "sha256": "ab384cef69d67eb7548ded58c675ebe9b6487d2460952ca104412b586cfddc4b"
+    }
+  },
+  "build": {
+    "build_dir": "builds/j2d-cuda-patched-sm87",
+    "cuda_architectures": "87"
+  },
+  "cpu_baseline": {
+    "comment": "CPU OCUDU gNB built by s3-build-stack.sh with STACK_MCPU=cortex-a78ae STACK_MARCH=armv8.2-a.",
+    "path": "src/ocudu",
+    "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+    "build_dir": "builds/ocudu-zmq-release"
+  },
+  "j2c_note": "Previous live lock: cuda-workspace.jetson-live.lock.json (J2c, no D10)."
+}
