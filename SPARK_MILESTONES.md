@@ -34,6 +34,15 @@ WG1이 문서에 적은 검증은 **이 기종**에서 나왔다. 앞의 두 플
 | **S4** | 단계별 활성화 + 백엔드 판정 | `verify-stage-backends.py`로 selected/degraded/fallback. **lower-PHY TX가 GB10에서도 DEGRADED인지** 실측 | **완료 2026-09-24** — 5단계 전부 통과, silent fallback 0. TX direct 경로는 GPU PDSCH가 켜진 단계부터만 |
 | **S5** | BLER/SINR 정합 + 이슈 6(16QAM CRC 상승) 재현 여부 | CPU 대비 BLER ≤1%p, SINR ≤0.5 dB, 이슈 6 판정 | **완료 2026-09-25** — C1: 할당 일치 PASS지만 합산 BLER 6배 → 원인 D8(1 PRB SINR) + D9(LDPC 계수). **C1+D8+D9: 교차 6회 ΔBLER −0.00%p, ΔSINR −0.19 dB, 16QAM `[0,17)` 1.90 vs 1.89%** |
 | **S6** | 측정 — 20 MHz 1-layer와 WG 수치 구성(100 MHz 4-layer) | WG 표의 21.20×(PUSCH) 등 재현 여부. **여기서부터 성능 주장 가능** | **완료 2026-09-25** — 100 MHz 4L: 감도·PDSCH 문서와 일치, **PUSCH 22×(CPU 빅 코어 고정; 미고정 40×는 착시)**. 20 MHz 1L: PDSCH 문서와 일치, PUSCH는 고정 시 1.1×(미고정 2.3×는 착시). 라이브 20 MHz 1L에서는 GPU가 느리다 |
+| **S7** | **채널 에뮬레이터 경유 + 멀티 gNB** — CUDA gNB를 emulator에 붙이고, CUDA gNB 프로세스 2개(2셀, 셀 간 간섭)를 한 GPU에서 | CUDA 1×1 emulator 게이트 통과, CPU 2셀 기준선 통과, CUDA 2셀에서 UE마다 자기 셀에 붙어 RRC/PDU/ping, 카운터 0, late 0 | **완료 2026-09-27** — 셋 다 통과. CUDA gNB 1개당 GPU 메모리 9,545 MiB. MPS 없이 시간 분할로 동작. zero-copy 브로커와 조합해도 통과했고(copy·zero-copy 각 2회), 브로커 p50이 30–35 µs, p99가 50–60 µs 줄었다 |
+| **S8** | **셀 대역폭 확장** — 20 MHz를 넘는 라이브 셀을 emulator 경유로, 브로커 copy vs zero-copy | 대역폭마다 attach·PDU·ping, 브로커 p50/p99, 막히는 곳은 메커니즘까지 | **완료 2026-09-28** — srsUE는 20 MHz가 한계(30 MHz PRACH 불가, 40/50 MHz 크래시). **OAI nrUE로 30/40/50 MHz(n3 FDD 15 kHz)와 100 MHz(n78 TDD 30 kHz) 전부 통과**, CUDA gNB(`all`) 100 MHz도 통과. zero-copy 브로커 p50은 20→100 MHz에서 40–45 µs로 거의 그대로, copy는 60 → 90 µs |
+| **S9** | **S8 관측의 원인 규명** — OAI 실행이 실시간보다 느린 이유, CUDA gNB 100 MHz의 브로커 p99 증가, zero-copy에서 ring 단계가 길어지는 이유 | 원인마다 증거와 되돌리는 조작 | **완료 2026-09-28** — (1) OAI ZMQ 드라이버가 TX 응답을 최대 10 ms 늦춤, 패치 후 20 MHz 256–382 → 1000 슬롯/s(실시간), starvation 3,335 → 1. (2) GPU 컨텍스트 time-slicing, MPS로 p99 195 → 80 µs(CPU gNB와 같음). (3) GPU가 만진 pageable 버퍼의 CPU memcpy가 3–6배 느려짐 |
+| **S10** | **100 MHz가 패치 후에도 실시간의 0.72×인 이유** | 슬롯 경로를 홉별로 나누고, 원인을 되돌리는 조작으로 확인 | **완료 2026-09-28** — 원인은 바이트가 아니라 **CPU 배치**다. lock-step 고리에 파이프라이닝이 사실상 없어(리드 0–1 메시지) 슬롯마다 고리 한 바퀴를 기다리는데, 그 고리의 스레드 전환이 (a) 깊은 idle 상태(LPI-3, 탈출 지연 433 µs 선언)에 들어간 코어를 깨우고 (b) 절반은 A725 little 코어에서 돈다. **gNB·브로커·UE를 X925 big 코어에 나눠 고정하면 1,470 → 2,060–2,077 슬롯/s(실시간)**, CUDA gNB + MPS도 2,068. little 코어 고정은 1,522 |
+| **S11** | **S9–S10 해결책을 게이트 기본값으로 + S8 재측정** — 패치 OAI ZMQ 모듈, 플랫폼 CPU 배치, CUDA gNB면 MPS를 환경 변수 없이 적용하고, 그 조건에서 20–100 MHz를 다시 잰다. 브로커 코어 수와 라이브·벤치 차이도 가른다 | 기본값만으로 실시간, 적용 내역이 실행마다 기록됨, srsUE 게이트 무회귀, 대역폭마다 copy·zero-copy 2쌍, 원인마다 대조 | **완료 2026-09-28** — 24/24 통과, **20–100 MHz 전부 실시간**(S8 0.3×), starvation 3,000대 → 1(CUDA gNB 5). 브로커를 3코어로 주니 100 MHz p99 115–135 → **65 µs**(CPU·CUDA gNB). 라이브 커널이 벤치보다 긴 이유는 little 코어 배치(이제 해결)와 CPU가 막 쓴 입력(+1.6 µs, GB10 일관성) |
+| **S12** | **integration-0928 조합 검증** — GB10에서 prepare() 수정 확인, 1x1 회귀, OAI 2×2 rank 2(copy·zero-copy, CUDA gNB, 40–100 MHz, 덜 깨끗한 H) | 게이트 기본값만으로, 실행마다 다른 GPU 프로세스 기록, y=Hx 같은 실행에서 | **완료 2026-09-28** — 20 MHz 2×2 rank 2 copy·zero-copy 2쌍 전부 NACK 0, 148 Mb/s(air), y=Hx 통과, zero-copy가 브로커 p50 70 → 50 µs. **새 결함 2개:** (1) OAI UE가 OCUDU 기본 송신 레벨(12 dB 백오프)에서 64QAM의 69–89%를 NACK(rank 1·2, 1×1 게이트는 ping만 봐서 통과로 보였음) → 로컬 패치 `oai-zmq-rx-gain.patch` + 게이트 기본 UE RX gain −12 dB로 NACK 0. (2) CUDA gNB의 PDSCH 가속이 2포트 셀의 rank 1에서 NACK 45%(rank 2는 5.5%) — 미해결. 40–100 MHz 2×2는 부하 시 실시간 0.24–0.59(UE CPU) |
+| **S13** | **CUDA gNB PDSCH 결함(D10), 넓은 대역 2×2 실시간, 50 MHz rank 2 비율** | CPU·GPU 출력 비교로 위치를 좁히고, 수정은 D-계열 규약(패치·lock·음성 대조군)으로, 라이브는 CPU gNB와 짝지어 | **완료 2026-09-28** — **D10:** GPU TB 인코더가 CPU 세그멘터의 filler 0을 "값 없음"으로 보고 자기 값을 써서, filler 0인 다중 CB TB(예: 9,474 B = BG1 9 CB)가 틀린 K로 부호화됐다. 2포트 문제가 아니었다(1포트도 같음, 게이트가 ping만 봐서 숨음). 수정 후 CUDA gNB 2×2 rank 2 148.2 · rank 1 74.1 Mb/s, NACK 0 = CPU gNB, d8 대조 NACK 45%. **100 MHz 2×2는 코어 배치로 안 풀린다**(0.26 → 최대 0.32): lock-step 한 바퀴가 0.8–0.9 ms(중계 + 장치 턴어라운드, 리드 0–1)로 0.5 ms를 넘는 구조 한계. **50 MHz rank 2 21%**는 스케줄러가 아니라 부하 중 UE가 RI=1을 보고한 결과(원인 미확정) |
+| **S14** | **50 MHz 2×2 rank 2 비율 원인** — 부하 중 UE가 RI=1을 보고하는 이유를 UE 안에서 찾고 로컬 패치로 고친다 | 같은 조건 A/B(이전 UE ↔ 패치 UE) 2쌍, 20·100 MHz 회귀, 반복 점검(`check-oai-local-patches.sh`)에 결함 재현·수정 probe 추가 | **완료 2026-09-28** — 원인은 CSI 설정도 실시간 여부도 아니라 **OAI UE의 RI 추정이 초기화하지 않은 스택 배열에 누적**하는 것(`nr_csi_rs_ri_estimation`의 `csi_rs_estimated_A_MF`). 채널 추정값은 무부하·부하가 같은데 조건수 계산만 스택 잔여값 때문에 틀어진다. 로컬 패치 `oai-csi-ri-amf-init.patch`(memset 한 줄)로 **rank 2 비율 0.207 → 0.998**(2쌍), NACK 0, 50 MHz DL air 234 → 360 Mb/s. 20 MHz 0.999, 100 MHz 0.998 무회귀 |
+| **S15** | **브로커 코드만으로 lock-step 한 바퀴 줄이기** — OAI·OCUDU 드라이버, gNB·UE 설정, 호스트 idle 설정은 그대로 두고 브로커가 소유한 구간만 줄인다 | 홉 추적으로 한 바퀴를 브로커·장치 몫으로 나누고, 바꾼 것마다 같은 바이너리의 노브로 번갈아 A/B, 출력 bit 동일(테스트 + 음성 대조군), 라이브 y=Hx·NACK·1x1·srsUE 회귀 | **완료 2026-09-29** — 100 MHz 2×2 무부하 **0.563–0.571 → 0.673–0.680**, 50 MHz 2×2 무부하 **0.866 → 0.996(실시간)**. 브로커 몫(방향당 p50)은 310 → 약 120 µs. 부하(200M) 중에는 0.25–0.26 그대로다: 그때 한 바퀴는 UE(평균 1.8 ms)·gNB(1.05 ms) 몫이라 브로커로는 못 줄인다. 기본값: 제자리 relay·RX ring 직접 행·다중 행 direct 출력은 코드 기본(`=0`으로 끔), spin 대기는 GB10 프로파일(`broker_env`)로. 브랜치 `broker-round` |
 
 ## 진행 기록
 
@@ -580,3 +589,484 @@ D9 수정은 `pusch_codeblock_decoder_cuda_batch.cpp`의 `min_sum_scale`을 0.75
 - 여러 PDU를 한 번에 인코딩하는 경로(`ldpc_encoder_cuda_batch`, `transport_block.cu`)는 라이브러리에 있지만 **gNB 코드 어디에서도 호출되지 않는다**. 벤치마크만 하위 API를 직접 쓴다. 이 경로가 gNB 처리기의 일을 전부 포함하는지는 확인하지 않았다.
 - 결론: 다중 UE에서 GPU가 CPU보다 느린 이유는 교차 PDU 배치가 gNB에 연결되지 않았기 때문이다. 연결하면 7배 가까운 여지가 있다.
 - GPU PDSCH를 켜도 DMRS는 CPU가 매핑한다(`pdsch_processor_flexible_impl::map_reference_signals`, D7 스택). 그래서 슬롯마다 그리드 소유권이 CPU와 GPU를 오간다.
+
+### S7 — 채널 에뮬레이터 경유 + 멀티 gNB (2026-09-27)
+
+지금까지 Spark의 CUDA gNB 라이브는 직결 ZMQ(gNB↔srsUE)뿐이었다. 이번에 처음으로 channel emulator를 거쳐 붙였고, 이어서 CUDA gNB 프로세스 2개를 한 GPU에서 돌렸다. 빌드는 C1+D8+D9(`cuda-workspace.spark-d8.lock.json`, `builds/d8-cuda-patched-sm121`), 가속 단계 `all`, emulator 브로커는 `gb10-zero-copy` 트리(`/workspace/gpuch/zc9`)이고 host memory는 `copy`다.
+
+**1×1 (`run-ocudu-cuda-1x1.sh`, 20260927T104658Z): 통과.** `tx_pulls=67097`, `rx_starvations=7`, 카운터 0. gNB 로그에서 GPU 경로 선택을 확인했다: UL 그리드 direct writer, DL 그리드 direct reader, PRACH buffer direct writer. lower-PHY TX는 host staging fallback이다(S4와 같음).
+
+**멀티 gNB 러너.** `scripts/native/run-ocudu-multi-gnb.sh`(+`-inner.sh`, `render-multi-gnb-configs.py`)를 새로 만들었다. Docker 기반 `scripts/remote/ocudu-multi-gnb-smoke.sh`를 native로 옮긴 것이다. 네임스페이스·프로세스 관리는 native 멀티 UE 게이트 것을 그대로 쓴다. 구성은 다음과 같다.
+- gNB 프로세스 2개. 셀마다 PCI 1/2, `gnb_id` 411/412, ZMQ 포트 2000–2001/2010–2011이 다르다. N2/N3 bind는 `127.0.0.11`/`.12`로 나눴다(같은 주소면 GTP-U 포트가 충돌한다).
+- srsUE 2개, Open5GS 하나.
+- 브로커 토폴로지는 `examples/topology.multi-gnb.cuda.yaml`이다: serving 6 dB, intercell 20 dB, 링크 8개.
+- `OCUDU_NATIVE_GNB_ACCELERATION`이 있으면 CUDA gNB(두 셀 모두), 없으면 CPU gNB다.
+- 판정에 **UE가 자기 셀(PCI)에 붙었는지**를 넣었다. 두 UE가 한 셀에만 붙으면 2셀 시험이 아니기 때문이다.
+- aarch64용 노브를 넣었다: `OCUDU_NATIVE_CUDA_ARCH`, `OCUDU_NATIVE_SKIP_WORKSPACE_LOCK`.
+
+| 실행 | gNB | 결과 | UE0 → PCI | UE1 → PCI | rx_starvations | 브로커 p50 / p99 (gNB 노드) | GPU 메모리 |
+|---|---|---|---|---|---|---|---|
+| 20260927T105015Z | CPU × 2 | **통과** | 1 (기대 1) | 2 (기대 2) | 2 | 120 / 180 µs | — |
+| 20260927T105519Z | **CUDA × 2** (`all`) | **통과** | 1 (기대 1) | 2 (기대 2) | 19 | 135 / 235 µs | **gNB당 9,545 MiB** (RSS 4.9 GB) |
+
+- **두 CUDA gNB 모두 GPU 경로를 탔다.** 로그의 경로 선택 줄이 1×1과 같다. 두 gNB 로그 어디에도 late·overflow 이벤트가 없다.
+- **MPS 없이 돌았다.** 두 프로세스가 GPU를 시간 분할로 나눴다. 브로커 호출이 CPU gNB 대비 p50 +15 µs, p99 +55 µs 늘었고, rx_starvations가 2 → 19로 늘었다. 셋 다 게이트 기준 안이다. 이 증가가 GPU 경합 때문인지는 분리하지 않았다.
+- **GPU 메모리:** nvidia-smi 기준 CUDA gNB 하나가 9,545 MiB를 잡는다. 5090(09-11, 1개)에서 잰 GPU 전체 사용량 10.7 GB와 같은 규모다. GB10(통합 121 GB)에서는 여유가 크다. 32 GB인 5090에서는 3개 이상이 어렵다(추정).
+
+**zero-copy 브로커와 조합 (CUDA gNB × 2, `all`, copy·zero-copy 교대로 2회씩).** 네 번 모두 통과했고, UE는 매번 자기 셀에 붙었다. 카운터는 0이다. zero-copy 실행에서는 브로커 `gpu_timings`의 D2H가 0.8 µs라 zero-copy가 실제로 돌았다. copy 실행은 7.8–7.9 µs다.
+
+| 실행 | 브로커 | gNB 노드 n | gNB p50 / p99 | UE p50 / p99 | rx_starvations | ring 읽기 / emulator / ring 쓰기 (중앙값, µs) |
+|---|---|---|---|---|---|---|
+| 105519Z | copy | 34만 | 135 / 235 | 130 / 300–305 | 19 | 13.2 / 129.9 / 5.0 |
+| 113123Z | **zero-copy** | 34만 | **100 / 175** | **100 / 255** | 20 | 20.9 / 96.1 / 13.4 |
+| 113753Z | copy | 65만* | 100* / 225 | 130 / 305–310 | 18 | 12.8 / 113.2 / 4.8 |
+| 114423Z | **zero-copy** | 64만* | **75* / 175–180** | **95 / 255** | 22 | 20.5 / 79.0 / 12.6 |
+
+\* 두 번째 쌍은 gNB 노드 호출 수가 약 2배다. 샘플 수가 적은 조각 호출이 섞여 p50이 낮게 나오므로, 같은 쌍 안에서만 비교한다. UE 노드는 네 실행 모두 약 34만 회라 바로 비교할 수 있다.
+
+- **같은 쌍 안에서 zero-copy가 p50 30–35 µs, p99 50–60 µs 짧다.** UE 노드는 p50 130 → 95–100 µs, p99 300–310 → 255 µs다. 1×1 라이브에서 줄어든 폭(p50 약 20 µs, p99 약 25 µs)보다 크다. 이 토폴로지는 노드마다 들어오는 링크가 2개이고, GPU를 CUDA gNB 2개와 나눠 쓴다. 이 두 조건 중 어느 쪽이 폭을 키웠는지는 분리하지 않았다.
+- **브로커 한 슬롯(ring 읽기 + emulator + ring 쓰기)은 148 → 130 µs, 131 → 112 µs로 줄었다.** zero-copy에서 ring 단계가 길어지는 현상(Z8에서 본 것)이 여기서도 나타나지만, emulator 호출이 줄어든 폭이 더 크다.
+- **rx_starvations는 모드와 무관하게 18–22다.** 브로커 모드가 원인이 아니다. CPU gNB 2셀은 2였으므로 CUDA gNB 쪽 타이밍과 관련 있어 보이지만, 확인하지 않았다.
+- **GPU 메모리는 모드와 무관하게 gNB당 9,545 MiB다.**
+- **아직 안 한 것:** MPS 켠 비교, 3셀 이상, 트래픽 부하에서 BLER/SINR, 장시간 실행.
+
+### S8 — 셀 대역폭 확장 (2026-09-28)
+
+지금까지의 라이브는 전부 20 MHz(n3 FDD, 15 kHz, 106 PRB, 23.04 MS/s) 셀이었다. 이번에 셀 대역폭을 올리면서 channel emulator를 거친 라이브를 돌렸다. 브로커는 `gb10-zero-copy`+Z8 트리(`/workspace/gpuch/zc9`, 빌드 `gpuch-zc9-release`)이고, 실행마다 `runtime.cuda_host_memory`를 `copy` 또는 `zero_copy`로 명시했다. 전체 표는 워크스테이션 `~/ocudu-work/perf-platform/compare-bw-live.md`에 있다. 모든 실행의 시작과 끝에 다른 GPU 프로세스가 없었다.
+
+**렌더러.** `scripts/native/render-1x1-bw-configs.py`를 새로 만들었다. 기존 1×1 렌더러(srsUE legacy 또는 OAI)를 그대로 돌린 뒤, 대역폭에서 따라 나오는 값만 바꾼다: gNB `channel_bandwidth_MHz`·`srate`·`base_srate`, srsUE `srate`·`nof_prb`·`ssb_nr_arfcn`, 브로커 `sample_rate_hz`와 1 ms 배치. 밴드, ARFCN, 채널 모델, 코어는 그대로라서 대역폭만 바뀐다. 20 MHz 렌더는 기존 렌더러 출력과 바이트 단위로 같다(두 base 모두 확인). OAI 게이트(`run-ocudu-oai-1x1.sh`)에는 노브를 더했다: 렌더러, 채널 빌드·CUDA arch, gNB 바이너리·커밋(CUDA gNB용), UE 무선 인자, UE capability 파일, 브로커 기동 여유.
+
+**srsUE: 20 MHz가 한계다.** srsUE NR은 15 kHz SCS만 받는다(`rrc_nr_procedures.cc`가 다른 MIB SCS를 거부한다). 그래서 30/40/50 MHz(15 kHz)를 시도했다.
+- **30 MHz(160 PRB, 30.72 MS/s):** 셀 검색과 SIB1 복호까지 된다. 그다음 `Converting carrier to cell for PRACH (-5)`가 나오고, PRACH를 한 번도 보내지 않는다. NR PRACH가 LTE PRACH 코드를 쓰는데, 그 코드가 110 PRB를 넘으면 에러를 낸다(`srsran_symbol_sz`). 버퍼도 30.72 MS/s 기준으로 잡혀 있다(`prach.cc`). 소스 한계라서 설정으로는 우회할 수 없다.
+- **40/50 MHz(46.08/61.44 MS/s):** SFN 동기 중에 `srsran_pbch_nr_decode`에서 SIGSEGV가 난다(backtrace를 addr2line으로 풀었다).
+- **FFTW 계획 시간:** 처음 실행하면 FFT 계획 한 개에 수 초에서 30 초가 걸려서, gate 창 안에 PHY 초기화가 끝나지 않는다. `/root/.srsran_fftwisdom`을 미리 채운 뒤에 쟀다.
+- **SSB 위치:** srsUE는 SSB를 찾지 않고 `ssb_nr_arfcn`(기본 368410, 20 MHz 값)에 맞춘다. 첫 30–50 MHz 실행은 이 값 때문에 셀을 못 찾았다. 렌더러가 대역폭마다 gNB가 출력한 SSB ARFCN을 넣는다.
+- 30 MHz에서 브로커는 attach 없이도 실시간으로 돌았다(962 슬롯/s). 여기서 copy p50/p99는 70/115 µs, zero-copy는 40–45/80–105 µs다.
+
+**OAI nrUE: 100 MHz까지 통과.** OAI(`2b69bde`, M6과 같은 핀)를 Spark(aarch64)에서 빌드했다. 추가로 설치한 패키지는 `liblapacke-dev libblas-dev libnuma-dev libcap-dev xxd`이고, 빌드는 2분 남짓 걸렸다. **GB10에서 OAI nrUE를 처음 붙인 것이다.** 셀은 15 kHz n3 FDD 20/30/40/50 MHz와 30 kHz n78 TDD 100 MHz(273 PRB, 122.88 MS/s)다. 100 MHz 셀은 OCUDU 예제 `gnb_ru_ran550_tdd_n78_100mhz_4x2.yml`의 `dl_arfcn 637212`와 PRACH 159를 따랐다. 각 대역폭에서 copy와 zero-copy를 교대로 돌렸다. 대역폭마다 막힌 곳과 해결은 다음과 같다.
+- **샘플레이트:** nrUE는 PRB 수로 샘플레이트를 정하고, `-E`를 주면 FFT의 3/4을 쓴다. 160 PRB와 270 PRB에 `-E`를 주면 46.08/92.16 MS/s가 되어 gNB(30.72/61.44)와 어긋난다. 실측으로 확인했다(`synch Failed`). 렌더러가 대역폭마다 `-E` 사용 여부를 정한다.
+- **SSB 오프셋:** `--ssb`는 point A부터 센 SSB 첫 부반송파 번호다. gNB가 출력한 SSB ARFCN에서 계산한다. 계산식은 기존 20 MHz 값 486을 그대로 재현한다.
+- **50 MHz:** OAI `uecap_ports1.xml`에는 15 kHz 50 MHz feature set이 없다. 그래서 max MIMO layers가 0이 되고, 첫 DCI 1_1에서 `max_mimo_layers > 0` assert가 난다. 15 kHz 40 MHz 항목을 복사해 50 MHz로 바꾼 capability 파일을 쓴다(`oai_uecap`).
+- **Spark 전용 조치:** gate는 컨테이너 root가 매핑된 user namespace에서 돈다. 그래서 dev 소유 디렉터리에서 실행하면 nrUE가 cwd에 통계 파일을 못 만들고 abort한다. cwd를 `/tmp/s8-oai-cwd`로 옮겨서 해결했다. 이 밖에 x86 lock 검사 생략, `bc88865` 부재 허용, 26.04 배너 허용, `start_group` pgid 대기는 legacy 게이트와 같은 Spark 전용 미커밋 패치다.
+
+| 대역폭 (MS/s) | gNB | 결과 (copy / zero-copy) | 브로커 UE 노드 p50/p99, copy | zero-copy | emulator 호출 중앙값 copy → zero-copy (gNB 노드) | rx_starvations |
+|---|---|---|---|---|---|---|
+| 20 MHz (23.04) | CPU | 2/2 · 2/2 | 60/100–105 | **40/80** | 55–58 → 34–36 µs | 3370–3405 |
+| 30 MHz (30.72) | CPU | 2/2 · 2/2 | 60–70/110 | **40/80** | 56–61 → 33–34 µs | 3347–3391 |
+| 40 MHz (46.08) | CPU | 2/2 · 2/2 | 75/120 | **40–45/85** | 60–73 → 34–37 µs | 3274–3309 |
+| 50 MHz (61.44) | CPU | 2/2 · 2/2 | 70–90/130–140 | **45/85** | (조각 호출)* → 41–42 µs | 3243–3273 |
+| 100 MHz (122.88, TDD) | CPU | 2/2 · 2/2 | 90/135–140 | **45/85** | 86–91 → 41 µs | 2981–3014 |
+| 100 MHz (122.88, TDD) | **CUDA `all`** | 2/2 · 2/2 | 90–95/230–235 | **45/185–195** | 90–92 → 44–45 µs | 6716–7094 |
+
+\* 50 MHz copy 두 번은 gNB 노드 호출의 절반가량이 샘플 수가 적은 조각 호출이라(gNB 노드 슬롯/s가 UE의 2배) 중앙값이 38–40 µs로 낮게 나온다. UE 노드와 p99로 비교한다.
+
+- **zero-copy 브로커의 지연은 대역폭에 거의 무관하다.** p50은 20 MHz 40 µs에서 100 MHz 45 µs, p99는 80–85 µs다. copy는 p50 60 → 90 µs, p99 105 → 135–140 µs로 는다. 없앤 복사가 바이트 수에 비례하기 때문이다. 벤치의 대역폭 스케일링(ZERO_COPY_MILESTONES.md)이 라이브에서도 같은 방향으로 나타났다.
+- **ring 단계는 zero-copy에서 대역폭과 함께 커진다.** gNB 노드 ring 읽기와 쓰기는 각각 20 MHz 10 µs에서 100 MHz 25–29 µs다(copy는 5 → 15/11 µs). Z8에서 관찰한 "zero-copy에서 ring 단계가 길다"는 현상이 바이트 수에 비례해 커진다. 100 MHz 한 슬롯(ring 읽기 + emulator + ring 쓰기)은 copy 112–118 µs, zero-copy 94–97 µs다.
+- **CUDA gNB 100 MHz (C1+D8+D9, `all`):** 4회(copy·zero-copy 각 2회) 모두 통과했다. gNB 로그에서 GPU 경로 선택을 확인했다: UL 그리드 direct writer, PDSCH direct grid writer, PUSCH owned CUDA snapshot. GPU 메모리는 gNB 9,751 MiB, 브로커 176–180 MiB다. 브로커 p99가 CPU gNB 대비 +50–100 µs다. GPU를 CUDA gNB와 나눠 쓰는 것과 관련 있어 보이지만, 분리하지 않았다. zero-copy는 여기서도 p50 90 → 45 µs, p99 230 → 185–195 µs다.
+- **OAI 실행은 실시간보다 느리다.** 루프가 255–365 슬롯/s로 돈다(srsUE 실행은 약 965/s). `top` 스냅샷에서 nrUE `radio` 스레드가 코어 하나를 100% 쓴다. rx_starvations 약 3,000(CUDA gNB 약 7,000)은 대역폭과 모드에 무관하다. UE 쪽 페이싱이 원인으로 보이지만, 확인하지 않았다. 워크스테이션(x86)에서 OAI 루프 속도를 같이 재지 않았으므로 aarch64 탓인지는 모른다.
+- **부수:** 09-26 게이트에서 남은 srsUE 프로세스가 컨테이너에서 이틀 동안 코어 하나의 약 10%를 쓰고 있었다. 06:06에 정리했다. 그 전의 srsUE 실행(20–50 MHz)은 이 프로세스와 겹쳤다.
+- **아직 안 한 것:** 트래픽 부하(iperf)에서 브로커 지연, OAI 루프 속도의 원인, 100 MHz에서 BLER/SINR, CUDA gNB 30–50 MHz, 워크스테이션(5090)과 같은 대역폭 비교.
+
+## S9 — S8 관측의 원인 규명 (2026-09-28)
+
+S8에서 원인을 확인하지 않은 세 가지를 Spark(GB10)에서 풀었다. 모든 실행에서 시작·종료 시점에 다른 사용자의 GPU 프로세스는 없었다. 실행 스크립트와 원자료는 Spark `/workspace/gpuch/s9/`에 있다. 도구: 호스트의 `perf`(7.0.0-1019-nvidia)와 Nsight Systems 2025.3.2를 컨테이너 `/opt`에 복사해 컨테이너 root로 썼다(컨테이너의 `/usr/local/cuda/bin/nsys`는 설치되지 않은 스텁이다).
+
+### 1. OAI 실행이 실시간보다 느린 이유 — OAI ZMQ 드라이버의 10 ms 대기
+
+- **누가 바쁜가.** 20 MHz 실행 중 시스템 전체 `perf record`(6 s)에서 샘플의 58%가 idle이었다. 스레드별 CPU는 gNB `radio` 95–100%, 브로커 ZMQ I/O 약 6%, nrUE 전체 약 17%였다. 계산에 묶인 프로세스가 없다 → 기다림에 묶인 것이다. S8에서 "nrUE radio 스레드가 코어 하나를 쓴다"고 적은 것은 잘못 읽은 것이다. 그 `radio` 스레드는 gNB(OCUDU)의 ZMQ 라디오 스레드이고, 폴링 루프라 속도와 상관없이 항상 코어 하나를 쓴다(100 MHz perf: `send_response` 19%, `receive_response` 5%, 나머지는 poll·시계·재예약).
+- **원인(코드).** OAI `radio/zmq/zmq_radio.cpp`의 `tx_poll_thread`는 브로커의 REQ를 받았을 때 보낼 TX 샘플이 아직 큐에 없으면 `reply_requested`만 세우고 `zmq_poll(..., 10)`으로 돌아간다. REP 소켓은 응답하기 전에는 새 입력이 오지 않으므로 이 poll은 매번 10 ms 타임아웃까지 잔다. lock-step 체인에서는 이 지연이 gNB RX → gNB TX → UE RX로 그대로 전파된다. 브로커의 `rx_starvations`(입력 레인이 비어 기다린 슬롯)는 이 지연의 증상이다.
+- **확인(되돌리는 조작).** 응답이 밀려 있는 동안에는 20 µs마다 큐를 다시 보도록 드라이버만 고쳐(`scripts/native/patches/oai-zmq-tx-reply-poll.patch`) 별도 모듈 디렉터리로 빌드하고, 게이트에 `OCUDU_NATIVE_OAI_SHLIBPATH`로 넘겼다. 핀된 OAI 소스와 빌드는 그대로다. 20 MHz, copy 브로커, 원본/패치 교대 2쌍, 4회 모두 통과:
+
+| UE 드라이버 | 슬롯/s (gnb0 / ue0) | rx_starvations | 브로커 p50 / p99 (µs) |
+|---|---|---|---|
+| 원본 | 355 / 256, 382 / 316 | 3,335, 3,375 | 50–60 / 100 |
+| **패치** | **1,048 / 999, 1,000 / 1,000** | **1, 1** | 60 / 95 |
+
+  패치 후에는 브로커의 실시간 페이싱(`throttle_us` > 0)이 속도를 정한다. 워크스테이션 M6.4의 0.275× 실행도 같은 드라이버라 같은 원인일 가능성이 높지만, 거기서는 확인하지 않았다.
+- **100 MHz는 패치 후에도 실시간의 약 0.72×다**(슬롯 0.5 ms 기준 실시간 2,000/s 대비 1,410–1,480/s, `throttle_us` ≈ 0). `runtime.rx_ring_batches` 2 → 4는 효과가 없었다(1,475 → 1,481/s). 바쁜 스레드는 gNB `radio` 95%(대부분 폴링), 브로커 ZMQ I/O 60%(대부분 커널 TCP), gNB `phy_worker` 58%로 어느 것도 포화가 아니다. 슬롯마다 방향별 491 KB(cf32)를 TCP loopback으로 네 번 주고받는 lock-step 체인의 지연 합이 원인으로 추정되지만 분리하지 않았다. → S10에서 풀었다: 바이트 수보다 CPU 배치(깊은 idle 상태와 little 코어)가 원인이었다.
+
+### 2. CUDA gNB 100 MHz의 브로커 p99 증가 — GPU 컨텍스트 time-slicing
+
+- **재현(패치된 UE, 100 MHz, 교대 2쌍).** zero-copy 브로커 p99: CPU gNB 80 µs, CUDA gNB 195–200 µs. copy 브로커: 140 vs 240–245 µs. p50은 같다(45 / 90 µs).
+- **분해(nsys, 브로커, 8 s, 각 약 24,000 호출).** 커널 실행 시간은 같다(`apply_channel_kernel` p50 6.7 / 7.0, p99 16.3 / 16.3 µs). CPU 쪽 API 시간도 같다(`cudaLaunchKernel` p99 16.8 / 16.3 µs). 달라진 것은 **launch → 커널 시작 대기**뿐이다: p99 6–17 µs → **149–161 µs**. 그 결과 `cudaStreamSynchronize` p99가 23 → 169 µs가 된다. CPU 경합이면 API 시간이, 메모리 대역폭이면 커널 시간이 늘어야 하므로 둘 다 아니다. 다른 프로세스(gNB)의 GPU 컨텍스트가 시간 조각을 쓰는 동안 브로커 커널이 기다리는 것이다.
+- **확인.** `scripts/cuda/with-cuda-mps.py`로 gNB와 브로커를 한 MPS 서버의 클라이언트로 돌렸다(MPS `ps`에 `gnb`, `ocudu-gpu-channel` 모두 확인). MPS/비 MPS 교대 2쌍, 4회 모두 통과:
+
+| | 브로커 p50 / p99 (µs, gnb0·ue0) | 슬롯/s |
+|---|---|---|
+| MPS 없음 | 45 / 195–200 | 1,483, 1,493 |
+| **MPS** | **45 / 80** | 1,534, 1,528 |
+
+  MPS에서 p99가 CPU gNB 실행과 같아졌다. S7의 2-gNB 실행에서 본 p99 +55 µs도 같은 메커니즘으로 보이지만 거기서 MPS로 확인하지는 않았다.
+
+### 3. zero-copy에서 ring read/push가 길어지는 이유 — GPU가 만진 버퍼의 CPU 복사
+
+- zero-copy(`direct_in`, `direct`)에서는 GPU가 브로커의 입력 창을 직접 읽고 출력 행에 직접 쓴다. 다음 슬롯에 CPU가 ring → 입력 창(쓰기), 출력 행 → RX ring(읽기)을 `memcpy`하는데, 그 캐시 라인이 GPU 쪽에 있다.
+- **마이크로벤치** `scripts/cuda/spark/s9-coherence-bench.cu`(pageable 버퍼, 2,000회, 코어 5 고정, GPU 유휴): 
+
+| 크기 | CPU만 쓴 버퍼 | GPU가 읽은 창에 CPU 쓰기 | GPU가 쓴 행을 CPU 읽기 |
+|---|---|---|---|
+| 184 KB (20 MHz 1 ms) | 1.6 µs | 7.5 µs | 9.3 µs |
+| 983 KB (100 MHz 1 ms) | 12.6–13.1 µs | 40.5 µs | 44.8 µs |
+
+  라이브에서 본 증가(20 MHz copy 3.5–6 → zero-copy 9–14 µs, 100 MHz 약 10 → 26–29 µs)와 크기·방향이 맞는다. GB10의 CPU–GPU 일관성(coherence) 비용으로 보이며, 원인 수준(스누프·무효화)까지는 확인하지 않았다. 슬롯 전체(read + process + push)는 여전히 zero-copy가 짧다(S8: 100 MHz 94–97 vs 112–118 µs). 이 복사까지 없애려면 ring을 거치지 않는 경로가 필요하다(`ZERO_COPY_MILESTONES.md` 다음 후보 3).
+- 라이브 커널·H2D가 벤치보다 큰 이유는 따로 보지 않았다(**열림**).
+
+### 바뀐 것
+
+- `scripts/native/patches/oai-zmq-tx-reply-poll.patch` — 위 1의 드라이버 수정. 업스트림 제보 후보.
+- `scripts/native/run-ocudu-oai-1x1-inner.sh` — `OCUDU_NATIVE_OAI_SHLIBPATH`(nrUE 모듈 디렉터리), `OCUDU_NATIVE_BROKER_WRAPPER` / `OCUDU_NATIVE_GNB_WRAPPER`(프로파일러 래퍼). 기본값에서는 동작이 같다.
+- `scripts/cuda/spark/s9-coherence-bench.cu` — 위 3의 마이크로벤치.
+- **실험 기록:** 첫 100 MHz 실행 1회는 실행 중에 inner 스크립트를 고쳐 bash 구문 오류로 실패했다(측정에서 제외). nsys `--kill=none` 실행은 gNB가 남아 GPU를 잡아서 직접 종료했다. 이후 `--kill=sigterm`을 썼다.
+
+## S10 — 100 MHz가 실시간에 못 미치는 이유 (2026-09-28)
+
+S9에서 OAI ZMQ 드라이버를 고친 뒤에도 100 MHz(n78 TDD 30 kHz, 122.88 MS/s, 메시지당 61,440샘플 = 491 KB)는 실시간(0.5 ms 슬롯, 2,000/s)의 약 0.72×였다. 바쁜 스레드가 없다는 것까지가 S9의 결론이었다. 모든 실행은 CPU gNB(`a1916edc`), zero-copy 브로커, 패치된 UE 드라이버, 100 MHz이고, 시작·종료 시점에 GPU 프로세스는 없었다(CUDA gNB 실행은 자기 것만). 실행 스크립트와 원자료는 Spark `/workspace/gpuch/s10/`, 트리는 `zc10`(= `zc9` + 아래 브로커 변경), 빌드 `builds/gpuch-zc10-release`.
+
+### 1. 홉 분해 — 고리에 파이프라이닝이 없다
+
+- 브로커에 `OCG_HOP_TRACE_DIR`를 추가했다. ZMQ 전송(요청 송신·응답 수신·ring 적재, RX 요청 수신·행 pop·응답 송신)과 producer 슬롯(시작·끝)마다 타임스탬프 하나를 남긴다. 분석은 `scripts/cuda/spark/s10-hop-trace.py`.
+- **리드(장치가 넘긴 TX 샘플 − 브로커가 돌려준 RX 샘플)가 gNB·UE 모두 0–1 메시지**다. 두 라디오 모두 RX를 받아야 다음 TX를 내놓는다(OAI `zmq_rx_stream::receive`는 TX가 RX 끝까지 정렬되기를 기다리고, 브로커의 TX 요청 → gNB 응답 `pull_rtt`가 슬롯 주기와 같다). 그래서 **슬롯마다 gNB → 브로커 → UE → 브로커 → gNB 고리 한 바퀴를 통째로 기다린다.** 이 고리가 500 µs 안에 돌아야 실시간이다.
+- 기준 실행은 6회 모두 1,466–1,506 슬롯/s였다. 그중 하나(`base100`)에서 브로커가 응답을 보낸 뒤 장치의 다음 RX 요청까지 `rx_turn` 평균 441–469 µs, 브로커 안에서 TX 수신 → RX 송신 relay p50 237–252 µs(방향별). 20 MHz(1 ms 메시지)에서는 같은 고리가 1 ms 안에 들어가 브로커가 실시간으로 페이싱한다.
+
+### 2. 고리가 느린 이유 — ZMQ 전송 한 번이 느린 게 아니라 코어가 잠들어 있다
+
+마이크로벤치(`scripts/cuda/spark/s10-zmq-split.cpp`, 1 B 요청 → 491 KB 응답, 3,000회, GPU·게이트 미실행):
+
+| 조건 | 왕복 p50 / p99 (µs) |
+|---|---|
+| 원시 TCP loopback(ZMQ 없이, 블로킹 소켓) | 35 / 40 |
+| ZMQ, 서버 코어 7,8 / 클라이언트 5,6 | 235–340 / 812–831 |
+| 같은 조건 + 네 코어에 `sched_yield` 스피너(`s10-yieldspin.c`) | **97 / 101** |
+| ZMQ `SO_SNDBUF`/`SO_RCVBUF` 4 MB | 차이 없음(332–584) |
+| ZMQ `ipc://` | 더 느림(768 / 3,168) |
+
+- ZMQ는 메시지 하나를 앱 스레드 ↔ I/O 스레드로 네 번 넘긴다. 491 KB 교환에서는 그 사이 코어가 쉬는 시간이 길어, `menu` 거버너가 가장 깊은 LPI-3(선언 탈출 지연 433 µs, 목표 체류 2,542 µs)을 고른다. 3,000회 왕복 동안 네 코어의 LPI-3 진입이 **약 5,250회**(왕복당 1.75회)였고, 원시 TCP는 같은 횟수에서 약 45회였다. 코어를 깨어 있게 두면 왕복이 1/3이 된다. 메모리 복사 자체는 빠르다(다른 코어가 방금 쓴 491 KB 복사 11–19 µs), 페이지 폴트도 없다.
+- 컨테이너의 `/sys`가 읽기 전용이라 idle 상태를 끄는 직접 대조군(`cpuidle/state3/disable`, `pm_qos_resume_latency_us`)은 못 했다. 호스트 sysctl·sysfs는 바꾸지 않았다.
+- 스피너 주의: `SCHED_IDLE` 스피너는 같은 코어에서 깨어난 스레드를 약 6 ms 늦췄다(커널은 `PREEMPT_LAZY` 빌드, 7.0.0-1019-nvidia). `sched_yield` 스피너는 그렇지 않다.
+
+### 3. 라이브 확인 — 한 번에 하나씩 (100 MHz, zero-copy, 브로커 슬롯/s gnb0 / ue0)
+
+| 조건 | 슬롯/s | 초당 LPI-3 진입(big / little 코어) | 브로커 p99 (µs) |
+|---|---|---|---|
+| 기준(6회) | 1,466–1,506 / 1,424–1,456 | 3,832 / 5,586 | 75–80 |
+| 브로커 대기 poll 50 → 5 µs(`OCG_BROKER_POLL_US`, 3회) | 1,575–1,612 / 1,527–1,566 | 3,491 / 4,532 | 75–80 |
+| OAI RX 대기 100 → 10 µs(`oai-zmq-rx-poll.patch`) | 1,526 / 1,464 | – | 80 |
+| 브로커 ZMQ I/O 스레드 2개(`OCG_ZMQ_IO_THREADS`) | 1,451 / 1,394 | – | 80 |
+| **20코어 전부 `sched_yield` 스피너**(2회) | 1,816–1,850 / 1,758–1,790 | **0 / 0** | 60–80 |
+| 스피너 + 두 poll 수정(2회) | 1,965–1,998 / 1,916 | – | 55–90 |
+| 세 프로세스를 big 코어 10개(5–9, 15–19)에 함께 | 1,759 / 1,703 | 2,487 / 956 | 95 |
+| **gNB 5–9 / 브로커 15,16 / UE 17–19로 나눠 고정** | **2,077 / 1,995** | 1,024 / 806 | 115–130 |
+| 같은 고정 + 두 poll 수정(2회) | **2,060–2,062 / 1,998** | 667 / 647 | 85–185 |
+| 같은 나눔을 little 코어에(gNB 0–4 / 브로커 10,11 / UE 12–14) + poll 수정 | 1,522 / 1,378 | 271 / 1,208 | 205–245 |
+| CUDA gNB(`all`) + MPS, 고정 없음 | 1,489 / 1,440 | – | 80 |
+| **CUDA gNB(`all`) + MPS, 위 big 코어 나눔** | **2,068 / 1,990** | – | 210 |
+
+- 모든 실행 attach·PDU·ping 통과(아래 예외 하나). 고정한 실행에서는 브로커가 실시간 페이싱(`throttle_us` > 0)에 걸린다. 즉 여유가 생겼다.
+- **판정:** 원인은 고리의 스레드 전환이 (a) 깊은 idle 상태에서 코어를 깨우는 비용과 (b) little(A725) 코어에서 도는 시간이다. 둘 다 풀어야 실시간이 된다: 코어를 깨워 두기만 하면 +24%(1,830), big 코어로 모으기만 하면 +19%(1,759), little 코어에 모으면 idle 진입은 줄어도 그대로(1,522), **big 코어에 프로세스별로 모으면 실시간**이다. S9의 가설(491 KB × 4번 전송의 바이트 비용)은 주 원인이 아니다. 같은 491 KB 전송이 코어를 깨워 두면 97 µs다.
+- **남는 비용:** 브로커를 코어 2개에 가두면 emulator 호출 p99가 80 → 85–185 µs(CUDA gNB 210 µs)로 늘었다. 브로커 워커 스레드 6개와 ZMQ I/O 스레드가 두 코어를 나눠 쓴 탓으로 보이며, 코어 3–4개 배분은 시험하지 않았다. 스피너와 고정을 함께 쓰면 gNB가 진행하지 못해 attach가 실패했다(1회, 측정에서 제외).
+- **veth(UE 경로 MTU 1500)는 원인이 아니다:** UE 쪽(veth)과 gNB 쪽(loopback)의 `rx_turn`이 비슷했다(441 vs 469 µs). 그래서 MTU는 시험하지 않았다.
+- **권장:** 100 MHz 라이브는 `OCUDU_NATIVE_GNB_WRAPPER` / `_BROKER_WRAPPER` / `_NRUE_WRAPPER`로 big 코어를 나눠 준다(`taskset -c 5-9` / `15,16` / `17-19`). 호스트 쪽 해결(LPI-3 끄기 또는 `pm_qos_resume_latency_us`)은 공유 장비 설정이라 관리자 합의가 필요하다.
+
+### 바뀐 것
+
+- `src/broker.cpp` — 진단 노브 세 개. 기본값에서는 동작이 같다. `OCG_BROKER_POLL_US`(대기 poll 간격, 설정하면 스레드 timer slack 1 µs), `OCG_ZMQ_IO_THREADS`, `OCG_HOP_TRACE_DIR`(홉 트레이스 CSV).
+- `scripts/native/run-ocudu-oai-1x1-inner.sh` — `OCUDU_NATIVE_NRUE_WRAPPER`(nrUE 명령 앞에 붙는 래퍼; CPU 고정용).
+- `scripts/native/patches/oai-zmq-rx-poll.patch` — OAI RX 대기 poll 간격 노브(`OAI_ZMQ_RX_POLL_US`). S9 패치 위에 적용.
+- `scripts/cuda/spark/s10-hop-trace.py`, `s10-zmq-split.cpp`, `s10-yieldspin.c` — 위 분석과 마이크로벤치.
+
+## S11 — 해결책을 게이트 기본값으로, 그리고 S8 재측정 (2026-09-28)
+
+**왜:** S9–S10에서 찾은 해결책(패치한 OAI ZMQ 드라이버, big 코어 나눠 고정, CUDA gNB의 MPS)은 전부 환경 변수로 켜야 했다. 하나라도 빠뜨리면 실행은 통과하면서 0.3×·0.72× 고리를 다시 재게 되고, S8 표가 그렇게 만들어졌다. 그래서 (1) 셋을 게이트 기본값으로 만들고, (2) 그 조건에서 S8 표를 다시 재고, (3) S10에 남은 두 질문 — 브로커 코어 수, 라이브가 벤치보다 느린 이유 — 을 풀었다. 트리 Spark `/workspace/gpuch/zc11`(= `cfba087` + Spark 전용 로컬 수정: x86 workspace lock 검사 생략, legacy 게이트 arch 121·gNB 버전 정규식), 빌드 `builds/gpuch-zc11-release`, 실행 스크립트와 원자료 `/workspace/gpuch/s11/`, 전체 표 워크스테이션 `~/ocudu-work/perf-platform/compare-bw-live-s11.md`. 모든 실행에서 시작·종료 시점 `nvidia-smi`에 다른 GPU 프로세스는 없었고, 실행 뒤 남은 MPS 서버도 없었다.
+
+### 1. 게이트 기본값 (`cfba087`)
+
+OAI 1×1 게이트(`run-ocudu-oai-1x1.sh`)가 아래 셋을 기본으로 적용하고, 실행마다 `reports/.../run-params.json`과 `logs/.../gate-defaults.log`(`event=oai_gate_defaults oai_zmq_module=... platform=... gnb_cpus=... mps=...`)에 실제로 쓴 값을 남긴다.
+
+- **OAI ZMQ 모듈:** `scripts/native/build-oai-zmq-patched.py`가 핀 OAI 소스의 `radio/zmq`를 임시 디렉터리로 복사해 `oai-zmq-module.lock.json`에 적힌 패치(`oai-zmq-tx-reply-poll.patch`, sha256 검사)를 적용하고, release 빌드의 `flags.make`·`link.txt` 그대로 컴파일·링크해 `builds/oai-zmq-patched`에 둔다(`manifest.json` 포함). `-ffile-prefix-map`으로 두 번 빌드해도 바이트가 같다(Spark 모듈 sha256 `c7304857…`). 게이트는 실행 전 `--verify`로 lock 해시, **패치 파일 자체의 sha256**, manifest의 패치 목록, 모듈 바이트를 대조하고 하나라도 다르면 실행을 거부한다(패치 파일에 한 줄 덧붙이면 `does not match the lock`, exit 1 확인). `OCUDU_NATIVE_OAI_ZMQ_MODULE=stock`이면 원본 모듈. `oai-zmq-rx-poll.patch`는 고정 뒤 이득이 없어(S10: 2,060 vs 2,077) 기본에 넣지 않았다. 패치 파일 이름은 그대로다.
+- **CPU 배치:** `platform-profile.py`가 호스트를 `platform-profiles.json`과 대조한다(GB10: GPU 이름 `NVIDIA GB10`이고 최고 클럭 코어가 5–9, 15–19). 맞으면 inner 스크립트가 gNB·브로커·nrUE를 `taskset`으로 고정하고, 맞는 프로파일이 없으면(워크스테이션 5090에서 확인) 아무것도 하지 않는다. `OCUDU_NATIVE_PLATFORM=none`으로 끄고, 역할별 `OCUDU_NATIVE_{GNB,BROKER,NRUE}_CPUS`가 프로파일보다 우선한다. 실행 중 샘플한 실제 affinity가 요청과 같았다(`runs/*/affinity.txt`).
+- **MPS:** gNB 바이너리가 CUDA를 링크하면(`ldd`에 `libcudart`/`libcuda`) 게이트가 자신을 `with-cuda-mps.py` 아래에서 다시 실행한다. `OCUDU_NATIVE_MPS=off|on`. 실행 도중 래퍼에 SIGTERM을 보낸 대조에서 gNB·UE·5GC·mongod·브로커가 모두 내려가고 MPS 데몬이 `quit`로 종료됐다(`daemon_quit: true`, 남은 `nvidia-cuda-mps-*` 0).
+- **대역폭 렌더러:** `render-1x1-bw-configs.py`가 20 MHz 외 대역폭에서 nrUE 무선 인자(`nrue-radio.args`)와, 기본 capability에 그 대역폭이 없을 때(50 MHz) `uecap.xml`을 함께 쓰고 게이트가 그것을 읽는다. S10 러너에서 50 MHz attach가 실패한 원인(capability 파일을 넘기지 않음)이 이것으로 없어졌다.
+- 워크스테이션 `oai-2x2` 브랜치의 OAI 1×1 하네스 수정 두 커밋(`0d9edb7` 기준 앵커·버전 정규식·pgid 경쟁·UE 작업 디렉터리, `31ce47b` 브로커 경로)을 이 브랜치로 가져왔다(`02b796d`, `f9c8960`).
+
+### 2. S8 재측정 — 기본값만으로 (게이트 24회 + srsUE 1회, 전부 통과)
+
+UE 노드 기준, 같은 대역폭의 S8 값과 비교(전체 표는 `compare-bw-live-s11.md`):
+
+| MHz | 슬롯/s S8 → S11 (실시간) | starvation S8 → S11 | zero-copy p50/p99 S8 → S11 | copy p50/p99 S8 → S11 | zero-copy emulator 호출 S8 → S11 |
+|---|---|---|---|---|---|
+| 20 | 262–267 → 1,000 (1,000) | 3,370–3,399 → 1 | 40/80 → 35/45 | 60/100–105 → 50/80–85 | 34–36 → 31–32 µs |
+| 30 | 260–263 → 1,000 | 3,347–3,391 → 1 | 40/80 → 35/45–50 | 60–70/110 → 55/70 | 33–34 → 32–33 |
+| 40 | 254–258 → 1,000 | ~3,300 → 1–2 | 40–45/85 → 35/50 | 75/120 → 70/85–100 | 34–37 → 33–34 |
+| 50 | 253–254 → 999–1,000 | ~3,260 → 1 | 45/85 → 40/100–120 | 70–90/130–140 → 75–80/115–160 | 41–42 → 38 |
+| 100 | 339–349 → 1,981–1,999 (2,000) | ~3,000 → 1–3 | 45/85 → 40/130–135 | 90/135–140 → 80/205–210 | 41 → 39–40 |
+| 100, CUDA gNB + MPS | 실시간 미만 → 1,992–1,997 | ~7,000 → 5 | 45/185–195 → 40/130–135 | 90–95/230–235 → 80/205–210 | – → 38–39 |
+
+- **바뀐 것:** 전 대역폭이 실시간이 됐고 starvation이 사라졌다(S8의 수천 건은 느린 고리의 증상이었다). p50은 big 코어 고정으로 약 5 µs 내려갔다. CUDA gNB의 p99는 MPS로 CPU gNB와 같아졌다.
+- **새로 드러난 것:** 100 MHz의 p99가 S8보다 커졌다(zero-copy 85 → 130–135, copy 135–140 → 205–210). 실시간이 되면서 브로커가 초당 호출을 약 6배 처리하는데, S10 배치는 브로커에 코어 2개만 줬기 때문이다 → 아래 3. 50 MHz ue0 p99 100–120도 같은 배치(2코어)에서 잰 값이다.
+- srsUE 20 MHz 회귀(게이트 무변경, 기본 `auto` = zero-copy, 고정 없음): 통과, 969 슬롯/s, starvation 1, p50/p99 40/75.
+
+### 3. 브로커 코어 수 (4a)
+
+**시도:** 100 MHz, zero-copy, big 코어 10개 안에서 브로커에 2·3·4·5코어를 주고 UE 몫을 줄였다(CPU gNB 2회씩, CUDA gNB + MPS 2회씩, 교차).
+
+| 배치 gNB / 브로커 / UE | 슬롯/s ue0 | p99 gnb0 / ue0 (CPU gNB) | p99 (CUDA gNB) |
+|---|---|---|---|
+| A 5–9 / 15,16 / 17–19 (S10) | 1,997–1,999 | 115 / 130–135 | 115 / 130–135 |
+| **B 5–9 / 15–17 / 18,19** | 1,998–1,999 | **65 / 65** | **65 / 65** |
+| C 5–9 / 15–18 / 19 | 1,986 | 70 / 65–70 | 70 / 65 |
+| D 5–9 / 15–19 / 0–4 (UE little) | 1,786–1,796 | 65 / 65 | – |
+
+**어디서 왜:** p50(40 µs)과 emulator 호출 중앙값(37–40 µs), GPU 단계는 A와 B가 같고 꼬리만 달랐다. 그래서 브로커 스레드의 실행 대기를 쟀다(`/proc/<pid>/task/*/schedstat`, 5 s). A에서 워커 스레드 7개가 초당 0.43 코어·초, ZMQ I/O 스레드가 0.09 코어·초를 runqueue에서 기다렸고(문맥 전환당 11.9 µs, ZMQ I/O 4.7 µs), B에서는 0.11·0.02(3.2 µs, 1.2 µs)였다. 브로커가 실제로 쓰는 CPU는 둘 다 약 1.1코어인데, 워커들이 50 µs poll로 자주 깨어나고 ZMQ I/O가 0.5코어를 쓰니 2코어에서는 emulator를 부르는 스레드가 순서를 기다린다.
+
+**결과:** 프로파일을 B로 바꿨다(`87ac35c`). UE는 big 코어 2개가 필요하다. 1개(C)나 little 코어(D)면 실시간 아래로 내려간다. 바꾼 뒤 환경 변수 없이 돌린 확인 실행: CPU gNB 1,999 슬롯/s·p99 65/65, CUDA gNB(MPS 자동) 1,998·65/65.
+
+### 4. 라이브 emulator 호출이 벤치보다 긴 이유 (4b)
+
+**배경:** Z8 라이브에서 H2D 7–8 µs(벤치 3), 커널 23–24 µs(벤치 17)였다. 이제 배치를 통제한 라이브(20 MHz, zero-copy)는 H2D 4.0–4.5, 커널 19.4–20.0, 호출 31–32 µs로 줄었지만 벤치보다 여전히 컸다.
+
+**시도:** 라이브와 벤치가 다른 점 세 가지를 벤치에 측정용 노브로 넣었다(`87ac35c`, 기본 꺼짐): `OCG_BENCH_PACE`(1 ms 간격 호출), `OCG_BENCH_REFRESH`(매 슬롯 CPU가 입력을 새로 씀; 벤치는 같은 버퍼를 계속 재사용), `OCG_BENCH_THREADS`(노드별 스레드 동시 실행). 라이브 실행의 토폴로지 파일 그대로, 브로커 코어 15,16, 10 s × 3회 교차.
+
+| 조건 (zero-copy, gnb0) | H2D | 커널 p50 | 호출 p50 |
+|---|---|---|---|
+| 벤치 기본 | 3.2 | 17.8 | 26.9 |
+| + 1 ms 간격 | 3.2 | 18.1 | 27.3 |
+| + 입력 새로 씀 | 3.2 | **19.4** | 28.5 |
+| + 노드 스레드 동시 | 3.8 | 18.1 | 27.8 |
+| 셋 다 | 3.5 | **20.5** | **30.3** |
+| 라이브(고정) | 4.0–4.5 | 19.4–20.0 | 30.9–31.9 |
+| 셋 다, little 코어 0,1에서 | 5.5 | **22.8–23.3** | 35.5–36.3 |
+
+- **입력을 CPU가 막 썼다는 것(+1.6 µs 커널)**이 가장 크다. GPU가 CPU 캐시에 남은 새 데이터를 읽는 비용으로, S9 3번(방향이 반대인 같은 현상)과 같은 GB10 일관성 비용으로 본다. zero-copy라서 생기는 비용이고 copy 모드 커널에는 없다(copy: 기본 13.4, 셋 다 13.3, 라이브 14.3–15.4는 스레드 동시 실행 14.4로 설명).
+- **little 코어가 예전 격차의 나머지다.** 같은 조건을 little 코어에서 돌리면 커널 23 µs, H2D 5.5 µs로 예전 라이브(Z8 23–24 / 7–8, 오늘 고정 없는 srsUE 게이트 23.7 / 7.6)와 같다. `kernel_us`는 `h2d_done` → `kernel_done` 이벤트 사이인데 그 사이에 CPU가 커널 4–6개를 차례로 올린다(`cuda_backend.cu` 1360–1436). 커널이 짧아 GPU가 다음 실행을 기다리므로 CPU가 느리면 "커널 시간"이 늘어난다. 이 부분은 플랫폼 프로파일로 이미 없어졌다.
+- 1 ms 간격(유휴 뒤 GPU 재기동)은 +0.3 µs로 작다. 200 ms 샘플의 SM 클럭은 모든 조건에서 2,496–2,548 MHz였다.
+- **남은 차이:** 라이브 H2D가 벤치(셋 다)보다 0.5–1 µs 크다. 라이브 브로커에는 ZMQ I/O와 puller 스레드가 같은 코어에 있다. 따로 가르지 않았다.
+- 참고: 브로커와 벤치는 호출 뒤 `last_timings()`를 읽는데 이 값은 프로세서 전체에 하나라서, 노드 스레드가 동시에 돌면 다른 노드의 값을 읽을 수 있다. 두 노드의 값이 비슷해 중앙값 판정에는 영향이 없다고 봤다.
+
+### 남은 것
+
+- 호스트 idle 상태 설정(LPI-3)은 여전히 공유 장비 합의가 필요하다. 지금은 CPU 배치만으로 실시간이다.
+- 50 MHz ue0 p99(100–120 µs)는 2코어 배치에서 잰 값이다. B 배치로 다시 재지 않았다.
+- 워크스테이션에서 패치 모듈을 쓰려면 거기서 `build-oai-zmq-patched.py`를 한 번 돌려야 한다(x86 release 빌드의 플래그를 그대로 쓴다). 워크스테이션에서는 프로파일이 맞지 않아 CPU 배치가 적용되지 않는다(5090 프로파일은 따로 정해야 한다).
+
+- **통합 후 이름 (2026-09-28, `integration-0928`):** S11의 `oai-zmq-module.lock.json`은 `oai-local-patches.lock.json`의 `zmq_module` 항목이 됐고(UE 패치도 같은 파일), 게이트 기본값 코드는 `oai-gate-defaults.sh`로 옮겨 OAI 2×2 게이트도 같이 쓴다. 빌드 manifest 필드가 바뀌었으므로 Spark의 `builds/oai-zmq-patched`는 `build-oai-zmq-patched.py`로 한 번 다시 빌드해야 한다. 자세한 대응표는 `docs/plans/m6-rank2-su-mimo-live.md` §8.8.
+
+## S12 — integration-0928 조합 검증 (2026-09-28)
+
+**왜:** 두 브랜치(`gb10-zero-copy`, `oai-2x2`)를 합친 `integration-0928`이 GB10에서 한 번도 라이브로 돌지 않았다. 특히 OAI 2×2(rank 2)는 워크스테이션 5090의 copy 경로에서만 돌았고, zero-copy·CUDA gNB·넓은 대역과의 조합은 없었다. 트리 Spark `/workspace/gpuch/int0928`(브랜치 `s12-spark`), 빌드 `builds/gpuch-int0928-release`, 원자료 `/workspace/gpuch/s12/runs/`, 표 워크스테이션 `~/ocudu-work/perf-platform/compare-s12.md`. 모든 실행에서 시작·종료 `nvidia-smi`에 다른 GPU 프로세스는 없었다.
+
+**게이트 정리(코드):** Spark 트리에 늘 남기던 미커밋 수정 3개(x86 workspace lock 생략, sm_121, 26.04 배너)를 multi-gNB 게이트의 `OCUDU_NATIVE_SKIP_WORKSPACE_LOCK`·`OCUDU_NATIVE_CUDA_ARCH`로 옮겼다(`30563f3`). 2×2 게이트가 `OAI2X2_BW_MHZ`·`OAI2X2_CUDA_HOST_MEMORY`(1×1 대역폭 렌더러의 `apply_bandwidth`를 공유, 1×1 렌더 결과는 바이트 동일)와 `OCUDU_NATIVE_GNB_ACCELERATION`(CUDA gNB)을 받는다(`48019eb`, `3d53608`). 2×2 요약기의 실시간 비율이 30 kHz 셀에서 20배 틀리던 것을 고쳤다(프레임당 20슬롯).
+
+**1. prepare() 스트림 순서 수정(GB10):** 다른 프로세스에서 1블록 busy 커널을 돌리며 `test_matrix_profile_history`·`test_processing`을 직접 실행했다. 수정 전 빌드(zc9) **10/10 실패**, 수정 후 0/10. 유휴 GPU에서는 둘 다 통과. ctest 12/12와 9단계 시퀀스는 유휴·경쟁 두 조건 모두 통과.
+
+**2. 1×1 회귀:** OAI 1×1, srsUE 1×1 모두 통과(실시간, p50/p99 35/55 µs).
+
+**3. 2×2 rank 2, 20 MHz — 여기서 결함이 드러났다.**
+- **증상:** 첫 실행(패치 UE, OCUDU 기본 12 dB 백오프, zero-copy)에서 attach·PDU·ping은 통과했지만 PDSCH NACK 89%, iperf 0.5 Mb/s, RLF 1회. 워크스테이션의 같은 조건은 118 Mb/s였다.
+- **추적:** (a) 같은 실행의 wire capture에서 y=Hx 통과(오차 8e-10) → 채널은 정상. (b) 24 dB에서는 원본·패치 UE 모두 NACK 0 → 레벨 문제. (c) rank 1(12 dB)도 NACK 69% → 패치한 2레이어 MMSE가 아니라 공통 경로. (d) 같은 gNB에 srsUE는 NACK 0 → gNB는 정상. (e) Spark의 OAI 1×1(12 dB)도 NACK 89%, **워크스테이션의 OAI 1×1도 78%** → aarch64 전용이 아니고, OAI 1×1 게이트는 ping만 봐서 통과로 보였다(S8·S11의 OAI 결과도 같은 상태였다). (f) 백오프 스윕: rank 1 NACK 12 dB 0.69 · 15 dB 0.43 · 18 dB 0.010 · 21 dB 0.007 · 24 dB 0, rank 2도 같은 경계. (g) 계측 UE: 채널 보상 뒤 int16 포화 없음(최대 5–7k), 채널 추정 매끈함, OAI FFT 단독 시험은 입력 61 dB까지 SNR이 오르고 포화 없음, 캡처 최대 샘플 0.30(full scale 대비). 그런데 추출한 RE를 float MRC로 등화해도 64QAM EVM이 0.86–0.91(24 dB는 0.001). (h) gNB는 그대로 두고 **UE의 ZMQ 입력만 −12 dB로 줄이면 NACK 69% → 0, 9.7 → 74.1 Mb/s.**
+- **판정:** OAI UE 수신 체인이 입력 레벨에 따라 망가진다. ZMQ 라디오에는 AGC가 없어서 gNB가 보낸 레벨(약 55 dB 디지털 전력)이 그대로 들어오고, OAI의 목표 레벨 `TARGET_RX_POWER`는 50 dB다. FFT 뒤 어느 단계가 망가지는지는 좁히지 못했다.
+- **조치(로컬 패치):** `oai-zmq-rx-gain.patch`가 ZMQ 라디오에 `zmq.[n].rx_gain_db`(기본 0, 변화 없음)를 더한다. 무선 장비의 RF 수신 이득 역할이다. OAI 1×1·2×2 게이트가 패치 모듈일 때 −12 dB를 기본으로 넘기고 기록한다(`OCUDU_NATIVE_OAI_UE_RX_GAIN_DB`로 변경, 0이면 끔). 점검 스크립트의 `--probe`에 0 dB(NACK 0.89) vs −12 dB(0.0) 대조를 넣었다. 먼저 의심한 aarch64 RX 변환의 비포화 절단은 실제 결함이지만 이번 원인이 아니었다(`oai-zmq-rx-saturate.patch`, 잠재 결함으로 유지).
+- **결과(기본값, unitary H):** copy·zero-copy 2쌍 전부 rank 2 99.9%, NACK 0, 130–132 Mb/s(실시간 0.88–0.89 → air 148 Mb/s), y=Hx 통과. zero-copy가 브로커 p50/p99 70/90 → **50/70 µs**, emulator 호출 68 → 50 µs. 덜 깨끗한 H(reference)도 rank 2 99.9%, NACK 0 — 워크스테이션에서 보던 RI 흔들림(28 dB)은 이 레벨에서는 나오지 않았다.
+- **남은 것:** 20 MHz 2×2도 iperf 중에는 실시간 0.88–0.91이다. UE가 코어 2개(18,19)를 다 쓴다(179%).
+
+**4. CUDA gNB + 2×2(MPS 자동):** `all` 가속에서 NACK 45%, 실시간 0.30, iperf 실패. 가속 단계를 누적으로 나눠 보니 disabled·lower-PHY·PUSCH까지는 CPU gNB와 같고(NACK 0, 132–134 Mb/s), **PDSCH 가속을 켜는 순간** 망가진다: rank 2 NACK 5.5%(87 Mb/s), **rank 1 NACK 45%**. GPU 그리드 매핑(`OCUDU_PDSCH_DISABLE_DEVICE_MAP=1`)을 꺼도 같다. 2포트 셀에서 1레이어를 두 포트에 싣는 경로(precoding)가 의심되지만 확인하지 않았다. 1포트 셀의 CUDA gNB(S7, S11)는 정상이었다. **미해결.**
+
+**5. 넓은 대역 2×2(zero-copy, 100 MHz는 copy도):** 전부 attach, NACK 0, y=Hx 통과. 부하(200M) 중 실시간 비율은 40 MHz 0.47, 50 MHz 0.51, 100 MHz 0.24–0.25(air-time 환산 304 / 234 / 452–474 Mb/s). 50 MHz는 rank 2 비율이 21%로 떨어졌다(원인 미확인). 부하 없이는 40 MHz도 실시간(브로커 1,000–1,036 배치/s). 부하 중 UE는 코어 2개로 179%, 3개로 230%를 쓰고 실시간은 0.52–0.59까지만 오른다. gNB를 코어 3–4개로 줄이면 시작하지 못했다. 즉 넓은 대역 2×2의 실시간은 CPU 예산 문제이고, 플랫폼 프로파일(1×1 기준)을 2×2용으로 다시 나눠야 한다 — 미해결.
+
+**6. 패치 점검(`check-oai-local-patches.sh --probe`, Spark):** 정적 11/11, probe 5/6. 실패 1건은 ZMQ reply-poll의 "패치 후 > 0.9" 기준이었다. 이 probe는 2×2에 200M 부하를 거는데, Spark의 2코어 UE는 패치 후에도 0.89에 머문다(원본 0.29). 기준을 0.7로 낮췄다.
+
+**Spark 상태:** gate 프로세스·MPS·GPU 앱 없음. `iperf3`를 컨테이너에 설치했다(2×2 게이트 필요). 계측 UE 트리 `src/oai-s12dbg`·빌드 `builds/oai-s12dbg`는 남겨 두었다.
+
+## S13 — CUDA gNB PDSCH 결함(D10), 넓은 대역 2×2, 50 MHz rank 2 (2026-09-28)
+
+**왜:** S12에서 세 가지가 미해결로 남았다. (1) CUDA gNB의 PDSCH 가속을 켜면 2포트 셀에서 rank 1 NACK 45%(rank 2 5.5%), (2) 40–100 MHz 2×2가 부하 중 실시간 0.24–0.59, (3) 50 MHz 2×2의 rank 2 비율 21%. 트리 Spark `/workspace/gpuch/int0928`(`integration-0928`), 실행 스크립트·원자료 `/workspace/gpuch/s13/`, 요약 `s13-summary.txt`, 표 워크스테이션 `~/ocudu-work/perf-platform/compare-s13.md`. 모든 실행 시작 시 `nvidia-smi`에 다른 GPU 프로세스가 없었다. CUDA gNB 실행은 모두 게이트 기본 MPS(`mps=on`, MPS 서버 1개)로 돌았다.
+
+### 1. D10 — GPU TB 인코더가 filler 0을 무시했다 (해결)
+
+- **처음 드러난 곳:** 2×2 게이트(20 MHz, unitary H, zero-copy)에 CUDA gNB(PDSCH 가속까지 누적)를 붙이면 rank 1에서 NACK 45%, iperf 1.5 Mb/s.
+- **첫 가설(그리드·매핑 경로)은 틀렸다:** 환경 변수로 경로를 하나씩 끈 6회(rank 1 강제, 8 s iperf)가 전부 NACK 0.450–0.452였다 — direct CUDA-visible 그리드(기본), sidecar 그리드(`OCUDU_PDSCH_DIRECT_DEVICE_GRID=0`, 로그에서 경로 전환 확인), GPU 디바이스 매핑 끔, direct-grid encode 끔, 인코드 캐시 끔, host TB CRC. S12의 "매핑을 꺼도 같다"는 그리드 경로가 바뀌지 않은 실행이었다(로그상 direct 경로 그대로). 매퍼 가드도 코드상 정상이다(PRG 1개·가중치가 모두 같은 실수일 때만 디바이스 경로).
+- **실패의 모양:** gNB 로그에서 HARQ 재전송(rv>0)이 뒤따른 새 전송을 실패로 세면, 실패는 106 PRB 64QAM 할당 중 **TBS 9,474 B(9 CB)에서만** 났다(슬롯 2·3에서 61–75%, 다른 슬롯 0%). 같은 할당의 10,247 B(10 CB)는 전부 성공. 두 TB의 차이는 LDPC filler다: 9,474 B는 C=9, Z=384, K=8448, **F=0**, 10,247 B는 C=10, F=224.
+- **오프라인 재현:** 벤더의 `pdsch_gpu_e2e_test`(CPU·GPU 자원 그리드 비교)는 45개 케이스가 예약 RE(CSI-RS 모양)·PMI 코드북 가중치를 넣어도 전부 통과했다. TBS를 강제로 9,474 B로 주면 **1포트·2포트 모두 불일치**, 10,247 B는 둘 다 일치. 즉 2포트 문제가 아니라 TB 크기 문제이고, 1포트 셀(S7, S11)도 같은 TB가 나오면 틀린다 — 그 게이트들은 ping만 봤다.
+- **원인:** `lib/phy/cuda/src/transport_block.cu`의 `tb_encoder_configure`와 `tb_batch_encoder_configure`는 CPU 세그멘터가 넘긴 모양(BG, Z, C, F)으로 GPU 설정을 덮어쓰는데, `nof_filler_bits > 0`일 때만 F를 덮었다. F=0은 "주어지지 않음"으로 보고 GPU가 스스로 계산한 F를 남겨, K = K' − F가 틀린 채 부호화했다.
+- **수정(D10):** CPU가 모양을 주면(Z > 0) F를 0까지 포함해 그대로 따른다. 두 곳 모두. `scripts/cuda/patches/s-d10-tb-encoder-zero-filler.patch`(d8/d9 위의 D10 단독), 결합 패치 `s-c1-d8-d9-d10.patch`, lock `cuda-workspace.spark-d10.lock.json`(체크아웃 `src/ocudu-cuda-d10`, 빌드 `builds/d10-cuda-patched-sm121`, `resolve-cuda-gnb.py` 감사 통과). 회귀 케이스: `pdsch_gpu_e2e_test`에 강제 TBS 9,474 B(1포트·2포트)와 10,247 B(F>0 대조)를 추가.
+- **음성 대조군:** D10 트리에서 `transport_block.cu`만 d8 것으로 되돌리면 정확히 9,474 B 두 케이스만 실패(46 통과), 되돌린 걸 원복하면 48/48(전체 스위트 60/60).
+- **라이브(20 MHz 2×2, unitary H, zero-copy, 게이트 기본값):**
+
+| 실행 | gNB | rank | NACK | DL (air) | 실시간 |
+|---|---|---|---|---|---|
+| l1 | CUDA d10 | 2 | 0 | 148.22 Mb/s | 0.87 |
+| l2 | CPU | 2 | 0 | 148.16 | 0.86 |
+| l3 | CUDA d10 | 1 | 0 | 74.11 | 1.00 |
+| l4 | CPU | 1 | 0 | 74.11 | 1.00 |
+| l5 | CUDA d10 | 2 | 0 | 148.16 | 0.88 |
+| l6 (대조) | CUDA **d8** | 1 | **0.45** | — | 0.39 |
+
+  CUDA gNB가 CPU gNB와 같아졌다. l1의 meta 후처리는 실행 중에 러너를 고쳐서 깨졌지만 게이트 자체와 요약은 정상이다.
+- **범위:** D10은 PDSCH TB 인코더 결함이다. D8/D9와 같은 WG1 CUDA 코드(`5830c9cb`) 계열이므로 Jetson(`j2c`)과 워크스테이션 C1 빌드에도 같은 결함이 있다. → 2026-09-28 적용 완료: 워크스테이션 C1+D10(`CUDA_MILESTONES.md` D10 절, lock `cuda-workspace.c1-d10.lock.json`), Jetson J2d(`JETSON_MILESTONES.md` J9, lock `cuda-workspace.jetson-d10.lock.json`). 두 곳 모두 수정 전 결함을 재현했다.
+
+### 2. 넓은 대역 2×2 실시간 — 코어 배치로는 안 풀린다 (구조 한계, 미해결)
+
+- **배치 시도(100 MHz, CPU gNB, zero-copy, 200M 15 s):** 기본 프로파일 0.257, UE 큰 코어 6개(gNB 0–6) 0.296, UE 5개 + 브로커 3개 0.316, gNB를 큰 코어 4개로 줄이면 시작 실패(S12와 같음). UE 스레드는 각 15–26%로 포화된 것이 없다. 2×2 프로파일 변형은 이득이 작아 추가하지 않았다.
+- **부하와 무관:** iperf 1M(거의 무부하)에서도 0.58(1×1 100 MHz는 실시간).
+- **홉 분해(브로커 `OCG_HOP_TRACE_DIR`, 포트 0 기준, 메시지 = 61,440샘플 = 0.5 ms, 실시간 = 2,000 msg/s):**
+
+| 구간 (p50, µs) | 부하 | 무부하 |
+|---|---|---|
+| 브로커 produce(채널 처리, 2포트) | 183 / 185 | 182 / 183 |
+| 생산 스레드 깨어남 gNB / UE | 81 / 191 | 80 / 195 |
+| 장치 턴어라운드 rx_turn gNB / UE | 418 / 495 | 410 / 489 |
+| DL / UL 중계 | 493 / 376 | 490 / 371 |
+| 처리율 | 1,111 msg/s | 1,245 msg/s |
+
+  리드(TX pulled − RX served)는 0–1 메시지로 파이프라이닝이 없어, 한 바퀴(중계 + 장치 턴어라운드)가 0.8–0.9 ms 걸린다. 2포트라 메시지 바이트가 1×1의 2배(방향마다 포트 2개 × 491 KB)이고 브로커 produce만 183 µs다. **판정:** CPU 배치 문제가 아니라 lock-step 고리의 직렬 지연이다. 줄일 후보는 브로커 run-ahead(파이프라이닝), 2포트 produce(183 µs) 단축, 장치 턴어라운드 — 모두 구조 변경이라 이번에 하지 않았다. DL actor 8개 시도는 인자 공백 때문에 실행되지 않았다(스레드 비포화라 우선순위 낮음).
+
+### 3. 50 MHz 2×2 rank 2 21% — UE가 부하 중 RI=1을 보고 (원인 미확정 → S14에서 규명)
+
+- S12의 50 MHz 실행을 다시 보면 CSI 보고 3,601건 중 RI=2가 90%인데 스케줄 결정은 rank 2가 21%(1,617/7,815)다. 시간별로 나누면 **무부하 구간 CSI는 전부 RI=2**, iperf 부하 20 s 동안에는 RI=1이 190/264, 122/343이다. 스케줄러는 최신 RI를 그대로 따랐다(모든 슬롯 같은 비율).
+- 100 MHz(n78 TDD 30 kHz, 부하)에서는 rank 2 99.8%, 20 MHz도 99.9% — 50 MHz(n3 FDD 15 kHz, 270 PRB)만이다. gNB 설정은 대역폭 외 차이가 없다(CSI는 OCUDU 기본).
+- **후보(미확인):** 부하 중에만 떨어지므로 PDSCH가 CSI-IM/ZP-CSI-RS 영역과 겹쳐 UE의 간섭 측정이 오르는 경우(270 PRB에서 기본 CSI 자원 대역폭 설정), 또는 OAI UE의 RI 추정. 설정이 INFO 로그에 안 찍혀 이번엔 가르지 못했다. MAC pcap/RRC 덤프로 CSI 자원 대역을 확인하는 것이 다음 단계.
+
+**Spark 상태:** 게이트 프로세스·MPS·GPU 앱 없음, 이 트랙의 tmux 세션 모두 종료. 새 체크아웃 `src/ocudu-cuda-d10`·빌드 `builds/d10-cuda-patched-sm121`. d8 빌드의 `pdsch_gpu_e2e_test` 바이너리는 진단 중 환경 변수 노브를 넣어 다시 빌드한 것이다(소스는 원복, lock 감사 대상인 gNB 바이너리·소스 diff는 그대로).
+
+## S14 — 50 MHz 2×2 rank 2 비율의 원인 (2026-09-28)
+
+**배경.** S12·S13에서 50 MHz(n3 FDD, 15 kHz, 270 PRB) OAI 2×2만 부하 중 rank 2가 21%였다. 20 MHz와 100 MHz는 99.8% 이상이다. S13은 이것을 "부하 중 UE가 RI=1을 보고"까지 좁혔고, 후보로 PDSCH와 CSI-IM/ZP-CSI-RS의 겹침(간섭 측정 상승) 또는 OAI UE의 RI 추정을 남겼다. 이번 트랙은 그 둘을 가르고 고치는 것이다. 모든 실행은 `integration-0928` Spark 트리(`/workspace/gpuch/int0928`, `c786ad8` 기준), 게이트 기본값(패치 ZMQ 모듈, 로컬 UE, big 코어 배치), unitary H, zero-copy, CPU gNB다. 실행마다 다른 GPU 프로세스는 없었다(`s14/runs/*/meta.txt`).
+
+**1. 재현과 조건 좁히기 (gNB 로그만으로).**
+
+| 조건 (50 MHz) | 부하 중 CSI 보고(ACK와 다중화된 PUCCH F2) RI=2 / 전체 | 스케줄 rank 2 비율 |
+|---|---|---|
+| iperf 200M (2회) | 74 / 369, 73 / 368 | 0.20 |
+| iperf 120M | 74 / 369 | 0.20 |
+| iperf 60M | 460 / 460 | 1.00 |
+| iperf 20M | 525 / 525 | 1.00 |
+| 200M + UE 코어 7개 (2회) | 74 / 370, 72 / 364 | 0.20 |
+| 200M + MCS 상한 20 | 73 / 365 | 0.20 |
+| 200M + gNB 백오프 24 dB | 25 / 394 | 0.07 |
+| 200M + UE RX gain −24 / −6 dB | 25 / 389 · 93 / 355 | 0.07 · 0.27 |
+
+- RI=1은 부하 구간의 보고에서만 나온다(부하 중 보고는 전부 HARQ-ACK와 다중화된 F2, 무부하 보고는 CSI 단독 F2로 전부 RI=2). 같은 다중화 보고가 20·100 MHz에서는 RI=2라서 다중화·PUCCH 복호 문제는 아니다.
+- 60M 이하에서는 PDSCH가 42–84 RB로 부분 대역이고, 120M 이상에서는 CSI-RS 슬롯(짝수 프레임 슬롯 2)에도 270 RB 전 대역이다. **전 대역 PDSCH가 있는 CSI-RS 슬롯의 측정만** 망가진다.
+- UE 코어 수와 MCS는 영향이 없어 UE CPU 부족이나 TB 크기는 아니다. 레벨을 낮추면 더 나빠지고 올리면 조금 나아진다(나중에 보니 스택 잔여값의 크기에 따른 부수 효과).
+
+**2. gNB 송신은 깨끗하다 (wire capture).** 부하 중 40 ms를 브로커에서 캡처(`c50-load`, skip 10 s)해 워크스테이션에서 OFDM 격자로 풀었다(`ofdm.py`).
+- CSI-RS(슬롯 2, 심볼 4, RB당 2 RE, 540 RE)의 두 포트는 fd-CDM2 관계(포트1 = 포트0 · [+1, −1])를 **오차 1.5e−4**로 지킨다. PDSCH가 CSI-RS RE를 침범하지 않는다(레이트 매칭 정상). 처음 본 "오염"은 내 FFT 창이 한 심볼 어긋난 분석 착오였고, 창을 CP 안으로 맞추자 사라졌다.
+- 같은 캡처로 y=Hx를 확인하면 DL 두 행 모두 최대 오차 1.3e−7이다. **UE 입력은 정확히 Hx**이고 잡음도 없다. 그러므로 원인은 UE 안이다.
+
+**3. UE 안에서 찾기 (계측 UE).** 로컬 UE 패치 위에 계측만 더한 `src/oai-s14dbg`(빌드 `builds/oai-s14dbg`)를 `OAI2X2_NRUE_DIR`로 붙였다. RI 추정(`nr_csi_rs_ri_estimation`)에서 RB 구간별 조건수 투표, 조건수 분포, 세 RB의 추정 채널과 det/numer를 찍었다.
+- 무부하: 조건수 3,240 RE 전부 0–4 dB, count +3,240 → RI=2. 부하(전 대역 PDSCH): 5–15 dB 이상이 대부분, count −1,400 ~ −2,700 → RI=1. 망가짐이 RB 구간에 고르게 퍼져 있다(국소적 충돌이 아님).
+- 결정적 증거: **추정 채널 H는 무부하와 부하가 같다**(예: h00 ≈ (1672,164)/(1680,104), h01 ≈ (−652,−448)/(−672,−424)). 그런데 같은 H에서 계산한 det/numer가 무부하 2,818,929 / 2,819,155(조건수 0 dB)에서 부하 7,213,069 / 33,658,662, 250,142,562 / 567,637,577로 제멋대로다. 무부하에서도 호출마다 값이 4배로 늘었다(2.8e6 → 11.3e6) — 누적이다.
+- **원인:** `csi_rs_estimated_A_MF`(HᴴH를 담는 스택 VLA)를 0으로 초기화하지 않고, `nr_a_sum_b()`가 그 위에 `x += y`로 더한다(`openair1/PHY/NR_UE_TRANSPORT/csi_rx.c`, 핀 `2b69bde6`의 `nr_csi_rs_ri_estimation`). 시작값이 같은 스레드에서 직전에 돈 처리(부하 중에는 PDSCH 처리)의 스택 잔여값이라, 전 대역 PDSCH가 있으면 조건수가 무작위가 된다. 20 MHz도 부하 중 조건수 분포가 절반쯤 흐려져 있었지만(705/1,272 RE만 0–4 dB) 과반을 넘겨 RI=2였고, 100 MHz도 우연히 넘는다 — 대역폭별 차이는 스택 배치의 우연이다.
+
+**4. 수정과 확인.** `scripts/native/patches/oai-csi-ri-amf-init.patch`(sha256 `ade6931e…`): 누적 전에 `memset(csi_rs_estimated_A_MF, 0, sizeof(...))` 한 줄. `oai-local-patches.lock.json`의 UE 패치 목록에 추가해 `build-oai-ue-local.sh`가 MMSE 패치와 함께 적용한다(Spark `builds/oai-zmq-local` 재빌드, nr-uesoftmodem `d390f09b…`). 이전 UE(`58f68c88…`, MMSE 패치만)는 A 쪽 대조로 `builds/oai-zmq-local-s13`에 복사해 두었다.
+
+| 실행 (50 MHz, 200M, 12 dB) | UE | rank 2 비율 | 부하 중 CSI RI=2 | NACK | DL air | 실시간 |
+|---|---|---|---|---|---|---|
+| ab-prev-1 | 이전 | 0.207 | 75 / 372 | 0 | 234.2 Mb/s | 0.48 |
+| ab-new-1 | 패치 | **0.998** | 276 / 276 | 0 | **360.0** | 0.39 |
+| ab-prev-2 | 이전 | 0.207 | 75 / 371 | 0 | 234.3 | 0.48 |
+| ab-new-2 | 패치 | **0.998** | 276 / 276 | 0 | **359.2** | 0.39 |
+| new-20 (20 MHz) | 패치 | 0.999 | 656 / 656 | 0 | 148.1 | 0.85 |
+| new-100 (100 MHz) | 패치 | 0.998 | 155 / 170 | 0 | 435.5 | 0.26 |
+| stock-bo24 (24 dB) | stock | 0.069 | — | 0.001 | 204.9 | 0.52 |
+| new-bo24 (24 dB) | 패치 | 0.998 | — | 0.006 | 352.9 | 0.38 |
+
+- 50 MHz 실시간 비율이 0.48 → 0.39로 내려간 것은 rank 2로 UE 복호 부하가 늘어서다(S13의 구조 한계와 같은 원인, 이 패치와 무관).
+- 실시간 여부와의 관계: 원인이 스택 잔여값이라 실시간 여부와 무관하다. 부하가 낮으면(60M 이하) CSI-RS 슬롯의 PDSCH가 부분 대역이라 잔여값이 달라 드러나지 않았을 뿐이다.
+- **반복 점검:** `check-oai-local-patches.sh` 정적 점검 15/15 통과(새 패치의 sha256·핀 적용·로컬 UE manifest 포함). `--probe`에 "CSI RI init" 항목을 추가했다: 50 MHz, 24 dB, 200M에서 stock UE는 rank 2 비율 < 0.50(실측 0.069), 로컬 UE는 > 0.90(실측 0.998)이어야 한다. 이번에 probe 전체는 돌리지 않았고, 두 문턱은 위 stock-bo24·new-bo24 실행으로 확인했다.
+- **다른 장비 주의:** lock의 UE 패치 목록이 바뀌어 워크스테이션·Jetson의 `builds/oai-zmq-local`은 manifest가 맞지 않는다. 게이트가 로컬 UE를 거부하므로 각 장비에서 `build-oai-ue-local.sh`를 한 번 다시 돌려야 한다.
+
+**Spark 상태:** 게이트 프로세스·MPS·GPU 앱 없음, 이 트랙의 tmux 세션 종료. 남긴 것: 계측 트리 `src/oai-s14dbg`·빌드 `builds/oai-s14dbg`, A 대조 `builds/oai-zmq-local-s13`, 실행 스크립트와 원자료 `/workspace/gpuch/s14/`. 표는 `~/ocudu-work/perf-platform/compare-s14.md`(git 밖), 캡처 분석 스크립트는 워크스테이션 scratchpad.
+
+## S15 — 브로커 코드만으로 lock-step 한 바퀴 줄이기 (2026-09-29)
+
+**하려던 것:** S10·S13에서 넓은 대역 2×2가 실시간에 못 미치는 것은 gNB → 브로커 → UE → 브로커 → gNB 고리가 메시지마다 한 바퀴를 통째로 기다리기 때문이라고 판정했다. 사용자 결정은 **우리 코드(브로커·에뮬레이터)만** 고치는 것이다. OAI·OCUDU ZMQ 드라이버, gNB·UE 설정, 호스트 idle·sysctl은 건드리지 않았다. 브랜치 `broker-round`(worktree `~/ocudu-work/ocudu-broker-round`, `integration-0928` `9c7f1d7`에서 분기), Spark 트리 `/workspace/gpuch/br15`, 빌드 `builds/gpuch-br15-release`. 모든 라이브 실행은 OAI 2×2 게이트(unitary H, zero-copy, CPU gNB, 게이트 기본값)이고, 실행마다 다른 GPU 프로세스가 없음을 기록했다(전부 없음).
+
+### 1. 한 바퀴가 어디에 쓰이나 — 먼저 잰 것
+
+기존 `s10-hop-trace.py`는 2포트 id(`gnb0_p0`)를 읽지 못해서 `scripts/cuda/spark/s15-critical-path.py`를 새로 썼다. 단계마다 누적 샘플 수로 같은 샘플 경계를 맞추고, 방향마다 브로커 단계와 장치 몫을 나눈다. 장치가 RX 요청을 늦게 보낸 시간(`wait_req`)은 장치 몫이다. 창(`[skip, until]`)을 받아 iperf 부하 구간만 따로 볼 수 있고, gNB TX → UE RX → UE TX → gNB RX → gNB TX 의존 사슬을 거꾸로 따라가 한 바퀴를 나눈다.
+
+100 MHz 2×2 무부하, 기준 브로커(방향당 p50, µs):
+
+| 단계 | DL | UL | 내용 |
+|---|---|---|---|
+| in_ring | 8 | 9 | 수신 메시지 → TX ring |
+| wake_prod | 40 | 45 | 입력 도착 → producer가 깨어남(50 µs sleep poll + timer slack) |
+| produce | 182 | 182 | ring → 입력 창 복사 55–68 + 채널 호출 93(커널 38) + RX ring push 20 |
+| wake_rep | 34 | 41 | 행 준비 → REP 워커가 깨어남 |
+| send | 10 | 10 | `zmq_send`(491 KB 복사) |
+| **브로커 몫** | **310** | **315** | |
+| 장치 turnaround | gNB 446 | UE 455 | RX 응답 송신 → 그 장치의 다음 TX 도착 |
+
+- 한 바퀴는 메시지 2개를 전진한다(lead 1, 사슬 `advance` p50 2). 그래서 브로커 몫이 한 바퀴에 두 번 들어간다. 기준 루프는 메시지당 914 µs(평균)였다.
+- 채널 호출 93 µs 중 커널은 38 µs다. 나머지 대부분은 **2행 노드의 출력이 `device_output`을 거쳐 호출자 행으로 CPU 복사**되는 부분이다. Z8의 direct 출력은 1행 노드에만 적용됐다(`sp.rows == 1`). 커널이 행이 연속이라고 가정(`out_dev + r * count`)했기 때문이다.
+
+### 2. 바꾼 것 — 하나씩 A/B (100 MHz 2×2 무부하 1M, 게이트 `rt_factor`)
+
+| 변경 | 노브 | rt (실행별) | 브로커 몫 p50 (DL/UL µs) | 판정 |
+|---|---|---|---|---|
+| 기준 | — | 0.563, 0.570, 0.571, 0.569 | 310 / 315 | — |
+| **spin 대기** — 워커가 sleep 대신 소켓을 non-blocking으로 폴링하고 `sched_yield` | `OCG_BROKER_SPIN=1` | 0.599, 0.605 | 254 / 255 | 채택(프로파일) |
+| **복사 줄이기** — puller는 ZMQ 메시지에서 바로 ring으로, producer는 TX ring을 제자리에서 읽고, REP는 RX ring에서 바로 송신 | `OCG_BROKER_FEWER_COPIES` | 아래와 함께 0.620, 0.616 | 209 / 214 | 채택(기본) |
+| **행을 RX ring에 직접** — 채널이 RX ring 꼬리에 바로 씀 | `OCG_BROKER_DIRECT_ROWS` | (위와 함께) | | 채택(기본) |
+| spin + 두 복사 변경 | | 0.641, 0.652, 0.623, 0.644 | 136–206 / 139–241 | |
+| **다중 행 direct 출력** — 커널이 행 포인터 표로 호출자 행에 직접 씀 | `OCG_ZC_MULTIROW_DIRECT` | 0.680, 0.665 | 140–204 / 115–117 | 채택(기본) |
+| + spin 예산 50 µs | `OCG_BROKER_SPIN_US=50` | 0.638, 0.644 | 176–179 / 183–184 | 기각 |
+| + ZMQ I/O 스레드 2 | `OCG_ZMQ_IO_THREADS=2` | 0.683, 0.667, 0.670, 0.686 | 117–131 / 115–148 | 기각(잡음 수준) |
+| 소켓은 block, 내부 대기만 spin | `OCG_BROKER_SPIN=2` | 0.666, 0.659 | 121–130 / 150–156 | 기각 |
+| **최종 기본값**(코드 기본 + 프로파일 spin) | 없음 | **0.673, 0.680, 0.679** | 116–205 / 116–127 | |
+
+- 다중 행 direct 출력으로 채널 호출 p50이 95 → 50 µs가 됐다(커널 35, 메타 H2D 4).
+- **spin의 대가:** 브로커의 고정 코어 3개(15–17)를 100% 쓴다. 그래서 코드 기본값으로 두지 않고 `platform-profiles.json`의 `spark-gb10`에 `broker_env: {OCG_BROKER_SPIN: "1"}`로 넣었다. `platform-profile.py`가 `OCUDU_NATIVE_BROKER_ENV`로 내보내고, OAI 1x1·2x2 게이트가 브로커 앞에 붙이며 `gate-defaults.log`·`run-params`에 기록한다. `OCUDU_NATIVE_BROKER_ENV=`(빈 값)로 끈다. Jetson은 재지 않았으므로 넣지 않았다.
+- **spin이 전부는 아니다:** 워커 10개 + ZMQ I/O 스레드가 코어 3개를 나눠 써서, 한쪽 방향의 REP 깨어남·송신 꼬리가 p90 약 220 µs까지 갔다(실행마다 방향이 바뀜). spin 예산과 모드 2는 이 경쟁을 줄이려 했지만 sleep·block으로 돌아가는 지연이 더 컸다.
+- 남은 브로커 몫(최종, 방향당 p50 약 120 µs): in_ring 12, produce 49(채널 호출 46), REP 깨어남 24, 송신 23. 송신이 10 → 23 µs로 는 것은 GPU가 쓴 메모리를 CPU가 처음 읽는 일관성 비용(S9)이 push에서 `zmq_send` 복사로 옮겨 왔기 때문이다.
+
+### 3. 브로커만으로 어디까지 가나 — 바닥
+
+| 조건 | 루프(메시지당 평균) | 브로커 몫(메시지당) | 장치 몫 | 브로커 몫이 0이면 |
+|---|---|---|---|---|
+| 100 MHz 무부하, 기준 | 914 µs | 약 313 | 약 600 | — |
+| 100 MHz 무부하, 최종 | 737 µs | 약 133 | 약 604 | 약 0.83배 |
+| 100 MHz 부하 200M | 약 2,100 µs | 약 130–150 | 약 1,950 | 약 0.25배 |
+
+- **부하 중에는 장치가 한 바퀴를 정한다.** iperf 구간(12–24 s)만 보면 UE turnaround 평균 1.7–1.8 ms(p90 4.4–4.8 ms), gNB 1.05–1.1 ms이고, UE의 RX 요청이 행 준비보다 평균 724 µs 늦다. 브로커 produce를 190 → 95 µs로 줄이고 깨어남을 없애도 초당 실시간 비율은 0.24–0.26 그대로였다(기준·최종 모두). 이 구간은 브로커 코드로 줄일 수 없다.
+- **조각 단위 처리는 드라이버를 바꾸지 않고는 불가능하다.** 장치는 포트마다 TX를 0.5 ms = 61,440샘플짜리 ZMQ 메시지 하나로 보낸다(홉 추적에서 메시지의 99.9%가 정확히 61,440). ZMQ는 메시지를 통째로만 넘기므로 브로커가 더 일찍 시작할 수 없다. REP 응답은 요청 하나에 메시지 하나라서, 응답을 쪼개려면 장치가 RX 요청을 더 보내야 한다.
+
+### 4. 대역폭별 결과 (최종 기본값, 기준은 노브를 모두 끈 같은 바이너리)
+
+| 조건 | 기준 | 최종 | 비고 |
+|---|---|---|---|
+| 2×2 100 MHz 무부하 | 0.563–0.571 | 0.673–0.680 | NACK 0 |
+| 2×2 100 MHz 부하 200M | 0.242–0.258 | 0.259(최종), 0.277–0.279(다중 행 direct 전 노브) | 장치 한계 |
+| 2×2 50 MHz 무부하 | 0.866 | **0.996, 0.996** | 실시간 도달 |
+| 2×2 50 MHz 부하 | 0.363 | 0.372 | |
+| 2×2 20 MHz | — | 무부하 1.000, 부하 0.894 | S12와 같음 |
+| 1x1 100 MHz(OAI) | 1,984 슬롯/s | 2,001 슬롯/s | 둘 다 실시간, NACK 0 |
+
+### 5. 정확성
+
+- **출력 bit 동일:** 새 broker 테스트는 2포트 gNB·UE 노드를 고정 2×2로 잇고 포트마다 다른 램프를 lock-step으로 흘려, 노브를 끈 실행과 켠 실행의 RX 스트림을 비교한다. 4포트 2,460만–2,620만 샘플 bit 동일. **음성 대조군:** REP의 ring view를 한 샘플 밀면 `port 0 sample 0 differs`로 실패한다. 새 processing 테스트는 2행 노드를 copy·zero-copy·다중 행 direct에서 bit 단위로 비교한다. **GB10 음성 대조군:** direct 행 포인터를 뒤바꾸면 실패(rc 1), 원복하면 통과.
+- **ring 테스트:** `view()`/`reserve()`/`commit()`과, ring을 비울 때 꼬리 위치를 유지하는 것을 검사한다(예전 `discard_before`는 비울 때 `start_`를 0으로 돌려, 예약된 꼬리가 움직일 수 있었다).
+- ctest: 워크스테이션 5090 12/12(노브 각각·전부 켠 상태 포함), GB10 12/12 무부하 3회, GPU 경쟁(`busy`) 중 10/10. 9단계 시퀀스: GB10 무부하 통과, 경쟁 중 + `OCG_BROKER_SPIN=1` 통과.
+- **라이브 y=Hx**(워크스테이션 host python, UE 2번 TX 포트는 M6.4와 같이 선언된 무송신): 100 MHz DL 최대 오차 4.6e-8·2.4e-8, UL 2.0e-10·7.7e-11. 20 MHz도 통과. 모든 2×2 실행 NACK 0 또는 0.0006–0.0013(몇 실행).
+- 회귀: OAI 1x1 20 MHz 기본값 3/3·노브 끔 3/3·spin만 끔 1/1 통과(NACK 0), 100 MHz 둘 다 통과. srsUE legacy 1x1 통과(starvation 1).
+
+### 6. 무엇이 터졌고 왜
+
+- **분석기가 너무 느렸다.** 첫 버전은 단계마다 시간 목록을 다시 만들어 O(n²)라 10분을 넘겼다. 캐시해서 4초가 됐다.
+- **다중 행 direct의 첫 수정이 제한을 새로 만들었다.** 행 포인터 표 크기(16)를 넘는 노드를 direct가 아닐 때도 거부했다. 연속 행(`base + r * count`)을 기본으로 두고 direct일 때만 표를 쓰게 고쳤다.
+- **batch 2 시작이 워크스테이션에서 실행됐다.** ssh 인용이 깨져 heredoc 본문이 로컬에서 돌았다. `run.sh`가 없어 아무 실행도 되지 않았고, 워크스테이션 `ocudu-integration`에 빈 `hop/` 디렉터리만 생겨 지웠다. 이후에는 스크립트를 로컬에서 쓰고 복사했다.
+- **Spark 빌드 디렉터리가 root 소유**(게이트가 만듦)라 dev로는 빌드가 안 됐다. 컨테이너 root로 빌드했다.
+- **batch 4에서 게이트 5개가 시작하지 못했다.** 50 MHz 무부하 실행의 teardown에서 open5gs `5gc`가 abort(core dump)하고, 자식 `open5gs-scpd`가 남아 게이트의 `flock` fd를 물고 있었다. 이후 게이트는 전부 `another native OAI gate is running`으로 거부됐다. 남은 프로세스를 끄고 나머지를 batch 4b로 다시 돌렸고, 실행 전마다 우리 컨테이너의 남은 코어망·gNB·UE 프로세스를 기록하고 끄는 점검을 넣었다. **게이트 teardown 누수 자체는 고치지 않았다**(범위 밖, 기록만).
+- **OAI 1x1 20 MHz가 한 번 실패했다**(`ue_stack_blocker_no_attach`: RRC 연결, Registration Request 4회, AMF 도착은 25 s 실행의 21 s째). 바로 이어서 기본값·노브 끔을 3회씩 번갈아 돌렸고 모두 통과했다. 재현되지 않아 원인은 모른다.
+
+### 7. 커밋 (`broker-round`, push 안 함)
+
+| 커밋 | 내용 |
+|---|---|
+| `2757db1` | 노브 3개(spin, 복사 줄이기, RX ring 직접 행), `IqRing::view/reserve/commit`, ring·relay parity 테스트, `s15-critical-path.py` |
+| `9e49bb2` | 다중 행 direct 출력(`OutputRowTable`), 2행 parity 테스트 |
+| `f2085e0` | spin 예산, 분석 창, `s15-summary.sh` |
+| `0725977` | spin 모드 2, 의존 사슬 분석 |
+| `70a9a99` | 기본값: 제자리 relay·직접 행·다중 행 direct 켬, GB10 프로파일 `broker_env`(spin), 게이트가 브로커 env를 넘기고 기록 |
+
+**남은 것:** 부하 중 한 바퀴의 대부분은 OAI UE(2레이어 100 MHz 복호)와 gNB 몫이라, 브로커만으로는 무부하 약 0.83배·부하 약 0.25배가 바닥이다. 남은 브로커 몫 약 120 µs/방향 중 REP 깨어남 24 µs는 코어 3개에서 스레드가 경쟁해서 생긴다(워커 구조를 바꿔야 함). 송신 23 µs는 일관성 비용이다(`zmq_msg_init_data`로 복사를 없애도 커널 TCP 복사가 같은 비용을 낸다). 게이트 teardown의 open5gs 누수와 1회성 1x1 실패는 기록만 했다. 표 전체는 `~/ocudu-work/perf-platform/compare-s15.md`(git 밖), 원자료는 Spark `/workspace/gpuch/s15/`(홉 추적 `hop/`는 gzip).
