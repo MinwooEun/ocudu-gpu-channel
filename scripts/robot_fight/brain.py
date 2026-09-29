@@ -120,12 +120,162 @@ def pusher(state: protocol.State, params: dict, rng: random.Random) -> tuple[flo
     return diff_drive(v, w)
 
 
+REACTIVE_PARAMS = {
+    "v_max": 1.7,
+    "k_heading": 6.0,
+    "w_max": 8.0,
+    "lead_s": 0.12,          # aim at where the opponent will be this far ahead (uses its velocity)
+    "flank_m": 0.55,         # waypoint beside the opponent, perpendicular to its heading
+    "side_deg": 60.0,        # I "have its side" when the opponent's heading is this far off the line to me
+    "contact_m": 0.48,
+    "push_out_m": 0.6,       # when pushing, aim through the opponent this far toward the edge
+    "head_on_s": 0.35,       # head-on shove lasting this long -> disengage and re-flank
+    "disengage_s": 0.4,
+    "edge_margin_m": 0.6,    # being pushed with the edge this close -> escape along the edge
+    "escape_s": 0.45,
+    "dodge_dist_m": 0.9,     # opponent charging at me from within this distance ...
+    "dodge_align_deg": 30.0, # ... aimed within this angle of me ...
+    "dodge_closing_mps": 0.8,  # ... and closing this fast -> side-step
+    "dodge_s": 0.30,
+    "brake_mps2": 6.0,       # assumed braking deceleration for the edge guard (friction allows ~10)
+    "brake_margin_m": 0.10,  # reaction allowance on top of the stopping distance
+    "noise_rad": 0.02,
+}
+
+
+def reactive(state: protocol.State, params: dict, rng: random.Random) -> tuple[float, float]:
+    """Time-critical sumo: get the opponent's side, push it outward, escape
+    when pushed. Equal bots shoving head-on stall, so the fight is decided by
+    who reaches the other's side first and who notices being pushed toward
+    the edge first -- both are reaction-time contests, so stale state costs.
+
+    Rules, in priority order:
+    1. *escape* -- opponent in contact, closing on me, and the edge within
+       ``edge_margin_m``: break out tangentially (biased inward) for
+       ``escape_s``. Late = pushed farther before turning.
+    2. *disengage* -- head-on contact for longer than ``head_on_s``: reverse
+       and switch flank. A slow controller sits in the shove longer.
+    3. *push* -- I have its side (its heading >= ``side_deg`` off the line to
+       me): drive through the opponent's predicted position toward the edge.
+    4. *flank* -- otherwise drive to a point beside the opponent's predicted
+       position and come in from the side.
+    Attack targets use the opponent's velocity times ``lead_s``: with old
+    state the lead points where the opponent was."""
+    mem = params.setdefault("_mem", {"mode": None, "mode_until": 0.0, "mode_dx": 0.0, "mode_dy": 0.0,
+                                     "side": None, "head_on_since": None, "disengage_turn": 1.0,
+                                     "escapes": 0, "disengages": 0, "pushes": 0, "dodges": 0, "brakes": 0})
+    t = state.sim_time_s
+    ox, oy = state.opp_x, state.opp_y
+    rx, ry = ox - state.x, oy - state.y                     # me -> opponent
+    dist_opp = math.hypot(rx, ry)
+    ux, uy = (rx / dist_opp, ry / dist_opp) if dist_opp > 1e-6 else (1.0, 0.0)
+    hx, hy = math.cos(state.opp_yaw), math.sin(state.opp_yaw)  # opponent heading
+    nx, ny = -hy, hx                                            # opponent's left
+    my_rad = math.hypot(state.x, state.y)
+    radx, rady = (state.x / my_rad, state.y / my_rad) if my_rad > 1e-6 else (1.0, 0.0)
+    opp_rad = math.hypot(ox, oy)
+    oradx, orady = (ox / opp_rad, oy / opp_rad) if opp_rad > 1e-6 else (1.0, 0.0)
+    closing = -(state.opp_vx * ux + state.opp_vy * uy) + (state.vx * ux + state.vy * uy)
+    if mem["side"] is None:
+        mem["side"] = 1.0 if (nx * -rx + ny * -ry) >= 0 else -1.0
+
+    def steer_to(tx: float, ty: float, v_scale: float = 1.0) -> tuple[float, float]:
+        heading_err = wrap_angle(math.atan2(ty - state.y, tx - state.x) - state.yaw)
+        if params["noise_rad"] > 0:
+            heading_err += rng.gauss(0.0, params["noise_rad"])
+        w = max(-params["w_max"], min(params["w_max"], params["k_heading"] * heading_err))
+        v = v_scale * params["v_max"] * max(0.0, math.cos(heading_err))
+        return diff_drive(v, w)
+
+    def steer_heading(dx: float, dy: float) -> tuple[float, float]:
+        return steer_to(state.x + dx, state.y + dy)
+
+    # --- a reflex already running ------------------------------------------
+    if mem["mode"] is not None:
+        if t < mem["mode_until"]:
+            if mem["mode"] == "disengage":
+                return diff_drive(-0.7 * params["v_max"], mem["disengage_turn"] * 0.6 * params["w_max"])
+            return steer_heading(mem["mode_dx"], mem["mode_dy"])
+        if mem["mode"] == "disengage":
+            mem["side"] = -mem["side"]
+        mem["mode"] = None
+        mem["head_on_since"] = None
+
+    in_contact = dist_opp < params["contact_m"]
+    # angle between the opponent's heading and the line from it to me: 0 = it faces me
+    cos_off = (hx * -ux + hy * -uy)
+    off_deg = math.degrees(math.acos(max(-1.0, min(1.0, cos_off))))
+    # angle between my heading and the line to the opponent: 0 = I face it
+    cos_mine = math.cos(state.yaw) * ux + math.sin(state.yaw) * uy
+    mine_deg = math.degrees(math.acos(max(-1.0, min(1.0, cos_mine))))
+
+    # 1. escape: being pushed toward the edge
+    if in_contact and closing > 0.25 and state.dist_to_edge_m < params["edge_margin_m"] and off_deg < 70:
+        tx_, ty_ = -rady, radx
+        if (tx_ * rx + ty_ * ry) > 0:
+            tx_, ty_ = -tx_, -ty_
+        dx, dy = tx_ * 0.8 - radx * 0.6, ty_ * 0.8 - rady * 0.6
+        mem.update(mode="escape", mode_until=t + params["escape_s"], mode_dx=dx, mode_dy=dy)
+        mem["escapes"] += 1
+        return steer_heading(dx, dy)
+
+    # 1b. edge guard with a real stopping distance: heading outward at speed with
+    # less than (v^2 / 2a + margin) of ring left -> brake hard and turn inward.
+    # A late brain sees the edge later and travels its delay x speed farther.
+    speed = math.hypot(state.vx, state.vy)
+    outward = math.cos(state.yaw) * radx + math.sin(state.yaw) * rady if my_rad > 1e-3 else 0.0
+    if outward > 0.5 and speed > 0.3 and not (in_contact and closing > 0.25):
+        stop_m = speed * speed / (2.0 * params["brake_mps2"]) + params["brake_margin_m"]
+        if state.dist_to_edge_m < stop_m:
+            mem["brakes"] += 1
+            turn = 1.0 if (-radx * -math.sin(state.yaw) + -rady * math.cos(state.yaw)) >= 0 else -1.0
+            return diff_drive(-params["v_max"], turn * 0.5 * params["w_max"])
+
+    # 1c. dodge: opponent charging straight at me -> side-step so it drives past
+    opp_speed = math.hypot(state.opp_vx, state.opp_vy)
+    if (not in_contact and dist_opp < params["dodge_dist_m"] and opp_speed > 0.2
+            and closing > params["dodge_closing_mps"] and off_deg < params["dodge_align_deg"]):
+        sx, sy = nx, ny
+        if (sx * radx + sy * rady) > 0:
+            sx, sy = -sx, -sy
+        mem.update(mode="dodge", mode_until=t + params["dodge_s"], mode_dx=sx, mode_dy=sy)
+        mem["dodges"] += 1
+        return steer_heading(sx, sy)
+
+    # 2. head-on shove -> disengage
+    head_on = in_contact and off_deg < params["side_deg"] and mine_deg < 60
+    if head_on:
+        if mem["head_on_since"] is None:
+            mem["head_on_since"] = t
+        elif t - mem["head_on_since"] > params["head_on_s"]:
+            mem.update(mode="disengage", mode_until=t + params["disengage_s"],
+                       disengage_turn=rng.choice((-1.0, 1.0)) if params["noise_rad"] > 0 else 1.0)
+            mem["head_on_since"] = None
+            mem["disengages"] += 1
+            return diff_drive(-0.7 * params["v_max"], mem["disengage_turn"] * 0.6 * params["w_max"])
+    else:
+        mem["head_on_since"] = None
+
+    px, py = ox + state.opp_vx * params["lead_s"], oy + state.opp_vy * params["lead_s"]
+    # 3. push: I have its side -> drive through it toward the edge
+    if off_deg >= params["side_deg"] and dist_opp < 2.5 * params["contact_m"]:
+        mem["pushes"] += 1
+        return steer_to(px + oradx * params["push_out_m"], py + orady * params["push_out_m"])
+    # 4. flank
+    tx = px + mem["side"] * nx * params["flank_m"]
+    ty = py + mem["side"] * ny * params["flank_m"]
+    return steer_to(tx, ty)
+
+
+POLICIES = {"pusher": (pusher, DEFAULT_PARAMS), "reactive": (reactive, REACTIVE_PARAMS)}
+
+
 def load_policy(spec: str):
-    if spec == "pusher":
-        return pusher
+    if spec in POLICIES:
+        return POLICIES[spec][0]
     module_name, _, attr = spec.partition(":")
     if not attr:
-        raise SystemExit("--policy must be 'pusher' or module:callable")
+        raise SystemExit("--policy must be one of %s or module:callable" % "/".join(POLICIES))
     return getattr(importlib.import_module(module_name), attr)
 
 
@@ -134,7 +284,7 @@ class Brain:
         self.args = args
         self.robot_id = args.robot_id
         self.rng = random.Random(args.seed)
-        self.params = dict(DEFAULT_PARAMS)
+        self.params = dict(POLICIES[args.policy][1] if args.policy in POLICIES else DEFAULT_PARAMS)
         if args.params:
             self.params.update(json.loads(args.params))
         if args.seed is not None and args.param_jitter > 0:
@@ -273,9 +423,11 @@ class Brain:
             outcome = "lost"
         elif self.over_flags & protocol.FLAG_OVER:
             outcome = "draw"
+        mem = self.params.get("_mem", {})
         result = {
             "robot_id": self.robot_id, "policy": self.args.policy, "seed": self.args.seed,
             "params": {k: v for k, v in self.params.items() if not k.startswith("_")},
+            "reflexes": {k: mem[k] for k in ("dodges", "escapes", "disengages", "pushes", "brakes") if k in mem},
             "rate_hz": self.args.rate_hz, "ttl_ms": self.args.ttl_ms, "outcome": outcome,
             "ticks": self.ticks, "deadline_misses": self.deadline_misses,
             "ticks_without_fresh_state": self.ticks_without_fresh_state, "cmds_sent": self.cmd_seq,
@@ -298,9 +450,9 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--robot-id", type=int, required=True, choices=(0, 1))
     p.add_argument("--robot", required=True, help="arena UDP address for this robot, host:port")
     p.add_argument("--bind", default=None, help="local host:port to bind (default: ephemeral)")
-    p.add_argument("--rate-hz", type=float, default=50.0)
-    p.add_argument("--ttl-ms", type=int, default=100, help="how long the robot may keep applying a command")
-    p.add_argument("--policy", default="pusher", help="'pusher' or module:callable")
+    p.add_argument("--rate-hz", type=float, default=100.0)
+    p.add_argument("--ttl-ms", type=int, default=60, help="how long the robot may keep applying a command")
+    p.add_argument("--policy", default="reactive", help="'reactive' (default), 'pusher', or module:callable")
     p.add_argument("--params", default=None, help="JSON overrides for policy params")
     p.add_argument("--param-jitter", type=float, default=0.1, help="seeded +-fraction applied to v_max/k_heading/flank_m")
     p.add_argument("--seed", type=int, default=None)

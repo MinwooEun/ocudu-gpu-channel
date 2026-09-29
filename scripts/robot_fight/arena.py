@@ -6,14 +6,17 @@ separate brain process over UDP (see protocol.py); the arena never waits for a
 brain. Simulation time tracks the wall clock, so a late or missing command has
 a physical consequence instead of stalling the world.
 
-Per robot the arena binds one UDP socket. The brain's address is learned from
-the first CMD that arrives on it (or fixed with --state-dest). STATE datagrams
-go back at --state-hz. Robot positions are published for the Sionna bridge on a
-ZMQ PUB socket at --pub-hz.
+Per robot the arena binds one UDP socket, or (--robot-unix) one unix datagram
+socket served by a modem inside the UE's network namespace (modem.py). The
+brain's address is learned from the first CMD that arrives on it (or fixed
+with --state-dest). STATE datagrams go back at --state-hz. Robot positions are
+published for the Sionna bridge on a ZMQ PUB socket at --pub-hz.
 
 Exit: the fight ends when a robot's body centre leaves the ring, a robot falls
-over, or the time limit passes (draw). The result JSON is written to --result
-and the per-fight JSONL log to --log.
+over, or the time limit passes. At the time limit the robot whose body centre
+is closer to the edge loses (decided_by timeout_edge); it is a draw only when
+the two radial distances differ by less than --timeout-margin-m. The result
+JSON is written to --result and the per-fight JSONL log to --log.
 """
 
 from __future__ import annotations
@@ -22,6 +25,7 @@ import argparse
 import errno
 import json
 import math
+import os
 import pathlib
 import random
 import socket
@@ -61,7 +65,7 @@ WHEEL_MAX_RAD_S = 30.0  # actuator ctrl range; 30 rad/s * 0.06 m = 1.8 m/s
 TIMESTEP = 0.001
 
 
-def build_model_xml(ring_radius: float) -> str:
+def build_model_xml(ring_radius: float, wheel_max: float = WHEEL_MAX_RAD_S) -> str:
     def bot(name: str, rgba: str) -> str:
         return f"""
     <body name="{name}" pos="0 0 {WHEEL_RADIUS}">
@@ -110,10 +114,10 @@ def build_model_xml(ring_radius: float) -> str:
     {bot("bot1", "0.9 0.5 0.15 1")}
   </worldbody>
   <actuator>
-    <velocity name="bot0_l" joint="bot0_wl" kv="2.0" ctrlrange="-{WHEEL_MAX_RAD_S} {WHEEL_MAX_RAD_S}" forcerange="-3 3"/>
-    <velocity name="bot0_r" joint="bot0_wr" kv="2.0" ctrlrange="-{WHEEL_MAX_RAD_S} {WHEEL_MAX_RAD_S}" forcerange="-3 3"/>
-    <velocity name="bot1_l" joint="bot1_wl" kv="2.0" ctrlrange="-{WHEEL_MAX_RAD_S} {WHEEL_MAX_RAD_S}" forcerange="-3 3"/>
-    <velocity name="bot1_r" joint="bot1_wr" kv="2.0" ctrlrange="-{WHEEL_MAX_RAD_S} {WHEEL_MAX_RAD_S}" forcerange="-3 3"/>
+    <velocity name="bot0_l" joint="bot0_wl" kv="2.0" ctrlrange="-{wheel_max} {wheel_max}" forcerange="-3 3"/>
+    <velocity name="bot0_r" joint="bot0_wr" kv="2.0" ctrlrange="-{wheel_max} {wheel_max}" forcerange="-3 3"/>
+    <velocity name="bot1_l" joint="bot1_wl" kv="2.0" ctrlrange="-{wheel_max} {wheel_max}" forcerange="-3 3"/>
+    <velocity name="bot1_r" joint="bot1_wr" kv="2.0" ctrlrange="-{wheel_max} {wheel_max}" forcerange="-3 3"/>
   </actuator>
 </mujoco>"""
 
@@ -136,13 +140,23 @@ def quat_up_z(q) -> float:
 # --------------------------------------------------------------------------
 
 
+Addr = tuple[str, int] | str   # UDP host/port, or a unix datagram socket path (modem)
+
+
+def addr_json(addr: Addr | None):
+    if addr is None:
+        return None
+    return list(addr) if isinstance(addr, tuple) else str(addr)
+
+
 @dataclass
 class RobotIO:
     index: int
     node_id: str
     sock: socket.socket
-    dest: tuple[str, int] | None
+    dest: Addr | None
     dest_fixed: bool
+    unix_path: str | None = None
     last_cmd: protocol.Command | None = None
     last_cmd_recv_us: int = 0
     last_cmd_seq: int = 0
@@ -161,17 +175,28 @@ class RobotIO:
     brain_turnaround_us: list[int] = field(default_factory=list)
 
 
-def parse_binds(text: str, node_ids: list[str]) -> list[tuple[str, int]]:
-    binds: dict[str, tuple[str, int]] = {}
+def parse_binds(text: str, node_ids: list[str], unix_text: str | None = None) -> list[Addr]:
+    """Per robot either a UDP host:port (--robot-bind) or a unix socket path
+    (--robot-unix); a node named in --robot-unix ignores its --robot-bind entry."""
+    binds: dict[str, Addr] = {}
     for item in text.split(","):
+        if not item.strip():
+            continue
         node, _, addr = item.partition("=")
         host, _, port = addr.rpartition(":")
         if not node or not host or not port:
             raise SystemExit(f"bad --robot-bind item: {item!r} (want node=host:port)")
         binds[node.strip()] = (host.strip(), int(port))
+    for item in (unix_text or "").split(","):
+        if not item.strip():
+            continue
+        node, _, path = item.partition("=")
+        if not node or not path:
+            raise SystemExit(f"bad --robot-unix item: {item!r} (want node=/path/to.sock)")
+        binds[node.strip()] = path.strip()
     missing = [n for n in node_ids if n not in binds]
     if missing:
-        raise SystemExit(f"--robot-bind lacks {missing}")
+        raise SystemExit(f"--robot-bind/--robot-unix lacks {missing}")
     return [binds[n] for n in node_ids]
 
 
@@ -193,21 +218,36 @@ class Arena:
         if len(self.node_ids) != 2:
             raise SystemExit("--node-ids must name exactly two robots")
         self.ring_radius = float(args.ring_radius)
-        self.model = mujoco.MjModel.from_xml_string(build_model_xml(self.ring_radius))
+        self.wheel_max = float(args.wheel_max_rad_s)
+        self.model = mujoco.MjModel.from_xml_string(build_model_xml(self.ring_radius, self.wheel_max))
         self.data = mujoco.MjData(self.model)
         self.rng = random.Random(args.seed)
         self.log_path = pathlib.Path(args.log)
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
         self.log = self.log_path.open("w", encoding="utf-8")
-        binds = parse_binds(args.robot_bind, self.node_ids)
+        binds = parse_binds(args.robot_bind, self.node_ids, args.robot_unix)
         dests = parse_dests(args.state_dest, self.node_ids)
         self.robots: list[RobotIO] = []
         for index, node_id in enumerate(self.node_ids):
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            sock.bind(binds[index])
+            bind = binds[index]
+            unix_path = None
+            if isinstance(bind, str):
+                # Served by a modem (modem.py) over a filesystem unix datagram
+                # socket, which crosses network namespaces.
+                unix_path = bind
+                pathlib.Path(unix_path).parent.mkdir(parents=True, exist_ok=True)
+                try:
+                    os.unlink(unix_path)
+                except FileNotFoundError:
+                    pass
+                sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+                sock.bind(unix_path)
+            else:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                sock.bind(bind)
             sock.setblocking(False)
-            self.robots.append(RobotIO(index, node_id, sock, dests[index], dests[index] is not None))
+            self.robots.append(RobotIO(index, node_id, sock, dests[index], dests[index] is not None, unix_path))
         self.body_ids = [mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, f"bot{i}") for i in range(2)]
         self.qpos_addr = [self.model.jnt_qposadr[mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, f"bot{i}_free")] for i in range(2)]
         self.qvel_addr = [self.model.jnt_dofadr[mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, f"bot{i}_free")] for i in range(2)]
@@ -240,7 +280,9 @@ class Arena:
         self.emit({"event": "spawn", "seed": self.args.seed, "ring_radius_m": self.ring_radius,
                    "robots": [self.pose_dict(i) for i in range(2)], "node_ids": self.node_ids,
                    "stale_policy": self.args.stale_policy, "time_limit_s": self.args.time_limit,
-                   "state_hz": self.args.state_hz, "pub_hz": self.args.pub_hz, "timestep_s": TIMESTEP})
+                   "timeout_margin_m": self.args.timeout_margin_m,
+                   "state_hz": self.args.state_hz, "pub_hz": self.args.pub_hz, "timestep_s": TIMESTEP,
+                   "transports": [r.unix_path or "udp" for r in self.robots]})
 
     # -- helpers ----------------------------------------------------------
     def emit(self, record: dict) -> None:
@@ -288,7 +330,7 @@ class Arena:
                     continue
                 if not robot.dest_fixed and robot.dest != addr:
                     robot.dest = addr
-                    self.emit({"event": "brain_learned", "robot": robot.index, "addr": list(addr)})
+                    self.emit({"event": "brain_learned", "robot": robot.index, "addr": addr_json(addr)})
                 robot.cmds_received += 1
                 if robot.last_cmd_seq and header.seq > robot.last_cmd_seq + 1:
                     robot.seq_gaps += header.seq - robot.last_cmd_seq - 1
@@ -372,14 +414,21 @@ class Arena:
                 else:
                     left, right = 0.0, 0.0
             base = robot.index * 2
-            self.data.ctrl[base] = max(-WHEEL_MAX_RAD_S, min(WHEEL_MAX_RAD_S, left))
-            self.data.ctrl[base + 1] = max(-WHEEL_MAX_RAD_S, min(WHEEL_MAX_RAD_S, right))
+            self.data.ctrl[base] = max(-self.wheel_max, min(self.wheel_max, left))
+            self.data.ctrl[base + 1] = max(-self.wheel_max, min(self.wheel_max, right))
 
     def referee(self) -> tuple[int | None, str] | None:
-        out, fallen = [], []
+        """None while the fight runs; otherwise (winner index or None, reason).
+
+        Reasons: ring_out, fall, both_out, both_fell, timeout_edge (time limit,
+        the robot closer to the edge loses), timeout (time limit and the two
+        radial distances differ by less than --timeout-margin-m: a real draw)."""
+        out, fallen, radial = [], [], []
         for i in range(2):
             x, y, z, _, _, _, _, _, up = self.pose(i)
-            if math.hypot(x, y) > self.ring_radius:
+            r = math.hypot(x, y)
+            radial.append(r)
+            if r > self.ring_radius:
                 out.append(i)
             if up < 0.3 or z < -0.5:
                 fallen.append(i)
@@ -392,7 +441,10 @@ class Arena:
                 return None, "both_out"
             return 1 - out[0], "ring_out"
         if self.data.time >= self.args.time_limit:
-            return None, "timeout"
+            if abs(radial[0] - radial[1]) < self.args.timeout_margin_m:
+                return None, "timeout"
+            loser = 0 if radial[0] > radial[1] else 1
+            return 1 - loser, "timeout_edge"
         return None
 
     # -- main loop --------------------------------------------------------
@@ -443,7 +495,9 @@ class Arena:
                     time.sleep(min(sleep_for, loop_period))
         wall = time.perf_counter() - wall0
         winner, reason = verdict
-        self.emit({"event": "result", "winner": winner, "reason": reason, "robots": [self.pose_dict(i) for i in range(2)]})
+        radial = [math.hypot(*self.pose(i)[:2]) for i in range(2)]
+        self.emit({"event": "result", "winner": winner, "reason": reason, "radial_m": [round(r, 4) for r in radial],
+                   "robots": [self.pose_dict(i) for i in range(2)]})
         flags = []
         for i in range(2):
             f = protocol.FLAG_OVER
@@ -457,10 +511,12 @@ class Arena:
         rtf = (float(self.data.time) - sim0) / wall if wall > 0 else 0.0
         result = {
             "winner": winner, "winner_node": None if winner is None else self.node_ids[winner],
-            "reason": reason, "seed": self.args.seed, "sim_time_s": round(float(self.data.time) - sim0, 4),
+            "reason": reason, "decided_by": reason, "radial_m": [round(r, 4) for r in radial],
+            "timeout_margin_m": self.args.timeout_margin_m,
+            "seed": self.args.seed, "sim_time_s": round(float(self.data.time) - sim0, 4),
             "wall_time_s": round(wall, 4), "rtf": round(rtf, 4), "late_loops": self.late_loops,
             "loops": self.loops, "max_lag_ms": round(self.max_lag_s * 1000, 3), "lockstep": bool(self.args.lockstep),
-            "stale_policy": self.args.stale_policy, "ring_radius_m": self.ring_radius,
+            "stale_policy": self.args.stale_policy, "ring_radius_m": self.ring_radius, "wheel_max_rad_s": self.wheel_max,
             "robots": [self.robot_summary(r) for r in self.robots],
         }
         self.emit({"event": "rtf", **{k: result[k] for k in ("rtf", "late_loops", "loops", "max_lag_ms", "wall_time_s")}})
@@ -479,13 +535,18 @@ class Arena:
             "stale_intervals": robot.stale_intervals, "stale_total_s": round(robot.stale_total_s, 4),
             "one_way_us": {"p50": int(np.percentile(ow, 50)), "p99": int(np.percentile(ow, 99)), "max": int(ow.max()), "n": len(robot.one_way_us)},
             "brain_turnaround_us": {"p50": int(np.percentile(ta, 50)), "p99": int(np.percentile(ta, 99)), "n": len(robot.brain_turnaround_us)},
-            "brain_addr": None if robot.dest is None else list(robot.dest),
+            "brain_addr": addr_json(robot.dest), "transport": robot.unix_path or "udp",
         }
 
     def close(self) -> None:
         self.log.close()
         for robot in self.robots:
             robot.sock.close()
+            if robot.unix_path:
+                try:
+                    os.unlink(robot.unix_path)
+                except FileNotFoundError:
+                    pass
         if self.pub is not None:
             self.pub.close(linger=0)
 
@@ -495,14 +556,21 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--node-ids", default="ue0,ue1", help="robot/node ids in order (also the position PUB keys)")
     p.add_argument("--robot-bind", default="ue0=127.0.0.1:6000,ue1=127.0.0.1:6001",
                    help="UDP bind per robot: node=host:port,...")
+    p.add_argument("--robot-unix", default=None,
+                   help="serve these robots over a unix datagram socket instead (node=/path.sock,...); "
+                        "a modem (modem.py) inside the UE's network namespace relays to it")
     p.add_argument("--state-dest", default=None, help="fixed brain address per robot: node=host:port,... (default: learn from first CMD)")
+    p.add_argument("--timeout-margin-m", type=float, default=0.05,
+                   help="at the time limit the robot closer to the edge loses unless the radial distances "
+                        "differ by less than this (then it is a draw)")
     p.add_argument("--positions-endpoint", default=protocol.DEFAULT_POSITIONS_ENDPOINT,
                    help="ZMQ PUB endpoint for the Sionna bridge ('' to disable)")
     p.add_argument("--antenna-height", type=float, default=0.3, help="published z above the floor, metres")
     p.add_argument("--ring-radius", type=float, default=2.0)
+    p.add_argument("--wheel-max-rad-s", type=float, default=WHEEL_MAX_RAD_S, help="actuator limit; 30 rad/s = 1.8 m/s")
     p.add_argument("--spawn-fraction", type=float, default=0.5, help="spawn at +-fraction*radius on the x axis")
     p.add_argument("--time-limit", type=float, default=60.0, help="seconds of sim time before a draw")
-    p.add_argument("--state-hz", type=float, default=100.0)
+    p.add_argument("--state-hz", type=float, default=200.0)
     p.add_argument("--pub-hz", type=float, default=20.0)
     p.add_argument("--pose-log-hz", type=float, default=20.0)
     p.add_argument("--stale-policy", choices=("coast", "zero", "hold"), default="coast",

@@ -20,12 +20,15 @@ from __future__ import annotations
 import argparse
 import heapq
 import json
+import os
 import pathlib
 import random
 import select
+import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from dataclasses import dataclass
@@ -40,6 +43,8 @@ class Handicap:
     robot: int = 1
     delay_ms: float = 0.0
     loss: float = 0.0
+    outage_ms: float = 0.0        # periodic outage: drop everything for this long ...
+    outage_period_ms: float = 0.0  # ... once per period (models bursty starvation, not random loss)
     seed: int = 0
 
 
@@ -64,8 +69,18 @@ class UdpProxy(threading.Thread):
         self.forwarded = 0
         self.dropped = 0
 
+    def in_outage(self) -> bool:
+        h = self.handicap
+        if h.outage_ms <= 0 or h.outage_period_ms <= 0:
+            return False
+        phase = (time.perf_counter() * 1000.0) % h.outage_period_ms
+        return phase < h.outage_ms
+
     def schedule(self, sock: socket.socket, addr: tuple[str, int], data: bytes) -> None:
         if self.handicap.loss > 0 and self.rng.random() < self.handicap.loss:
+            self.dropped += 1
+            return
+        if self.in_outage():
             self.dropped += 1
             return
         self.counter += 1
@@ -109,9 +124,10 @@ def run_fight(args: argparse.Namespace, index: int, seed: int, port_base: int, o
     proxy = None
     handicap = args.handicap_obj
     brain_targets = [("127.0.0.1", arena_ports[0]), ("127.0.0.1", arena_ports[1])]
-    if handicap is not None and (handicap.delay_ms > 0 or handicap.loss > 0):
+    if handicap is not None and (handicap.delay_ms > 0 or handicap.loss > 0 or handicap.outage_ms > 0):
         listen = ("127.0.0.1", port_base + 3)
-        proxy = UdpProxy(listen, ("127.0.0.1", arena_ports[handicap.robot]), Handicap(handicap.robot, handicap.delay_ms, handicap.loss, seed))
+        proxy = UdpProxy(listen, ("127.0.0.1", arena_ports[handicap.robot]),
+                         Handicap(handicap.robot, handicap.delay_ms, handicap.loss, handicap.outage_ms, handicap.outage_period_ms, seed))
         proxy.start()
         brain_targets[handicap.robot] = listen
     arena_cmd = [
@@ -119,15 +135,34 @@ def run_fight(args: argparse.Namespace, index: int, seed: int, port_base: int, o
         "--robot-bind", f"ue0=127.0.0.1:{arena_ports[0]},ue1=127.0.0.1:{arena_ports[1]}",
         "--positions-endpoint", f"tcp://127.0.0.1:{pub_port}" if args.publish_positions else "",
         "--stale-policy", args.stale_policy, "--ring-radius", str(args.ring_radius),
+        "--state-hz", str(args.state_hz), "--timeout-margin-m", str(args.timeout_margin_m),
+        "--wheel-max-rad-s", str(args.wheel_max_rad_s),
         "--log", str(fight_dir / "arena.jsonl"), "--result", str(fight_dir / "arena.json"),
     ]
+    modems = []
+    sock_dir = None
+    if args.modem:
+        # Route these robots through modem.py over a unix datagram socket, as the
+        # native gate does from inside each UE's network namespace (no namespace
+        # here: it measures the relay's own overhead). AF_UNIX paths are limited
+        # to 107 bytes, so the sockets live in a short runtime directory.
+        sock_dir = pathlib.Path(tempfile.mkdtemp(prefix="rf", dir=os.environ.get("XDG_RUNTIME_DIR") or "/tmp"))
+        unix_items = [f"ue{robot}={sock_dir / f'ue{robot}.sock'}" for robot in args.modem]
+        arena_cmd += ["--robot-unix", ",".join(unix_items)]
     arena = subprocess.Popen(arena_cmd, stdout=(fight_dir / "arena.out").open("w"), stderr=subprocess.STDOUT)
     time.sleep(0.4)
+    for robot in (args.modem or []):
+        cmd = [python, str(HERE / "modem.py"), "--robot", f"ue{robot}", "--bind", f"127.0.0.1:{arena_ports[robot]}",
+               "--arena-socket", str(sock_dir / f"ue{robot}.sock"), "--status-file", str(fight_dir / f"modem{robot}.jsonl")]
+        modems.append(subprocess.Popen(cmd, stdout=(fight_dir / f"modem{robot}.out").open("w"), stderr=subprocess.STDOUT))
+    if modems:
+        time.sleep(0.2)
     brains = []
     for robot in range(2):
         cmd = [
             python, str(HERE / "brain.py"), "--robot-id", str(robot), "--robot", f"{brain_targets[robot][0]}:{brain_targets[robot][1]}",
             "--rate-hz", str(args.rate_hz), "--ttl-ms", str(args.ttl_ms), "--seed", str(seed * 2 + robot),
+            "--policy", args.policy,
             "--param-jitter", str(args.param_jitter), "--max-seconds", str(args.time_limit + 15),
             "--log", str(fight_dir / f"brain{robot}.jsonl"), "--result", str(fight_dir / f"brain{robot}.json"),
         ]
@@ -140,6 +175,12 @@ def run_fight(args: argparse.Namespace, index: int, seed: int, port_base: int, o
             b.wait(timeout=20)
         except subprocess.TimeoutExpired:
             b.kill()
+    for m in modems:
+        m.terminate()
+        try:
+            m.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            m.kill()
     if proxy is not None:
         proxy.stop.set()
         proxy.join(timeout=1)
@@ -151,7 +192,15 @@ def run_fight(args: argparse.Namespace, index: int, seed: int, port_base: int, o
         result["brains"].append(json.loads(path.read_text()) if path.exists() else None)
     if proxy is not None:
         result["proxy"] = {"robot": handicap.robot, "delay_ms": handicap.delay_ms, "loss": handicap.loss,
+                           "outage_ms": handicap.outage_ms, "outage_period_ms": handicap.outage_period_ms,
                            "forwarded": proxy.forwarded, "dropped": proxy.dropped}
+    if modems:
+        result["modems"] = {}
+        for robot in args.modem:
+            out_path = fight_dir / f"modem{robot}.out"
+            lines = [json.loads(l) for l in out_path.read_text().splitlines() if l.startswith("{")] if out_path.exists() else []
+            result["modems"][f"ue{robot}"] = lines[-1] if lines else None
+        shutil.rmtree(sock_dir, ignore_errors=True)
     (fight_dir / "fight.json").write_text(json.dumps(result, indent=2) + "\n")
     return result
 
@@ -191,7 +240,8 @@ def summarize(results: list[dict], args: argparse.Namespace) -> dict:
         ci = [round(centre - half, 3), round(centre + half, 3)]
     return {
         "fights": n, "time_limit_s": args.time_limit, "rate_hz": args.rate_hz, "ttl_ms": args.ttl_ms,
-        "stale_policy": args.stale_policy, "handicap": args.handicap, "parallel": args.parallel,
+        "state_hz": args.state_hz, "policy": args.policy, "timeout_margin_m": args.timeout_margin_m,
+        "stale_policy": args.stale_policy, "handicap": args.handicap, "modem": args.modem, "parallel": args.parallel,
         "wins": {"ue0": wins[0], "ue1": wins[1]}, "draws": draws, "reasons": reasons,
         "ue0_win_share_of_decided": None if not decided else round(wins[0] / decided, 3),
         "ue0_win_share_ci95": ci,
@@ -245,8 +295,12 @@ def parse_handicap(text: str | None) -> Handicap | None:
             h.delay_ms = float(value)
         elif key == "loss":
             h.loss = float(value)
+        elif key == "outage_ms":
+            h.outage_ms = float(value)
+        elif key == "outage_period_ms":
+            h.outage_period_ms = float(value)
         else:
-            raise SystemExit(f"unknown handicap key {key!r} (robot=, delay_ms=, loss=)")
+            raise SystemExit(f"unknown handicap key {key!r} (robot=, delay_ms=, loss=, outage_ms=, outage_period_ms=)")
     return h
 
 
@@ -255,13 +309,21 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--fights", type=int, default=10)
     p.add_argument("--seed", type=int, default=1, help="first seed; fight i uses seed+i")
     p.add_argument("--time-limit", type=float, default=30.0)
-    p.add_argument("--rate-hz", type=float, default=50.0)
-    p.add_argument("--ttl-ms", type=int, default=100)
+    p.add_argument("--rate-hz", type=float, default=100.0, help="brain tick rate")
+    p.add_argument("--state-hz", type=float, default=200.0, help="arena STATE rate")
+    p.add_argument("--ttl-ms", type=int, default=60)
+    p.add_argument("--policy", default="reactive", help="brain policy for both robots (reactive, pusher, module:callable)")
     p.add_argument("--stale-policy", choices=("coast", "zero", "hold"), default="coast")
+    p.add_argument("--timeout-margin-m", type=float, default=0.05)
+    p.add_argument("--modem", type=lambda s: [int(x) for x in s.split(",") if x.strip()], default=None,
+                   help="route these robots (e.g. 1 or 0,1) through modem.py over a unix socket")
     p.add_argument("--ring-radius", type=float, default=2.0)
+    p.add_argument("--wheel-max-rad-s", type=float, default=30.0)
     p.add_argument("--param-jitter", type=float, default=0.1)
     p.add_argument("--brain-params", default=None, help="JSON overrides passed to both brains")
-    p.add_argument("--handicap", default=None, help="robot=1,delay_ms=50,loss=0.1 (one-way delay each direction)")
+    p.add_argument("--handicap", default=None,
+                   help="robot=1,delay_ms=50,loss=0.1,outage_ms=60,outage_period_ms=500 (one-way delay each direction; "
+                        "outage = periodic total blackout, the shape of a starving UE)")
     p.add_argument("--parallel", type=int, default=1)
     p.add_argument("--port-base", type=int, default=6100)
     p.add_argument("--publish-positions", action="store_true", help="also bind the position PUB per fight")

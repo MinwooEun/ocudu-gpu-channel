@@ -29,15 +29,22 @@ def test_one_short_fight(tmp_path):
     summary = json.loads((out / "summary.json").read_text())
     assert summary["fights"] == 1
     fight = json.loads((out / "fight-000" / "fight.json").read_text())
-    assert fight["reason"] in ("timeout", "ring_out", "fall", "both_out", "both_fell")
+    assert fight["reason"] in ("timeout", "timeout_edge", "ring_out", "fall", "both_out", "both_fell")
+    assert fight["decided_by"] == fight["reason"]
+    if fight["reason"] == "timeout_edge":
+        # the robot farther from the centre lost
+        loser = 1 - fight["winner"]
+        assert fight["radial_m"][loser] > fight["radial_m"][fight["winner"]]
     # Wall-clock stepping: the arena must not run faster or slower than real time.
     assert 0.9 <= fight["rtf"] <= 1.1, fight
     assert fight["lockstep"] is False
     for robot in fight["robots"]:
-        assert robot["cmds_received"] > 100, robot  # 50 Hz brain over 5 s
+        assert robot["cmds_received"] > 200, robot  # 100 Hz brain over 5 s
+        assert robot["transport"] == "udp"
     for brain in fight["brains"]:
-        assert brain is not None and brain["states_received"] > 200, brain  # 100 Hz state stream
+        assert brain is not None and brain["states_received"] > 400, brain  # 200 Hz state stream
         assert brain["rtt_us"]["n"] > 0
+        assert brain["policy"] == "reactive"
     poses = [json.loads(l) for l in (out / "fight-000" / "arena.jsonl").read_text().splitlines()
              if '"event":"pose"' in l]
     assert len(poses) >= 80  # 20 Hz over 5 s

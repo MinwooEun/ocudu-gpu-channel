@@ -16,16 +16,23 @@ brain1 ──UDP CMD──▶ arena:6001 (robot ue1) ──UDP STATE──▶ br
 arena ──ZMQ PUB tcp://127.0.0.1:5570──▶ Sionna bridge  (positions, 20 Hz)
 ```
 
+Over the air (R4) each robot's UDP socket is replaced by a *modem* inside the
+UE's network namespace that relays to the arena over a unix datagram socket
+(see *Running across network namespaces* below).
+
 ## Files
 
 | File | Role |
 |---|---|
 | `protocol.py` | Wire formats: UDP header + STATE/CMD structs, position JSON. Shared with the bridge (`parse_positions_message`). |
-| `arena.py` | MuJoCo world + referee + per-robot UDP server + position PUB. One process = one fight. |
-| `brain.py` | One controller per robot, own loop at `--rate-hz`, `pusher` policy, `--policy module:callable` hook. |
-| `fight.py` | Runs N fights (arena + 2 brains on loopback), optional `--handicap` delay/loss proxy, summary JSON/MD. |
+| `arena.py` | MuJoCo world + referee + per-robot UDP (or unix) server + position PUB. One process = one fight. |
+| `brain.py` | One controller per robot, own loop at `--rate-hz`, `reactive` (default) and `pusher` policies, `--policy module:callable` hook. |
+| `modem.py` | UDP ⇄ unix-datagram relay run inside a UE network namespace (stdlib only). |
+| `fight.py` | Runs N fights (arena + 2 brains on loopback), optional `--handicap` delay/loss proxy and `--modem` relay, summary JSON/MD. |
 | `../../tests/test_robot_fight_protocol.py` | pack/unpack round trips, RTT from echo, position JSON validation. |
 | `../../tests/test_robot_fight_smoke.py` | one 5 s headless fight, checks RTF ≈ 1 and the streams. |
+| `../../tests/test_robot_fight_referee.py` | ring-out / fall / timeout tie-break rules on a constructed world. |
+| `../../tests/test_robot_fight_modem.py` | relay bytes + overhead; the netns case runs when `unshare -n` is allowed (gate container as root). |
 
 Interpreter: `~/ocudu-work/venvs/robot/bin/python` (mujoco, numpy, pyzmq, pytest).
 
@@ -78,7 +85,10 @@ antenna height (`--antenna-height`, 0.3 m). Node ids come from `--node-ids`
 - Bot: 30×24×8 cm chassis, 4 kg (2 kg of it a low ballast plate), two 6 cm-radius drive wheels
   on the centre axle (velocity actuators, ±30 rad/s → 1.8 m/s), two casters floating 4 mm off
   the floor so the wheels carry the weight, a 3 cm-tall low-friction push plate in front.
-- Referee: body centre outside the ring → ring-out; tilt > ~70° → fall; `--time-limit` (60 s) → draw.
+- Referee: body centre outside the ring → ring-out; tilt > ~70° → fall; at `--time-limit` the
+  robot whose body centre is closer to the edge loses (`timeout_edge`); it is a draw (`timeout`)
+  only when the two radial distances differ by less than `--timeout-margin-m` (5 cm). The result
+  carries `decided_by` and both `radial_m`.
 - **Wall clock:** physics (1 ms steps) is advanced to `sim0 + wall_elapsed` each 1 ms loop; the
   result records `rtf`, `late_loops` (loop found itself > 2 ms behind) and `max_lag_ms`.
   `--lockstep` exists for debugging only and is recorded in the result as `lockstep: true`.
@@ -92,7 +102,21 @@ antenna height (`--antenna-height`, 0.3 m). Node ids come from `--node-ids`
 
 ## Brain
 
-`pusher`: flank-then-push. Head-on pushes between equal bots stall, so the bot
+`reactive` (default, 100 Hz, ttl 60 ms, STATE 200 Hz): time-critical sumo.
+Equal bots shoving head-on stall, so the fight is decided by who gets the
+other's side first and who notices being pushed toward the edge first. Rules
+in priority order, each a short reflex window: **escape** (in contact,
+being pushed, edge within 0.6 m → break out tangentially for 0.45 s),
+**edge guard** (heading outward at speed with less than `v²/2a + 10 cm` of
+ring left → brake hard and turn in; a late brain travels delay × speed
+farther), **dodge** (opponent charging straight at me from < 0.9 m → side-step
+0.3 s), **disengage** (head-on shove > 0.35 s → reverse, switch flank),
+**push** (I have its side → drive through its predicted position toward the
+edge), else **flank**. Attack targets lead the opponent by its velocity ×
+0.12 s, so a stale state aims where it was. The brain result counts the
+reflexes fired (`reflexes`).
+
+`pusher`: the R2 policy (50 Hz class), flank-then-push. Head-on pushes between equal bots stall, so the bot
 drives to a waypoint beside the opponent (perpendicular to the opponent's
 heading, `flank_m` 0.7) and charges into its side once it sees the opponent
 ≥ `charge_deg` off the opponent's own heading. A push that has lasted
@@ -117,21 +141,53 @@ STATE seq gaps (loss), RTT p50/p90/p99, STATE one-way p50/p99.
 
 `--handicap robot=1,delay_ms=D,loss=P` puts a UDP proxy on robot 1's path in
 both directions (one-way delay D each way, drop probability P). It is a local
-smoke test of link sensitivity, not a radio measurement. Each fight uses a
-port block `--port-base + 10·slot` (arena 0/1, PUB 2, proxy 3).
+smoke test of link sensitivity, not a radio measurement. `--modem 1` routes
+robot 1 through `modem.py` over a unix socket (relay overhead check). Each
+fight uses a port block `--port-base + 10·slot` (arena 0/1, PUB 2, proxy 3).
 
-## Running the pieces by hand (what R4 does across namespaces)
+## Running across network namespaces (the R4 layout)
+
+In the native multi-UE gate each srsUE's `tun_srsue` (10.45.1.2 for ue0,
+10.45.1.3 for ue1) lives in its own nested network namespace
+(`/run/netns/ue1`, `/run/netns/ue2`); the UPF side `ogstun` 10.45.1.1, the
+gNB, the broker and the Sionna bridge are in the gate's parent namespace.
+One arena process cannot bind both TUN addresses, so each robot gets a
+**modem**: `modem.py` runs inside the UE namespace, binds the TUN address for
+the brain, and relays every datagram to the arena over a filesystem unix
+datagram socket (unix sockets are not tied to a network namespace; AF_UNIX
+paths must stay under 107 bytes).
 
 ```
-# arena (UE side): one UDP socket per robot, positions PUB for the bridge
-python arena.py --robot-bind ue0=10.45.0.2:6000,ue1=10.45.0.3:6001 \
-                --positions-endpoint tcp://127.0.0.1:5570 --time-limit 60 --seed 1 \
-                --log arena.jsonl --result arena.json
-# brains (gNB / N6 side), one per robot
-python brain.py --robot-id 0 --robot 10.45.0.2:6000 --rate-hz 50 --ttl-ms 100 --seed 1 --result b0.json
-python brain.py --robot-id 1 --robot 10.45.0.3:6001 --rate-hz 50 --ttl-ms 100 --seed 2 --result b1.json
+brain0 (parent ns, 10.45.1.1) ──UDP──▶ 10.45.1.2:6000 [netns ue1] modem ──unix──▶ arena (parent ns)
+brain1 (parent ns, 10.45.1.1) ──UDP──▶ 10.45.1.3:6001 [netns ue2] modem ──unix──▶ arena (parent ns)
+arena ──ZMQ PUB ipc://<native_root>/run/arena/positions.sock──▶ Sionna bridge (parent ns)
 ```
 
-The arena learns each brain's address from the first CMD (`--state-dest` fixes
-it instead). A brain exits when a STATE carries the over flag or after
-`--max-seconds`.
+Order: arena first (it binds the unix sockets), modems after each UE's PDU
+session is up (the TUN address exists only then), brains last.
+
+```
+# 1. arena, parent namespace: unix socket per robot, positions PUB on ipc (the bridge only accepts ipc)
+python arena.py --robot-unix ue0=$RUN/arena/ue0.sock,ue1=$RUN/arena/ue1.sock \
+                --positions-endpoint ipc://$RUN/arena/positions.sock \
+                --time-limit 60 --seed 1 --log arena.jsonl --result arena.json
+# 2. one modem per UE, inside its namespace, after the UE has its TUN address
+nsenter --net=/run/netns/ue1 -- python modem.py --robot ue0 --bind 10.45.1.2:6000 --arena-socket $RUN/arena/ue0.sock
+nsenter --net=/run/netns/ue2 -- python modem.py --robot ue1 --bind 10.45.1.3:6001 --arena-socket $RUN/arena/ue1.sock
+# 3. brains, parent namespace, bound to the UPF-side address so replies route back over GTP
+python brain.py --robot-id 0 --robot 10.45.1.2:6000 --bind 10.45.1.1:0 --seed 1 --result b0.json
+python brain.py --robot-id 1 --robot 10.45.1.3:6001 --bind 10.45.1.1:0 --seed 2 --result b1.json
+```
+
+The modem learns the brain's address from the first UDP datagram (`--brain`
+fixes it); the arena learns the modem's unix path from the first CMD
+(`--state-dest` is for UDP robots). Arena, modems and brains all run on the
+same host clock, so the one-way fields in the logs are valid over the air.
+The relay adds ~10 µs per direction (`test_robot_fight_modem.py`); in a live
+fight robot 1 via modem showed +70 µs one-way p50 against a UDP robot, the
+rest being the arena's 1 ms poll. `fight.py --modem 1` reproduces that
+locally without namespaces. `modem.py` is stdlib-only, so the namespace side
+can use any `python3`; the arena and brains need the robot venv (mujoco,
+numpy, pyzmq) — on the Spark that venv has to be created first.
+
+A brain exits when a STATE carries the over flag or after `--max-seconds`.
