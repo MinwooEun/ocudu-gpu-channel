@@ -50,7 +50,35 @@ UES = (
         "netns": "ue2",
         "ipv4": "10.45.1.3",
     },
+    # ue2/ue3 are used only with --ue-count 4 (topology.ocudu-docker.multi-ue-quad).
+    {
+        "device_id": "ue2",
+        "tx_port": 2105,
+        "rx_port": 2104,
+        "imsi": "001010123456782",
+        "imei": "353490069873321",
+        "netns": "ue3",
+        "ipv4": "10.45.1.4",
+    },
+    {
+        "device_id": "ue3",
+        "tx_port": 2107,
+        "rx_port": 2106,
+        "imsi": "001010123456783",
+        "imei": "353490069873322",
+        "netns": "ue4",
+        "ipv4": "10.45.1.5",
+    },
 )
+# Per UE count: the topology, the subscriber fixture and the per-UE channel
+# models the gate asserts (each UE on its own channel, so a per-UE regression
+# cannot hide behind a shared one).
+LAYOUTS = {
+    2: ("examples/topology.ocudu-docker.multi-ue.cuda.yaml",
+        "examples/native/open5gs/subscriber-multi-ue.csv", ("near", "far")),
+    4: ("examples/topology.ocudu-docker.multi-ue-quad.cuda.yaml",
+        "examples/native/open5gs/subscriber-multi-ue-quad.csv", ("near", "mid1", "mid2", "far")),
+}
 
 
 def fail(message: str) -> "NoReturn":
@@ -128,7 +156,7 @@ def render_gnb(source: str, log_dir: Path) -> str:
     return rendered
 
 
-def render_topology(source: str) -> str:
+def render_topology(source: str, ues, models) -> str:
     """Bind every broker REP socket to loopback and assert the multi-UE shape.
 
     The published topology binds `tcp://*` so a container peer can reach the
@@ -136,7 +164,7 @@ def render_topology(source: str) -> str:
     loopback is both sufficient and tighter.
     """
     rendered = source
-    for port in (2001, 2100, 2102):
+    for port in (2001, *(ue["rx_port"] for ue in ues)):
         rendered = replace_exact(
             rendered,
             f"    rx_endpoint: tcp://*:{port}\n",
@@ -146,12 +174,11 @@ def render_topology(source: str) -> str:
         )
     # The near/far asymmetry is the point of this gate: the two UEs must not be
     # served by the same channel, or a per-UE regression could hide.
-    for required in (
-        "  - from: gnb0\n    to: ue0\n    model: near\n",
-        "  - from: gnb0\n    to: ue1\n    model: far\n",
-        "  - from: ue0\n    to: gnb0\n    model: near\n",
-        "  - from: ue1\n    to: gnb0\n    model: far\n",
-    ):
+    required_links = []
+    for ue, model in zip(ues, models):
+        required_links.append(f"  - from: gnb0\n    to: {ue['device_id']}\n    model: {model}\n")
+        required_links.append(f"  - from: {ue['device_id']}\n    to: gnb0\n    model: {model}\n")
+    for required in required_links:
         if source.count(required) != 1:
             fail(f"multi-UE topology invariant is missing or ambiguous: {required!r}")
     return rendered
@@ -235,7 +262,7 @@ def render_srsue(source: str, ue: dict, log_dir: Path) -> str:
     return rendered
 
 
-def validate_subscriber(source: str) -> str:
+def validate_subscriber(source: str, UES) -> str:
     """Require exactly one record per configured UE, matching its IMSI and IP.
 
     The 1x1 renderer pins the CSV byte-for-byte. That is not portable to N UEs,
@@ -263,7 +290,10 @@ def main() -> int:
     parser.add_argument("--native-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--log-dir", type=Path, required=True)
+    parser.add_argument("--ue-count", type=int, choices=sorted(LAYOUTS), default=2)
     args = parser.parse_args()
+    topology_path, subscriber_path, models = LAYOUTS[args.ue_count]
+    ues = UES[: args.ue_count]
 
     repo_root = args.repo_root.resolve(strict=True)
     native_root = args.native_root.resolve(strict=True)
@@ -274,7 +304,7 @@ def main() -> int:
         repo_root / "examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml", "gNB fixture"
     )
     topology_source = read_regular(
-        repo_root / "examples/topology.ocudu-docker.multi-ue.cuda.yaml", "multi-UE topology"
+        repo_root / topology_path, "multi-UE topology"
     )
     open5gs_source = read_regular(
         native_root / "src/ocudu/docker/open5gs/open5gs-5gc.yml", "pinned OCUDU Open5GS template"
@@ -283,16 +313,16 @@ def main() -> int:
         repo_root / "examples/native/srsran/srsue_zmq_multi_ue.conf.in", "srsUE template"
     )
     subscriber_source = read_regular(
-        repo_root / "examples/native/open5gs/subscriber-multi-ue.csv", "subscriber fixture"
+        repo_root / subscriber_path, "subscriber fixture"
     )
 
     outputs = {
         "gnb.yaml": render_gnb(gnb_source, log_dir),
-        "topology.yaml": render_topology(topology_source),
+        "topology.yaml": render_topology(topology_source, ues, models),
         "open5gs.yaml": render_open5gs(open5gs_source, native_root),
-        "subscriber.csv": validate_subscriber(subscriber_source),
+        "subscriber.csv": validate_subscriber(subscriber_source, ues),
     }
-    for ue in UES:
+    for ue in ues:
         outputs[f"srsue-{ue['device_id']}.conf"] = render_srsue(srsue_source, ue, log_dir)
 
     for name, text in outputs.items():

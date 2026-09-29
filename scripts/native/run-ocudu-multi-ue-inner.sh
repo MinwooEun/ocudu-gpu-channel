@@ -99,9 +99,13 @@ done
 [[ -x /usr/bin/python3 ]] || usage_error "missing /usr/bin/python3"
 
 # Must agree with scripts/native/render-multi-ue-configs.py UES.
-ue_ids=(ue0 ue1)
-ue_netns=(ue1 ue2)
-ue_ipv4=(10.45.1.2 10.45.1.3)
+# OCUDU_NATIVE_MUE_UE_COUNT (2 or 4) is set by the outer gate.
+ue_ids=() ue_netns=() ue_ipv4=()
+for ((ue_index = 0; ue_index < ${OCUDU_NATIVE_MUE_UE_COUNT:-2}; ue_index++)); do
+  ue_ids+=("ue${ue_index}")
+  ue_netns+=("ue$((ue_index + 1))")
+  ue_ipv4+=("10.45.1.$((ue_index + 2))")
+done
 ue_gateway="10.45.1.1"
 # Start the UEs together (0) or hold each until its predecessor is RRC-connected (1).
 #

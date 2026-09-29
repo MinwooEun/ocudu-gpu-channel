@@ -107,6 +107,15 @@ declare -a renderer_args=(
   --output-dir "${config_dir}" --log-dir "${log_dir}"
 )
 [[ "${channel_mode}" == "sionna" ]] && renderer_args+=(--scenario-config "${sionna_scenario}")
+# UE count: 2 (default) or 4 (topology.ocudu-docker.multi-ue-quad). The fixed-TDL
+# renderer supports both; the Sionna renderer is two-UE only.
+ue_count="${OCUDU_NATIVE_MUE_UE_COUNT:-2}"
+[[ "${ue_count}" =~ ^(2|4)$ ]] || usage_error "OCUDU_NATIVE_MUE_UE_COUNT must be 2 or 4"
+if [[ "${ue_count}" != 2 ]]; then
+  [[ "${channel_mode}" != "sionna" ]] || usage_error "OCUDU_NATIVE_MUE_UE_COUNT=${ue_count} needs the fixed-TDL channel mode"
+  renderer_args+=(--ue-count "${ue_count}")
+fi
+export OCUDU_NATIVE_MUE_UE_COUNT="${ue_count}"
 "/usr/bin/python3" "${renderer}" "${renderer_args[@]}" >"${log_dir}/render.log" 2>&1 || {
   cat "${log_dir}/render.log" >&2; usage_error "config rendering failed"
 }
