@@ -127,6 +127,8 @@ void apply_runtime(RuntimeConfig& runtime, const std::string& key, const std::st
     runtime.rx_ring_batches = parse_size(value, key);
   } else if (key == "cuda_host_memory") {
     runtime.cuda_host_memory = parse_cuda_host_memory(value);
+  } else if (key == "cuda_stream_priority") {
+    runtime.cuda_stream_priority = parse_cuda_stream_priority(value);
   } else {
     throw std::runtime_error("unknown runtime key: " + key);
   }
@@ -1569,6 +1571,30 @@ CudaHostMemory parse_cuda_host_memory(const std::string& value)
     return CudaHostMemory::Auto;
   }
   throw std::runtime_error("unsupported runtime.cuda_host_memory: " + value + " (copy, zero_copy, auto)");
+}
+
+CudaStreamPriority parse_cuda_stream_priority(const std::string& value)
+{
+  if (value == "default") {
+    return CudaStreamPriority::Default;
+  }
+  if (value == "high") {
+    return CudaStreamPriority::High;
+  }
+  if (value == "low") {
+    return CudaStreamPriority::Low;
+  }
+  throw std::runtime_error("unsupported runtime.cuda_stream_priority: " + value + " (default, high, low)");
+}
+
+std::string to_string(CudaStreamPriority priority)
+{
+  switch (priority) {
+  case CudaStreamPriority::Default: return "default";
+  case CudaStreamPriority::High: return "high";
+  case CudaStreamPriority::Low: return "low";
+  }
+  return "default";
 }
 
 ModelStepType parse_model_step_type(const std::string& value)

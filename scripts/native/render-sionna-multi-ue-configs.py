@@ -232,16 +232,18 @@ def rx_noise_powers(shape: LiveShape, awgn_snr_db: float | None,
     return floors
 
 
-def render_topology(shape: LiveShape, rx_noise: dict[str, float] | None = None) -> str:
+def render_topology(shape: LiveShape, rx_noise: dict[str, float] | None = None,
+                    gnb_ports: tuple[int, int] = (2000, 2001)) -> str:
     """Generate the broker topology the scenario describes.
 
     Endpoints follow `render-multi-ue-configs.py`'s UE table and the gNB's
-    fixed 2000/2001 pair, so the ports the gate pre-checks and the srsUE
-    configs use are the ones the broker binds. REP sockets bind loopback: every
-    peer is in this namespace.
+    fixed 2000/2001 pair (`gnb_ports`; the robot-fight gate's second cell uses
+    2010/2011), so the ports the gate pre-checks and the srsUE configs use are
+    the ones the broker binds. REP sockets bind loopback: every peer is in this
+    namespace.
     """
 
-    endpoints = {shape.gnb.node_id: (2000, 2001)}
+    endpoints = {shape.gnb.node_id: gnb_ports}
     for ue in legacy.UES:
         endpoints[ue["device_id"]] = (ue["tx_port"], ue["rx_port"])
 

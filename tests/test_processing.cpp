@@ -1384,6 +1384,47 @@ int main()
       host_cfg.models.emplace(rx_noise.id, rx_noise);
       run_modes(host_cfg, "ue0", {ocg::link_key(host_cfg.links[0])}, {&phase}, &rx_noise, false,
                 "zero-copy parity: host-stage path must be bit-identical to copy");
+
+      // (i) runtime.cuda_stream_priority (R5a) only changes WHEN the GPU
+      // starts this processor's work relative to other streams; high, low and
+      // default must produce bit-identical output over stateful slots, and a
+      // prioritised stream must report the priority it was created with.
+      {
+        constexpr std::size_t batch = 256;
+        constexpr int slots = 4;
+        std::vector<std::vector<ocg::IqBuffer>> outs(3);
+        const ocg::CudaStreamPriority levels[] = {ocg::CudaStreamPriority::Default, ocg::CudaStreamPriority::High,
+                                                  ocg::CudaStreamPriority::Low};
+        for (int mode = 0; mode != 3; ++mode) {
+          auto cfg_p = device_cfg;
+          cfg_p.runtime.cuda_host_memory = ocg::CudaHostMemory::Copy;
+          cfg_p.runtime.cuda_stream_priority = levels[mode];
+          auto cuda = ocg::create_channel_processor(cfg_p);
+          for (int s = 0; s != slots; ++s) {
+            ocg::IqBuffer src(batch);
+            for (std::size_t n = 0; n != batch; ++n) {
+              const double t = static_cast<double>(s * batch + n);
+              src[n] = {static_cast<float>(std::cos(0.07 * t)), static_cast<float>(std::sin(0.11 * t))};
+            }
+            std::vector<ocg::SuperpositionInput> edges = {
+                {.link_key = ocg::link_key(device_cfg.links[0]), .model = &faded, .samples = src},
+                {.link_key = ocg::link_key(device_cfg.links[1]), .model = &weak, .samples = src}};
+            ocg::IqBuffer out(batch);
+            cuda->process_superposition("ue0", edges, &rx_noise, 23040000, out);
+            outs[static_cast<std::size_t>(mode)].push_back(std::move(out));
+          }
+        }
+        for (int mode = 1; mode != 3; ++mode) {
+          for (int s = 0; s != slots; ++s) {
+            for (std::size_t n = 0; n != batch; ++n) {
+              const auto& a = outs[0][static_cast<std::size_t>(s)][n];
+              const auto& b = outs[static_cast<std::size_t>(mode)][static_cast<std::size_t>(s)][n];
+              require(a.i == b.i && a.q == b.q,
+                      "cuda_stream_priority: high/low output must be bit-identical to default");
+            }
+          }
+        }
+      }
     }
   }
 #endif

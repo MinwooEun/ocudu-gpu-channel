@@ -1565,6 +1565,29 @@ models:
   }
   require(rejected, "runtime.cuda_host_memory rejects an unknown mode");
 
+  // runtime.cuda_stream_priority (R5a): default keeps the plain stream, high
+  // and low take the device's priority range, anything else is refused.
+  require(rx_ring_default.runtime.cuda_stream_priority == ocg::CudaStreamPriority::Default,
+          "runtime.cuda_stream_priority defaults to default when omitted");
+  write_rx_ring_config("  cuda_stream_priority: high");
+  require(ocg::load_config_file(rx_ring_path).runtime.cuda_stream_priority == ocg::CudaStreamPriority::High,
+          "runtime.cuda_stream_priority parses high");
+  write_rx_ring_config("  cuda_stream_priority: low");
+  require(ocg::load_config_file(rx_ring_path).runtime.cuda_stream_priority == ocg::CudaStreamPriority::Low,
+          "runtime.cuda_stream_priority parses low");
+  write_rx_ring_config("  cuda_stream_priority: default");
+  require(ocg::load_config_file(rx_ring_path).runtime.cuda_stream_priority == ocg::CudaStreamPriority::Default,
+          "runtime.cuda_stream_priority parses default");
+  require(ocg::to_string(ocg::CudaStreamPriority::High) == "high", "cuda_stream_priority to_string");
+  write_rx_ring_config("  cuda_stream_priority: urgent");
+  rejected = false;
+  try {
+    (void)ocg::load_config_file(rx_ring_path);
+  } catch (const std::exception&) {
+    rejected = true;
+  }
+  require(rejected, "runtime.cuda_stream_priority rejects an unknown level");
+
   write_rx_ring_config("  rx_ring_batches: 1");
   rejected = false;
   try {

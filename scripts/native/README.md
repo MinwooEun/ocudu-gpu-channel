@@ -314,3 +314,33 @@ The report directory contains `live-ready.json`, `web-ui-status.json`,
 binaries, not radio connectivity. See the
 [current Sionna guide](../../docs/sionna-integration.md) for matrix updates,
 telemetry freshness, multi-gNB metrics and the separate UE recovery results.
+
+## Run the two-cell, two-broker robot-fight gate (R5)
+
+`run-ocudu-robot-fight.sh` is the scheduling battle of
+`ROBOT_FIGHT_MILESTONES.md` R5: cell a (`gnb0` PCI 1 <-> `ue0`) and cell b
+(`gnb1` PCI 2 <-> `ue1`) are served by **two separate broker processes** on
+one GPU, each driven by its own Sionna bridge from one scene
+(`examples/sionna/robot-ring-fight.json`, `gnb1` on `gnb0`'s mast) and one
+live position feed. The physical channel is the same by construction; the
+knobs decide how each broker is scheduled while something else shares the
+GPU. It keeps the multi-UE gate's hooks (`OCUDU_NATIVE_MUE_UE_EXEC`,
+`OCUDU_NATIVE_MUE_ROOT_EXEC`), position-feed and noise-floor variables.
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `OCUDU_NATIVE_RF_BROKER_A_SCHED` / `_B_SCHED` | `plain` | `plain`: own CUDA context, unpinned, default stream, no realtime class. `protected`: MPS client, `runtime.cuda_stream_priority` (`OCUDU_NATIVE_RF_PROTECTED_STREAM_PRIORITY`, `high`), pinned to the profile's broker cores (`OCUDU_NATIVE_RF_PROTECTED_CPUS`) with the profile's `broker_env`; optionally `chrt -f` `OCUDU_NATIVE_RF_PROTECTED_RT_PRIORITY` (`0` = off, the default: with `OCG_BROKER_SPIN=1` the broker's spinning threads starve each other under FIFO, R5a; needs the rlimit, the inner logs `rt_unavailable` if it could not). |
+| `OCUDU_NATIVE_RF_CONTENTION` | `none` | `busy`: `ocudu-gpu-hog` (spin kernels of `OCUDU_NATIVE_RF_HOG_KERNEL_US` µs at duty `OCUDU_NATIVE_RF_HOG_DUTY`, an MPS client when `OCUDU_NATIVE_RF_HOG_MPS=1`, then capped to `OCUDU_NATIVE_RF_HOG_SM_PERCENT` of the SMs via `CUDA_MPS_ACTIVE_THREAD_PERCENTAGE` when set). `cudagnb`: both gNBs CUDA-accelerated (`OCUDU_NATIVE_GNB_ACCELERATION`, `all`). `busy+cudagnb`. The two Sionna bridges always share the GPU; they are MPS clients by default (`OCUDU_NATIVE_RF_SIONNA_MPS=0` gives each its own context, which time-slices every broker for the length of each solve). A 2,000 µs hog kernel costs every context outside its own ~2.3 ms per slot whatever the broker does; `OCUDU_NATIVE_RF_HOG_KERNEL_US=200` is the realistic many-small-kernels tenant (CUDA gNB, Sionna), against which the protected broker holds p99 0.86 ms vs 1.87 ms plain (R5a). |
+| `OCUDU_NATIVE_RF_CONTENTION_START` | `after-attach` | The hog starts once both UEs have pinged (`immediate`: with the brokers). |
+| `OCUDU_NATIVE_RF_MPS` | `auto` | One MPS server for the gate when any process is meant to be a client (`with-cuda-mps.py` re-executes the gate); `on` / `off`. |
+| `OCUDU_NATIVE_RF_DURATION_SECONDS` | `300` | Broker `--duration`; attach window 150 s, the rest under contention. |
+| `OCUDU_NATIVE_RF_PLAIN_CPUS` | unset | Pin the plain broker too (unpinned by default). |
+| `OCUDU_NATIVE_RF_SKIP_CTEST` | `0` | Skip the tree's ctest after the build (repeat runs of one tree). |
+| `OCUDU_NATIVE_RF_WEB_UI` | `0` | Start the read-only web UI on cell a's telemetry. |
+
+The verdict (`results/reports/ocudu-robot-fight/<ts>/attach-summary.json`)
+passes on attach, PCI camping, clean transport counters and broker exit; it
+*records* per broker `rx_starvations`, node stalls and `gpu_timings`
+percentiles before and under contention, the ping RTT of each UE at attach
+and under contention (a 50-packet burst 20 s after the contention starts),
+the Sionna feed counters and the hog's rate. Those are the measurement.

@@ -31,6 +31,18 @@ enum class CudaHostMemory {
   Auto
 };
 
+// Priority of the CUDA stream every per-node kernel and copy is issued on.
+// Default keeps the stream the backend always created (no priority
+// attribute); High/Low map onto the device's priority range. Priority only
+// changes when the GPU starts this broker's work relative to other streams in
+// the SAME context (an MPS server's clients share one), never what the
+// kernels compute (ROBOT_FIGHT_MILESTONES.md R5a).
+enum class CudaStreamPriority {
+  Default,
+  High,
+  Low
+};
+
 enum class ModelStepType {
   PathLoss,
   Awgn,
@@ -93,6 +105,7 @@ struct RuntimeConfig {
   // measured faster on both GB10 and Orin; copy on a discrete GPU, where every
   // mapped access crosses PCIe (ZERO_COPY_MILESTONES.md Z3-Z6).
   CudaHostMemory cuda_host_memory = CudaHostMemory::Auto;
+  CudaStreamPriority cuda_stream_priority = CudaStreamPriority::Default;
 };
 
 // A node in the channel-emulation graph. gNBs and UEs are the SAME class -- a
@@ -465,6 +478,8 @@ std::string to_string(ModelStepType type);
 
 Backend parse_backend(const std::string& value);
 CudaHostMemory parse_cuda_host_memory(const std::string& value);
+CudaStreamPriority parse_cuda_stream_priority(const std::string& value);
+std::string to_string(CudaStreamPriority priority);
 ModelStepType parse_model_step_type(const std::string& value);
 
 std::size_t resolve_batch_samples(const RuntimeConfig& runtime, std::uint64_t sample_rate_hz);
