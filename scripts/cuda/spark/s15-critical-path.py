@@ -172,3 +172,57 @@ for d in ("gnb0", "ue0"):
     print(f"== {d}: tx msgs/s={len(tx)/span:.0f}")
     print(f"  turnaround {pct(turn)}")
     print(f"  cycle      {pct(cyc)}")
+
+# Dependency chain: walk back one loop from each gnb0 TX message.
+#   gTX(k) <- gRX reply sent (gNB turnaround) <- ueTX message it covered (UL broker)
+#   <- ueRX reply sent (UE turnaround) <- gTX message it covered (DL broker) = gTX(m).
+# The loop advances k - m messages; broker and device time per message is the
+# chain split by that advance. Broker time excludes wait_req (device asked late).
+g0, u0 = sorted(ports["gnb0"])[0], sorted(ports["ue0"])[0]
+gtx = c("puller", g0, 1)             # (cum, t) gNB TX messages
+utx = c("puller", u0, 1)
+g_sent = c("rep", g0, 22)            # (cum, t) gNB RX replies (port 0)
+u_sent = c("rep", u0, 22)
+g_sent_t = [t for _, t in g_sent]
+u_sent_t = [t for _, t in u_sent]
+gtx_t = [t for _, t in gtx]
+utx_t = [t for _, t in utx]
+chain = collections.defaultdict(list)
+for k in range(1, len(gtx)):
+    t_k = gtx[k][1]
+    if not (lo <= t_k < hi):
+        continue
+    i = bisect.bisect_left(g_sent_t, t_k) - 1      # last gNB RX reply before gTX(k)
+    if i < 0:
+        continue
+    s_g, t_gs = g_sent[i]                          # it delivered UL samples up to s_g
+    j = bisect.bisect_left(utx, (s_g, -1))         # UE TX message that completed s_g
+    if j >= len(utx):
+        continue
+    t_ut = utx[j][1]
+    a = bisect.bisect_left(u_sent_t, t_ut) - 1     # last UE RX reply before that UE TX
+    if a < 0:
+        continue
+    s_u, t_us = u_sent[a]
+    m = bisect.bisect_left(gtx, (s_u, -1))         # gNB TX message that completed s_u
+    if m >= len(gtx) or m >= k:
+        continue
+    t_gm = gtx[m][1]
+    adv = k - m
+    ul = (t_gs - t_ut) / 1e3
+    dl = (t_us - t_gm) / 1e3
+    chain["advance"].append(adv)
+    chain["dl_relay"].append(dl)
+    chain["ue_turn"].append((t_ut - t_us) / 1e3)
+    chain["ul_relay"].append(ul)
+    chain["gnb_turn"].append((t_k - t_gs) / 1e3)
+    chain["loop"].append((t_k - t_gm) / 1e3)
+    chain["relay_per_msg"].append((dl + ul) / adv)
+    chain["loop_per_msg"].append((t_k - t_gm) / 1e3 / adv)
+print("== dependency chain (gnb0 TX k back to gnb0 TX m, one loop)")
+for key in ("advance", "dl_relay", "ue_turn", "ul_relay", "gnb_turn", "loop", "relay_per_msg", "loop_per_msg"):
+    print(f"  {key:14s} {pct(chain[key])}")
+if chain["loop"]:
+    tot = sum(chain["loop"])
+    rel = sum(chain["dl_relay"]) + sum(chain["ul_relay"])
+    print(f"  relay share of the loop = {rel / tot:.3f}  (device share {1 - rel / tot:.3f})")

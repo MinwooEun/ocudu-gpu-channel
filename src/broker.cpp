@@ -144,11 +144,14 @@ SocketPtr make_socket(void* context, int type)
 //                       producer slot to <dir>/hop-trace.csv at shutdown, to
 //                       split the lock-step cycle into its hops.
 // Relay-latency knobs (S15), each off unless set to 1:
-//   OCG_BROKER_SPIN     workers never sleep while waiting: they poll their
+//   OCG_BROKER_SPIN     1: workers never sleep while waiting: they poll their
 //                       sockets without blocking and yield the core between
 //                       polls, so a handoff between broker threads does not
 //                       wait for a sleeping core to wake. Costs the broker's
 //                       own cores at 100%; pin the broker (the gate does).
+//                       2: spin only on in-process waits (producer input,
+//                       REP row); socket receives block, so fewer workers
+//                       compete for the broker's cores.
 //   OCG_BROKER_SPIN_US  with SPIN, spin at most this long per wait before
 //                       falling back to the blocking/sleeping wait (default 0
 //                       = spin without limit). Bounds how many workers spin at
@@ -168,7 +171,8 @@ struct BrokerDiagKnobs {
   bool tight_slack = false;
   std::string trace_dir;
   int io_threads = 0;
-  bool spin = false;
+  bool spin = false;         // in-process waits spin
+  bool spin_sockets = false; // socket receives spin too (OCG_BROKER_SPIN=1)
   std::chrono::microseconds spin_budget{0};
   bool fewer_copies = false;
   bool direct_rows = false;
@@ -193,7 +197,10 @@ BrokerDiagKnobs read_diag_knobs()
   if (const char* dir = std::getenv("OCG_HOP_TRACE_DIR"); dir != nullptr) {
     knobs.trace_dir = dir;
   }
-  knobs.spin = env_flag("OCG_BROKER_SPIN");
+  if (const char* spin = std::getenv("OCG_BROKER_SPIN"); spin != nullptr) {
+    knobs.spin = std::strcmp(spin, "1") == 0 || std::strcmp(spin, "2") == 0;
+    knobs.spin_sockets = std::strcmp(spin, "1") == 0;
+  }
   if (const char* budget = std::getenv("OCG_BROKER_SPIN_US"); budget != nullptr && *budget != '\0') {
     knobs.spin_budget = std::chrono::microseconds(std::strtol(budget, nullptr, 10));
   }
@@ -1024,7 +1031,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           const auto once = [&](int flags) {
             return recv_samples_msg(dev.tx_req.get(), held, recv_buf.size(), sample_count, flags);
           };
-          got = knobs.spin ? spin_receive([&] { return once(ZMQ_DONTWAIT); }, stop_requested, dev.tx_req.get(),
+          got = knobs.spin_sockets ? spin_receive([&] { return once(ZMQ_DONTWAIT); }, stop_requested, dev.tx_req.get(),
                                           knobs.spin_budget)
                            : once(0);
           if (got) {
@@ -1034,7 +1041,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           const auto once = [&](int flags) {
             return recv_samples_into(dev.tx_req.get(), recv_buf, sample_count, flags);
           };
-          got = knobs.spin ? spin_receive([&] { return once(ZMQ_DONTWAIT); }, stop_requested, dev.tx_req.get(),
+          got = knobs.spin_sockets ? spin_receive([&] { return once(ZMQ_DONTWAIT); }, stop_requested, dev.tx_req.get(),
                                           knobs.spin_budget)
                            : once(0);
           pending_data = recv_buf.data();
@@ -1401,7 +1408,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         const auto t_wait_req_start = std::chrono::steady_clock::now();
         std::uint8_t dummy = 0;
         int received = -1;
-        if (knobs.spin) {
+        if (knobs.spin_sockets) {
           spin_receive(
               [&] {
                 received = zmq_recv(port.rx_rep.get(), &dummy, sizeof(dummy), ZMQ_DONTWAIT);
