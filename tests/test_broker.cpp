@@ -24,6 +24,9 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
+#include <cstdio>
+#include <fstream>
+#include <unistd.h>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -328,6 +331,224 @@ void run_lockstep_rx(void* context,
   zmq_close(socket);
 }
 
+// S15 relay-path parity: a 2-port gNB node and a 2-port UE node joined by
+// fixed 2x2 matrices, lock-step peers whose TX is a deterministic ramp that
+// differs per port. The broker runs once with the relay-latency knobs off and
+// once with all of them on; the RX streams every port received must be
+// bit-identical over their common length. The knobs change how IQ moves
+// (spin waits, in-place ring reads/sends, rows written into the RX ring),
+// never what it is.
+void run_ramp_tx(void* context, std::string endpoint, std::size_t chunk, std::size_t tx_offset, float port_bias,
+                 RadioState& radio, std::atomic<bool>& stop)
+{
+  void* socket = zmq_socket(context, ZMQ_REP);
+  set_timeouts(socket);
+  if (zmq_bind(socket, endpoint.c_str()) != 0) {
+    std::cerr << "FAIL: ramp TX could not bind " << endpoint << "\n";
+    std::exit(1);
+  }
+  ocg::IqBuffer samples(chunk);
+  std::uint64_t index = 0;
+  while (!stop.load()) {
+    std::uint8_t dummy = 0;
+    if (zmq_recv(socket, &dummy, sizeof(dummy), 0) < 0) {
+      continue;
+    }
+    while (!stop.load() && radio.tx_sent.load() + chunk > radio.rx_consumed.load() + tx_offset) {
+      std::this_thread::sleep_for(std::chrono::microseconds(50));
+    }
+    if (stop.load()) {
+      break;
+    }
+    for (auto& v : samples) {
+      const auto k = static_cast<float>(index % 1024);
+      v = {k * 0.0009765625F + port_bias, 0.5F - k * 0.00048828125F};
+      ++index;
+    }
+    while (!stop.load() && zmq_send(socket, samples.data(), samples.size() * sizeof(ocg::IqSample), 0) < 0) {
+    }
+    radio.tx_sent.fetch_add(chunk);
+  }
+  zmq_close(socket);
+}
+
+void run_recording_rx(void* context, std::string endpoint, RadioState& radio, std::atomic<bool>& stop,
+                      ocg::IqBuffer& record)
+{
+  void* socket = zmq_socket(context, ZMQ_REQ);
+  set_timeouts(socket);
+  if (zmq_connect(socket, endpoint.c_str()) != 0) {
+    std::cerr << "FAIL: recording RX could not connect " << endpoint << "\n";
+    std::exit(1);
+  }
+  bool awaiting_reply = false;
+  while (!stop.load()) {
+    if (!awaiting_reply) {
+      std::uint8_t dummy = 0;
+      if (zmq_send(socket, &dummy, sizeof(dummy), 0) < 0) {
+        continue;
+      }
+      awaiting_reply = true;
+    }
+    zmq_msg_t msg;
+    zmq_msg_init(&msg);
+    const int nbytes = zmq_msg_recv(&msg, socket, 0);
+    if (nbytes < 0) {
+      zmq_msg_close(&msg);
+      continue;
+    }
+    awaiting_reply = false;
+    const auto n = static_cast<std::size_t>(nbytes) / sizeof(ocg::IqSample);
+    const auto* data = static_cast<const ocg::IqSample*>(zmq_msg_data(&msg));
+    record.insert(record.end(), data, data + n);
+    radio.rx_consumed.fetch_add(n);
+    zmq_msg_close(&msg);
+  }
+  zmq_close(socket);
+}
+
+const char* kParityTopology = R"yaml(runtime:
+  backend: cpu
+  batch_samples: 23040
+  queue_samples: 230400
+devices:
+  - id: gnb0_p0
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:25700
+    rx_endpoint: tcp://127.0.0.1:25701
+  - id: gnb0_p1
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:25702
+    rx_endpoint: tcp://127.0.0.1:25703
+  - id: ue0_p0
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:25704
+    rx_endpoint: tcp://127.0.0.1:25705
+  - id: ue0_p1
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:25706
+    rx_endpoint: tcp://127.0.0.1:25707
+radio_nodes:
+  - id: gnb0
+    tx_ports:
+      - gnb0_p0
+      - gnb0_p1
+    rx_ports:
+      - gnb0_p0
+      - gnb0_p1
+  - id: ue0
+    tx_ports:
+      - ue0_p0
+      - ue0_p1
+    rx_ports:
+      - ue0_p0
+      - ue0_p1
+links:
+  - from: gnb0
+    to: ue0
+    model: m2x2
+  - from: ue0
+    to: gnb0
+    model: m2x2
+models:
+  m2x2:
+    fixed_mimo:
+      coefficients:
+        - tap: 0
+          rx: 0
+          tx: 0
+          real: 0.7214
+          imag: 0.0724
+        - tap: 0
+          rx: 0
+          tx: 1
+          real: -0.2790
+          imag: -0.1909
+        - tap: 0
+          rx: 1
+          tx: 0
+          real: 0.3230
+          imag: -0.0999
+        - tap: 0
+          rx: 1
+          tx: 1
+          real: 0.7106
+          imag: 0.1440
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: 0.0
+            phase_rad: 0.0
+)yaml";
+
+std::vector<ocg::IqBuffer> run_parity_relay(const ocg::TopologyConfig& config)
+{
+  constexpr std::size_t chunk = 6000;
+  constexpr std::size_t tx_offset = 12000;
+  void* context = zmq_ctx_new();
+  std::atomic<bool> stop{false};
+  std::vector<RadioState> radios(4);
+  std::vector<ocg::IqBuffer> records(4);
+  std::vector<std::thread> peers;
+  for (std::size_t d = 0; d != 4; ++d) {
+    peers.emplace_back(run_ramp_tx, context, config.devices[d].tx_endpoint, chunk, tx_offset,
+                       0.125F * static_cast<float>(d + 1), std::ref(radios[d]), std::ref(stop));
+    peers.emplace_back(run_recording_rx, context, config.devices[d].rx_endpoint, std::ref(radios[d]),
+                       std::ref(stop), std::ref(records[d]));
+  }
+  ocg::Broker broker(config);
+  const auto stats = broker.run(std::chrono::milliseconds(800));
+  stop.store(true);
+  for (auto& peer : peers) {
+    peer.join();
+  }
+  zmq_ctx_shutdown(context);
+  zmq_ctx_destroy(context);
+  require(stats.zmq_errors == 0 && stats.tx_sequence_gaps == 0, "parity relay reported errors");
+  return records;
+}
+
+void scenario_relay_knobs_bit_identical()
+{
+  const std::string path = "/tmp/ocg-test-relay-parity-" + std::to_string(::getpid()) + ".yaml";
+  {
+    std::ofstream out(path);
+    out << kParityTopology;
+  }
+  const auto config = ocg::load_config_file(path);
+  std::remove(path.c_str());
+  const char* knobs[] = {"OCG_BROKER_SPIN", "OCG_BROKER_FEWER_COPIES", "OCG_BROKER_DIRECT_ROWS"};
+  for (const char* k : knobs) {
+    ::unsetenv(k);
+  }
+  const auto base = run_parity_relay(config);
+  for (const char* k : knobs) {
+    ::setenv(k, "1", 1);
+  }
+  const auto fast = run_parity_relay(config);
+  for (const char* k : knobs) {
+    ::unsetenv(k);
+  }
+  std::size_t compared = 0;
+  for (std::size_t d = 0; d != 4; ++d) {
+    const std::size_t n = std::min(base[d].size(), fast[d].size());
+    require(n >= 23040, "parity relay: a port received less than one batch");
+    for (std::size_t i = 0; i != n; ++i) {
+      if (base[d][i].i != fast[d][i].i || base[d][i].q != fast[d][i].q) {
+        std::cerr << "port " << d << " sample " << i << " differs\n";
+        require(false, "relay knobs changed the RX stream");
+      }
+    }
+    compared += n;
+  }
+  std::cout << "relay knobs parity: " << compared << " samples bit-identical across 4 ports\n";
+}
+
 void scenario_multi_ue_lockstep()
 {
   ocg::TopologyConfig config;
@@ -478,6 +699,7 @@ void scenario_pacer_drops_unrecoverable_debt()
 int main()
 {
   scenario_nominal_timing_crosses_arbitrary_fragment_boundaries();
+  scenario_relay_knobs_bit_identical();
   scenario_pacer_drops_unrecoverable_debt();
   scenario_loopback();
   scenario_multi_ue_lockstep();

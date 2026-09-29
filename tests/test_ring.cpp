@@ -121,6 +121,35 @@ int main()
     }
   }
 
+  // view / reserve / commit (S15): in-place access matches read() and push(),
+  // wrapping ranges fall back (empty span), and draining the ring keeps the
+  // tail where a producer may hold a reserved span.
+  {
+    ocg::IqRing r(6);
+    auto tail = r.reserve(4);
+    require(tail.size() == 4, "reserve: contiguous tail from empty");
+    for (std::size_t i = 0; i != 4; ++i) tail[i] = {static_cast<float>(i + 1), 0.0F};
+    require(r.size() == 0, "reserve: nothing visible before commit");
+    r.commit(4);
+    require(r.size() == 4 && r.next_sequence() == 4, "commit publishes the samples");
+    auto v = r.view(1, 3);
+    require(v.size() == 3 && v[0].i == 2.0F && v[2].i == 4.0F, "view returns the committed samples in place");
+    require(r.view(2, 3).empty(), "view refuses a range beyond the frontier");
+    require(r.reserve(3).empty(), "reserve refuses more than the free space");
+    r.discard_before(4); // drain: tail must stay at storage index 4
+    auto t2 = r.reserve(2);
+    require(t2.size() == 2 && t2.data() == tail.data() + 4, "drain keeps the tail position");
+    t2[0] = {5.0F, 0.0F};
+    t2[1] = {6.0F, 0.0F};
+    r.commit(2);
+    require(r.reserve(3).size() == 3, "reserve after wrap point starts at storage index 0");
+    const ocg::IqBuffer three{{7.0F, 0.0F}, {8.0F, 0.0F}, {9.0F, 0.0F}};
+    require(r.push(three), "push after the tail wraps");
+    require(r.view(5, 2).empty(), "view refuses a range that wraps in storage");
+    ocg::IqBuffer out(2);
+    require(r.read(5, out) && out[0].i == 6.0F && out[1].i == 7.0F, "read still serves a wrapping range");
+  }
+
   // Empty out-span read short-circuits to true regardless of ring state.
   {
     ocg::IqRing r(4);

@@ -24,6 +24,7 @@
 #include <zmq.h>
 #include <cstdlib>
 #include <sys/prctl.h>
+#include <sched.h>
 
 // Concurrent per-direction relay broker, modelled on srsRAN's GNU Radio
 // Companion ZMQ broker (ZMQ REQ source -> Throttle -> channel -> ZMQ REP sink).
@@ -142,12 +143,37 @@ SocketPtr make_socket(void* context, int type)
 //   OCG_HOP_TRACE_DIR   write one timestamped event per ZMQ transfer and per
 //                       producer slot to <dir>/hop-trace.csv at shutdown, to
 //                       split the lock-step cycle into its hops.
+// Relay-latency knobs (S15), each off unless set to 1:
+//   OCG_BROKER_SPIN     workers never sleep while waiting: they poll their
+//                       sockets without blocking and yield the core between
+//                       polls, so a handoff between broker threads does not
+//                       wait for a sleeping core to wake. Costs the broker's
+//                       own cores at 100%; pin the broker (the gate does).
+//   OCG_BROKER_FEWER_COPIES
+//                       relay IQ with fewer CPU copies: the puller lands the
+//                       ZMQ message in the TX ring directly, the producer
+//                       reads its window in place from the TX ring, and the
+//                       REP worker sends straight from the RX ring (each falls
+//                       back to a copy when the range wraps).
+//   OCG_BROKER_DIRECT_ROWS
+//                       the channel writes each output row straight into its
+//                       RX ring storage instead of a staging row that is then
+//                       pushed (falls back when the tail space wraps).
 struct BrokerDiagKnobs {
   std::chrono::microseconds poll{50};
   bool tight_slack = false;
   std::string trace_dir;
   int io_threads = 0;
+  bool spin = false;
+  bool fewer_copies = false;
+  bool direct_rows = false;
 };
+
+bool env_flag(const char* name)
+{
+  const char* value = std::getenv(name);
+  return value != nullptr && std::strcmp(value, "1") == 0;
+}
 
 BrokerDiagKnobs read_diag_knobs()
 {
@@ -162,7 +188,39 @@ BrokerDiagKnobs read_diag_knobs()
   if (const char* dir = std::getenv("OCG_HOP_TRACE_DIR"); dir != nullptr) {
     knobs.trace_dir = dir;
   }
+  knobs.spin = env_flag("OCG_BROKER_SPIN");
+  knobs.fewer_copies = env_flag("OCG_BROKER_FEWER_COPIES");
+  knobs.direct_rows = env_flag("OCG_BROKER_DIRECT_ROWS");
   return knobs;
+}
+
+// One wait step of a worker whose peer has not produced yet.
+void wait_tick(const BrokerDiagKnobs& knobs)
+{
+  if (knobs.spin) {
+    sched_yield();
+  } else {
+    std::this_thread::sleep_for(knobs.poll);
+  }
+}
+
+// Spin mode's replacement for a blocking receive: poll without blocking,
+// yielding between polls, for at most the socket's 100 ms receive timeout so
+// the caller still observes its stop flag. `try_once` returns true on success.
+template <class TryOnce>
+bool spin_receive(TryOnce&& try_once, const std::atomic<bool>& stop)
+{
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(100);
+  while (!stop.load(std::memory_order_relaxed)) {
+    if (try_once()) {
+      return true;
+    }
+    if (std::chrono::steady_clock::now() >= deadline) {
+      return false;
+    }
+    sched_yield();
+  }
+  return false;
 }
 
 void apply_thread_slack(const BrokerDiagKnobs& knobs)
@@ -214,11 +272,11 @@ struct HopTrace {
 };
 
 // Returns true if a sample message was received; false on a timeout (EAGAIN).
-bool recv_samples_into(void* socket, std::span<IqSample> out, std::size_t& sample_count)
+bool recv_samples_into(void* socket, std::span<IqSample> out, std::size_t& sample_count, int flags = 0)
 {
   zmq_msg_t msg;
   zmq_msg_init(&msg);
-  const int nbytes = zmq_msg_recv(&msg, socket, 0);
+  const int nbytes = zmq_msg_recv(&msg, socket, flags);
   if (nbytes < 0) {
     const int err = zmq_errno();
     zmq_msg_close(&msg);
@@ -240,6 +298,30 @@ bool recv_samples_into(void* socket, std::span<IqSample> out, std::size_t& sampl
   }
   std::memcpy(out.data(), zmq_msg_data(&msg), static_cast<std::size_t>(nbytes));
   zmq_msg_close(&msg);
+  return true;
+}
+
+// Receives one sample message and keeps it in `msg` (the caller closes it), so
+// the payload can be pushed into a ring without an intermediate copy.
+bool recv_samples_msg(void* socket, zmq_msg_t& msg, std::size_t max_samples, std::size_t& sample_count,
+                      int flags = 0)
+{
+  const int nbytes = zmq_msg_recv(&msg, socket, flags);
+  if (nbytes < 0) {
+    const int err = zmq_errno();
+    if (err == EAGAIN || err == EINTR) {
+      return false;
+    }
+    throw std::runtime_error(std::string("zmq_msg_recv failed: ") + zmq_strerror(err));
+  }
+  if (static_cast<std::size_t>(nbytes) % sizeof(IqSample) != 0) {
+    throw std::runtime_error("received ZMQ payload is not aligned to cf32 IQ samples");
+  }
+  sample_count = static_cast<std::size_t>(nbytes) / sizeof(IqSample);
+  if (sample_count > max_samples) {
+    throw std::runtime_error("received ZMQ payload samples=" + std::to_string(sample_count) +
+                             " exceeds the TX ring capacity samples=" + std::to_string(max_samples));
+  }
   return true;
 }
 
@@ -825,6 +907,10 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
       // never be relayed and is rejected by recv_samples_into().
       IqBuffer recv_buf(std::max<std::size_t>(config_.runtime.queue_samples, dev.batch));
       bool request_outstanding = false;
+      // FEWER_COPIES keeps the received message itself and pushes from it.
+      zmq_msg_t held;
+      zmq_msg_init(&held);
+      const IqSample* pending_data = recv_buf.data();
       std::size_t pending = 0;       // samples pulled but not yet in the ring
       bool pending_counted = false;  // ring-full already counted for this message
       while (!stop_requested.load()) {
@@ -861,14 +947,18 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           bool pushed = false;
           {
             std::lock_guard<std::mutex> lk(dev.ring_mutex);
-            pushed = dev.tx_ring.push(std::span<const IqSample>(recv_buf.data(), pending));
+            pushed = dev.tx_ring.push(std::span<const IqSample>(pending_data, pending));
           }
           if (pushed) {
             trace.add(HopEvent::PullRingPushed, pending);
             // Wire capture, in ring order: this is what the peer's TX actually
             // put on the wire, before anything of ours reads it.
             append_capture(dev.tx_capture, dev.capture_limit, dev.capture_skip,
-                           dev.tx_wire_samples, recv_buf.data(), pending);
+                           dev.tx_wire_samples, pending_data, pending);
+            if (knobs.fewer_copies) {
+              zmq_msg_close(&held);
+              zmq_msg_init(&held);
+            }
             diag.state.store("push");
             diag.last_samples.store(pending);
             diag.total_samples.fetch_add(pending);
@@ -883,7 +973,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               stats.tx_queue_overflows.fetch_add(1);
               pending_counted = true;
             }
-            std::this_thread::sleep_for(knobs.poll);
+            wait_tick(knobs);
           }
           continue;
         }
@@ -891,7 +981,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         if (room < dev.batch) {
           diag.state.store("wait_room");
           diag.blocked_iters.fetch_add(1);
-          std::this_thread::sleep_for(knobs.poll);
+          wait_tick(knobs);
           continue;
         }
         if (!request_outstanding) {
@@ -905,7 +995,23 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         }
         diag.state.store("recv_reply");
         std::size_t sample_count = 0;
-        if (!recv_samples_into(dev.tx_req.get(), recv_buf, sample_count)) {
+        bool got = false;
+        if (knobs.fewer_copies) {
+          const auto once = [&](int flags) {
+            return recv_samples_msg(dev.tx_req.get(), held, recv_buf.size(), sample_count, flags);
+          };
+          got = knobs.spin ? spin_receive([&] { return once(ZMQ_DONTWAIT); }, stop_requested) : once(0);
+          if (got) {
+            pending_data = static_cast<const IqSample*>(zmq_msg_data(&held));
+          }
+        } else {
+          const auto once = [&](int flags) {
+            return recv_samples_into(dev.tx_req.get(), recv_buf, sample_count, flags);
+          };
+          got = knobs.spin ? spin_receive([&] { return once(ZMQ_DONTWAIT); }, stop_requested) : once(0);
+          pending_data = recv_buf.data();
+        }
+        if (!got) {
           diag.idle_waits.fetch_add(1);
           continue; // receive timed out; the request is still outstanding
         }
@@ -913,6 +1019,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         trace.add(HopEvent::PullReplyRecv, sample_count);
         pending = sample_count; // hand off to the land-pending branch above
       }
+      zmq_msg_close(&held);
     } catch (const std::exception& e) {
       report_thread_error("puller", e);
     }
@@ -942,6 +1049,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
       // One output row per RX port. M0 always has exactly one.
       std::vector<IqBuffer> row_storage(node.rx_ports.size(), IqBuffer(node.batch));
       std::vector<std::span<IqSample>> rows(node.rx_ports.size());
+      std::vector<char> row_in_ring(node.rx_ports.size(), 0);
 
       // Fixed description of this node's incoming lanes; the `samples` span is
       // repointed at the freshly read ring data each slot. process_superposition
@@ -994,7 +1102,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             room_stall_reported = true;
             next_room_report = now + kStallReportInterval;
           }
-          std::this_thread::sleep_for(knobs.poll);
+          wait_tick(knobs);
         }
         // Only a genuine resume clears; a stop request is a shutdown, not
         // recovery, and must not be logged as one.
@@ -1082,7 +1190,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               data_stall_reported = true;
               next_data_report = now + kStallReportInterval;
             }
-            std::this_thread::sleep_for(knobs.poll);
+            wait_tick(knobs);
           }
           if (data_stall_reported && !stop_requested.load()) {
             report_node_stall_cleared(node, "input_data",
@@ -1105,21 +1213,39 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           auto& link = links[incoming[k]];
           PortRuntime& src = *ports[link.src_index];
           const std::span<IqSample> window(inputs[k].data(), count);
+          std::span<const IqSample> in_place;
           {
             std::lock_guard<std::mutex> lk(src.ring_mutex);
-            if (!src.tx_ring.read(link.cursor.load(), window)) {
+            // FEWER_COPIES: read the window where the puller put it. Only this
+            // thread advances the lane cursor and the puller discards nothing
+            // at or after it, so the storage is stable until (F) below.
+            if (knobs.fewer_copies) {
+              in_place = src.tx_ring.view(link.cursor.load(), count);
+            }
+            if (in_place.empty() && !src.tx_ring.read(link.cursor.load(), window)) {
               throw std::runtime_error("broker serve window vanished from ring: " + link.key);
             }
           }
-          superposition[k].samples = std::span<const IqSample>(window.data(), window.size());
+          superposition[k].samples =
+              in_place.empty() ? std::span<const IqSample>(window.data(), window.size()) : in_place;
         }
 
         // (E) One channel call per node per slot, producing every row. On the
         // CUDA backend the per-lane shaping, the summation, and the receiver
         // model all run on the GPU. No lock needed: prepare() preallocated this
         // node's processor state, so concurrent calls touch disjoint state.
+        // DIRECT_ROWS: the row is the RX ring's own tail. (A) reserved the
+        // headroom and this is the ring's only writer, so the span is ours
+        // until (H) commits it.
         for (std::size_t r = 0; r != rows.size(); ++r) {
-          rows[r] = std::span<IqSample>(row_storage[r].data(), count);
+          std::span<IqSample> tail;
+          if (knobs.direct_rows) {
+            PortRuntime& out = *ports[node.rx_ports[r]];
+            std::lock_guard<std::mutex> lk(out.rx_mutex);
+            tail = out.rx_ring.reserve(count);
+          }
+          row_in_ring[r] = !tail.empty();
+          rows[r] = row_in_ring[r] ? tail : std::span<IqSample>(row_storage[r].data(), count);
         }
         diag.state.store("process");
         const auto t_process_start = std::chrono::steady_clock::now();
@@ -1195,7 +1321,9 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         for (std::size_t r = 0; r != node.rx_ports.size(); ++r) {
           PortRuntime& out = *ports[node.rx_ports[r]];
           std::lock_guard<std::mutex> lk(out.rx_mutex);
-          if (!out.rx_ring.push(std::span<const IqSample>(rows[r].data(), count))) {
+          if (row_in_ring[r]) {
+            out.rx_ring.commit(count);
+          } else if (!out.rx_ring.push(std::span<const IqSample>(rows[r].data(), count))) {
             throw std::runtime_error("RX output ring rejected a reserved push: " + out.config->id);
           }
           // Publish the window boundary with the samples, under the same lock,
@@ -1244,7 +1372,20 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         diag.state.store("wait_req");
         const auto t_wait_req_start = std::chrono::steady_clock::now();
         std::uint8_t dummy = 0;
-        const int received = zmq_recv(port.rx_rep.get(), &dummy, sizeof(dummy), 0);
+        int received = -1;
+        if (knobs.spin) {
+          spin_receive(
+              [&] {
+                received = zmq_recv(port.rx_rep.get(), &dummy, sizeof(dummy), ZMQ_DONTWAIT);
+                return received >= 0 || (zmq_errno() != EAGAIN && zmq_errno() != EINTR);
+              },
+              stop_requested);
+          if (received < 0 && zmq_errno() != EAGAIN && zmq_errno() != EINTR && zmq_errno() != EFSM) {
+            throw std::runtime_error(std::string("rx request failed: ") + zmq_strerror(zmq_errno()));
+          }
+        } else {
+          received = zmq_recv(port.rx_rep.get(), &dummy, sizeof(dummy), 0);
+        }
         if (received < 0) {
           const int err = zmq_errno();
           if (err == EAGAIN || err == EINTR || err == EFSM) {
@@ -1261,6 +1402,10 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         // A request was accepted; it must be answered with real processed IQ.
         diag.state.store("wait_row");
         std::size_t take = 0;
+        // FEWER_COPIES: send straight from the ring and release the window
+        // only after the send. The producer writes free space only, so the
+        // window stays intact while it is not discarded.
+        std::span<const IqSample> in_ring;
         while (!stop_requested.load()) {
           {
             std::lock_guard<std::mutex> lk(port.rx_mutex);
@@ -1269,19 +1414,24 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               // both would size this reply off this thread's arrival time
               // rather than off the window the node published.
               take = port.rx_slots.front();
-              if (!port.rx_ring.read(port.rx_cursor, std::span<IqSample>(reply_buf.data(), take))) {
-                throw std::runtime_error("RX output window vanished from ring: " + port.config->id);
+              if (knobs.fewer_copies) {
+                in_ring = port.rx_ring.view(port.rx_cursor, take);
               }
-              port.rx_cursor += take;
-              port.rx_ring.discard_before(port.rx_cursor);
-              port.rx_slots.pop_front();
+              if (in_ring.empty()) {
+                if (!port.rx_ring.read(port.rx_cursor, std::span<IqSample>(reply_buf.data(), take))) {
+                  throw std::runtime_error("RX output window vanished from ring: " + port.config->id);
+                }
+                port.rx_cursor += take;
+                port.rx_ring.discard_before(port.rx_cursor);
+                port.rx_slots.pop_front();
+              }
             }
           }
           if (take > 0) {
             break;
           }
           diag.blocked_iters.fetch_add(1);
-          std::this_thread::sleep_for(knobs.poll);
+          wait_tick(knobs);
         }
         if (take == 0) {
           break; // stop requested while waiting for a row
@@ -1294,13 +1444,20 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         // Wire capture, in serve order: this is the processed row as it goes
         // out to the radio, so a checker sees the broker's output rather than
         // its intent.
+        const std::span<const IqSample> reply =
+            in_ring.empty() ? std::span<const IqSample>(reply_buf.data(), take) : in_ring;
         append_capture(port.rx_capture, port.capture_limit, port.capture_skip,
-                       port.rx_wire_samples, reply_buf.data(), take);
+                       port.rx_wire_samples, reply.data(), take);
 
         diag.state.store("send");
-        const std::span<const IqSample> reply(reply_buf.data(), take);
         while (!stop_requested.load() && !send_samples(port.rx_rep.get(), reply)) {
           // send timed out; retry so the REP socket stays in a valid state
+        }
+        if (!in_ring.empty()) {
+          std::lock_guard<std::mutex> lk(port.rx_mutex);
+          port.rx_cursor += take;
+          port.rx_ring.discard_before(port.rx_cursor);
+          port.rx_slots.pop_front();
         }
         const double send_us =
             std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t_send_start).count();

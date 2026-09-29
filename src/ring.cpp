@@ -64,7 +64,8 @@ void IqRing::discard_before(std::uint64_t sequence)
   }
 
   if (sequence >= next_sequence_) {
-    start_ = 0;
+    // Keep the tail where it is: a producer may hold a reserve()d span there.
+    start_ = (start_ + size_) % buffer_.size();
     size_ = 0;
     return;
   }
@@ -72,6 +73,37 @@ void IqRing::discard_before(std::uint64_t sequence)
   const auto discard_count = static_cast<std::size_t>(sequence - earliest);
   start_ = (start_ + discard_count) % buffer_.size();
   size_ -= discard_count;
+}
+
+std::span<const IqSample> IqRing::view(std::uint64_t sequence, std::size_t count) const
+{
+  if (count == 0 || buffer_.empty() || sequence < earliest_sequence() || sequence + count > next_sequence_) {
+    return {};
+  }
+  const auto offset = static_cast<std::size_t>(sequence - earliest_sequence());
+  const std::size_t head = (start_ + offset) % buffer_.size();
+  if (head + count > buffer_.size()) {
+    return {};
+  }
+  return std::span<const IqSample>(buffer_.data() + head, count);
+}
+
+std::span<IqSample> IqRing::reserve(std::size_t count)
+{
+  if (count == 0 || buffer_.empty() || size_ + count > buffer_.size()) {
+    return {};
+  }
+  const std::size_t tail = (start_ + size_) % buffer_.size();
+  if (tail + count > buffer_.size()) {
+    return {};
+  }
+  return std::span<IqSample>(buffer_.data() + tail, count);
+}
+
+void IqRing::commit(std::size_t count)
+{
+  size_ += count;
+  next_sequence_ += count;
 }
 
 } // namespace ocg
