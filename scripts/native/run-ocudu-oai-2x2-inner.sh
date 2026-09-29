@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Inner runner for the native OAI nrUE 1x1 attach gate (M6.2). Runs inside a
-# rootless user+net+mount namespace created by run-ocudu-oai-1x1.sh.
+# Inner runner for the native OAI nrUE 2x2 SU-MIMO gate (M6.3). Runs inside a
+# rootless user+net+mount namespace created by run-ocudu-oai-2x2.sh.
 #
-# Differences against run-ocudu-legacy-1x1-inner.sh, all of them UE-side:
-#   - the OAI nrUE has no netns config option, so the WHOLE process runs
-#     inside the nested ue1 namespace and a veth pair carries its ZMQ path
-#     to the broker in the gate namespace (10.201.0.1 <-> 10.201.0.2);
-#   - the attach verdict tokens are OAI's ("State = NR_RRC_CONNECTED",
-#     "Received PDU Session Establishment Accept"), the TUN interface is
-#     OAI's (oaitun_ue1), and the ping runs against it inside ue1;
-#   - the broker window is 25 s (OAI cold sync + RA is slower than srsUE's).
+# Same namespace layout as the OAI 1x1 gate (nested ue1 namespace, veth pair
+# 10.201.0.1 <-> 10.201.0.2, Open5GS + MongoDB in the gate namespace). What
+# changes:
+#   - the UE runs 2 RX / 2 TX antennas with the ports2 capability file and two
+#     ZMQ channels per direction;
+#   - OAI2X2_PATH=broker puts the CUDA broker (2x2 topology) between gNB and
+#     UE; OAI2X2_PATH=direct wires the gNB straight to the UE over the veth
+#     (identity channel, no emulator);
+#   - after attach it runs a ping and a downlink iperf3 (UDP) so rank and
+#     throughput can be read from the same run.
 
 mode=""
 parent_netns=""
@@ -284,60 +286,6 @@ wait_log()
   return 1
 }
 
-write_summary()
-{
-  local status="$1"
-  local broker_status="$2"
-  local rrc="$3"
-  local pdu="$4"
-  local ping_ok="$5"
-  local rx_starvations="$6"
-  local tx_queue_overflows="$7"
-  local tx_sequence_gaps="$8"
-  local zmq_errors="$9"
-  local gnb_alive="${10}"
-  local fivegc_alive="${11}"
-  local nrue_alive="${12}"
-  /usr/bin/python3 - "${report_dir}/attach-summary.json" "${timestamp}" "${status}" \
-    "${broker_status}" "${rrc}" "${pdu}" "${ping_ok}" "${rx_starvations}" \
-    "${tx_queue_overflows}" "${tx_sequence_gaps}" "${zmq_errors}" \
-    "${gnb_alive}" "${fivegc_alive}" "${nrue_alive}" \
-    "${log_dir}" "${report_dir}" <<'PY'
-import json
-import sys
-
-(path, timestamp, status, broker_status, rrc, pdu, ping_ok, rx_starvations,
- tx_queue_overflows, tx_sequence_gaps, zmq_errors, gnb_alive, fivegc_alive,
- nrue_alive, log_dir, report_dir) = sys.argv[1:]
-data = {
-    "timestamp": timestamp,
-    "status": status,
-    "duration_seconds": 25,
-    "ue": "oai-nrue",
-    "oai_ref": "2026.w33",
-    "runtime_mode": "rootless_user_net_mount_namespace",
-    "docker_used": False,
-    "primitive_probe_passed": True,
-    "broker_status": int(broker_status),
-    "rrc_connected": int(rrc),
-    "pdu_session_established": int(pdu),
-    "ping_ok": int(ping_ok),
-    "gnb_alive_at_broker_stop": int(gnb_alive),
-    "open5gs_alive_at_broker_stop": int(fivegc_alive),
-    "nrue_alive_at_broker_stop": int(nrue_alive),
-    "rx_starvations": int(rx_starvations),
-    "tx_queue_overflows": int(tx_queue_overflows),
-    "tx_sequence_gaps": int(tx_sequence_gaps),
-    "zmq_errors": int(zmq_errors),
-    "log_dir": log_dir,
-    "report_dir": report_dir,
-}
-with open(path, "x", encoding="utf-8") as output:
-    json.dump(data, output, indent=2, sort_keys=True)
-    output.write("\n")
-PY
-}
-
 extract_counter()
 {
   local key="$1"
@@ -352,42 +300,57 @@ run_stack()
   for required in "${native_root}" "${repo_root}" "${config_dir}" "${log_dir}" "${report_dir}"; do
     [[ "${required}" == /* && -d "${required}" && ! -L "${required}" ]] || usage_error "invalid run directory: ${required}"
   done
+  local path_mode="${OAI2X2_PATH:?}"
+  local broker_seconds="${OAI2X2_BROKER_SECONDS:-90}"
+  local attach_seconds="${OAI2X2_ATTACH_SECONDS:-45}"
+  local iperf_seconds="${OAI2X2_IPERF_SECONDS:-15}"
+  local iperf_rate="${OAI2X2_IPERF_RATE:-80M}"
+  local iperf_dir="${OAI2X2_IPERF_DIR:-dl}"
+  local iperf_ul_rate="${OAI2X2_IPERF_UL_RATE:-60M}"
+  [[ "${iperf_dir}" == dl || "${iperf_dir}" == ul || "${iperf_dir}" == both ]] || usage_error "OAI2X2_IPERF_DIR must be dl, ul or both"
+  local oai_build="${OAI2X2_NRUE_DIR:-${native_root}/builds/oai-zmq-release}"
   local gnb="${OCUDU_NATIVE_GNB_BINARY:-${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb}"
-  local nrue="${native_root}/builds/oai-zmq-release/nr-uesoftmodem"
-  # The outer script resolves the ZMQ radio module (oai-local-patches.sh; the
-  # S9 reply-poll patched build by default) and exports OCUDU_NATIVE_OAI_SHLIBPATH.
-  local oai_build="${OCUDU_NATIVE_OAI_SHLIBPATH:-${native_root}/builds/oai-zmq-release}"
+  # Platform CPU placement and profiler wrappers, as in the OAI 1x1 gate: the
+  # outer script resolves OCUDU_NATIVE_{GNB,BROKER,NRUE}_CPUS (empty on a host
+  # without a profile, which leaves the scheduler alone); the *_WRAPPER knobs
+  # prefix a command with a script that ends in `exec ... "$@"`.
+  local broker_pin=() gnb_pin=() nrue_pin=()
+  [[ -n "${OCUDU_NATIVE_BROKER_CPUS:-}" ]] && broker_pin=(taskset -c "${OCUDU_NATIVE_BROKER_CPUS}")
+  [[ -n "${OCUDU_NATIVE_GNB_CPUS:-}" ]] && gnb_pin=(taskset -c "${OCUDU_NATIVE_GNB_CPUS}")
+  [[ -n "${OCUDU_NATIVE_NRUE_CPUS:-}" ]] && nrue_pin=(taskset -c "${OCUDU_NATIVE_NRUE_CPUS}")
+  # The broker's --duration clock starts with the broker; a CUDA gNB's device
+  # initialisation (~20 s) is added on top of the window.
+  local startup_allowance="${OCUDU_NATIVE_BROKER_STARTUP_ALLOWANCE_SECONDS:-0}"
+  local nrue="${oai_build}/nr-uesoftmodem"
   local fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
   local mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
-  # The broker the outer script just built and probed from this tree; the
-  # shared builds/ocudu-gpu-channel-cuda-release belongs to another checkout.
-  local broker="${OCUDU_NATIVE_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release}/ocudu-gpu-channel"
+  local broker="${OAI2X2_BROKER_BIN:?}"
   local add_users="${native_root}/src/ocudu/docker/open5gs/add_users.py"
   local subscriber_verify="${repo_root}/scripts/native/verify-open5gs-subscriber.py"
   for binary in "${gnb}" "${nrue}" "${fivegc}" "${mongod}" "${broker}"; do
     [[ -x "${binary}" ]] || usage_error "missing executable: ${binary}"
   done
-  [[ -f "${oai_build}/liboai_zmqdevif.so" ]] || usage_error "missing OAI ZMQ radio module"
-  # A rendered uecap.xml (render-1x1-bw-configs.py, for a bandwidth the stock
-  # capability does not list) wins over the stock file; the env knob over both.
-  local uecap_default="${native_root}/src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF/uecap_ports1.xml"
-  [[ -f "${config_dir}/uecap.xml" ]] && uecap_default="${config_dir}/uecap.xml"
-  local uecap_file="${OCUDU_NATIVE_OAI_UECAP_FILE:-${uecap_default}}"
+  # The outer script resolves the ZMQ radio module (oai-local-patches.sh; the S9
+  # reply-poll patched build by default) and exports OCUDU_NATIVE_OAI_SHLIBPATH;
+  # the nrUE binary stays ${oai_build}'s.
+  local zmq_module_dir="${OCUDU_NATIVE_OAI_SHLIBPATH:-${oai_build}}"
+  [[ -f "${zmq_module_dir}/liboai_zmqdevif.so" ]] || usage_error "missing OAI ZMQ radio module"
+  # ports2 = the UE advertises 2 DL MIMO layers (maxMIMO-Layers 2) and 2-port
+  # SRS/PUSCH; OAI's own 2x2 ZMQ CI job uses this same file.
+  local uecap_file="${native_root}/src/oai/targets/PROJECTS/GENERIC-NR-5GC/CONF/uecap_ports2.xml"
+  # OAI2X2_UL_MAX_RANK: the renderer wrote a band-3, 2-layer-PUSCH derivative.
+  [[ -f "${config_dir}/uecap.xml" ]] && uecap_file="${config_dir}/uecap.xml"
   [[ -f "${uecap_file}" ]] || usage_error "missing OAI UE capability file: ${uecap_file}"
 
   prepare_namespace
   root_tun="ogstun"
   ip tuntap add dev "${root_tun}" mode tun
-  # Open5GS advertises 10.45.0.1 for the dynamic pool, while the immutable
-  # legacy subscriber is pinned to 10.45.1.2 and uses 10.45.1.1 as gateway.
   ip addr add 10.45.0.1/24 dev "${root_tun}"
   ip addr add 10.45.1.1/24 dev "${root_tun}"
   ip link set "${root_tun}" up
   nested_name="ue1"
   ip netns add "${nested_name}"
   nsenter --net="/run/netns/${nested_name}" -- ip link set lo up
-  # The OAI nrUE lives entirely inside ue1; this veth pair is its ZMQ path to
-  # the broker. The addresses are the gate contract shared with the renderer.
   root_veth="vethoai"
   ip link add "${root_veth}" type veth peer name vethoaip
   ip link set vethoaip netns "${nested_name}"
@@ -396,15 +359,13 @@ run_stack()
   nsenter --net="/run/netns/${nested_name}" -- ip addr add 10.201.0.2/30 dev vethoaip
   nsenter --net="/run/netns/${nested_name}" -- ip link set vethoaip up
 
-  local data_dir="${native_root}/data/ocudu-oai-1x1-native/${timestamp}"
-  local mongod_pid fivegc_pid broker_pid gnb_pid nrue_pid broker_index broker_exit_deadline
+  local data_dir="${native_root}/data/ocudu-oai-2x2-native/${timestamp}"
+
+  local mongod_pid fivegc_pid broker_pid="" gnb_pid nrue_pid broker_index=-1
   start_group mongod "${log_dir}/mongod-console.log" "${mongod}" --dbpath "${data_dir}" --bind_ip 127.0.0.1 --port 27017 --logpath "${log_dir}/mongod.log"
   mongod_pid="${started_pid}"
-  /usr/bin/python3 - "${mongod_pid}" <<'PY'
-import socket
-import sys
-import time
-pid = int(sys.argv[1])
+  /usr/bin/python3 - <<'PY'
+import socket, time
 deadline = time.monotonic() + 20
 while time.monotonic() < deadline:
     try:
@@ -414,9 +375,6 @@ while time.monotonic() < deadline:
         time.sleep(.25)
 raise SystemExit(2)
 PY
-  # PYTHONDONTWRITEBYTECODE: add_users imports Open5GS.py straight out of the
-  # pinned open5gs checkout, and a dropped __pycache__ would make the audited
-  # checkout dirty and fail the workspace lock on the NEXT run.
   PYTHONDONTWRITEBYTECODE=1 \
   PYTHONPATH="${native_root}/src/open5gs:${PYTHONPATH:-}" /usr/bin/python3 "${add_users}" \
     --mongodb 127.0.0.1 --mongodb_port 27017 --subscriber_data "${config_dir}/subscriber.csv" \
@@ -427,8 +385,7 @@ PY
   start_group open5gs "${log_dir}/open5gs.log" "${fivegc}" -c "${config_dir}/open5gs.yaml"
   fivegc_pid="${started_pid}"
   /usr/bin/python3 - <<'PY'
-import socket
-import time
+import socket, time
 deadline = time.monotonic() + 30
 while time.monotonic() < deadline:
     try:
@@ -438,71 +395,44 @@ while time.monotonic() < deadline:
         time.sleep(.25)
 raise SystemExit(2)
 PY
-  # The broker's --duration clock starts with the broker, so a CUDA gNB's
-  # device initialisation (~20 s) is added on top of the fixed 25 s window.
-  local startup_allowance="${OCUDU_NATIVE_BROKER_STARTUP_ALLOWANCE_SECONDS:-0}"
-  # OCUDU_NATIVE_BROKER_WRAPPER / OCUDU_NATIVE_GNB_WRAPPER / OCUDU_NATIVE_NRUE_WRAPPER
-  # prefix the broker, gNB or nrUE command (a script that ends in `exec ... "$@"`):
-  # a profiler (S9 nsys) or a CPU placement (S10 `taskset -c`).
-  # Platform CPU placement resolved by the outer gate (platform-profile.py);
-  # empty on a host without a profile, which leaves the scheduler alone.
-  local broker_pin=() gnb_pin=() nrue_pin=()
-  [[ -n "${OCUDU_NATIVE_BROKER_CPUS:-}" ]] && broker_pin=(taskset -c "${OCUDU_NATIVE_BROKER_CPUS}")
-  [[ -n "${OCUDU_NATIVE_GNB_CPUS:-}" ]] && gnb_pin=(taskset -c "${OCUDU_NATIVE_GNB_CPUS}")
-  [[ -n "${OCUDU_NATIVE_NRUE_CPUS:-}" ]] && nrue_pin=(taskset -c "${OCUDU_NATIVE_NRUE_CPUS}")
-  start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" ${OCUDU_NATIVE_BROKER_ENV:-} "${broker_pin[@]}" ${OCUDU_NATIVE_BROKER_WRAPPER:-} "${broker}" --config "${config_dir}/topology.yaml" --duration "$((25 + startup_allowance))s"
-  broker_pid="${started_pid}"
-  broker_index=$((${#process_pids[@]} - 1))
-  # Absolute bound: the fixed 25-second run plus ten seconds for grouped
-  # drain and orderly worker shutdown, independent of how quickly UE attach
-  # and ping complete.
-  broker_exit_deadline=$((SECONDS + 35 + startup_allowance))
-  wait_log "${log_dir}/broker.log" 'event=radio_node_resolved id=ue0' "${broker_pid}" 15 || usage_error "broker did not become ready"
+  local window_deadline
+  if [[ "${path_mode}" == "broker" ]]; then
+    # WIRECAP in the extra broker arguments stands for this run's capture dir.
+    local broker_extra="${OAI2X2_BROKER_EXTRA:-}"
+    if [[ "${broker_extra}" == *WIRECAP* ]]; then
+      mkdir -p "${log_dir}/wire-capture"
+      broker_extra="${broker_extra//WIRECAP/${log_dir}/wire-capture}"
+    fi
+    # shellcheck disable=SC2086
+    start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" ${OCUDU_NATIVE_BROKER_ENV:-} \
+      "${broker_pin[@]}" ${OCUDU_NATIVE_BROKER_WRAPPER:-} \
+      "${broker}" --config "${config_dir}/topology.yaml" --duration "$((broker_seconds + startup_allowance))s" ${broker_extra}
+    broker_pid="${started_pid}"
+    broker_index=$((${#process_pids[@]} - 1))
+    wait_log "${log_dir}/broker.log" 'event=radio_node_resolved id=ue0' "${broker_pid}" 15 || usage_error "broker did not become ready"
+  fi
+  window_deadline=$((SECONDS + broker_seconds + startup_allowance))
   start_group gnb "${log_dir}/gnb-console.log" "${gnb_pin[@]}" ${OCUDU_NATIVE_GNB_WRAPPER:-} "${gnb}" -c "${config_dir}/gnb.yaml"
   gnb_pid="${started_pid}"
-  wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" "${OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS:-15}" || usage_error "gNB did not start"
+  # A CUDA gNB initialises its GPU pipelines before the banner and needs well
+  # over 20 s (two D10 runs on the 5090 hit the 20 s limit, 2026-09-29).
+  local gnb_start_default=20
+  [[ "${OAI_GATE_GNB_USES_CUDA:-0}" == "1" ]] && gnb_start_default=90
+  wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" "${OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS:-${gnb_start_default}}" || usage_error "gNB did not start"
   sleep 3
-  # Cell identity: band 3 FDD, DL 1842.5 MHz, 106 PRB at 15 kHz. The SSB
-  # start subcarrier is offsetToPointA * 12 + k_SSB = 40 * 12 + 6 = 486, read
-  # from the audited gNB's own derivation log. -E selects the 3/4 FFT
-  # (1536-point) so the UE samples at the gNB's 23.04 MS/s.
-  #
-  # --CO -95000000 is NOT cosmetic: OAI initialises its 38.211 upconversion
-  # phase compensation from the command-line UL carrier (DL + CO) BEFORE SIB1,
-  # and never re-derives it. With the default CO=0 the UE compensates UL
-  # symbols at the DL frequency while the gNB expects the band-3 UL (DL - 95
-  # MHz); the mismatch surfaced as a constant apparent +817 Hz UL CFO and
-  # every Msg3 failed at sinr about -7 dB on a clean direct control run.
-  #
-  # --uecap_file must be given absolutely: the OAI default is the RELATIVE
-  # "./uecap_ports1.xml", and without the capability featureset the UE's
-  # fallback maxMIMO layers is 0, which is an AssertFatal the moment a DCI
-  # 1_1 arrives. ports1 = 1 DL layer, matching this gate's 1T1R scope.
-  #
-  # setpriv drops CAP_SYS_NICE from the bounding set: inside the rootless
-  # userns the capability is visible but namespace-scoped, so OAI's
-  # threadCreate() sees it, requests SCHED_FIFO, and the kernel refuses with
-  # EPERM -- an AssertFatal abort. With the capability absent, OAI takes its
-  # own graceful default-priority path (the same one it takes for any
-  # unprivileged user outside a namespace).
-  # S8: the cell's PRB count, SSB offset and 3/4 sampling (-E only where it
-  # gives the gNB's rate) come from render-1x1-bw-configs.py `oai_ue_args`;
-  # OCUDU_NATIVE_OAI_UE_RADIO_ARGS replaces the whole radio set (TDD n78).
-  local oai_sampling=(-E)
-  [[ "${OCUDU_NATIVE_OAI_UE_SAMPLING:--E}" == "-" ]] && oai_sampling=()
-  local oai_radio=("${oai_sampling[@]}" -r "${OCUDU_NATIVE_OAI_UE_PRB:-106}" --numerology 0 --band 3
-    -C 1842500000 --ssb "${OCUDU_NATIVE_OAI_UE_SSB:-486}" --CO -95000000)
-  # The renderer writes nrue-radio.args for any bandwidth but 20 MHz; the
-  # per-value knobs above or OCUDU_NATIVE_OAI_UE_RADIO_ARGS still override it.
-  if [[ -z "${OCUDU_NATIVE_OAI_UE_RADIO_ARGS:-}${OCUDU_NATIVE_OAI_UE_PRB:-}" && -f "${config_dir}/nrue-radio.args" ]]; then
-    read -r -a oai_radio <"${config_dir}/nrue-radio.args"
-  fi
-  [[ -n "${OCUDU_NATIVE_OAI_UE_RADIO_ARGS:-}" ]] && read -r -a oai_radio <<<"${OCUDU_NATIVE_OAI_UE_RADIO_ARGS}"
+  # Cell identity and the three M6.2 fixes (setpriv, --CO, absolute uecap) are
+  # the 1x1 gate's; see run-ocudu-oai-1x1-inner.sh for why each is needed.
+  # 2x2: --ue-nb-ant-rx/tx 2 and a comma list of two ZMQ channels per
+  # direction (the syntax of OAI's ci-scripts/yaml_files/5g_zmq_radio_2x2).
+  # 20 MHz band n3 FDD by default; a wider cell's renderer writes the radio
+  # arguments (and, where the stock capability lacks the bandwidth, a
+  # capability file) next to the configs, as for the 1x1 gate.
+  local -a oai_radio=(-E -r 106 --numerology 0 --band 3 -C 1842500000 --ssb 486 --CO -95000000)
+  [[ -f "${config_dir}/nrue-radio.args" ]] && read -r -a oai_radio <"${config_dir}/nrue-radio.args"
+  [[ -f "${config_dir}/uecap.xml" ]] && uecap_file="${config_dir}/uecap.xml"
   printf 'event=nrue_radio_args %s uecap=%s\n' "${oai_radio[*]}" "${uecap_file}" >"${log_dir}/nrue-radio.log"
-  # The UE writes nrL1_UE_stats-0.log (and friends) into its working directory
-  # and asserts if it cannot. Inside the userns the gate's cwd may belong to an
-  # unmapped uid, so start the UE from the log directory the gate owns.
   pushd "${log_dir}" >/dev/null
+  # shellcheck disable=SC2086
   # The gate's UE RX gain (oai-gate-defaults.sh oai_gate_ue_rx_gain), if any.
   local -a ue_rx_gain=()
   [[ -n "${OAI_GATE_UE_RX_GAIN_DB:-}" ]] && ue_rx_gain=(--zmq.'[0]'.rx_gain_db "${OAI_GATE_UE_RX_GAIN_DB}")
@@ -515,74 +445,108 @@ PY
     "${nrue_pin[@]}" ${OCUDU_NATIVE_NRUE_WRAPPER:-} "${nrue}" -O "${config_dir}/nrue.conf" \
     "${oai_radio[@]}" \
     --ue-fo-compensation \
+    --ue-nb-ant-rx 2 --ue-nb-ant-tx 2 \
     --uecap_file "${uecap_file}" \
     --device.name oai_zmqdevif \
-    --loader.oai_zmqdevif.shlibpath "${oai_build}" \
-    --zmq.'[0]'.tx_channels tcp://10.201.0.2:2101 \
-    --zmq.'[0]'.rx_channels tcp://10.201.0.1:2100 \
-    "${ue_rx_gain[@]}" "${ue_fo[@]}"
+    --loader.oai_zmqdevif.shlibpath "${zmq_module_dir}" \
+    --zmq.'[0]'.tx_channels tcp://10.201.0.2:2101,tcp://10.201.0.2:2103 \
+    --zmq.'[0]'.rx_channels tcp://10.201.0.1:2100,tcp://10.201.0.1:2102 \
+    "${ue_rx_gain[@]}" "${ue_fo[@]}" \
+    ${OAI2X2_UE_EXTRA:-}
   popd >/dev/null
   nrue_pid="${started_pid}"
 
-  local deadline=$((SECONDS + 30))
-  local rrc=0 pdu=0 ping_ok=0
+  local deadline=$((SECONDS + attach_seconds))
+  local rrc=0 pdu=0 ping_ok=0 iperf_ok=0
   while [[ "${SECONDS}" -lt "${deadline}" ]] && process_running "${nrue_pid}"; do
     grep -q 'State = NR_RRC_CONNECTED' "${log_dir}/nrue.log" 2>/dev/null && rrc=1
     grep -q 'Received PDU Session Establishment Accept' "${log_dir}/nrue.log" 2>/dev/null && pdu=1
     [[ "${rrc}" -eq 1 && "${pdu}" -eq 1 ]] && break
     sleep 0.5
   done
+  local attach_elapsed="${SECONDS}"
   if [[ "${rrc}" -eq 1 && "${pdu}" -eq 1 ]]; then
-    # The PDU accept token precedes the TUN configuration; wait for the
-    # interface to hold the pinned subscriber address before pinging.
     local tun_deadline=$((SECONDS + 10))
     while [[ "${SECONDS}" -lt "${tun_deadline}" ]]; do
       nsenter --net=/run/netns/ue1 -- ip -4 addr show dev oaitun_ue1 2>/dev/null | grep -q '10\.45\.1\.2' && break
       sleep 0.5
     done
-    if nsenter --net=/run/netns/ue1 -- ping -I oaitun_ue1 -c 3 -W 2 10.45.1.1 >"${log_dir}/ue-ping.log" 2>&1; then
+    nsenter --net=/run/netns/ue1 -- ip route replace 10.45.1.1/32 dev oaitun_ue1 >/dev/null 2>&1 || true
+    if nsenter --net=/run/netns/ue1 -- ping -I oaitun_ue1 -c 10 -i 0.2 -W 2 10.45.1.1 >"${log_dir}/ue-ping.log" 2>&1; then
       ping_ok=1
     fi
+    if [[ "${iperf_seconds}" -gt 0 ]]; then
+      local iperf_dl_ok=1 iperf_ul_ok=1
+      if [[ "${iperf_dir}" == dl || "${iperf_dir}" == both ]]; then
+        start_group iperf3 "${log_dir}/iperf3-server.log" iperf3 -s -B 10.45.1.1 -p 5201 -1
+        sleep 0.5
+        # Downlink: -R makes the server (core side) send to the UE.
+        timeout $((iperf_seconds + 20)) nsenter --net=/run/netns/ue1 -- \
+            iperf3 -c 10.45.1.1 -B 10.45.1.2 -p 5201 -R -u -b "${iperf_rate}" -t "${iperf_seconds}" -l 1300 --json \
+            >"${log_dir}/iperf3-dl.json" 2>"${log_dir}/iperf3-dl.err" || iperf_dl_ok=0
+      fi
+      if [[ "${iperf_dir}" == ul || "${iperf_dir}" == both ]]; then
+        start_group iperf3ul "${log_dir}/iperf3-server-ul.log" iperf3 -s -B 10.45.1.1 -p 5202 -1
+        sleep 0.5
+        # Uplink: the UE sends to the core side.
+        timeout $((iperf_seconds + 20)) nsenter --net=/run/netns/ue1 -- \
+            iperf3 -c 10.45.1.1 -B 10.45.1.2 -p 5202 -u -b "${iperf_ul_rate}" -t "${iperf_seconds}" -l 1300 --json \
+            >"${log_dir}/iperf3-ul.json" 2>"${log_dir}/iperf3-ul.err" || iperf_ul_ok=0
+      fi
+      [[ "${iperf_dl_ok}" -eq 1 && "${iperf_ul_ok}" -eq 1 ]] && iperf_ok=1
+    fi
   fi
-
-  while process_running "${broker_pid}" && [[ "${SECONDS}" -lt "${broker_exit_deadline}" ]]; do
-    sleep 0.1
-  done
-  local broker_status
-  if process_running "${broker_pid}"; then
-    printf 'error: broker exceeded its bounded natural-exit window\n' >&2
-    stop_group "${broker_index}" || true
-    broker_status=124
-  else
-    set +e
-    wait "${broker_pid}"
-    broker_status="$?"
-    set -e
+  # Hold the window open until the configured end so the metrics cover it.
+  if [[ "${path_mode}" == "broker" ]]; then
+    local broker_exit_deadline=$((window_deadline + 15))
+    while process_running "${broker_pid}" && [[ "${SECONDS}" -lt "${broker_exit_deadline}" ]]; do
+      sleep 0.2
+    done
   fi
-  process_pids[broker_index]="0"
   local gnb_alive=0 fivegc_alive=0 nrue_alive=0
   process_running "${gnb_pid}" && gnb_alive=1
   process_running "${fivegc_pid}" && fivegc_alive=1
   process_running "${nrue_pid}" && nrue_alive=1
-  local stop_line rx_starvations tx_queue_overflows tx_sequence_gaps zmq_errors status
-  stop_line="$(grep '^event=stop ' "${log_dir}/broker.log" | tail -n 1 || true)"
-  rx_starvations="$(extract_counter rx_starvations "${stop_line}")"
-  tx_queue_overflows="$(extract_counter tx_queue_overflows "${stop_line}")"
-  tx_sequence_gaps="$(extract_counter tx_sequence_gaps "${stop_line}")"
-  zmq_errors="$(extract_counter zmq_errors "${stop_line}")"
-  status="passed"
-  if [[ "${broker_status}" -ne 0 || "${tx_queue_overflows}" -ne 0 || "${tx_sequence_gaps}" -ne 0 || "${zmq_errors}" -ne 0 ]]; then
+  local broker_status=0
+  if [[ "${path_mode}" == "broker" ]]; then
+    if process_running "${broker_pid}"; then
+      printf 'error: broker exceeded its bounded natural-exit window\n' >&2
+      stop_group "${broker_index}" || true
+      broker_status=124
+    else
+      set +e
+      wait "${broker_pid}"
+      broker_status="$?"
+      set -e
+    fi
+    process_pids[broker_index]="0"
+  fi
+  local stop_line=""
+  [[ -f "${log_dir}/broker.log" ]] && stop_line="$(grep '^event=stop ' "${log_dir}/broker.log" | tail -n 1 || true)"
+  local status="passed"
+  if [[ "${broker_status}" -ne 0 ]] || [[ "$(extract_counter tx_queue_overflows "${stop_line}")" -ne 0 ]] || \
+     [[ "$(extract_counter tx_sequence_gaps "${stop_line}")" -ne 0 ]] || [[ "$(extract_counter zmq_errors "${stop_line}")" -ne 0 ]]; then
     status="broker_failed"
-  elif [[ "${gnb_alive}" -ne 1 || "${fivegc_alive}" -ne 1 || "${nrue_alive}" -ne 1 ]]; then
-    status="stack_process_exited_before_broker_stop"
   elif [[ "${rrc}" -ne 1 || "${pdu}" -ne 1 ]]; then
     status="ue_stack_blocker_no_attach"
   elif [[ "${ping_ok}" -ne 1 ]]; then
     status="ue_stack_blocker_ping_failed"
+  elif [[ "${gnb_alive}" -ne 1 || "${fivegc_alive}" -ne 1 || "${nrue_alive}" -ne 1 ]]; then
+    status="stack_process_exited_before_window_end"
   fi
-  write_summary "${status}" "${broker_status}" "${rrc}" "${pdu}" "${ping_ok}" \
-    "${rx_starvations}" "${tx_queue_overflows}" "${tx_sequence_gaps}" "${zmq_errors}" \
-    "${gnb_alive}" "${fivegc_alive}" "${nrue_alive}"
+  /usr/bin/python3 - "${report_dir}/run-summary.json" <<PY
+import json, sys
+data = {
+    "timestamp": "${timestamp}", "status": "${status}", "path": "${path_mode}",
+    "broker_status": ${broker_status}, "rrc_connected": ${rrc}, "pdu_session_established": ${pdu},
+    "ping_ok": ${ping_ok}, "iperf_ok": ${iperf_ok}, "attach_elapsed_s": ${attach_elapsed},
+    "gnb_alive": ${gnb_alive}, "open5gs_alive": ${fivegc_alive}, "nrue_alive": ${nrue_alive},
+    "broker_stop_line": """${stop_line}""", "log_dir": "${log_dir}", "report_dir": "${report_dir}",
+}
+with open(sys.argv[1], "x") as out:
+    json.dump(data, out, indent=2, sort_keys=True)
+    out.write("\n")
+PY
   [[ "${status}" == "passed" ]]
 }
 

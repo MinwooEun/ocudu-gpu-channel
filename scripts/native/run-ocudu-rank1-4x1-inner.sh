@@ -83,6 +83,23 @@ process_running()
   [[ -n "${state}" && "${state:0:1}" != "Z" ]]
 }
 
+# Session members of a group started by start_group (setsid makes pid = pgid
+# = sid). Children the leader forked stay in its session even if they change
+# group, and they can outlive the leader.
+group_alive()
+{
+  ps -eo pgid=,sid=,stat= | awk -v g="$1" '($1 == g || $2 == g) && $3 !~ /^Z/ { found = 1 } END { exit !found }'
+}
+
+signal_group()
+{
+  local signal="$1" pgid="$2" member
+  kill -s "${signal}" -- "-${pgid}" >/dev/null 2>&1 || true
+  for member in $(ps -eo pid=,sid= | awk -v g="${pgid}" '$2 == g { print $1 }'); do
+    kill -s "${signal}" "${member}" >/dev/null 2>&1 || true
+  done
+}
+
 stop_group()
 {
   local index="$1"
@@ -90,19 +107,22 @@ stop_group()
   local pgid="${process_pgids[index]}"
   local signal deadline
   [[ "${pid}" =~ ^[1-9][0-9]*$ && "${pgid}" =~ ^[1-9][0-9]*$ && "${pgid}" -gt 1 ]] || return 0
-  process_running "${pid}" || return 0
-  for signal in INT TERM KILL; do
-    kill -s "${signal}" -- "-${pgid}" >/dev/null 2>&1 || true
-    deadline=$((SECONDS + 4))
-    while process_running "${pid}" && [[ "${SECONDS}" -lt "${deadline}" ]]; do
-      sleep 0.1
+  # Wait on the whole group, not the leader: a leader that exits or aborts
+  # during teardown (open5gs 5gc) used to leave its forked daemons running.
+  if group_alive "${pgid}"; then
+    for signal in INT TERM KILL; do
+      signal_group "${signal}" "${pgid}"
+      deadline=$((SECONDS + 4))
+      while group_alive "${pgid}" && [[ "${SECONDS}" -lt "${deadline}" ]]; do
+        sleep 0.1
+      done
+      group_alive "${pgid}" || break
     done
-    process_running "${pid}" || break
-  done
-  if process_running "${pid}"; then
-    printf 'error: %s pid=%s remains alive after bounded KILL\n' \
-      "${process_names[index]}" "${pid}" >&2
-    return 124
+    if group_alive "${pgid}"; then
+      printf 'error: %s group %s remains alive after bounded KILL\n' \
+        "${process_names[index]}" "${pgid}" >&2
+      return 124
+    fi
   fi
   wait "${pid}" >/dev/null 2>&1 || true
   return 0
@@ -203,10 +223,23 @@ start_group()
   local name="$1"
   local output="$2"
   shift 2
-  setsid stdbuf -oL -eL "$@" >"${output}" 2>&1 &
+  # The outer gate holds its flock on OCUDU_NATIVE_GATE_LOCK_FD. Close it in
+  # the child: a process that outlives teardown must not keep the lock (a
+  # stray open5gs-scpd once refused seven later runs, S15).
+  local gate_lock_fd="${OCUDU_NATIVE_GATE_LOCK_FD:-}"
+  if [[ "${gate_lock_fd}" =~ ^[0-9]+$ && "${gate_lock_fd}" -gt 2 ]]; then
+    setsid stdbuf -oL -eL "$@" >"${output}" 2>&1 {gate_lock_fd}>&- &
+  else
+    setsid stdbuf -oL -eL "$@" >"${output}" 2>&1 &
+  fi
   local pid="$!"
   local pgid
-  pgid="$(ps -o pgid= -p "${pid}" | tr -d '[:space:]')"
+  # setsid runs in the background child; poll until it has made the group.
+  for _ in $(seq 1 50); do
+    pgid="$(ps -o pgid= -p "${pid}" | tr -d '[:space:]')"
+    [[ "${pgid}" == "${pid}" ]] && break
+    sleep 0.02
+  done
   [[ "${pid}" =~ ^[1-9][0-9]*$ && "${pgid}" == "${pid}" ]] || usage_error "invalid process group for ${name}"
   process_names+=("${name}")
   process_pids+=("${pid}")
@@ -301,7 +334,9 @@ run_stack()
   local srsue="${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue"
   local fivegc="${native_root}/builds/open5gs-v2.7.6/tests/app/5gc"
   local mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
-  local broker="${native_root}/builds/ocudu-gpu-channel-cuda-release/ocudu-gpu-channel"
+  # The outer script builds and probes builds/ocudu-gpu-channel-rank1-cuda-release;
+  # the shared builds/ocudu-gpu-channel-cuda-release belongs to another checkout.
+  local broker="${OCUDU_NATIVE_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release}/ocudu-gpu-channel"
   local add_users="${native_root}/src/ocudu/docker/open5gs/add_users.py"
   local subscriber_verify="${repo_root}/scripts/native/verify-open5gs-subscriber.py"
   for binary in "${gnb}" "${srsue}" "${fivegc}" "${mongod}" "${broker}"; do

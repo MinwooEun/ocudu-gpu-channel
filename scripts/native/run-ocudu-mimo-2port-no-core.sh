@@ -61,6 +61,7 @@ lock_path="${native_root}/results/.ocudu-mimo-2port-native.lock"
 mkdir -p "$(dirname "${lock_path}")"
 exec 9>"${lock_path}"
 flock -n 9 || usage_error "another native two-port gate is already running"
+export OCUDU_NATIVE_GATE_LOCK_FD="9"
 
 ocudu_root="${native_root}/src/ocudu"
 gnb_binary="${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb"

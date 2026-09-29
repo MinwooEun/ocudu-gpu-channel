@@ -1,0 +1,58 @@
+{
+  "schema": "ocudu-native-oai-local-patches/v1",
+  "why": "Defects in the pinned OAI that this repository fixes locally until they are reported upstream. Patches are applied at build time; the pinned tree src/oai and its build builds/oai-zmq-release are never modified. check-oai-local-patches.sh verifies every entry.",
+  "oai_commit": "2b69bde6aeafe892cda1531a0f0cbba2e37792cd",
+  "artifacts": {
+    "zmq_module": {
+      "why": "The pinned OAI ZMQ radio driver sleeps in zmq_poll for up to 10 ms while a REP reply is owed, which paces the whole lock-step gNB <-> broker <-> nrUE chain to ~0.3x real time (SPARK_MILESTONES.md S9). The driver also has no AGC: samples reach the UE PHY at the far end's level, and at OCUDU's default 12 dB back-off (~55 dB digital power, above the UE's TARGET_RX_POWER of 50 dB) 64QAM PDSCH NACKs 69-89%; oai-zmq-rx-gain.patch adds zmq.[n].rx_gain_db, which the OAI gates set (SPARK_MILESTONES.md S12). Without AVX2 (aarch64) the RX float->int16 conversion also truncates instead of rounding and saturating; oai-zmq-rx-saturate.patch makes it match the x86 SIMD path (a latent defect: no sample came near full scale in S12). The OAI gates load this module by default; OCUDU_NATIVE_OAI_ZMQ_MODULE=stock opts out.",
+      "builder": "scripts/native/build-oai-zmq-patched.py",
+      "base_build_dir": "builds/oai-zmq-release",
+      "output_dir": "builds/oai-zmq-patched",
+      "target": "oai_zmqdevif",
+      "patches": [
+        {
+          "path": "scripts/native/patches/oai-zmq-tx-reply-poll.patch",
+          "sha256": "b2f1e51bfe38385fefcabbd7e9675278f45c5ab165af33429cb19772b5dbb9e3",
+          "files": ["radio/zmq/zmq_radio.cpp"]
+        },
+        {
+          "path": "scripts/native/patches/oai-zmq-rx-saturate.patch",
+          "sha256": "1b741a84fefcc322d74d96a1682e0336d8ffda163ac9bb3066d2f9c3421d4ef0",
+          "files": ["radio/zmq/zmq_simd.h"]
+        },
+        {
+          "path": "scripts/native/patches/oai-zmq-rx-gain.patch",
+          "sha256": "f5d2dccea5add26f6badb55c13dac43e8c47e48ef40a305458654b3294691e63",
+          "files": ["radio/zmq/zmq_radio.cpp"]
+        }
+      ],
+      "optional": [
+        {
+          "path": "scripts/native/patches/oai-zmq-rx-poll.patch",
+          "sha256": "149551c7740d8a237479ddf02c717cd73bb43ceeb94ed58555a4e92195629220",
+          "files": ["radio/zmq/zmq_imported.cpp"],
+          "reason": "S10: +3% slots/s at 100 MHz unpinned, no gain once the platform CPU split is applied (2,060 vs 2,077 slots/s); a measurement knob only, never built into the default module."
+        }
+      ]
+    },
+    "ue": {
+      "why": "The pinned nrUE 2-layer equaliser (nr_dlsch_mmse) wraps int16 at OCUDU's TX level, so rank-2 PDSCH NACKs unless the gNB backs off ~24 dB (docs/plans/m6-rank2-su-mimo-live.md 8.1/8.7). Its CSI rank estimator (nr_csi_rs_ri_estimation) accumulates Hh*H into an uninitialised stack array, so under full-band PDSCH load the condition number comes from stack garbage and the UE reports RI=1 (50 MHz 2x2: rank 2 on ~20% of PDSCH); oai-csi-ri-amf-init.patch zeroes it (SPARK_MILESTONES.md S14). The OAI 2x2 gate runs this UE by default; OCUDU_NATIVE_OAI_UE=stock opts out.",
+      "builder": "scripts/native/build-oai-ue-local.sh",
+      "src_dir": "src/oai-local",
+      "output_dir": "builds/oai-zmq-local",
+      "patches": [
+        {
+          "path": "scripts/native/patches/oai-nr-dlsch-mmse-scale.patch",
+          "sha256": "1856ac0f0aa11c13bfd5e718a656b616492b39dfdbc194bfc5ecedf44881d691",
+          "files": ["openair1/PHY/NR_UE_TRANSPORT/nr_dlsch_demodulation.c"]
+        },
+        {
+          "path": "scripts/native/patches/oai-csi-ri-amf-init.patch",
+          "sha256": "ade6931e390ea0e5e0ddcb432d9d1c2dc67cfcb13619602737e6a314dde9bf34",
+          "files": ["openair1/PHY/NR_UE_TRANSPORT/csi_rx.c"]
+        }
+      ],
+      "optional": []
+    }
+  }
+}

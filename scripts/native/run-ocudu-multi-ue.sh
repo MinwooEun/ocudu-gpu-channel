@@ -72,9 +72,15 @@ done
 [[ "$(git -C "${native_root}/src/ocudu" rev-parse HEAD)" == "${audited_ocudu}" ]] || usage_error "OCUDU revision mismatch"
 [[ "$(git -C "${native_root}/src/srsRAN_4G" rev-parse HEAD)" == "${audited_srsran}" ]] || usage_error "srsRAN revision mismatch"
 [[ "$(git -C "${native_root}/src/open5gs" rev-parse HEAD)" == "${audited_open5gs}" ]] || usage_error "Open5GS revision mismatch"
-"/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
-  --root "${native_root}" --repo-root "${repo_root}" \
-  --lock "${script_dir}/native-workspace.lock.json"
+if [[ "${OCUDU_NATIVE_SKIP_WORKSPACE_LOCK:-0}" == "1" ]]; then
+  # The lock pins an x86_64 host; an aarch64 host (DGX Spark, Jetson) cannot
+  # satisfy it. The source pins above are still checked.
+  echo "event=skip x86_native_workspace_lock"
+else
+  "/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
+    --root "${native_root}" --repo-root "${repo_root}" \
+    --lock "${script_dir}/native-workspace.lock.json"
+fi
 grep -qx 'ENABLE_ZEROMQ:BOOL=ON' "${native_root}/builds/ocudu-zmq-release/CMakeCache.txt" || usage_error "gNB lacks ZMQ"
 # Ports for the gNB pair and BOTH UE pairs, plus mongo and the core.
 for port in 2000 2001 2100 2101 2102 2103 27017 38412 7777; do
@@ -83,6 +89,7 @@ done
 
 exec {lock_fd}<"${BASH_SOURCE[0]}"
 flock -n "${lock_fd}" || usage_error "another native multi-UE gate is running"
+export OCUDU_NATIVE_GATE_LOCK_FD="${lock_fd}"
 
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 log_dir="${native_root}/results/logs/ocudu-multi-ue/${timestamp}"

@@ -1,0 +1,21 @@
+{
+  "schema": "ocudu-native-srsue-local-patches/v1",
+  "why": "Defects in the pinned srsUE that this repository fixes locally until they are reported upstream. Patches are applied at build time into builds/srsran4g-zmq-local; the pinned tree src/srsRAN_4G and builds/srsran4g-zmq-release are never modified. The multi-UE and multi-gNB gates use the local build by default (OCUDU_NATIVE_SRSUE=stock opts out).",
+  "srsran_commit": "eea87b1d893ae58e0b08bc381730c502024ae71f",
+  "builder": "scripts/native/build-srsue-local.sh",
+  "output_dir": "builds/srsran4g-zmq-local",
+  "patches": [
+    {
+      "path": "scripts/native/patches/srsue-ra-contention.patch",
+      "sha256": "0f4b9316af3f415b38b4459df1a1035a56f89442a73647895123f6a0869bbfd0",
+      "files": [
+        "srsue/src/stack/mac_nr/proc_ra_nr.cc",
+        "srsue/hdr/stack/mac_nr/proc_ra_nr.h",
+        "srsue/src/stack/mac_nr/mac_nr.cc",
+        "srsue/src/stack/mac_nr/demux_nr.cc",
+        "srsue/hdr/stack/mac_nr/demux_nr.h"
+      ],
+      "why": "Multi-UE RACH (SPARK_MILESTONES.md S16). proc_ra_nr hard-coded preamble 0, so UEs on one lock-step broker collided on the same PRACH occasion and preamble every time; ra_contention_resolution() completed RA for an RRC-started procedure even when the UE Contention Resolution Identity did not match; and demux passed Msg4's RRCSetup to RLC before the identity was checked. The loser adopted the winner's C-RNTI and failed NAS integrity. The patch picks a random contention-based preamble per attempt (SRSUE_PRACH_PREAMBLE_INDEX pins it), requires the identity to match for initial access and otherwise retries RA with backoff, and drops Msg4 SDUs that are not ours."
+    }
+  ]
+}

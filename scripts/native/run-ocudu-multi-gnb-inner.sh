@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# Inner half of the native multi-UE attach gate. Runs INSIDE the user + network
-# + mount namespace created by run-ocudu-multi-ue.sh; never invoke it directly.
+# Inner half of the native multi-gNB attach gate. Runs INSIDE the user + network
+# + mount namespace created by run-ocudu-multi-gnb.sh; never invoke it directly.
 #
-# Structurally the multi-UE sibling of run-ocudu-legacy-1x1-inner.sh: same
-# rootless namespace layout, same process supervision, same bounded shutdown.
-# The differences are all UE multiplicity -- one nested netns and one srsUE per
-# UE, a two-record subscriber database, a three-device broker topology, and a
-# ping from every UE namespace.
+# Derived from run-ocudu-multi-ue-inner.sh: the namespace layout, process
+# supervision and bounded shutdown are that gate's, unchanged. The differences
+# are the second cell -- two gNB processes started together (a CUDA gNB spends
+# tens of seconds in device initialisation, so starting them one after the
+# other would leave the broker's first node starved), a four-device broker
+# topology, a per-UE record of which cell (PCI) it camped on, and a sampler of
+# each gNB's memory for the multi-process GPU question.
 set -uo pipefail
 
 repo_root=""
@@ -17,20 +19,11 @@ netns_dir=""
 timestamp=""
 physical_gpu="0"
 channel_build=""
+gnb=""
+gnb_start_timeout="15"
 parent_netns=""
 parent_mntns=""
 outer_uid=""
-# Sionna mode. Empty channel_mode keeps the legacy fixed-TDL behaviour this
-# gate has always had, so the existing invocation is byte-for-byte unchanged.
-channel_mode="legacy"
-control_endpoint=""
-telemetry_endpoint=""
-sionna_python=""
-sionna_bridge=""
-sionna_scenario_config=""
-sionna_status_jsonl=""
-sionna_update_hz="10"
-sionna_ready_seconds="180"
 
 usage_error()
 {
@@ -48,45 +41,19 @@ while [[ "$#" -gt 0 ]]; do
     --timestamp) timestamp="${2:-}"; shift 2 ;;
     --physical-gpu) physical_gpu="${2:-}"; shift 2 ;;
     --channel-build) channel_build="${2:-}"; shift 2 ;;
+    --gnb-binary) gnb="${2:-}"; shift 2 ;;
+    --gnb-start-timeout) gnb_start_timeout="${2:-}"; shift 2 ;;
     --parent-netns) parent_netns="${2:-}"; shift 2 ;;
     --parent-mntns) parent_mntns="${2:-}"; shift 2 ;;
     --outer-uid) outer_uid="${2:-}"; shift 2 ;;
-    --channel-mode) channel_mode="${2:-}"; shift 2 ;;
-    --control-endpoint) control_endpoint="${2:-}"; shift 2 ;;
-    --telemetry-endpoint) telemetry_endpoint="${2:-}"; shift 2 ;;
-    --sionna-python) sionna_python="${2:-}"; shift 2 ;;
-    --sionna-bridge) sionna_bridge="${2:-}"; shift 2 ;;
-    --sionna-scenario-config) sionna_scenario_config="${2:-}"; shift 2 ;;
-    --sionna-status-jsonl) sionna_status_jsonl="${2:-}"; shift 2 ;;
-    --sionna-update-hz) sionna_update_hz="${2:-}"; shift 2 ;;
-    --sionna-ready-seconds) sionna_ready_seconds="${2:-}"; shift 2 ;;
     *) usage_error "unexpected argument: $1" ;;
   esac
 done
 
 for value in "${repo_root}" "${native_root}" "${config_dir}" "${log_dir}" \
-             "${netns_dir}" "${timestamp}" "${parent_netns}" "${parent_mntns}" "${outer_uid}"; do
+             "${netns_dir}" "${timestamp}" "${parent_netns}" "${parent_mntns}" "${outer_uid}" "${gnb}"; do
   [[ -n "${value}" ]] || usage_error "missing required argument"
 done
-[[ "${channel_mode}" == "legacy" || "${channel_mode}" == "sionna" ]] || \
-  usage_error "unsupported channel mode: ${channel_mode}"
-if [[ "${channel_mode}" == "sionna" ]]; then
-  for value in "${control_endpoint}" "${telemetry_endpoint}" "${sionna_python}" \
-               "${sionna_bridge}" "${sionna_scenario_config}" "${sionna_status_jsonl}"; do
-    [[ -n "${value}" ]] || usage_error "sionna mode requires the sionna arguments"
-  done
-  # The endpoints are created by the outer script inside this user namespace's
-  # mount, so they have to be filesystem sockets rather than TCP: a TCP bind
-  # here would be visible to anything else on the host.
-  [[ "${control_endpoint}" == ipc://* && "${telemetry_endpoint}" == ipc://* ]] || \
-    usage_error "sionna control and telemetry endpoints must be ipc://"
-  [[ -x "${sionna_python}" ]] || usage_error "missing Sionna Python: ${sionna_python}"
-  [[ -f "${sionna_bridge}" ]] || usage_error "missing Sionna bridge: ${sionna_bridge}"
-  [[ -f "${sionna_scenario_config}" ]] || \
-    usage_error "missing Sionna scenario: ${sionna_scenario_config}"
-  [[ "${sionna_update_hz}" =~ ^[0-9]+(\.[0-9]+)?$ ]] || \
-    usage_error "invalid Sionna update rate: ${sionna_update_hz}"
-fi
 [[ "$(readlink /proc/self/ns/net)" != "${parent_netns}" ]] || usage_error "network namespace was not isolated"
 [[ "$(readlink /proc/self/ns/mnt)" != "${parent_mntns}" ]] || usage_error "mount namespace was not isolated"
 # /proc/self/uid_map is column-aligned with leading whitespace, so compare
@@ -98,7 +65,10 @@ for command_name in ip mount umount nsenter ps; do
 done
 [[ -x /usr/bin/python3 ]] || usage_error "missing /usr/bin/python3"
 
-# Must agree with scripts/native/render-multi-ue-configs.py UES.
+# Must agree with scripts/native/render-multi-gnb-configs.py CELLS and UES.
+# UE i is expected to camp on cell i (the topology's serving vs intercell loss).
+gnb_ids=(gnb0 gnb1)
+gnb_pcis=(1 2)
 ue_ids=(ue0 ue1)
 ue_netns=(ue1 ue2)
 ue_ipv4=(10.45.1.2 10.45.1.3)
@@ -200,7 +170,7 @@ cleanup()
   local index wanted cleanup_failed=0
   # Stop broker admission first while both radio requesters are still alive,
   # then the radio peers, then their core/database dependencies.
-  for wanted in broker srsue gnb open5gs mongod; do
+  for wanted in sampler broker srsue gnb open5gs mongod; do
     for ((index=0; index<${#process_pids[@]}; index++)); do
       if [[ "${process_names[index]}" == "${wanted}"* ]]; then
         if stop_group "${index}"; then process_pids[index]="0"; else cleanup_failed=1; fi
@@ -237,7 +207,6 @@ wait_log()
   return 1
 }
 
-gnb="${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb"
 srsue="${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue"
 # srsUE with the local patches (srsue-local-patches.lock.json) by default: the
 # pinned one always sends preamble 0 and a UE that loses contention still
@@ -268,7 +237,7 @@ mongod="${native_root}/install/mongodb-6.0.29/bin/mongod"
 broker="${channel_build:-${native_root}/builds/ocudu-gpu-channel-cuda-release}/ocudu-gpu-channel"
 add_users="${native_root}/src/ocudu/docker/open5gs/add_users.py"
 subscriber_verify="${repo_root}/scripts/native/verify-open5gs-subscribers-multi.py"
-data_dir="${native_root}/data/ocudu-multi-ue-native/${timestamp}"
+data_dir="${native_root}/data/ocudu-multi-gnb-native/${timestamp}"
 
 for binary in "${gnb}" "${srsue}" "${fivegc}" "${mongod}" "${broker}"; do
   [[ -x "${binary}" ]] || usage_error "missing executable: ${binary}"
@@ -338,55 +307,46 @@ raise SystemExit(2)
 PY
 
 # --- broker, gNB, UEs -------------------------------------------------------
-declare -a broker_args=(
-  "${broker}" --config "${config_dir}/topology.yaml" --duration 240s
-)
-if [[ "${channel_mode}" == "sionna" ]]; then
-  broker_args+=(
-    --control-endpoint "${control_endpoint}"
-    --telemetry-endpoint "${telemetry_endpoint}"
-    --telemetry-rate-hz 500
-  )
-fi
 start_group broker "${log_dir}/broker.log" \
-  env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${broker_args[@]}"
+  env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${broker}" --config "${config_dir}/topology.yaml" \
+  --duration "$((240 + gnb_start_timeout))s"
 broker_pid="${started_pid}"
 broker_index=$((${#process_pids[@]} - 1))
-# The fixed 240 s run plus ten seconds for grouped drain and orderly shutdown.
-# It must exceed staggered attach + per-UE ping, or a ping races the broker exit.
-broker_exit_deadline=$((SECONDS + 250))
+# The broker's clock starts now, so the gNB start window is added to the 240 s
+# the multi-UE gate runs; ten more seconds for grouped drain and shutdown.
+broker_exit_deadline=$((SECONDS + 250 + gnb_start_timeout))
 # Every UE row must resolve before the gNB is admitted, otherwise a UE could
 # attach against a broker that has not finished standing its node up.
 # event=socket_ready is used rather than event=radio_node_resolved because the
 # latter only exists from M0.5 onward, and this gate has to be runnable against
 # an older revision to tell a live regression apart from pre-existing behaviour.
 # Both lines mean the same thing here: that node's transport is bound.
-for id in "${ue_ids[@]}"; do
+for id in "${gnb_ids[@]}" "${ue_ids[@]}"; do
   wait_log "${log_dir}/broker.log" "event=socket_ready device=${id}" "${broker_pid}" 15 \
     || usage_error "broker did not bind ${id}"
 done
 
-# Sionna has to be streaming before the gNB is admitted. Every link starts as a
-# quiet -100 dB TDL, so a UE that RACHes before the first matrix_profile_swap
-# lands is transmitting into a dead channel and never attaches.
-sionna_pid=""
-if [[ "${channel_mode}" == "sionna" ]]; then
-  wait_log "${log_dir}/broker.log" 'event=control_start ' "${broker_pid}" 15 || \
-    usage_error "broker control server did not become ready"
-  start_group sionna "${log_dir}/sionna-bridge.log" \
-    env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${sionna_python}" "${sionna_bridge}" \
-    --scenario-config "${sionna_scenario_config}" \
-    --control-endpoint "${control_endpoint}" --duration 0 \
-    --update-hz "${sionna_update_hz}" --status-jsonl "${sionna_status_jsonl}"
-  sionna_pid="${started_pid}"
-  wait_log "${log_dir}/sionna-bridge.log" '"event":"sionna_rt_update"' \
-    "${sionna_pid}" "${sionna_ready_seconds}" || \
-    usage_error "Sionna RT did not publish its first matrix profile update"
-fi
-
-start_group gnb "${log_dir}/gnb-console.log" "${gnb}" -c "${config_dir}/gnb.yaml"
-gnb_pid="${started_pid}"
-wait_log "${log_dir}/gnb-console.log" '==== gNB started ===' "${gnb_pid}" 15 || usage_error "gNB did not start"
+# Both cells start together; each must reach its banner within the window.
+declare -a gnb_pids=()
+for id in "${gnb_ids[@]}"; do
+  start_group "gnb-${id}" "${log_dir}/${id}-console.log" "${gnb}" -c "${config_dir}/${id}.yaml"
+  gnb_pids+=("${started_pid}")
+done
+# Per-gNB memory while the run lasts: resident set, and the GPU's per-process
+# view where the driver offers one (it is empty on some integrated GPUs).
+start_group sampler "${log_dir}/memory-samples.log" /bin/bash -c '
+  while :; do
+    printf "t=%s" "$(date +%s)"
+    for pid in "$@"; do
+      printf " pid=%s rss_kb=%s" "${pid}" "$(awk "/^VmRSS/ {print \$2}" "/proc/${pid}/status" 2>/dev/null)"
+    done
+    printf " gpu_apps=%s\n" "$(nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader 2>/dev/null | tr "\n" ";")"
+    sleep 2
+  done' sampler "${gnb_pids[@]}"
+for index in "${!gnb_ids[@]}"; do
+  wait_log "${log_dir}/${gnb_ids[index]}-console.log" '==== gNB started ===' "${gnb_pids[index]}" "${gnb_start_timeout}" \
+    || usage_error "${gnb_ids[index]} did not start"
+done
 sleep 3
 
 # UE launch stagger. srsRAN ZMQ radios share the broker's lock-step virtual
@@ -473,18 +433,19 @@ else
   set -o pipefail
 fi
 
-gnb_alive=0; process_running "${gnb_pid}" && gnb_alive=1
+gnb_alive=1
+for pid in "${gnb_pids[@]}"; do process_running "${pid}" || gnb_alive=0; done
 srsue_alive=1
 for pid in "${srsue_pids[@]}"; do process_running "${pid}" || srsue_alive=0; done
 
 /usr/bin/python3 - \
-  "${log_dir}" "${native_root}/results/reports/ocudu-multi-ue/${timestamp}/attach-summary.json" \
+  "${log_dir}" "${native_root}/results/reports/ocudu-multi-gnb/${timestamp}/attach-summary.json" \
   "${timestamp}" "${broker_status}" "${gnb_alive}" "${srsue_alive}" \
-  "${rrc[*]}" "${pdu[*]}" "${ping_ok[*]}" "${ue_ids[*]}" <<'PY'
+  "${rrc[*]}" "${pdu[*]}" "${ping_ok[*]}" "${ue_ids[*]}" "${gnb_pcis[*]}" <<'PY'
 import json, pathlib, re, sys
 
 (log_dir, out_path, timestamp, broker_status, gnb_alive, srsue_alive,
- rrc, pdu, ping_ok, ue_ids) = sys.argv[1:]
+ rrc, pdu, ping_ok, ue_ids, gnb_pcis) = sys.argv[1:]
 
 log_dir = pathlib.Path(log_dir)
 stop = ""
@@ -494,16 +455,34 @@ for line in (log_dir / "broker.log").read_text(encoding="utf-8", errors="replace
 counters = {k: int(v) for k, v in re.findall(r"(\w+)=(\d+)", stop)}
 
 ids = ue_ids.split()
+expected_pci = [int(p) for p in gnb_pcis.split()]
+
+
+def camped_pci(ue):
+    """The PCI srsUE last reported for its serving cell (console and internal log)."""
+    found = []
+    for name in (f"srsue-{ue}.log", f"srsue-{ue}-internal.log"):
+        path = log_dir / name
+        if path.exists():
+            found += re.findall(r"PCI=(\d+)", path.read_text(encoding="utf-8", errors="replace"))
+    return int(found[-1]) if found else -1
+
+
 per_ue = {
     ue: {
         "rrc_connected": int(r),
         "pdu_session_established": int(p),
         "ping_ok": int(q),
+        "camped_pci": camped_pci(ue),
+        "expected_pci": expected_pci[i],
     }
-    for ue, r, p, q in zip(ids, rrc.split(), pdu.split(), ping_ok.split())
+    for i, (ue, r, p, q) in enumerate(zip(ids, rrc.split(), pdu.split(), ping_ok.split()))
 }
 all_attached = all(v["rrc_connected"] and v["pdu_session_established"] and v["ping_ok"]
                    for v in per_ue.values())
+# Each UE on its own cell is what makes this a two-cell test rather than two UEs
+# on one surviving cell.
+own_cells = all(v["camped_pci"] == v["expected_pci"] for v in per_ue.values())
 strict_clean = all(counters.get(k, 1) == 0
                    for k in ("tx_queue_overflows", "tx_sequence_gaps", "zmq_errors"))
 summary = {
@@ -511,12 +490,14 @@ summary = {
     "docker_used": False,
     "runtime_mode": "rootless_user_net_mount_namespace",
     "ue_count": len(ids),
+    "cell_count": len(expected_pci),
+    "each_ue_on_its_own_cell": int(own_cells),
     "per_ue": per_ue,
     "broker_status": int(broker_status),
     "gnb_alive_at_broker_stop": int(gnb_alive),
     "srsue_alive_at_broker_stop": int(srsue_alive),
     "log_dir": str(log_dir),
-    "status": "passed" if (all_attached and strict_clean and int(broker_status) == 0
+    "status": "passed" if (all_attached and own_cells and strict_clean and int(broker_status) == 0
                            and int(gnb_alive) == 1 and int(srsue_alive) == 1) else "failed",
 }
 summary.update({k: counters.get(k, -1) for k in

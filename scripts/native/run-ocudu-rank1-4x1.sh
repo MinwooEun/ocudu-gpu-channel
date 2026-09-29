@@ -7,6 +7,8 @@ repo_root="$(cd "${script_dir}/../.." && pwd)"
 source "${script_dir}/env.sh"
 
 native_root="${OCUDU_NATIVE_ROOT}"
+channel_build="${OCUDU_NATIVE_CHANNEL_BUILD:-${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release}"
+export OCUDU_NATIVE_CHANNEL_BUILD="${channel_build}"
 duration_seconds="${OCUDU_NATIVE_RANK1_4X1_DURATION_SECONDS:-20}"
 physical_gpu="${OCUDU_NATIVE_GPU_DEVICE:-0}"
 cuda_compiler="${CUDACXX:-/opt/conda/envs/cuda128/bin/nvcc}"
@@ -65,8 +67,8 @@ for path in "${inner}" "${renderer}" "${verifier}" \
   "${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue" \
   "${native_root}/builds/open5gs-v2.7.6/tests/app/5gc" \
   "${native_root}/install/mongodb-6.0.29/bin/mongod" \
-  "${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release/test_hardware_probe" \
-  "${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release/ocudu-gpu-channel" \
+  "${channel_build}/test_hardware_probe" \
+  "${channel_build}/ocudu-gpu-channel" \
   "${repo_root}/examples/topology.ocudu-docker.cuda.yaml" \
   "${repo_root}/examples/native/topology.ocudu.rank1-4x1.cuda.yaml" \
   "${repo_root}/examples/native/ocudu/gnb_zmq_b210_fdd_4t4r_rank1_srsue.yaml"; do
@@ -76,10 +78,19 @@ done
 [[ "$(git -C "${native_root}/src/ocudu" rev-parse HEAD)" == "${audited_ocudu}" ]] || usage_error "OCUDU revision mismatch"
 [[ "$(git -C "${native_root}/src/srsRAN_4G" rev-parse HEAD)" == "${audited_srsran}" ]] || usage_error "srsRAN revision mismatch"
 [[ "$(git -C "${native_root}/src/open5gs" rev-parse HEAD)" == "${audited_open5gs}" ]] || usage_error "Open5GS revision mismatch"
-"/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
-  --root "${native_root}" --repo-root "${repo_root}" \
-  --lock "${script_dir}/native-workspace.lock.json"
-git -C "${repo_root}" diff --quiet bc88865 -- \
+if [[ "${OCUDU_NATIVE_SKIP_WORKSPACE_LOCK:-0}" == "1" ]]; then
+  # The lock pins an x86_64 host; an aarch64 host (DGX Spark, Jetson) cannot
+  # satisfy it. The source pins above are still checked.
+  echo "event=skip x86_native_workspace_lock"
+else
+  "/usr/bin/python3" "${script_dir}/verify-workspace-lock.py" \
+    --root "${native_root}" --repo-root "${repo_root}" \
+    --lock "${script_dir}/native-workspace.lock.json"
+fi
+# bc88865 (the pre-MIMO anchor in the parent tree) is not in this history.
+# f93386b is the last commit here that touched these fixtures and drivers
+# (merge of the rank-1 MISO/SIMO workstream); a change after it still fails.
+git -C "${repo_root}" diff --quiet f93386b -- \
   examples/topology.ocudu-docker.cuda.yaml \
   examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml \
   scripts/remote/ocudu-attach-smoke.sh scripts/remote/common.sh || \
@@ -103,12 +114,17 @@ for binary in \
   fi
   rm -f "${ldd_report}"
 done
+# The stack runs in its own network namespace, so a host listener on these
+# ports cannot collide with it. The check stays on by default; a host that runs
+# its own Open5GS/MongoDB sets OCUDU_NATIVE_ALLOW_HOST_PORTS=1 (as the OAI gate).
+[[ "${OCUDU_NATIVE_ALLOW_HOST_PORTS:-0}" == "1" ]] || \
 for port in 2000 2001 2002 2003 2004 2005 2006 2007 2100 2101 27017 38412 7777; do
   ss -H -ltn "sport = :${port}" | grep -q . && usage_error "TCP port ${port} is already listening"
 done
 
 exec {lock_fd}<"${BASH_SOURCE[0]}"
 flock -n "${lock_fd}" || usage_error "another native rank1-4x1 gate is running"
+export OCUDU_NATIVE_GATE_LOCK_FD="${lock_fd}"
 parent_netns="$(readlink /proc/self/ns/net)"
 parent_mntns="$(readlink /proc/self/ns/mnt)"
 probe_dir="$(mktemp -d /tmp/ocudu-native-userns-probe.XXXXXX)"
@@ -123,8 +139,8 @@ unshare --user --map-root-user --net --mount --fork --kill-child --propagation p
   "${inner}" --mode probe --parent-netns "${parent_netns}" --parent-mntns "${parent_mntns}" \
   --outer-uid "$(id -u)" --netns-dir "${probe_dir}/run-netns" \
   --physical-gpu "${physical_gpu}" \
-  --hardware-probe "${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release/test_hardware_probe" \
-  --probe-broker "${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release/ocudu-gpu-channel" \
+  --hardware-probe "${channel_build}/test_hardware_probe" \
+  --probe-broker "${channel_build}/ocudu-gpu-channel" \
   --probe-config "${repo_root}/examples/topology.ocudu-docker.cuda.yaml"
 cleanup_probe
 trap - EXIT
@@ -154,7 +170,6 @@ channel_diff_sha256="$(git -C "${repo_root}" diff --binary -- . | sha256sum | aw
 "${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" -c "${config_dir}/gnb.yaml" --dryrun \
   >"${log_dir}/gnb-dryrun.log" 2>&1
 
-channel_build="${native_root}/builds/ocudu-gpu-channel-rank1-cuda-release"
 cmake -S "${repo_root}" -B "${channel_build}" -DCMAKE_BUILD_TYPE=Release \
   -DOCUDU_GPU_CHANNEL_ENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER="${cuda_compiler}" \
   -DOCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES=120 >"${log_dir}/cmake-configure.log" 2>&1
@@ -171,7 +186,8 @@ cp "${config_dir}/gnb.yaml" "${config_dir}/topology.yaml" \
   "${config_dir}/subscriber.csv" "${preserved_configs}/"
 "${native_root}/builds/ocudu-zmq-release/apps/gnb/gnb" --version \
   >"${report_dir}/gnb-version.txt" 2>&1
-grep -Eq 'OCUDU 5G gNB version .*\(a1916edcd\)' "${report_dir}/gnb-version.txt" || \
+# Current builds print `OCUDU gNB (commit a1916ed)`; the older banner is kept.
+grep -Eq 'OCUDU 5G gNB version .*\(a1916edcd\)|OCUDU gNB \(commit a1916ed[0-9a-f]*\)' "${report_dir}/gnb-version.txt" || \
   usage_error "native gNB binary does not identify the audited revision"
 "/usr/bin/python3" - "${source_evidence}" "${native_root}" "${channel_build}" \
   "${source_manifest}" "${preserved_configs}" "${channel_head}" \

@@ -1,0 +1,16 @@
+--- a/openair1/PHY/NR_UE_TRANSPORT/csi_rx.c
++++ b/openair1/PHY/NR_UE_TRANSPORT/csi_rx.c
+@@ -460,7 +460,12 @@
+   int32_t csi_rs_estimated_determ_fin[frame_parms->ofdm_symbol_size] __attribute__((aligned(32)));
+   int32_t csi_rs_estimated_numer_fin[frame_parms->ofdm_symbol_size] __attribute__((aligned(32)));
+   const uint8_t sum_shift = 1; // log2(2x2) = 2, which is a shift of 1 bit
+-  
++  // nr_a_sum_b() below accumulates into A_MF (x += y), so it must start from
++  // zero. Left uninitialised it adds whatever the stack held, which is the
++  // previous PDSCH processing in this thread: under full-band load the rank
++  // estimate then sees a random condition number and reports RI=1.
++  memset(csi_rs_estimated_A_MF, 0, sizeof(csi_rs_estimated_A_MF));
++
+   for (int rb = csirs_config_pdu->start_rb; rb < (csirs_config_pdu->start_rb+csirs_config_pdu->nr_of_rbs); rb++) {
+ 
+     if (csirs_config_pdu->freq_density <= 1 && csirs_config_pdu->freq_density != (rb % 2)) {

@@ -32,6 +32,28 @@ EXPECTED_SOURCE_COMMITS = {
 }
 
 
+# DL health (S12): attach and ping passed while ~78% of PDSCH was NACKed, so
+# the gate also bounds the HARQ-ACK NACK share the gNB logged on PUCCH.
+HARQ_ACK_RE = re.compile(r"PUCCH: rnti=\S+ format=\d.*? ack=([01]+)")
+MIN_HARQ_ACK_BITS = 20
+DEFAULT_MAX_NACK_RATIO = 0.10
+
+
+def harq_nack(gnb_text: str) -> tuple[int, int]:
+    """Returns (ACK bits, NACK bits) from the gNB PUCCH log lines."""
+    ack = nack = 0
+    for bits in HARQ_ACK_RE.findall(gnb_text):
+        ack += bits.count("1")
+        nack += bits.count("0")
+    return ack, nack
+
+
+def max_nack_ratio() -> float:
+    value = float(os.environ.get("OCUDU_NATIVE_OAI_MAX_NACK_RATIO", DEFAULT_MAX_NACK_RATIO))
+    require(0.0 <= value <= 1.0, "OCUDU_NATIVE_OAI_MAX_NACK_RATIO must be within [0, 1]")
+    return value
+
+
 def reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
@@ -288,6 +310,16 @@ def validate_artifacts(results_root: Path, summary_path: Path, now: float) -> di
         "PCAP files successfully closed." in internal_text,
         "OCUDU gNB internal log lacks the clean-shutdown token",
     )
+    ack_bits, nack_bits = harq_nack(internal_text)
+    require(
+        ack_bits + nack_bits >= MIN_HARQ_ACK_BITS,
+        f"OCUDU gNB log has only {ack_bits + nack_bits} HARQ-ACK bits; DL health cannot be judged",
+    )
+    limit = max_nack_ratio()
+    ratio = nack_bits / (ack_bits + nack_bits)
+    require(ratio <= limit, f"DL HARQ NACK ratio {ratio:.3f} exceeds {limit:.2f} ({nack_bits}/{ack_bits + nack_bits})")
+    counters["harq_ack_bits"] = ack_bits
+    counters["harq_nack_bits"] = nack_bits
     nrue_log = expected_log_dir / "nrue.log"
     ping_log = expected_log_dir / "ue-ping.log"
     subscriber_log = expected_log_dir / "subscriber-verify.log"
@@ -345,8 +377,10 @@ def self_test() -> None:
         (log_dir / "gnb-console.log").write_text(
             "Available radio types: zmq\n==== gNB started ===\n", encoding="utf-8"
         )
+        healthy = "".join("PUCCH: rnti=0x4601 format=1 ack=1\n" for _ in range(29))
+        healthy += "PUCCH: rnti=0x4601 format=1 ack=0\n"
         (log_dir / "gnb-internal.log").write_text(
-            "PCAP files successfully closed.\n", encoding="utf-8"
+            healthy + "PCAP files successfully closed.\n", encoding="utf-8"
         )
         (log_dir / "nrue.log").write_text(
             "State = NR_RRC_CONNECTED\nReceived PDU Session Establishment Accept\n",
@@ -421,6 +455,20 @@ def self_test() -> None:
         (report_dir / "source-evidence.json").write_text(json.dumps(evidence), encoding="utf-8")
         counters = validate_artifacts(root, summary_path, time.time())
         assert counters["rx_starvations"] == 2
+        assert counters["harq_nack_bits"] == 1
+        # Negative control: the S12 failure mode (attach and ping pass, most
+        # PDSCH NACKed) must now fail the gate.
+        (log_dir / "gnb-internal.log").write_text(
+            "PUCCH: rnti=0x4601 format=1 ack=01\n" * 20 + "PCAP files successfully closed.\n",
+            encoding="utf-8",
+        )
+        os.utime(summary_path)
+        try:
+            validate_artifacts(root, summary_path, time.time())
+        except ValueError as error:
+            assert "NACK ratio" in str(error), error
+        else:
+            raise AssertionError("a 50% NACK run passed the verifier")
     print("event=native_oai_artifact_verifier_self_test result=pass")
 
 
@@ -442,6 +490,7 @@ def main() -> int:
         "event=native_oai_1x1_attach_gate result=pass "
         f'summary="{args.summary}" '
         + " ".join(f"{key}={counters[key]}" for key in COUNTER_NAMES)
+        + f" harq_ack_bits={counters['harq_ack_bits']} harq_nack_bits={counters['harq_nack_bits']}"
     )
     return 0
 
