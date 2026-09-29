@@ -120,6 +120,7 @@ printf 'oai ue: %s %s\n' "${OAI_UE_VARIANT}" "${OAI2X2_NRUE_DIR}"
 
 exec {lock_fd}<"${script_dir}/run-ocudu-oai-1x1.sh"
 flock -n "${lock_fd}" || usage_error "another native OAI gate is running"
+export OCUDU_NATIVE_GATE_LOCK_FD="${lock_fd}"
 
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 results_root="${native_root}/results"

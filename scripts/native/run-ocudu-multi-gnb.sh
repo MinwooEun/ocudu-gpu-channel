@@ -91,6 +91,7 @@ done
 
 exec {lock_fd}<"${BASH_SOURCE[0]}"
 flock -n "${lock_fd}" || usage_error "another native multi-gNB gate is running"
+export OCUDU_NATIVE_GATE_LOCK_FD="${lock_fd}"
 
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 log_dir="${native_root}/results/logs/ocudu-multi-gnb/${timestamp}"

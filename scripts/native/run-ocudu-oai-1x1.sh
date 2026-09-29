@@ -155,6 +155,7 @@ done
 
 exec {lock_fd}<"${BASH_SOURCE[0]}"
 flock -n "${lock_fd}" || usage_error "another native OAI gate is running"
+export OCUDU_NATIVE_GATE_LOCK_FD="${lock_fd}"
 parent_netns="$(readlink /proc/self/ns/net)"
 parent_mntns="$(readlink /proc/self/ns/mnt)"
 probe_dir="$(mktemp -d /tmp/ocudu-native-userns-probe.XXXXXX)"

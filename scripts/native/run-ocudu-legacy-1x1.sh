@@ -199,6 +199,7 @@ done
 # leave the native 1x1 lock pinned by an orphaned radio/core process.
 exec 9<"${BASH_SOURCE[0]}"
 flock -n 9 || usage_error "another native 1x1 run is active"
+export OCUDU_NATIVE_GATE_LOCK_FD="9"
 parent_netns="$(readlink /proc/self/ns/net)"
 parent_mntns="$(readlink /proc/self/ns/mnt)"
 
