@@ -59,7 +59,7 @@ brain-B ──(N6/tun)── gNB ═══╣  links: gnb→ueA, ueA→gnb, gnb�
 | **R1** | **링 씬** — 링 + 기둥/차폐물 Mitsuba XML, gNB 1 + UE 2 + crosstalk 시나리오 JSON, 커버리지 맵으로 LOS/NLOS 비대칭 확인 | 브리지 dry-run에서 링 위치별 탭이 물리적으로 말이 됨, 6링크 solve 시간이 갱신 주기 예산 안 | **완료 2026-09-29** — `scenes/robot_ring` + `robot-ring.json`(4링크, FDD) / `robot-ring-crosstalk.json`(6링크). GB10 solve 46–53 ms(링크 수 무관, 방향당 1회), 10 Hz 예산 안. LOS −0.5…−2.9 dB, 기둥 그림자 −27…−36 dB(refraction on; 끄면 outage). 발견: 4-UE 커밋 이후 Sionna multi-UE 렌더러가 2-UE 시나리오를 거부 → R4 전 수정 필요 |
 | **R2** | **로봇 아레나** — MuJoCo 스모봇 2대, ring-out 규칙, 두뇌 프로세스, UDP 프로토콜(seq+timestamp), 위치 PUB. 무선 없음 | 로컬 루프로 경기 완주, MuJoCo wall-clock 스텝, 명령 부재 정책 정의, 동일 두뇌 승률 50±x% 노이즈 플로어(N≥30) | **완료 2026-09-29** — `scripts/robot_fight/` (protocol/arena/brain/fight), 테스트 6개 통과. 30판 노이즈 플로어 5:5:20(승률 0.5, 95% CI 0.24–0.76), RTF 1.000. 핸디캡: +100 ms 편도 → 11:2:5(승률 0.85), +50 ms·손실 10/30% → 잡음 안. 무승부 67–83%는 **R2b에서 해결**(가장자리 타이브레이크 + `reactive` 정책: 24판 배치 무승부 0, ring_out 100 %); netns 모뎀 완료(Spark root netns 테스트 통과). **링크 민감도는 미달**: 편도 ≤100 ms·손실 20 %·정전 20 % duty 어느 것도 승률을 재현 가능하게 바꾸지 못함 → R5 1차 지표는 링크 지표, 경기는 데모(R2b 절) |
 | **R3** | **위치 → Sionna live** — 브리지 `update_positions`를 외부 입력(ZMQ SUB)으로 교체, MuJoCo → 브리지 → 브로커 | 로봇이 기둥 뒤로 가면 KPI 패널의 채널이 따라옴, 위치→적용 지연 < 예산 | **부분 완료 2026-09-29** — 브리지 `--position-endpoint` + 게이트 env 배선, 단위 테스트 11개, Spark dry-run에서 원 궤도 추종 오차 0 m, solve 유지(링 씬 6링크 53 ms). MuJoCo→KPI 실물 연결은 R2/R4에서 |
-| **R4** | **무선 폐루프** — srsUE 2대 attach(`run-ocudu-sionna-multi-ue.sh` 기반), 제어 루프가 tun 통과, RTT/손실 로그를 브로커 슬롯 로그와 조인 | strict-realtime on, RTF = 1.0 로그, 경기 완주, RTT 분포, 무효 판 규칙 적용 | **부분 완료 2026-09-29 (R4a 무선 절반)** — 2-UE Sionna 렌더러 수정, 절대 수신 잡음 바닥(`OCUDU_NATIVE_SIONNA_AWGN_SNR_DB`, 기본 40), 게이트 훅(`MUE_UE_EXEC`/`ROOT_EXEC`/duration/strict/핀/캡처/UE metrics CSV). 링 씬 walk 시나리오 PASS: LOS UE 34 dB, 그림자 UE 31→16 dB(r=0.42), ping 32/37 ms. **R4b(아레나 절반) 완료(조건부) 2026-09-29** — 에뮬레이터 링크 위에서 32판 전부 완주(16:16, RTF 1.000 전 경기), RTT p50 21 ms / 편도 8.4 ms / stale 0, Sionna 외부 위치 10 Hz, 조인 타임라인(`analyze_run.py`). 조건: 링을 기둥 동쪽 LOS에 두었고(그림자 진입 시 UL이 먼저 죽어 두 UE 동시 RLF), strict-realtime은 attach starvation 때문에 off. 발견: UL PUSCH SINR(2.5–5 dB)은 잡음 knob과 무관, 동시 `cmake -j20`만으로 RTT 4배 |
+| **R4** | **무선 폐루프** — srsUE 2대 attach(`run-ocudu-sionna-multi-ue.sh` 기반), 제어 루프가 tun 통과, RTT/손실 로그를 브로커 슬롯 로그와 조인 | strict-realtime on, RTF = 1.0 로그, 경기 완주, RTT 분포, 무효 판 규칙 적용 | **부분 완료 2026-09-29 (R4a 무선 절반)** — 2-UE Sionna 렌더러 수정, 절대 수신 잡음 바닥(`OCUDU_NATIVE_SIONNA_AWGN_SNR_DB`, 기본 40), 게이트 훅(`MUE_UE_EXEC`/`ROOT_EXEC`/duration/strict/핀/캡처/UE metrics CSV). 링 씬 walk 시나리오 PASS: LOS UE 34 dB, 그림자 UE 31→16 dB(r=0.42), ping 32/37 ms. **R4b(아레나 절반) 완료(조건부) 2026-09-29** — 에뮬레이터 링크 위에서 32판 전부 완주(16:16, RTF 1.000 전 경기), RTT p50 21 ms / 편도 8.4 ms / stale 0, Sionna 외부 위치 10 Hz, 조인 타임라인(`analyze_run.py`). 조건: 링을 기둥 동쪽 LOS에 두었고(그림자 진입 시 UL이 먼저 죽어 두 UE 동시 RLF), strict-realtime은 attach starvation 때문에 off. 발견: UL PUSCH SINR(2.5–5 dB)은 잡음 knob과 무관, 동시 `cmake -j20`만으로 RTT 4배 · R4c(09-30): UL PUSCH SINR 5–8 dB 바닥은 에뮬레이터 밖(직결 ZMQ·OAI UE에서 동일, `docs/plans/r4c-ul-noise.patch`), 브로커 heartbeat에 초당 starvation/gap/overflow 델타 추가 |
 | **R5** | **스케줄링 배틀** — 브로커 2개(셀 2개), GPU 경합원(Sionna 버스트 + hog/CUDA gNB), 스케줄링 off vs on, N판 | 스케줄링 유무로 승률이 뒤집히고 브로커별 `rx_starvations`/`node_stall`/`process_us` p99가 그 이유를 설명 | **부분 완료 2026-09-29(R5a)** — `cuda_stream_priority` 손잡이, `ocudu-gpu-hog`, 2셀·2브로커 게이트 `run-ocudu-robot-fight.sh` 12런 PASS. 컨텍스트 간 time slicing은 안에서 못 이기고(2 ms 커널 세입자 → 모두 2.3 ms/슬롯), 경합원을 브로커와 한 MPS 컨텍스트에 두고 브로커 스트림을 high로 하면 p99 1,493 → 211 µs(Sionna), 1,866 → 859 µs(200 µs hog). FIFO는 해롭다. 아레나 결합은 R5b |
 | **R6** | **데모 패키징** — 영상, KPI 패널 동기 재생, 선택: LLM 두뇌 / G1 / Isaac | 발표용 영상 1편 | |
 
@@ -336,3 +336,37 @@ R5의 인프라 절반. 아레나(R2c/R4b)를 붙이는 R5b는 별도. 결과 �
 **R5 exit 게이트 문구 수정.** 이 트리에 `control_updates_dropped_realtime`·late 카운터는 없다. 판정 지표는 브로커별 **`rx_starvations`, `node_stall`, `process_us` p99(경합 창)**, UE ping burst, 그리고 로봇 결과.
 
 **열린 것.** (1) `nvidia-smi compute-policy --set-timeslice`(SHORT/MEDIUM/LONG)가 Spark 드라이버에 있다 — 컨텍스트 간 quantum 자체를 줄이는 유일한 손잡이인데 GPU 전역 설정이라 공유 장치 규칙상 적용하지 않았다(읽기 옵션 없음). 다음 실험 후보 1순위. (2) CUDA gNB를 경합원으로 쓰는 `cudagnb` 셀은 코드만 있고 미실행(두 gNB 모두 가속되어 대칭이므로 "경합 강도" 축이지 "격리" 축이 아님). (3) 워크스테이션 컨테이너에 cmake가 없어 C++ 빌드·ctest는 Spark(sm_121)에서만 돌렸다(config·processing PASS). (4) 게이트 스크립트는 `env -u`를 옵션→대입 순서로 써야 한다(첫 런 실패 원인). (5) hog가 있으면 브리지 solve도 절반으로 준다(갱신 2,390 → 1,577/240 s): 위치→채널 지연도 스케줄링의 피해자라 R5b 타임라인에 함께 기록할 것.
+
+### R4c — 2026-09-30 (R4b 후속: UL SINR 바닥의 원인, 브로커 heartbeat의 초당 starvation 카운터)
+
+**과제 1 — "UL PUSCH SINR이 에뮬레이터 UL 잡음과 무관"의 원인.** 결론: **그 바닥은 에뮬레이터가 만드는 것이 아니다.** 증거 넷.
+
+1. *잡음은 올바른 자리에, 올바르게 적용된다.* a3 렌더 토폴로지(`configs/ocudu-multi-ue-native/20260929T144912Z/topology.yaml`)는 `gnb0_p0`에 `rx_model: rx_noise_gnb0`(`noise_power 3.0e-02`), UE에 `1.12e-06`을 준다. 두 백엔드 모두 `rx_model`의 절대 `noise_power`를 노드 합산 수신 신호에 한 번 더한다(`cpu_backend.cpp` Awgn 분기, `cuda_backend.cu` 1614–1631, `profile_swap`이 갈아끼우는 것은 링크 체인이지 노드의 `rx_model`이 아님). UE 쪽 DL SNR이 knob을 정확히 따라가는 것(R4a 26.6/34.6/40 → 27/31/34 dB)이 그 증거다.
+2. *UL에서는 잡음이 신호보다 40–60 dB 아래다.* 와이어 캡처(R4a `130021Z/wire-capture`)의 UE TX 활성 평균 전력 3.0e4(+44 dB)에 대해 a1 잡음 3.0(+5 dB) → SNR 40 dB, a3 잡음 0.03 → 60 dB. 이 잡음이 5 dB 바닥을 만들 수는 없다. UL 파형 자체도 깨끗하다: CP 상관 ρ = 1.000(DL도 1.000, UE RX는 0.999 = 30 dB — 그것이 knob의 DL 효과), 슬롯 안 심볼 시작이 명목값보다 ~300샘플(13 µs) 앞 = N_TA,offset 그대로, srsUE는 서브프레임마다 `0.99/max_peak`로 피크 정규화하므로 클리핑도 없다(`ue_ul_nr.c:149,251`).
+3. *에뮬레이터가 없어도 같다.* gNB `PUSCH: … sinr=` 분포를 할당 폭별로 뽑으면(`pusch_stats.py`, 중앙값):
+
+   | 경로 | 1 PRB | 5 PRB | 17–19 PRB | 24 PRB |
+   |---|---|---|---|---|
+   | **직결 ZMQ, 에뮬레이터 없음**(Spark `direct-zmq-20260925T{033038,033652,062750}Z`) | 8.5 | 6.7 | 4.9 | — |
+   | multi-UE legacy(잡음 없음, `111803Z`/`112225Z`) | 7.4–7.5 | 6.7 | 5.0–5.3 | — |
+   | multi-UE Sionna + 잡음 ref 40(`132714Z`, a3 `144912Z`) | 8.0–8.4 | 6.0–6.5 | 5.0–5.5 | — |
+   | OAI nrUE 1x1(`oai-1x1/20260928T121922Z`) | 4.7 | 4.9 | — | 5.0 |
+   | multi-gNB 2셀(`104644Z`, 셀 간 간섭 있음) | — | 1.8–2.1 | — | −0.4 |
+
+   직결 케이블(브로커 프로세스 자체가 없음)에서 이미 1 PRB 8.5 / 17 PRB 4.9 dB다. 에뮬레이터를 끼우고 잡음을 20 dB 바꿔도 ±1 dB 안이며, UE 스택을 OAI로 바꿔도 같다.
+4. *보고값이 낮게 편향돼 있지만 여유가 30 dB인 것도 아니다.* a3에서 16QAM TBS 528은 보고 4.9 dB에서 `crc=OK`지만 LDPC 3–6회 반복이 필요하고, 넓은 QPSK 할당(73–105 PRB)은 중앙값 −6 dB로 `KO`(2,198건). 즉 "잡음 없는 링크의 30 dB"는 어디에도 없다 — 무엇인가가 gNB의 PUSCH 수신 체인 안(또는 srsUE UL 파형과 gNB 기대의 어긋남)에서 신호를 깎는다.
+
+**귀속.** 바닥은 **OCUDU PUSCH 체인 쪽**(기본 보고 방식 `post_equalization`, `du_low_config.h:41`)이거나 srsUE UL 파형과 gNB 사이의 불일치이지 우리 에뮬레이터가 아니다. 직결 런에서 재현되므로 우리 트리에서 고칠 수 있는 것이 없다. R4a의 열린 항목 (4)와 R4b 발견 2는 이렇게 닫힌다: **`OCUDU_NATIVE_SIONNA_TX_POWER_UL`/UL 잡음 knob은 현재 값 범위(ref ≥ 26 dB)에서 UL에 사실상 무력하다**(UL SNR 40–60 dB, 바닥은 5 dB 다른 곳). 기둥 그림자에서 UL이 먼저 죽는 것(R4b 발견 1)도 같은 이유 — 출발점 여유가 ~5 dB라 −14 dB면 끝난다. UL을 그림자에 민감하게 만들려면 ref를 ~5 dB까지 내려야 하는데, 그러면 원인 미상의 바닥 위에 우리 잡음을 얹는 꼴이라 원인이 잡히기 전엔 하지 않는다.
+
+**다음 진단 단계(OCUDU/srsUE 쪽, 로컬 실험).** `docs/plans/r4c-ul-noise.patch`(**미적용**, 진단용): gNB fixture에 `expert_phy.pusch_sinr_calc_method`를 `evm` / `channel_estimator`로 바꿔 한 값씩 직결 런. `evm`이 20–30 dB로 읽히면 바닥은 추정기 편향이고 피해는 링크 적응(UL MCS 2–3)뿐 → gNB 설정으로 완화 가능; 셋이 같으면 손상이 실제이고 다음 프로브는 srsUE UL 파형(DMRS·위상 보상)과 gNB 기대의 대조다. fixture 해시가 바뀌므로 명시적 실험 knob으로만. 워크스테이션 컨테이너에 python3/cmake가 없어 이 세션에서는 돌리지 않았다(게이트는 `/usr/bin/python3` 필요). 프로젝트 규칙대로 로컬 패치·지속 점검으로 다루고 업스트림 보고는 마지막에.
+
+**과제 2 — heartbeat 초당 health 카운터(`src/broker.cpp`, +32).** `WorkerDiag`에 `starvations`/`sequence_gaps`(producer 소유)와 `overflows`(puller 소유)를 relaxed atomic으로 추가하고 `AtomicStats` 증가 지점 세 곳에서 함께 올린다. `event=heartbeat` 줄 끝에 기존 필드는 그대로 두고 ` starvations=<직전 heartbeat 이후 델타> starvations_total=<n> gaps=… gaps_total=… overflows=… overflows_total=…`를 붙인다(heartbeat 스레드만 만지는 이전값 벡터로 델타 계산). 샘플(호스트 CPU 빌드, `topology.local.cpu.yaml` + zmq source/sink 4 s):
+
+```
+event=heartbeat t=3 dev=ue0 ring=599040/614400 rx_ring=0/46080 puller[…] producer[…] rep[…] starvations=0 starvations_total=0 gaps=0 gaps_total=0 overflows=0 overflows_total=0
+event=stop tx_pulls=7767 rx_requests=7715 rx_starvations=0 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0
+```
+
+빌드·테스트: 호스트 스크래치 빌드(`~/ocudu-work/builds-scratch/r4c-host`, CPU-only — 호스트에 nvcc가 없고 컨테이너에 cmake가 없어 sm_120 CUDA 빌드는 이 세션에서 불가; 변경은 backend 무관한 `broker.cpp`뿐) ctest `broker`/`ring`/`config`/`processing` 4/4 PASS. 분석기 반영: `scripts/robot_fight/analyze_run.py`의 `hb_delta`가 경기 창 안 `starvations/gaps/overflows`(및 발생 초)를 합산하고, 구형 로그면 `null`; `scripts/native/analyze-sionna-multi-ue-run.py`에 `load_broker_health`(`--steady-after-s`, 기본 60: attach 구간과 정상 상태 분리)와 `== broker <dev>:` 줄 추가. a3 로그(구형 브로커)에서는 둘 다 "카운터 없음"으로 정직하게 떨어지는 것 확인. **R5부터 starvation의 1차 지표는 이 heartbeat 델타다** — `event=stop` 총합은 attach의 수십 회와 섞인다.
+
+파일: `src/broker.cpp`, `scripts/robot_fight/analyze_run.py`, `scripts/native/analyze-sionna-multi-ue-run.py`, `docs/plans/r4c-ul-noise.patch`(신규, 미적용). 재검사 스크립트 `pusch_stats.py`, `cp_timing.py`, `ul_edges.py`는 스크래치(레포 밖).

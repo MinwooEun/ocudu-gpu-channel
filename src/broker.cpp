@@ -536,6 +536,15 @@ struct WorkerDiag {
   // aligns its ZMQ TX channels, so a drift here is the kind of thing that
   // deadlocks a real multi-channel radio.
   std::atomic<std::uint64_t> total_samples{0};
+  // Per-worker copies of the run-cumulative health counters in AtomicStats,
+  // so the heartbeat can print a per-device, per-second delta: `event=stop`
+  // only gives the run total, which cannot separate a starvation during
+  // attach from one during the measured window. A producer owns
+  // `starvations` and `sequence_gaps` (its node's input side); a puller owns
+  // `overflows` (its port's TX ring). Relaxed like the other counters.
+  std::atomic<std::uint64_t> starvations{0};
+  std::atomic<std::uint64_t> sequence_gaps{0};
+  std::atomic<std::uint64_t> overflows{0};
   // Per-stage CPU timings for this worker's last completed unit of work, in
   // microseconds. The slots are generic because the roles have different
   // stages: see kProducerStage* and kRepStage* below for the two vocabularies.
@@ -1004,6 +1013,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             diag.blocked_iters.fetch_add(1);
             if (!pending_counted) {
               stats.tx_queue_overflows.fetch_add(1);
+              diag.overflows.fetch_add(1, std::memory_order_relaxed);
               pending_counted = true;
             }
             wait_tick(knobs);
@@ -1201,6 +1211,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
                 cur = src.tx_ring.earliest_sequence();
                 link.cursor.store(cur);
                 stats.tx_sequence_gaps.fetch_add(1);
+                diag.sequence_gaps.fetch_add(1, std::memory_order_relaxed);
               }
               const std::uint64_t avail = src.tx_ring.next_sequence() - cur;
               common = std::min<std::size_t>(common, static_cast<std::size_t>(avail));
@@ -1220,6 +1231,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             if (diag.progress.load() > 0 && !starvation_counted &&
                 now - wait_start > starvation_deadline) {
               stats.rx_starvations.fetch_add(1);
+              diag.starvations.fetch_add(1, std::memory_order_relaxed);
               starvation_counted = true;
             }
             if (now >= next_data_report) {
@@ -1535,6 +1547,12 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
 
   // Heartbeat: once per second, publish each worker's live state so a wedged
   // relay is diagnosable from the broker log without attaching a debugger.
+  // Previous heartbeat's health counters per port, so each line can carry the
+  // per-second delta next to the run total. Only the heartbeat thread touches
+  // these.
+  std::vector<std::uint64_t> hb_last_starvations(ports.size(), 0);
+  std::vector<std::uint64_t> hb_last_gaps(ports.size(), 0);
+  std::vector<std::uint64_t> hb_last_overflows(ports.size(), 0);
   const auto emit_heartbeat = [&](std::uint64_t elapsed_s) {
     for (std::size_t d = 0; d != ports.size(); ++d) {
       std::size_t ring_size = 0;
@@ -1568,7 +1586,19 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
                 << " stall=" << s.blocked_iters.load() << " last=" << s.last_samples.load()
                 << "] rep[state=" << r.state.load() << " replies=" << r.progress.load()
                 << " idle=" << r.idle_waits.load() << " row_spin=" << r.blocked_iters.load()
-                << " last=" << r.last_samples.load() << "]\n";
+                << " last=" << r.last_samples.load() << "]";
+      // Health counters: delta since the previous heartbeat, then the run
+      // total. starvations/gaps come from the node's producer (its input
+      // side), overflows from this port's puller.
+      const std::uint64_t starv = s.starvations.load(std::memory_order_relaxed);
+      const std::uint64_t gaps = s.sequence_gaps.load(std::memory_order_relaxed);
+      const std::uint64_t ovf = p.overflows.load(std::memory_order_relaxed);
+      std::cout << " starvations=" << (starv - hb_last_starvations[d]) << " starvations_total=" << starv
+                << " gaps=" << (gaps - hb_last_gaps[d]) << " gaps_total=" << gaps
+                << " overflows=" << (ovf - hb_last_overflows[d]) << " overflows_total=" << ovf << "\n";
+      hb_last_starvations[d] = starv;
+      hb_last_gaps[d] = gaps;
+      hb_last_overflows[d] = ovf;
     }
     // Channel-processor GPU timings (zero on the CPU backend).
     const ProcessorTimings t = processor_->last_timings();

@@ -1,0 +1,45 @@
+# R4c — uplink SINR floor: diagnostic patch (NOT applied; experiment, not a fix)
+#
+# Finding (ROBOT_FIGHT_MILESTONES.md, R4c): the gNB's reported PUSCH SINR of
+# 5-8 dB (1-5 PRB) falling to ~2 dB (24 PRB) is NOT produced by the channel
+# emulator. It is identical on a direct ZMQ cable between OCUDU and srsUE with
+# no emulator at all (Spark direct-zmq-20260925T*: 1 PRB 8.5 / 5 PRB 6.7 /
+# 17 PRB 4.9 dB), the same with the OAI UE (oai-1x1 20260928T121922Z: 5.0 dB
+# at 24 PRB), and unchanged between UL noise floors 20 dB apart (R4b a1 vs a3).
+# The emulator's UL noise sits 40-60 dB below the UE signal (TX 3.0e4 vs
+# noise_power 3.0 / 0.03), so it cannot be the floor. The UL waveform is clean
+# CP-OFDM (CP correlation rho = 1.000 on the wire capture), arrives at the
+# nominal N_TA,offset (~300 samples = 13 us early, measured 280 +/- 20), and
+# is peak-normalised by srsUE (ue_ul_nr.c: 0.99/max_peak per subframe), so
+# neither timing nor level nor clipping explains it either.
+#
+# What is left is the OCUDU PUSCH receive chain's own SINR estimate and/or a
+# real impairment in how it processes these UEs' waveforms: 16QAM TBS 528
+# decodes with crc=OK at a reported 4.9 dB but needs 3-6 LDPC iterations, and
+# wide QPSK grants (73-105 PRB) fail, so the reported number is biased low
+# but the true margin is also not the 30+ dB a noise-free link should give.
+# OCUDU reports the `post_equalization` SINR by default
+# (apps/units/flexible_o_du/o_du_low/du_low_config.h:41). The first
+# discriminating experiment is to switch the *reporting* method and compare:
+# if `evm` reads 20-30 dB while `post_equalization` reads 5-8 dB, the floor is
+# an estimator artifact that only hurts link adaptation (UL MCS 2-3); if all
+# three agree, the impairment is real and the next probe is the srsUE UL
+# waveform (phase compensation / DMRS) against the gNB's expectations.
+#
+# Apply to the gNB fixture used by every native gate (examples/ocudu/
+# gnb_zmq_b210_fdd_srsue.yaml). It changes the fixture hash, so run it as an
+# explicit experiment (OCUDU_NATIVE_* knob or a copied fixture), one value per
+# run: post_equalization (today's default), channel_estimator, evm. Compare
+# the PUSCH `sinr=` distribution by PRB count (scripts: see R4c notes,
+# `pusch_stats.py`) and the UL MCS / PUSCH KO% the scheduler settles on.
+#
+--- a/examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml
++++ b/examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml
+@@ cell_cfg: pusch: mcs_table: qam64 @@
+   pusch:
+     mcs_table: qam64
++
++# R4c experiment: PUSCH SINR reporting method (post_equalization is the
++# OCUDU default). Run once per value and compare the PUSCH sinr= distribution.
++expert_phy:
++  pusch_sinr_calc_method: evm

@@ -134,9 +134,18 @@ def load_broker(log_dir: pathlib.Path, start_ms: int | None):
             if not m:
                 continue
             f = dict(BROKER_RE.findall(line))
-            hb.append({"t": int(m.group(1)), "dev": m.group(2), "idle": int(float(f.get("idle", 0))),
-                       "room_stall": int(float(f.get("room_stall", 0))), "stall": int(float(f.get("stall", 0))),
-                       "pulls": int(float(f.get("pulls", 0)))})
+            entry = {"t": int(m.group(1)), "dev": m.group(2), "idle": int(float(f.get("idle", 0))),
+                     "room_stall": int(float(f.get("room_stall", 0))), "stall": int(float(f.get("stall", 0))),
+                     "pulls": int(float(f.get("pulls", 0)))}
+            # R4c: per-device health counters on the heartbeat (delta since the
+            # previous heartbeat + run total). Older brokers do not print them;
+            # leave the keys absent rather than zero so the window delta can
+            # say "unknown" instead of "0".
+            for key in ("starvations", "gaps", "overflows"):
+                if f"{key}_total" in f:
+                    entry[key] = int(float(f[key]))
+                    entry[f"{key}_total"] = int(float(f[f"{key}_total"]))
+            hb.append(entry)
         elif line.startswith("event=node_stall") or line.startswith("event=node_stall_cleared"):
             stalls.append(line[:200])
         elif line.startswith("event=stop"):
@@ -217,8 +226,18 @@ def hb_delta(hb, dev, t0, t1):
     if len(rows) < 2:
         return None
     a, b = rows[0], rows[-1]
-    return {"idle": b["idle"] - a["idle"], "room_stall": b["room_stall"] - a["room_stall"],
-            "producer_stall": b["stall"] - a["stall"], "pulls": b["pulls"] - a["pulls"]}
+    out = {"idle": b["idle"] - a["idle"], "room_stall": b["room_stall"] - a["room_stall"],
+           "producer_stall": b["stall"] - a["stall"], "pulls": b["pulls"] - a["pulls"]}
+    # Health counters inside the window (R4c heartbeat fields). The per-second
+    # deltas of every heartbeat after the first one in the window are summed,
+    # which equals total[last] - total[first] but also survives a missing line.
+    for key in ("starvations", "gaps", "overflows"):
+        if all(key in h for h in rows):
+            out[key] = sum(h[key] for h in rows[1:])
+            out[f"{key}_seconds"] = [h["t"] for h in rows[1:] if h[key]]
+        else:
+            out[key] = None
+    return out
 
 
 def analyse(log_dir: pathlib.Path, gnb: str, broker_start_ms: int | None, shadow_below_db: float):

@@ -24,6 +24,7 @@ import csv
 import json
 import math
 import pathlib
+import re
 import statistics
 import sys
 
@@ -152,10 +153,50 @@ def analyse_ue(ue: str, gnb: str, rows: list[dict], updates: list[dict], keys: l
     return report
 
 
+def load_broker_health(broker_log: pathlib.Path, steady_after_s: int) -> dict | None:
+    """Per-device starvation/gap/overflow timeline from the broker heartbeat.
+
+    R4c added `starvations=<delta since last heartbeat> starvations_total=<n>`
+    (and gaps/overflows) to `event=heartbeat`, so a starvation during attach
+    can be told apart from one during the measured window. Older brokers only
+    have the run totals in `event=stop`; then this returns None.
+    """
+    if not broker_log.exists():
+        return None
+    per_dev: dict[str, dict] = {}
+    stop: dict[str, int] = {}
+    with broker_log.open(encoding="utf-8", errors="replace") as handle:
+        for line in handle:
+            if line.startswith("event=stop"):
+                stop = {k: int(v) for k, v in re.findall(r"(\w+)=(\d+)", line)}
+                continue
+            if not line.startswith("event=heartbeat"):
+                continue
+            fields = dict(re.findall(r"(\w+)=([-\w./]+)", line))
+            if "starvations_total" not in fields:
+                continue
+            dev = fields.get("dev", "?")
+            entry = per_dev.setdefault(dev, {"seconds": [], "total": {}, "steady": {}, "attach": {}})
+            t = int(fields.get("t", 0))
+            for key in ("starvations", "gaps", "overflows"):
+                delta = int(fields.get(key, 0))
+                entry["total"][key] = int(fields.get(f"{key}_total", 0))
+                phase = "steady" if t >= steady_after_s else "attach"
+                entry[phase][key] = entry[phase].get(key, 0) + delta
+                if delta and key == "starvations":
+                    entry["seconds"].append((t, delta))
+    if not per_dev:
+        return None
+    return {"steady_after_s": steady_after_s, "devices": per_dev, "stop": stop}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--log-dir", type=pathlib.Path, required=True)
     parser.add_argument("--gnb", default="gnb0")
+    parser.add_argument("--steady-after-s", type=int, default=60,
+                        help="broker heartbeat seconds at or after this count as steady state "
+                             "(before: attach phase) when splitting starvations")
     parser.add_argument("--max-gap-ms", type=int, default=1500)
     parser.add_argument("--los-within-db", type=float, default=6.0)
     parser.add_argument("--shadow-below-db", type=float, default=15.0)
@@ -170,6 +211,17 @@ def main() -> int:
     keys = [u["t_ms"] for u in updates]
     report = {"log_dir": str(args.log_dir), "bridge_updates": len(updates),
               "position_source": updates[-1]["position_source"] if updates else None, "ues": {}}
+    health = load_broker_health(args.log_dir / "broker.log", args.steady_after_s)
+    report["broker_health"] = health
+    if health:
+        for dev, entry in sorted(health["devices"].items()):
+            print(f"== broker {dev}: starvations attach(<{args.steady_after_s}s)={entry['attach'].get('starvations', 0)} "
+                  f"steady={entry['steady'].get('starvations', 0)} total={entry['total'].get('starvations', 0)} "
+                  f"gaps={entry['total'].get('gaps', 0)} overflows={entry['total'].get('overflows', 0)} "
+                  f"starvation seconds={entry['seconds'][:40]}")
+    else:
+        print("== broker: heartbeat has no per-second health counters (pre-R4c broker); "
+              "only the event=stop run totals are available")
     for csv_path in sorted(args.log_dir.glob("srsue-metrics-*.csv")):
         ue = csv_path.stem[len("srsue-metrics-"):]
         start_file = args.log_dir / f"srsue-{ue}.start_unix_ms"
