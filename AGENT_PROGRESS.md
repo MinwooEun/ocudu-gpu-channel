@@ -7,8 +7,8 @@
 - [2026-09-30 R7 campaign complete] Completed the requested continuation:
   eight radio arena gates, nine requested radio-probe conditions and 96 local
   impairment fights. Final report docs/robot-fight-r7.md, four static figures,
-  and comparison/probe/robustness/audit JSONs are ready for publication on
-  MinwooEun/ocudu-gpu-channel:integration-0928. Scope is measured control benefit
+  and comparison/probe/robustness/audit JSONs were published in19667aa to
+  MinwooEun/ocudu-gpu-channel:integration-0928; remote tip verified after push. Scope is measured control benefit
   and its failure envelope, not strict radio deadlines or general stability.
 - [Corrected radio sweep] Explicit sudo forwarding and actual rendered-config
   auditing account for all nine conditions: baseline and AWGN34/30/27/24,
