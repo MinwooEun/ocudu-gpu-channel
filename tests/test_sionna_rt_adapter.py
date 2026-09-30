@@ -388,6 +388,48 @@ class AdapterTests(unittest.TestCase):
                 direction="downlink",
                 carrier_frequency_hz=args.downlink_frequency_hz,
             )
+            timing = {}
+            timed_profiles, timed_statuses = scenario.profiles(
+                FakePaths(), [link], direction="downlink",
+                carrier_frequency_hz=args.downlink_frequency_hz, timing=timing,
+            )
+            self.assertEqual(profiles, timed_profiles)
+            self.assertEqual(statuses, timed_statuses)
+            self.assertEqual(set(timing), {
+                "cir_numpy", "array_export", "geometry_export",
+                "tap_and_status_pack", "path_polylines",
+            })
+            self.assertTrue(all(value >= 0 for value in timing.values()))
+            self.assertEqual(timing["path_polylines"], 0.0)
+
+            class BrokenGeometryPaths(FakePaths):
+                vertex_reads = 0
+
+                @property
+                def vertices(self) -> object:
+                    self.vertex_reads += 1
+                    raise RuntimeError("geometry component build failed")
+
+            args.path_polylines = 6
+            # Missing optional geometry remains supported without disabling it.
+            scenario.profiles(
+                FakePaths(), [link], direction="downlink",
+                carrier_frequency_hz=args.downlink_frequency_hz,
+            )
+            self.assertIsNone(scenario.path_polylines_error)
+            broken_paths = BrokenGeometryPaths()
+            for _ in range(2):
+                fallback_profiles, fallback_statuses = scenario.profiles(
+                    broken_paths, [link], direction="downlink",
+                    carrier_frequency_hz=args.downlink_frequency_hz,
+                )
+                self.assertEqual(profiles, fallback_profiles)
+                self.assertEqual(statuses, fallback_statuses)
+            self.assertEqual(
+                scenario.path_polylines_error,
+                "RuntimeError: geometry component build failed",
+            )
+            self.assertEqual(broken_paths.vertex_reads, 1)
 
         profile = profiles["gnb>ue:h"]
         self.assertEqual((profile.nr, profile.nt), (1, 2))

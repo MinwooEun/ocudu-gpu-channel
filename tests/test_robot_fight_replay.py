@@ -59,6 +59,31 @@ class ReplayTest(unittest.TestCase):
             self.assertEqual(len(frames), 10)
             self.assertEqual(frames[-1][1], 9 * 2.0 / 10)
 
+    def test_3d_frames_osmesa(self):
+        import os
+        os.environ.setdefault("MUJOCO_GL", "osmesa")
+        try:
+            import mujoco  # noqa: F401
+            probe = mujoco.Renderer(mujoco.MjModel.from_xml_string(
+                '<mujoco><worldbody><geom type="box" size="1 1 1"/></worldbody></mujoco>'), 16, 16)
+            probe.close()
+        except Exception as exc:  # noqa: BLE001  (no OSMesa/EGL on this host)
+            self.skipTest(f"MuJoCo offscreen rendering unavailable: {exc}")
+        with tempfile.TemporaryDirectory() as td:
+            root = rr.make_synthetic_run(pathlib.Path(td) / "run", seconds=2.0, two_cell=True, bot="balance")
+            run = rr.load_run(root)
+            f = run.fights[0]
+            scene = rr.Scene3D(run, f)
+            raw = scene.render(f.t0_ms + 500, f.poses[10][1])
+            self.assertEqual(raw.shape, (480, 640, 3))
+            self.assertGreater(raw.std(), 10)  # not a blank frame
+            scene.close()
+            frames = list(rr.iter_frames(run, run.fights, fps=10, speed=1.0, hold_s=0.0, max_seconds=1.0, view="both"))
+            self.assertEqual(len(frames), 10)
+            self.assertEqual(frames[0][2].shape, (720, 1280, 3))
+            frames3 = list(rr.iter_frames(run, run.fights, fps=10, speed=1.0, hold_s=0.0, max_seconds=0.3, view="3d"))
+            self.assertEqual(len(frames3), 3)
+
     def test_offset_parsing(self):
         self.assertEqual(rr.parse_offset({}, "2.0,0,0"), (2.0, 0.0, 0.0))
         self.assertEqual(rr.parse_offset({"root_exec": "RF_OFFSET=1,2,3 bash x"}, None), (1.0, 2.0, 3.0))

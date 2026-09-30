@@ -672,6 +672,10 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--iterations", type=int, default=0,
                         help="optional update-count cap; 0 means no cap")
     parser.add_argument("--update-hz", type=float, default=500.0)
+    parser.add_argument(
+        "--profile-timing", action="store_true",
+        help="record host wall-time stages of channel generation; no extra GPU synchronization",
+    )
     parser.add_argument("--sample-rate-hz", type=float, default=23_040_000.0)
     parser.add_argument(
         "--downlink-frequency-hz",
@@ -1827,17 +1831,25 @@ class SionnaScenario:
         *,
         direction: str,
         carrier_frequency_hz: float,
+        timing: dict[str, float] | None = None,
     ) -> tuple[dict[str, MatrixProfile], list[dict[str, Any]]]:
+        started = time.monotonic()
         coefficients, delays = paths.cir(
             sampling_frequency=self.args.update_hz,
             num_time_steps=1,
             normalize_delays=False,
             out_type="numpy",
         )
+        if timing is not None:
+            timing["cir_numpy"] = (time.monotonic() - started) * 1000.0
+        started = time.monotonic()
         coefficients = numpy_value(coefficients, self.np)
         delays = numpy_value(delays, self.np)
         dopplers = numpy_value(paths.doppler, self.np)
         valid = numpy_value(paths.valid, self.np)
+        if timing is not None:
+            timing["array_export"] = (time.monotonic() - started) * 1000.0
+        started = time.monotonic()
 
         # UI-only ray geometry. `paths.vertices` triggers a component build
         # inside Sionna, so it is read once per solve rather than per link,
@@ -1846,12 +1858,15 @@ class SionnaScenario:
         if (
             self.args.path_polylines > 0
             and self.path_polylines_error is None
-            and hasattr(paths, "vertices")
         ):
             try:
-                ray_vertices = numpy_value(paths.vertices, self.np)
-                ray_interactions = numpy_value(paths.interactions, self.np)
-            except Exception as exc:  # pragma: no cover - live Sionna path
+                # Property access can build GPU components and fail; keep it
+                # inside the optional-visualization error boundary.
+                vertices = getattr(paths, "vertices", None)
+                if vertices is not None:
+                    ray_vertices = numpy_value(vertices, self.np)
+                    ray_interactions = numpy_value(paths.interactions, self.np)
+            except Exception as exc:
                 self.path_polylines_error = f"{type(exc).__name__}: {exc}"
                 ray_vertices = ray_interactions = None
                 print(
@@ -1861,6 +1876,10 @@ class SionnaScenario:
                     flush=True,
                 )
 
+        if timing is not None:
+            timing["geometry_export"] = (time.monotonic() - started) * 1000.0
+        packing_started = time.monotonic()
+        visualization_ms = 0.0
         profiles: dict[str, MatrixProfile] = {}
         statuses: list[dict[str, Any]] = []
         for link in links:
@@ -1941,6 +1960,7 @@ class SionnaScenario:
             status["direction"] = link.direction
             status["carrier_frequency_hz"] = carrier_frequency_hz
             if ray_vertices is not None and ray_interactions is not None:
+                visualization_started = time.monotonic()
                 # Lane (0, 0) drives the drawing: with a synthetic array the
                 # ray geometry is shared by every antenna pair anyway.
                 first_lane_coefficients = antenna_slice(
@@ -1967,7 +1987,11 @@ class SionnaScenario:
                     gains_db=gains_db,
                     limit=self.args.path_polylines,
                 )
+                visualization_ms += (time.monotonic() - visualization_started) * 1000.0
             statuses.append(status)
+        if timing is not None:
+            timing["tap_and_status_pack"] = (time.monotonic() - packing_started) * 1000.0 - visualization_ms
+            timing["path_polylines"] = visualization_ms
         return profiles, statuses
 
     def trace_all_profiles(
@@ -1976,6 +2000,10 @@ class SionnaScenario:
         """Trace desired/inter-cell and UE-to-UE crosstalk profiles."""
 
         timings_ms: dict[str, float] = {}
+        # Host-observed stages: lazy GPU work may be charged to the first
+        # materialization (e.g. cir_numpy), not to path_solver. Do not force
+        # synchronization here, which would change the workload being measured.
+        self.generation_stages_ms: dict[str, dict[str, float]] = {}
         profiles: dict[str, MatrixProfile] = {}
         statuses: list[dict[str, Any]] = []
 
@@ -1994,17 +2022,27 @@ class SionnaScenario:
             groups.setdefault(key, []).append(link)
 
         for group_index, ((frequency_hz, tx_array, rx_array), links) in enumerate(groups.items()):
+            stages: dict[str, float] | None = {} if self.args.profile_timing else None
+            configure_started = time.monotonic()
             self.configure_arrays(tx_array, rx_array)
+            if stages is not None:
+                stages["configure_arrays"] = (time.monotonic() - configure_started) * 1000.0
             started = time.monotonic()
             paths = self.trace(frequency_hz)
+            if stages is not None:
+                stages["path_solver"] = (time.monotonic() - started) * 1000.0
             direction_profiles, direction_statuses = self.profiles(
                 paths,
                 links,
                 direction=links[0].direction if len({link.direction for link in links}) == 1 else "mixed",
                 carrier_frequency_hz=frequency_hz,
+                timing=stages,
             )
             label = f"group_{group_index}_{rx_array.antenna_count}x{tx_array.antenna_count}"
             timings_ms[label] = (time.monotonic() - started) * 1000.0
+            if stages is not None:
+                stages["total"] = (time.monotonic() - configure_started) * 1000.0
+                self.generation_stages_ms[label] = stages
             profiles.update(direction_profiles)
             statuses.extend(direction_statuses)
         return profiles, statuses, timings_ms
@@ -2193,6 +2231,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "channels": statuses,
                 "control_reply": reply,
             }
+            if args.profile_timing:
+                record["timing_ms"]["generation_stages"] = scenario.generation_stages_ms
             print(json.dumps(record, separators=(",", ":")), flush=True)
             append_status(args.status_jsonl, record)
             iteration += 1

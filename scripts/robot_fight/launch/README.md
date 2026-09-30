@@ -50,3 +50,34 @@ Notes.
   `pgrep -af "arena.py|brain.py|modem.py"` should print nothing.
 - Analyse: `python3 scripts/robot_fight/analyze_run.py --log-dir <log_dir>
   --report r.json --markdown r.md`.
+
+## R7 paired controller runs
+
+`root_exec.sh` accepts `RF_POLICY_0` and `RF_POLICY_1`, falling back to
+`RF_POLICY` for each unset value. Fight summaries retain each brain's policy
+and link estimate. Both controllers receive the same strategy/gains by default;
+`balance_comp` changes prediction, not the robot or packet protocol.
+
+On an idle Spark, from a separate validation checkout:
+
+```bash
+RF_POLICY_0=balance_comp RF_POLICY_1=balance RF_SEED=7000 RF_DURATION=180 \
+  bash scripts/robot_fight/launch/run_r7_spark.sh base-comp0
+RF_POLICY_0=balance RF_POLICY_1=balance_comp RF_SEED=7000 RF_DURATION=180 \
+  bash scripts/robot_fight/launch/run_r7_spark.sh base-comp1
+```
+
+Use unique tags; the runner refuses to overwrite an earlier log. Native
+experiment overrides must be positional `OCUDU_NATIVE_...=value` arguments.
+Inherited native overrides are rejected because `sudo` can otherwise erase
+them silently. Check the resulting run report and rendered gNB configurations,
+not just the requested label. The runner preserves the native gate's exit
+status and records GPU processes before/after. Its default is two protected
+brokers, no contention, LOS, strict realtime off. This does not certify a
+strict real-time gate. Override `R7_CHANNEL_BUILD` for a separate build path
+and `R7_OUTPUT_ROOT` for experiment artifacts; the default paths target Spark.
+
+Run side swaps sequentially with the same seed range and link treatment.
+Compare the intersection of completed seeds: fixed-duration runs need not
+finish the same number of fights. Preserve and exclude interrupted final
+fights, missing results, lockstep fights and out-of-range RTF explicitly.

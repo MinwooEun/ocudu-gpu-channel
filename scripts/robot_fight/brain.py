@@ -16,6 +16,7 @@ would go there); it is imported from the venv's sys.path.
 from __future__ import annotations
 
 import argparse
+import collections
 import importlib
 import json
 import math
@@ -290,6 +291,11 @@ def stand(state: protocol.State, params: dict, rng: random.Random) -> tuple[floa
     return 0.0, 0.0
 
 
+def cruise(state: protocol.State, params: dict, rng: random.Random) -> tuple[float, float]:
+    """Strategy that drives straight at ``cruise_v`` m/s (offline threshold probes)."""
+    return diff_drive(params.get("cruise_v", 0.5), 0.0)
+
+
 RAM_PARAMS = {
     "v_max": 0.7, "w_max": 2.5, "k_heading": 4.0, "lead_s": 0.15,
     "edge_margin_m": 0.45,   # heading outward with less ring than this -> turn back in
@@ -330,14 +336,24 @@ def balance(state: protocol.State, params: dict, rng: random.Random) -> tuple[fl
     the classic segway loop. Nothing here is local to the robot: every torque
     crosses the link, so link delay lowers the loop's phase margin and a stale
     interval (torque 0) lets the pendulum fall freely."""
+    v = state.vx * math.cos(state.yaw) + state.vy * math.sin(state.yaw)
+    return _balance_core(state, params, rng, state.pitch, state.pitch_rate, v)
+
+
+def _balance_core(state: protocol.State, params: dict, rng: random.Random,
+                  pitch: float, pitch_rate: float, v: float) -> tuple[float, float]:
+    """The balance law on an explicit (pitch, pitch_rate, v): ``balance`` passes
+    the measured values, ``balance_comp`` the values predicted for the moment
+    the command will be applied."""
     mem = params.setdefault("_mem", {})
     if "strategy_params" not in mem:
         name = params["strategy"]
-        base = {"ram": RAM_PARAMS, "reactive": REACTIVE_PARAMS, "pusher": DEFAULT_PARAMS, "stand": {}}[name]
+        base = {"ram": RAM_PARAMS, "reactive": REACTIVE_PARAMS, "pusher": DEFAULT_PARAMS, "stand": {},
+                "cruise": {"cruise_v": params.get("cruise_v", 0.5)}}[name]
         sp = dict(base)
         sp.update({"v_max": params["v_cmd_max"], "w_max": params["w_cmd_max"], "noise_rad": params["noise_rad"]})
         mem["strategy_params"] = sp
-        mem["strategy_fn"] = {"ram": ram, "reactive": reactive, "pusher": pusher, "stand": stand}[name]
+        mem["strategy_fn"] = {"ram": ram, "reactive": reactive, "pusher": pusher, "stand": stand, "cruise": cruise}[name]
     left_ref, right_ref = mem["strategy_fn"](state, mem["strategy_params"], rng)
     v_want = (left_ref + right_ref) / 2.0 * WHEEL_RADIUS
     w_want = (right_ref - left_ref) * WHEEL_RADIUS / WHEEL_BASE
@@ -355,9 +371,8 @@ def balance(state: protocol.State, params: dict, rng: random.Random) -> tuple[fl
     v_ref += max(-dv, min(dv, alpha * (v_want - v_ref)))
     w_ref += max(-dw, min(dw, alpha * (w_want - w_ref)))
     mem["v_ref"], mem["w_ref"] = v_ref, w_ref
-    v = state.vx * math.cos(state.yaw) + state.vy * math.sin(state.yaw)
     v_err = max(-params["v_lean_limit"], min(params["v_lean_limit"], v - v_ref))
-    u = params["k_pitch"] * state.pitch + params["k_pitch_rate"] * state.pitch_rate + params["k_v"] * v_err
+    u = params["k_pitch"] * pitch + params["k_pitch_rate"] * pitch_rate + params["k_v"] * v_err
     d = params["k_yaw"] * (w_ref - state.wz)
     # Balance has priority over steering: the differential may only use what
     # the common torque leaves inside the motor limit.
@@ -368,8 +383,133 @@ def balance(state: protocol.State, params: dict, rng: random.Random) -> tuple[fl
     return u - d, u + d
 
 
+# --- delay compensation (R7a) ------------------------------------------------
+#
+# Linearised two-wheeled inverted pendulum, derived from the arena's MJCF
+# (arena.py: BAL_* constants). Body = chassis + plate + pole + head (everything
+# but the wheels), pitch theta (+ = leaning forward), base speed v, total joint
+# torque T = u_l + u_r minus the wheel-hinge damping. Standard Segway equations
+# with theta small:
+#
+#     a11 v' + a12 theta'' = T / r
+#     a12 v' + a22 theta'' = m_b g l theta - T
+#
+# a11 = m_b + 2 m_w + 2 I_w / r^2, a12 = m_b l, a22 = I_b + m_b l^2 (about the
+# axle). The plate sits 10 cm ahead of the axle, which the linear model drops
+# (a 6 mm forward CoM offset: a constant lean the feedback absorbs).
+
+class PendulumModel:
+    def __init__(self, base_mass: float = 1.0, plate_mass: float = 0.2, pole_mass: float = 0.3, head_mass: float = 2.0,
+                 base_half_z: float = 0.02, pole_top: float = 0.89, head_z: float = 0.95, head_half: float = 0.06,
+                 base_half_xy: tuple[float, float] = (0.08, 0.10), wheel_mass: float = 0.2,
+                 wheel_radius: float = WHEEL_RADIUS, wheel_damping: float = 0.02, g: float = 9.81) -> None:
+        m_b = base_mass + plate_mass + pole_mass + head_mass
+        pole_mid = (base_half_z + pole_top) / 2.0
+        pole_len = pole_top - base_half_z
+        l = (base_mass * 0.0 + plate_mass * 0.0 + pole_mass * pole_mid + head_mass * head_z) / m_b
+        # inertia about the axle (parallel axis from each part's own CoM)
+        i_head = head_mass / 12.0 * (2 * (2 * head_half) ** 2) + head_mass * head_z ** 2
+        i_base = base_mass / 12.0 * ((2 * base_half_xy[0]) ** 2 + (2 * base_half_z) ** 2)
+        i_plate = plate_mass * 0.10 ** 2
+        i_pole = pole_mass * pole_len ** 2 / 12.0 + pole_mass * pole_mid ** 2
+        i_axle = i_head + i_base + i_plate + i_pole
+        i_w = 0.5 * wheel_mass * wheel_radius ** 2
+        self.r = wheel_radius
+        self.c = wheel_damping
+        self.m_b, self.l, self.g = m_b, l, g
+        self.a11 = m_b + 2 * wheel_mass + 2 * i_w / wheel_radius ** 2
+        self.a12 = m_b * l
+        self.a22 = i_axle
+        self.det = self.a11 * self.a22 - self.a12 ** 2
+        self.mgl = m_b * g * l
+
+    def accel(self, pitch: float, pitch_rate: float, v: float, u_total: float) -> tuple[float, float]:
+        """(v_dot, pitch_ddot) for a total motor torque u_total (both wheels)."""
+        torque = u_total - 2.0 * self.c * (v / self.r - pitch_rate)
+        rhs_v = torque / self.r
+        rhs_t = self.mgl * pitch - torque
+        v_dot = (self.a22 * rhs_v - self.a12 * rhs_t) / self.det
+        pitch_ddot = (self.a11 * rhs_t - self.a12 * rhs_v) / self.det
+        return v_dot, pitch_ddot
+
+    def growth_rate(self) -> float:
+        """Open-loop unstable pole, rad/s."""
+        return math.sqrt(self.a11 * self.mgl / self.det)
+
+    def rollout(self, pitch: float, pitch_rate: float, v: float, horizon_s: float,
+                torque_at, dt: float = 0.001) -> tuple[float, float, float]:
+        """Integrate for ``horizon_s`` with ``torque_at(t_rel) -> per-wheel
+        torque`` (semi-implicit Euler, arena timestep)."""
+        t = 0.0
+        while t < horizon_s - 1e-9:
+            step = min(dt, horizon_s - t)
+            v_dot, p_dd = self.accel(pitch, pitch_rate, v, 2.0 * torque_at(t))
+            pitch_rate += p_dd * step
+            v += v_dot * step
+            pitch += pitch_rate * step
+            t += step
+        return pitch, pitch_rate, v
+
+
+COMP_PARAMS = dict(BALANCE_PARAMS)
+COMP_PARAMS.update({
+    "horizon_extra_ms": 1.0,   # arena poll + half a command period is where the new command really acts
+    "max_horizon_ms": 500.0,   # never predict further than this (model error grows exponentially)
+    "cmd_hist": 128,
+})
+
+
+def balance_comp(state: protocol.State, params: dict, rng: random.Random) -> tuple[float, float]:
+    """``balance`` with delay compensation (Smith-predictor style). The brain
+    estimates the link from the protocol's own timestamps (``params['_link']``
+    is filled by ``Brain`` before every tick: ``now_us``, ``state_age_us`` --
+    time since the arena sampled the STATE in hand --, ``cmd_one_way_us``,
+    ``period_us``), forward-simulates the pendulum from that STATE to the
+    moment the command it is about to send will be applied, using the torques
+    it already sent but that have not been applied yet (command history), and
+    runs the same balance law on the predicted (pitch, pitch rate, speed).
+    With a good model the loop's delay is cancelled up to the model error;
+    without ``_link`` it degrades to plain ``balance``."""
+    mem = params.setdefault("_mem", {})
+    link = params.get("_link")
+    hist = mem.setdefault("cmd_hist", collections.deque(maxlen=int(params.get("cmd_hist", 128))))
+    v_meas = state.vx * math.cos(state.yaw) + state.vy * math.sin(state.yaw)
+    pitch, pitch_rate, v = state.pitch, state.pitch_rate, v_meas
+    horizon_s = 0.0
+    if link and link.get("state_age_us") is not None and link.get("cmd_one_way_us") is not None:
+        model = mem.get("model")
+        if model is None:
+            model = mem["model"] = PendulumModel()
+        now = link["now_us"]
+        t_state = now - link["state_age_us"]
+        t_land = now + link["cmd_one_way_us"] + params["horizon_extra_ms"] * 1000.0
+        horizon_us = max(0.0, min(params["max_horizon_ms"] * 1000.0, t_land - t_state))
+        cmd_one_way = link["cmd_one_way_us"]
+        # torque applied at the arena at (brain-clock) time t: the newest command
+        # whose landing time t_send + cmd_one_way <= t; before the first one, 0.
+        landed = [(t_send + cmd_one_way, u) for t_send, u in hist]
+
+        def torque_at(t_rel: float) -> float:
+            t_abs = t_state + t_rel * 1e6
+            u = 0.0
+            for t_l, u_k in landed:
+                if t_l <= t_abs:
+                    u = u_k
+                else:
+                    break
+            return u
+
+        horizon_s = horizon_us / 1e6
+        pitch, pitch_rate, v = model.rollout(pitch, pitch_rate, v, horizon_s, torque_at)
+        mem["last_horizon_us"] = horizon_us
+        mem["last_pred"] = (pitch, pitch_rate, v)
+    left, right = _balance_core(state, params, rng, pitch, pitch_rate, v)
+    hist.append(((link["now_us"] if link else protocol.now_us()), (left + right) / 2.0))
+    return left, right
+
+
 POLICIES = {"pusher": (pusher, DEFAULT_PARAMS), "reactive": (reactive, REACTIVE_PARAMS),
-            "balance": (balance, BALANCE_PARAMS)}
+            "balance": (balance, BALANCE_PARAMS), "balance_comp": (balance_comp, COMP_PARAMS)}
 
 
 def load_policy(spec: str):
@@ -420,6 +560,16 @@ class Brain:
         self.ticks_without_fresh_state = 0
         self.deadline_misses = 0
         self.over_flags = 0
+        # Link estimate for delay-compensating policies (balance_comp): the
+        # windowed minimum RTT strips the STATE-period quantisation, the STATE
+        # one-way is trusted only when it is consistent with the RTT (shared
+        # clock), otherwise both directions are taken as RTT/2.
+        self.rtt_window: collections.deque[int] = collections.deque(maxlen=int(args.rate_hz * args.link_window_s))
+        self.state_ow_est_us: float | None = None
+        self.link_horizons_us: list[float] = []
+        self.link_last_log = 0.0
+        self.link: dict = {"now_us": 0, "state_age_us": None, "cmd_one_way_us": None,
+                           "period_us": int(1e6 / args.rate_hz), "shared_clock": None, "rtt_min_us": None}
 
     def emit(self, record: dict) -> None:
         record.setdefault("t_unix_us", protocol.now_us())
@@ -459,7 +609,13 @@ class Brain:
                     # would only add the brain's own tick period.
                     self.last_echoed_seq = header.echo_seq
                     self.rtt_us.append(rtt)
-                self.state_one_way_us.append(now - header.t_send_us)  # valid when clocks are shared
+                    self.rtt_window.append(rtt)
+                one_way = now - header.t_send_us
+                self.state_one_way_us.append(one_way)  # valid when clocks are shared
+                if self.state_ow_est_us is None:
+                    self.state_ow_est_us = float(one_way)
+                else:
+                    self.state_ow_est_us += 0.05 * (one_way - self.state_ow_est_us)
                 self.last_state, self.last_state_header, self.last_state_recv_us = body, header, now
                 self.fresh = True
                 if self.args.log_states:
@@ -468,10 +624,11 @@ class Brain:
                 if body.flags & protocol.FLAG_OVER:
                     self.over_flags = body.flags
 
-    def take_state(self) -> tuple[protocol.State | None, bool]:
+    def take_state(self) -> tuple[protocol.State | None, bool, protocol.Header | None, int]:
+        """Snapshot the policy input and its timestamps under the same lock."""
         with self.lock:
             fresh, self.fresh = self.fresh, False
-            return self.last_state, fresh
+            return self.last_state, fresh, self.last_state_header, self.last_state_recv_us
 
     def send_command(self, left: float, right: float) -> None:
         self.cmd_seq += 1
@@ -501,7 +658,7 @@ class Brain:
                 next_tick = now  # resync rather than burst
             next_tick += period
             self.ticks += 1
-            state, fresh = self.take_state()
+            state, fresh, state_header, state_recv_us = self.take_state()
             if self.over_flags:
                 break
             if state is None:
@@ -509,12 +666,43 @@ class Brain:
                 continue
             if not fresh:
                 self.ticks_without_fresh_state += 1
+            self.update_link(state_header, state_recv_us)
             left, right = self.policy(state, self.params, self.rng)
             with self.lock:
                 self.send_command(left, right)
         self.stop.set()
         self.thread.join(timeout=0.5)
         return self.summary()
+
+    def update_link(self, state_header: protocol.Header | None, state_recv_us: int) -> None:
+        """Estimate age for the snapshotted policy input, even if RX advanced."""
+        now = protocol.now_us()
+        with self.lock:
+            rtt_min = min(self.rtt_window) if self.rtt_window else None
+            state_ow = self.state_ow_est_us
+        t_send = state_header.t_send_us if state_header else None
+        link = self.link
+        link["now_us"] = now
+        link["rtt_min_us"] = rtt_min
+        if rtt_min is None or t_send is None:
+            link["state_age_us"] = None
+            link["cmd_one_way_us"] = None
+        else:
+            shared = state_ow is not None and -500.0 <= state_ow <= rtt_min + 500.0
+            link["shared_clock"] = shared
+            if shared:
+                link["state_age_us"] = max(0, now - t_send)
+                link["cmd_one_way_us"] = max(0.0, rtt_min - max(0.0, state_ow))
+            else:
+                link["state_age_us"] = max(0, now - state_recv_us) + rtt_min / 2.0
+                link["cmd_one_way_us"] = rtt_min / 2.0
+            self.link_horizons_us.append(link["state_age_us"] + link["cmd_one_way_us"])
+        self.params["_link"] = link
+        if now - self.link_last_log > 1_000_000:
+            self.link_last_log = now
+            self.emit({"event": "link_est", "rtt_min_us": rtt_min, "state_one_way_us": None if state_ow is None else int(state_ow),
+                       "state_age_us": link["state_age_us"], "cmd_one_way_us": link["cmd_one_way_us"],
+                       "shared_clock": link["shared_clock"]})
 
     def summary(self) -> dict:
         rtt = np.array(self.rtt_us, dtype=np.int64) if self.rtt_us else np.array([0])
@@ -541,6 +729,9 @@ class Brain:
                        "p99": int(np.percentile(rtt, 99)), "max": int(rtt.max()), "n": len(self.rtt_us)},
             "state_one_way_us": {"p50": int(np.percentile(ow, 50)), "p99": int(np.percentile(ow, 99)),
                                  "max": int(ow.max()), "n": len(self.state_one_way_us)},
+            "link_est": {"rtt_min_us": self.link["rtt_min_us"], "cmd_one_way_us": self.link["cmd_one_way_us"],
+                         "state_age_us": self.link["state_age_us"], "shared_clock": self.link["shared_clock"],
+                         "horizon_ms_mean": None if not self.link_horizons_us else round(float(np.mean(self.link_horizons_us)) / 1000.0, 2)},
         }
         self.emit({"event": "summary", **result})
         return result
@@ -559,7 +750,9 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--ttl-ms", type=int, default=60, help="how long the robot may keep applying a command")
     p.add_argument("--policy", default="reactive",
                    help="'reactive' (default), 'pusher', 'balance' (for --bot balance arenas; its 'strategy' "
-                        "param picks reactive/pusher/stand on top of the balance loop), or module:callable")
+                        "param picks reactive/pusher/stand on top of the balance loop), 'balance_comp' (balance with "
+                        "delay compensation from the link estimate), or module:callable")
+    p.add_argument("--link-window-s", type=float, default=0.5, help="window for the minimum-RTT link estimate")
     p.add_argument("--params", default=None, help="JSON overrides for policy params")
     p.add_argument("--param-jitter", type=float, default=0.1, help="seeded +-fraction applied to v_max/k_heading/flank_m")
     p.add_argument("--seed", type=int, default=None)

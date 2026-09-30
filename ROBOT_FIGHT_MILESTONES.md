@@ -443,10 +443,54 @@ R5a의 게이트에 R2c의 원격 밸런스 봇을 얹어 **같은 GPU에서 스
 
 **테스트.** `tests/test_robot_fight_replay.py`에 `test_3d_frames_osmesa` 추가(오프스크린 렌더 불가 시 skip): 합성 2셀 런에서 raw 3-D 프레임 480×640이 비어 있지 않음, `both` 10프레임 1280×720, `3d` 3프레임. 4 테스트 OK(`MUJOCO_GL=osmesa`).
 
-**렌더 속도.** `both` 1280×720 프레임당 ≈ 0.48 s(3-D osmesa 640×480 ≈ 90 ms + matplotlib Agg 캔버스 ≈ 0.39 s) → ≈ 2 fps; 2-D만은 ≈ 12 fps. 300 s 런(7,987 프레임)은 ≈ 65분, 8판(1,962 프레임)은 ≈ 16분. 병목은 matplotlib 캔버스라 3-D를 붙여도 2-D 대비 4배 정도.
+**렌더 속도.** `both` 1280×720: R4b 8판 1,962프레임이 4분 25초 → **≈ 7.4 fps(0.135 s/프레임)**; 첫 프레임(figure 생성 포함)은 0.48 s. 3-D osmesa 640×480 자체는 ≈ 90 ms/프레임이라 병목이고, 2-D만은 ≈ 12 fps. 300 s 런(7,987 프레임)은 ≈ 18–20분.
 
 **결과물(`results/robot-fight/videos/`, git-ignored, 기존 2-D 영상 옆에 `-3d` 접미사).**
 - `/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/videos/r5b-20260930T052100Z-all-3d.mp4` — R5b 첫 배틀 런 32판 전부, 5:19, 실시간 속도. 3-D에서 B(빨강) 역진자가 기울다 넘어지는 장면과 패널 ③의 B 브로커 호출 ~2.2 ms가 같은 시간축에 보인다.
 - `/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/videos/r4b-20260929T144912Z-fights1-8-3d.mp4` — R4b 스모봇 1–8판, 78.5 s.
 
 **파일.** `scripts/robot_fight/render_replay.py`(Scene3D, `--view`), `tests/test_robot_fight_replay.py`. 커밋 안 함.
+
+
+### R7 — 2026-09-30 checkpoint (delay-compensated control)
+
+`balance_comp` predicts the robot state at command application using measured
+link delay and a pendulum model. The baseline uses the same balance gains.
+The controller now snapshots the state and its receive timestamp atomically;
+`RF_POLICY_0/1` selects policies independently. `run_r7_spark.sh` forwards explicit
+native overrides through sudo and rejects inherited overrides that would be
+silently lost. Eight earlier AWGN/RAN probe labels were invalid for that reason;
+they must not be used as evidence of the requested configurations.
+
+The DGX Spark GB10 live batch completed six 180-second gates using two CPU gNBs,
+two srsUEs on separate cells, two CUDA channel brokers, and the Sionna robot-ring
+channel with AWGN 40 dB. This is the R5 two-cell topology, distinct from R4b's
+single-cell topology. Baseline uses protected brokers without a GPU hog;
+contention uses plain brokers with an MPS GPU hog (200 us requested kernel,
+two streams, queue depth 16). Saved reports confirm the broker modes, policies,
+actual contention and successful attachment on PCI 1 and PCI 2.
+
+| Comparison (common seeds across side swaps) | Fights | Comp wins | Plain wins | Draws |
+|---|---:|---:|---:|---:|
+| Baseline | 20 | 15 | 3 | 2 |
+| GPU contention | 24 | 23 | 1 | 0 |
+
+Same-policy contention controls completed 18 plain/plain fights (13 falls,
+UE0/UE1 wins 6/12) and seven comp/comp fights (zero falls, wins 2/5).
+One incomplete final fight per run is excluded. The analyzer accepts only
+completed, non-lockstep fights with simulation/wall-time ratio 0.98–1.02 and
+pairs only common seeds with reversed policy assignments. The full
+[results JSON](docs/robot-fight-r7-results.json) records run timestamps,
+per-run summaries, exclusions, seeds, parameters and link metrics.
+
+These results support a benefit in this tested setup. Small same-policy controls
+do not establish side symmetry; repeated seeds are not independent replicates.
+Radio strict-realtime checking was disabled and broker starvation counters are
+nonzero: successful gates do not prove deadline compliance or hours of continuous
+UE connectivity. AWGN/RAN sweeps, blackout robustness and broader controller
+qualification remain open. UE/gNB source trees were not edited.
+
+Publication validation on Spark: robot tests 39 passed, five skipped;
+Sionna adapter/position/UI tests 83 passed, with 13 subtests. Raw run artifacts
+remain on Spark under `r7-validation-results` and the native result directories;
+local copies are under ignored `results/robot-fight/r7-live/`.

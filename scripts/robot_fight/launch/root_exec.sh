@@ -23,6 +23,7 @@
 # selects the R2c self-balancing bot, whose brain policy is `balance`),
 # RF_RING_RADIUS (2.0), RF_STALE_POLICY (coast),
 # RF_ARENA_EXTRA / RF_BRAIN_EXTRA (extra CLI words).
+# RF_POLICY_0 / RF_POLICY_1 override RF_POLICY per robot for paired R7 runs.
 set -euo pipefail
 
 run_dir="$1"; log_dir="$2"; ue_ids_text="$3"; ue_ips_text="$4"; gateway="$5"
@@ -154,10 +155,12 @@ while [[ "${fights}" -eq 0 || "${fight}" -lt "${fights}" ]]; do
   fi
   brain_pids=()
   for index in 0 1; do
+    policy_var="RF_POLICY_${index}"
+    policy="${!policy_var:-${RF_POLICY:-reactive}}"
     # shellcheck disable=SC2086
     "${python}" "${pkg_dir}/brain.py" --robot-id "${index}" \
       --robot "${ue_ips[index]}:$((port_base + index))" --bind "${gateway}:0" \
-      --rate-hz "${RF_RATE_HZ:-100}" --ttl-ms "${RF_TTL_MS:-60}" --policy "${RF_POLICY:-reactive}" \
+      --rate-hz "${RF_RATE_HZ:-100}" --ttl-ms "${RF_TTL_MS:-60}" --policy "${policy}" \
       --seed "$((fseed * 10 + index))" --max-seconds "$(awk -v t="${time_limit}" 'BEGIN{print t+20}')" \
       --log "${fdir}/brain${index}.jsonl" --result "${fdir}/brain${index}.json" ${RF_BRAIN_EXTRA:-} \
       >"${fdir}/brain${index}.out" 2>&1 &
@@ -195,7 +198,7 @@ brains = []
 for i in (0, 1):
     try:
         b = json.loads((fdir / f"brain{i}.json").read_text())
-        brains.append({k: b.get(k) for k in ("robot_id", "outcome", "ticks", "cmds_sent", "states_received",
+        brains.append({k: b.get(k) for k in ("robot_id", "policy", "link_est", "outcome", "ticks", "cmds_sent", "states_received",
                                              "deadline_misses", "ticks_without_fresh_state", "state_seq_gaps",
                                              "rtt_us", "state_one_way_us", "reflexes")})
     except Exception as exc:  # noqa: BLE001

@@ -94,6 +94,9 @@ web_ui="${OCUDU_NATIVE_RF_WEB_UI:-0}"
 gnb_metrics_enabled="${OCUDU_NATIVE_GNB_METRICS:-1}"
 gnb_metrics_port_a="${OCUDU_NATIVE_GNB_METRICS_PORT_A:-8001}"
 gnb_metrics_port_b="${OCUDU_NATIVE_GNB_METRICS_PORT_B:-8002}"
+# RAN latency knobs for BOTH gNBs (R7-prep): `pusch.min_k2=6,pucch.sr_period_ms=40,...`
+# (keys listed by the renderer's --help). Empty = the fixture's defaults.
+gnb_cell_overrides="${OCUDU_NATIVE_RF_GNB_CELL_OVERRIDES:-}"
 audited_ocudu="a1916edcdbcd70ba6e0af47ee87be061dad5a4e4"
 audited_srsran="eea87b1d893ae58e0b08bc381730c502024ae71f"
 audited_open5gs="d9d3abdd480be96fac3bc8a997e83446648763ca"
@@ -159,6 +162,8 @@ for value in "${gnb_metrics_port_a}" "${gnb_metrics_port_b}"; do
   [[ "${value}" =~ ^[1-9][0-9]*$ && "${value}" -le 65535 ]] || usage_error "invalid OCUDU_NATIVE_GNB_METRICS_PORT_{A,B}"
 done
 [[ "${gnb_metrics_port_a}" != "${gnb_metrics_port_b}" ]] || usage_error "OCUDU_NATIVE_GNB_METRICS_PORT_{A,B} must differ"
+[[ -z "${gnb_cell_overrides}" || "${gnb_cell_overrides}" =~ ^[a-z_]+\.[a-z_0-9]+=[0-9]+(,[a-z_]+\.[a-z_0-9]+=[0-9]+)*$ ]] || \
+  usage_error "OCUDU_NATIVE_RF_GNB_CELL_OVERRIDES must be key=int[,key=int] (e.g. pusch.min_k2=6)"
 
 # gNB: the audited CPU build, or the CUDA build when contention asks for it.
 gnb_kind="cpu"
@@ -272,6 +277,7 @@ if [[ "${sionna_awgn_snr_db}" != "off" ]]; then
   [[ -z "${sionna_tx_power_ul}" ]] || renderer_args+=(--tx-power-ul "${sionna_tx_power_ul}")
 fi
 [[ -z "${acceleration}" ]] || renderer_args+=(--gnb-acceleration "${acceleration}")
+[[ -z "${gnb_cell_overrides}" ]] || renderer_args+=(--gnb-cell-overrides "${gnb_cell_overrides}")
 gnb_metrics_socket_a=""; gnb_metrics_socket_b=""
 if [[ "${gnb_metrics_enabled}" == "1" ]]; then
   renderer_args+=(--gnb-metrics-ports "${gnb_metrics_port_a},${gnb_metrics_port_b}")

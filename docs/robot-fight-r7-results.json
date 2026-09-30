@@ -1,0 +1,3262 @@
+{
+  "rtf_bounds": [
+    0.98,
+    1.02
+  ],
+  "metric_note": "Medians of per-fight summaries; Wilson CI is descriptive and treats fights as independent.",
+  "runs": {
+    "base-comp0": {
+      "attach_summary": {
+        "brokers": {
+          "a": {
+            "attach_done_t": 11,
+            "contention_t": 11,
+            "control": {
+              "control_batches_committed": 1790,
+              "control_msgs_received": 7160,
+              "control_updates_applied": 3580,
+              "telemetry_frames": 175022
+            },
+            "counters": {
+              "rx_requests": 353341,
+              "rx_starvations": 36,
+              "tx_pulls": 338765,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": "event=cuda_stream_priority node=ue0 requested=high effective=-5 range_least=0 range_greatest=-5",
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 30.496,
+                "p50": 0.864,
+                "p90": 1.024,
+                "p99": 24.864
+              },
+              "h2d_us": {
+                "max": 41.344,
+                "p50": 5.344,
+                "p90": 7.648,
+                "p99": 32.448
+              },
+              "kernel_us": {
+                "max": 400.064,
+                "p50": 26.688,
+                "p90": 53.984,
+                "p99": 387.648
+              },
+              "samples": 179
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 1.024,
+                "p50": 0.992,
+                "p90": 1.024,
+                "p99": 1.024
+              },
+              "h2d_us": {
+                "max": 29.024,
+                "p50": 6.912,
+                "p90": 29.024,
+                "p99": 29.024
+              },
+              "kernel_us": {
+                "max": 30.336,
+                "p50": 27.52,
+                "p90": 30.336,
+                "p99": 30.336
+              },
+              "samples": 10
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 30.496,
+                "p50": 0.832,
+                "p90": 1.056,
+                "p99": 24.864
+              },
+              "h2d_us": {
+                "max": 41.344,
+                "p50": 5.344,
+                "p90": 7.648,
+                "p99": 32.448
+              },
+              "kernel_us": {
+                "max": 400.064,
+                "p50": 26.688,
+                "p90": 54.464,
+                "p99": 387.648
+              },
+              "samples": 167
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb0_p0": {
+                "producer_stall": 55135064,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              },
+              "ue0_p0": {
+                "producer_stall": 58021928,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              }
+            },
+            "node_stalls_total": 3,
+            "node_stalls_under_contention": 0,
+            "sched": "protected",
+            "status": 0
+          },
+          "b": {
+            "attach_done_t": 11,
+            "contention_t": 11,
+            "control": {
+              "control_batches_committed": 1790,
+              "control_msgs_received": 7160,
+              "control_updates_applied": 3580,
+              "telemetry_frames": 174930
+            },
+            "counters": {
+              "rx_requests": 387790,
+              "rx_starvations": 29,
+              "tx_pulls": 338836,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": "event=cuda_stream_priority node=ue1 requested=high effective=-5 range_least=0 range_greatest=-5",
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 10.272,
+                "p50": 0.832,
+                "p90": 1.024,
+                "p99": 9.888
+              },
+              "h2d_us": {
+                "max": 60.832,
+                "p50": 4.992,
+                "p90": 7.872,
+                "p99": 39.328
+              },
+              "kernel_us": {
+                "max": 935.648,
+                "p50": 26.048,
+                "p90": 38.24,
+                "p99": 444.8
+              },
+              "samples": 179
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 0.992,
+                "p50": 0.992,
+                "p90": 0.992,
+                "p99": 0.992
+              },
+              "h2d_us": {
+                "max": 7.648,
+                "p50": 5.504,
+                "p90": 7.648,
+                "p99": 7.648
+              },
+              "kernel_us": {
+                "max": 29.984,
+                "p50": 26.72,
+                "p90": 29.984,
+                "p99": 29.984
+              },
+              "samples": 10
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 10.272,
+                "p50": 0.832,
+                "p90": 1.024,
+                "p99": 9.888
+              },
+              "h2d_us": {
+                "max": 60.832,
+                "p50": 4.992,
+                "p90": 8.16,
+                "p99": 39.328
+              },
+              "kernel_us": {
+                "max": 935.648,
+                "p50": 26.048,
+                "p90": 43.936,
+                "p99": 444.8
+              },
+              "samples": 167
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb1_p0": {
+                "producer_stall": 46975565,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              },
+              "ue1_p0": {
+                "producer_stall": 43697669,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              }
+            },
+            "node_stalls_total": 3,
+            "node_stalls_under_contention": 0,
+            "sched": "protected",
+            "status": 0
+          }
+        },
+        "cells": {
+          "a": {
+            "gnb": "gnb0",
+            "sched": "protected",
+            "ue": "ue0"
+          },
+          "b": {
+            "gnb": "gnb1",
+            "sched": "protected",
+            "ue": "ue1"
+          }
+        },
+        "contention": "none",
+        "docker_used": false,
+        "each_ue_on_its_own_cell": 1,
+        "gnb_alive_at_broker_stop": 1,
+        "hog": null,
+        "log_dir": "/workspace/ocudu-spark/results/logs/ocudu-robot-fight/20260930T072455Z",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "cell": "a",
+            "expected_pci": 1,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 34.23333333333333,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 38.5,
+              "p50_ms": 32.3,
+              "p90_ms": 38.5
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 16.887999999999998,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 25.1,
+              "p50_ms": 16.7,
+              "p90_ms": 22.8
+            },
+            "rrc_connected": 1
+          },
+          "ue1": {
+            "camped_pci": 2,
+            "cell": "b",
+            "expected_pci": 2,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 28.566666666666663,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 35.4,
+              "p50_ms": 29.4,
+              "p90_ms": 35.4
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 17.172,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 25.7,
+              "p50_ms": 17.1,
+              "p90_ms": 22.0
+            },
+            "rrc_connected": 1
+          }
+        },
+        "run_parameters": {
+          "broker_sched": {
+            "a": "protected",
+            "b": "protected"
+          },
+          "contention": {
+            "hog": {
+              "duty": 1.0,
+              "kernel_us": 2000,
+              "mps_client": 1,
+              "sm_percent": null
+            },
+            "kind": "none",
+            "sionna_mps_client": 1,
+            "start": "after-attach"
+          },
+          "cpus": {
+            "gnb": "5-9",
+            "ue": "18,19"
+          },
+          "gnb": {
+            "acceleration": null,
+            "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+            "kind": "cpu"
+          },
+          "gnb_metrics": {
+            "a": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T072455Z/gnb-metrics-a.sock",
+              "gnb": "gnb0",
+              "port": 8001,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T072455Z/gnb-metrics-a.sock"
+            },
+            "b": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T072455Z/gnb-metrics-b.sock",
+              "gnb": "gnb1",
+              "port": 8002,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T072455Z/gnb-metrics-b.sock"
+            }
+          },
+          "mps_server": 1,
+          "plain": {
+            "cpus": ""
+          },
+          "platform_profile": "spark-gb10",
+          "protected": {
+            "broker_env": "OCG_BROKER_SPIN=1",
+            "cpus": "15-17",
+            "mps_client": true,
+            "rt_priority": 0,
+            "stream_priority": "high"
+          },
+          "root_exec": "RF_PYTHON=/workspace/robot-venv/bin/python RF_BOT=balance RF_POLICY=balance RF_POLICY_0=balance_comp RF_POLICY_1=balance RF_SEED=7000 RF_TIME_LIMIT=20 RF_POS_ENDPOINT=ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/root_exec.sh {run_dir} {log_dir} '{ue_ids}' '{ue_ips}' {ue_gateway}",
+          "run_duration_seconds": 180,
+          "sionna_awgn_snr_db": 40.0,
+          "sionna_position_endpoint": "ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock",
+          "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+          "strict_realtime": 0,
+          "ue_exec": "bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/ue_exec.sh {ue_id} {ue_ip} {ue_index} {run_dir} {log_dir}"
+        },
+        "runtime_mode": "rootless_user_net_mount_namespace",
+        "sionna": {
+          "a": {
+            "last_channel_generation_ms": 55.39804795989767,
+            "position_messages_received": 2987,
+            "position_source": "external",
+            "updates": 1790
+          },
+          "b": {
+            "last_channel_generation_ms": 68.86007799766958,
+            "position_messages_received": 2986,
+            "position_source": "external",
+            "updates": 1790
+          }
+        },
+        "srsue_alive_at_broker_stop": 1,
+        "status": "passed",
+        "timestamp": "20260930T072455Z"
+      },
+      "path": "results/robot-fight/r7-live/base-comp0",
+      "valid": 11,
+      "rejected": [
+        {
+          "fight": null,
+          "seed": null,
+          "reason": "error",
+          "dir": "results/robot-fight/r7-live/base-comp0/fights/f012",
+          "detail": "unreported fight directory (possibly interrupted)"
+        }
+      ],
+      "comparison": {
+        "fights": 11,
+        "wins": {
+          "balance": 1,
+          "balance_comp": 9
+        },
+        "draws": 1,
+        "side_wins": {
+          "ue0": 9,
+          "ue1": 1
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.9,
+          "ci95": [
+            0.5958499732047615,
+            0.9821237869049271
+          ],
+          "decided": 10
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 19750,
+              "n": 11
+            },
+            "rtt_us.p99": {
+              "median": 31005,
+              "n": 11
+            },
+            "state_one_way_us.p50": {
+              "median": 8019,
+              "n": 11
+            },
+            "state_one_way_us.p99": {
+              "median": 18648,
+              "n": 11
+            },
+            "link_est.rtt_min_us": {
+              "median": 13383,
+              "n": 11
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 4900.7450151635,
+              "n": 11
+            },
+            "link_est.state_age_us": {
+              "median": 12209,
+              "n": 11
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 15.52,
+              "n": 11
+            },
+            "command_one_way_us.p50": {
+              "median": 9236,
+              "n": 11
+            },
+            "command_one_way_us.p99": {
+              "median": 10911,
+              "n": 11
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 19648,
+              "n": 11
+            },
+            "rtt_us.p99": {
+              "median": 31016,
+              "n": 11
+            },
+            "state_one_way_us.p50": {
+              "median": 7951,
+              "n": 11
+            },
+            "state_one_way_us.p99": {
+              "median": 18072,
+              "n": 11
+            },
+            "link_est.rtt_min_us": {
+              "median": 12794,
+              "n": 11
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 4396.44601467561,
+              "n": 11
+            },
+            "link_est.state_age_us": {
+              "median": 13399,
+              "n": 11
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 15.53,
+              "n": 11
+            },
+            "command_one_way_us.p50": {
+              "median": 9268,
+              "n": 11
+            },
+            "command_one_way_us.p99": {
+              "median": 10913,
+              "n": 11
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      }
+    },
+    "base-comp1": {
+      "attach_summary": {
+        "brokers": {
+          "a": {
+            "attach_done_t": 10,
+            "contention_t": 10,
+            "control": {
+              "control_batches_committed": 1789,
+              "control_msgs_received": 7156,
+              "control_updates_applied": 3578,
+              "telemetry_frames": 174792
+            },
+            "counters": {
+              "rx_requests": 360905,
+              "rx_starvations": 36,
+              "tx_pulls": 338554,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": "event=cuda_stream_priority node=ue0 requested=high effective=-5 range_least=0 range_greatest=-5",
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 10.432,
+                "p50": 0.96,
+                "p90": 0.992,
+                "p99": 9.6
+              },
+              "h2d_us": {
+                "max": 32.704,
+                "p50": 5.12,
+                "p90": 7.264,
+                "p99": 30.72
+              },
+              "kernel_us": {
+                "max": 397.088,
+                "p50": 26.784,
+                "p90": 35.104,
+                "p99": 251.488
+              },
+              "samples": 178
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 0.992,
+                "p50": 0.96,
+                "p90": 0.992,
+                "p99": 0.992
+              },
+              "h2d_us": {
+                "max": 7.456,
+                "p50": 5.248,
+                "p90": 7.456,
+                "p99": 7.456
+              },
+              "kernel_us": {
+                "max": 29.696,
+                "p50": 24.192,
+                "p90": 29.696,
+                "p99": 29.696
+              },
+              "samples": 9
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 10.432,
+                "p50": 0.96,
+                "p90": 0.992,
+                "p99": 9.6
+              },
+              "h2d_us": {
+                "max": 32.704,
+                "p50": 5.12,
+                "p90": 6.72,
+                "p99": 30.72
+              },
+              "kernel_us": {
+                "max": 397.088,
+                "p50": 26.784,
+                "p90": 35.712,
+                "p99": 251.488
+              },
+              "samples": 167
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb0_p0": {
+                "producer_stall": 55748056,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              },
+              "ue0_p0": {
+                "producer_stall": 42621583,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              }
+            },
+            "node_stalls_total": 3,
+            "node_stalls_under_contention": 0,
+            "sched": "protected",
+            "status": 0
+          },
+          "b": {
+            "attach_done_t": 10,
+            "contention_t": 10,
+            "control": {
+              "control_batches_committed": 1789,
+              "control_msgs_received": 7156,
+              "control_updates_applied": 3578,
+              "telemetry_frames": 174852
+            },
+            "counters": {
+              "rx_requests": 365958,
+              "rx_starvations": 32,
+              "tx_pulls": 338772,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": "event=cuda_stream_priority node=ue1 requested=high effective=-5 range_least=0 range_greatest=-5",
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 10.048,
+                "p50": 0.96,
+                "p90": 1.024,
+                "p99": 9.792
+              },
+              "h2d_us": {
+                "max": 55.328,
+                "p50": 5.152,
+                "p90": 8.32,
+                "p99": 25.024
+              },
+              "kernel_us": {
+                "max": 849.664,
+                "p50": 27.008,
+                "p90": 48.256,
+                "p99": 849.664
+              },
+              "samples": 179
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 1.184,
+                "p50": 0.8,
+                "p90": 1.184,
+                "p99": 1.184
+              },
+              "h2d_us": {
+                "max": 8.32,
+                "p50": 5.28,
+                "p90": 8.32,
+                "p99": 8.32
+              },
+              "kernel_us": {
+                "max": 849.664,
+                "p50": 26.592,
+                "p90": 849.664,
+                "p99": 849.664
+              },
+              "samples": 9
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 10.048,
+                "p50": 0.992,
+                "p90": 1.024,
+                "p99": 9.792
+              },
+              "h2d_us": {
+                "max": 55.328,
+                "p50": 5.152,
+                "p90": 7.392,
+                "p99": 25.024
+              },
+              "kernel_us": {
+                "max": 653.568,
+                "p50": 27.072,
+                "p90": 36.064,
+                "p99": 332.896
+              },
+              "samples": 168
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb1_p0": {
+                "producer_stall": 50830657,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              },
+              "ue1_p0": {
+                "producer_stall": 43748477,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              }
+            },
+            "node_stalls_total": 3,
+            "node_stalls_under_contention": 0,
+            "sched": "protected",
+            "status": 0
+          }
+        },
+        "cells": {
+          "a": {
+            "gnb": "gnb0",
+            "sched": "protected",
+            "ue": "ue0"
+          },
+          "b": {
+            "gnb": "gnb1",
+            "sched": "protected",
+            "ue": "ue1"
+          }
+        },
+        "contention": "none",
+        "docker_used": false,
+        "each_ue_on_its_own_cell": 1,
+        "gnb_alive_at_broker_stop": 1,
+        "hog": null,
+        "log_dir": "/workspace/ocudu-spark/results/logs/ocudu-robot-fight/20260930T073538Z",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "cell": "a",
+            "expected_pci": 1,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 28.933333333333337,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 36.2,
+              "p50_ms": 28.8,
+              "p90_ms": 36.2
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 21.978,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 170.0,
+              "p50_ms": 17.6,
+              "p90_ms": 32.4
+            },
+            "rrc_connected": 1
+          },
+          "ue1": {
+            "camped_pci": 2,
+            "cell": "b",
+            "expected_pci": 2,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 29.0,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 35.8,
+              "p50_ms": 29.7,
+              "p90_ms": 35.8
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 19.6,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 56.4,
+              "p50_ms": 17.7,
+              "p90_ms": 28.3
+            },
+            "rrc_connected": 1
+          }
+        },
+        "run_parameters": {
+          "broker_sched": {
+            "a": "protected",
+            "b": "protected"
+          },
+          "contention": {
+            "hog": {
+              "duty": 1.0,
+              "kernel_us": 2000,
+              "mps_client": 1,
+              "sm_percent": null
+            },
+            "kind": "none",
+            "sionna_mps_client": 1,
+            "start": "after-attach"
+          },
+          "cpus": {
+            "gnb": "5-9",
+            "ue": "18,19"
+          },
+          "gnb": {
+            "acceleration": null,
+            "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+            "kind": "cpu"
+          },
+          "gnb_metrics": {
+            "a": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073538Z/gnb-metrics-a.sock",
+              "gnb": "gnb0",
+              "port": 8001,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073538Z/gnb-metrics-a.sock"
+            },
+            "b": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073538Z/gnb-metrics-b.sock",
+              "gnb": "gnb1",
+              "port": 8002,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073538Z/gnb-metrics-b.sock"
+            }
+          },
+          "mps_server": 1,
+          "plain": {
+            "cpus": ""
+          },
+          "platform_profile": "spark-gb10",
+          "protected": {
+            "broker_env": "OCG_BROKER_SPIN=1",
+            "cpus": "15-17",
+            "mps_client": true,
+            "rt_priority": 0,
+            "stream_priority": "high"
+          },
+          "root_exec": "RF_PYTHON=/workspace/robot-venv/bin/python RF_BOT=balance RF_POLICY=balance RF_POLICY_0=balance RF_POLICY_1=balance_comp RF_SEED=7000 RF_TIME_LIMIT=20 RF_POS_ENDPOINT=ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/root_exec.sh {run_dir} {log_dir} '{ue_ids}' '{ue_ips}' {ue_gateway}",
+          "run_duration_seconds": 180,
+          "sionna_awgn_snr_db": 40.0,
+          "sionna_position_endpoint": "ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock",
+          "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+          "strict_realtime": 0,
+          "ue_exec": "bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/ue_exec.sh {ue_id} {ue_ip} {ue_index} {run_dir} {log_dir}"
+        },
+        "runtime_mode": "rootless_user_net_mount_namespace",
+        "sionna": {
+          "a": {
+            "last_channel_generation_ms": 65.79457496991381,
+            "position_messages_received": 3020,
+            "position_source": "external",
+            "updates": 1789
+          },
+          "b": {
+            "last_channel_generation_ms": 56.64173199329525,
+            "position_messages_received": 3018,
+            "position_source": "external",
+            "updates": 1789
+          }
+        },
+        "srsue_alive_at_broker_stop": 1,
+        "status": "passed",
+        "timestamp": "20260930T073538Z"
+      },
+      "path": "results/robot-fight/r7-live/base-comp1",
+      "valid": 10,
+      "rejected": [
+        {
+          "fight": null,
+          "seed": null,
+          "reason": "error",
+          "dir": "results/robot-fight/r7-live/base-comp1/fights/f011",
+          "detail": "unreported fight directory (possibly interrupted)"
+        }
+      ],
+      "comparison": {
+        "fights": 10,
+        "wins": {
+          "balance": 2,
+          "balance_comp": 7
+        },
+        "draws": 1,
+        "side_wins": {
+          "ue0": 2,
+          "ue1": 7
+        },
+        "falls": {
+          "balance": 1,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.7777777777777778,
+          "ci95": [
+            0.45258896910698887,
+            0.9367748928821533
+          ],
+          "decided": 9
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 19788.5,
+              "n": 10
+            },
+            "rtt_us.p99": {
+              "median": 31020.5,
+              "n": 10
+            },
+            "state_one_way_us.p50": {
+              "median": 8025.0,
+              "n": 10
+            },
+            "state_one_way_us.p99": {
+              "median": 19154.5,
+              "n": 10
+            },
+            "link_est.rtt_min_us": {
+              "median": 12520.5,
+              "n": 10
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 5102.178308303175,
+              "n": 10
+            },
+            "link_est.state_age_us": {
+              "median": 10129.5,
+              "n": 10
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 15.54,
+              "n": 10
+            },
+            "command_one_way_us.p50": {
+              "median": 9241.0,
+              "n": 10
+            },
+            "command_one_way_us.p99": {
+              "median": 10924.0,
+              "n": 10
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 19718.0,
+              "n": 10
+            },
+            "rtt_us.p99": {
+              "median": 31907.5,
+              "n": 10
+            },
+            "state_one_way_us.p50": {
+              "median": 8058.0,
+              "n": 10
+            },
+            "state_one_way_us.p99": {
+              "median": 19169.5,
+              "n": 10
+            },
+            "link_est.rtt_min_us": {
+              "median": 12015.0,
+              "n": 10
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 3437.9695035774566,
+              "n": 10
+            },
+            "link_est.state_age_us": {
+              "median": 12094.0,
+              "n": 10
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 15.625,
+              "n": 10
+            },
+            "command_one_way_us.p50": {
+              "median": 9246.5,
+              "n": 10
+            },
+            "command_one_way_us.p99": {
+              "median": 10894.5,
+              "n": 10
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      }
+    },
+    "busy-comp0": {
+      "attach_summary": {
+        "brokers": {
+          "a": {
+            "attach_done_t": 11,
+            "contention_t": 11,
+            "control": {
+              "control_batches_committed": 1790,
+              "control_msgs_received": 7160,
+              "control_updates_applied": 3580,
+              "telemetry_frames": 174790
+            },
+            "counters": {
+              "rx_requests": 152796,
+              "rx_starvations": 25,
+              "tx_pulls": 146542,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": null,
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 30.24,
+                "p50": 0.864,
+                "p90": 1.088,
+                "p99": 7.296
+              },
+              "h2d_us": {
+                "max": 41.248,
+                "p50": 2.752,
+                "p90": 2.944,
+                "p99": 39.584
+              },
+              "kernel_us": {
+                "max": 616.288,
+                "p50": 25.088,
+                "p90": 29.824,
+                "p99": 616.288
+              },
+              "samples": 179
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 0.864,
+                "p50": 0.8,
+                "p90": 0.864,
+                "p99": 0.864
+              },
+              "h2d_us": {
+                "max": 9.952,
+                "p50": 2.016,
+                "p90": 9.952,
+                "p99": 9.952
+              },
+              "kernel_us": {
+                "max": 616.288,
+                "p50": 26.272,
+                "p90": 616.288,
+                "p99": 616.288
+              },
+              "samples": 10
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 30.24,
+                "p50": 0.864,
+                "p90": 1.088,
+                "p99": 7.296
+              },
+              "h2d_us": {
+                "max": 41.248,
+                "p50": 2.752,
+                "p90": 2.944,
+                "p99": 39.584
+              },
+              "kernel_us": {
+                "max": 258.112,
+                "p50": 25.184,
+                "p90": 29.312,
+                "p99": 160.416
+              },
+              "samples": 167
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb0_p0": {
+                "producer_stall": 145257,
+                "puller_idle": 0,
+                "puller_idle_total": 50
+              },
+              "ue0_p0": {
+                "producer_stall": 124890,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              }
+            },
+            "node_stalls_total": 3,
+            "node_stalls_under_contention": 0,
+            "sched": "plain",
+            "status": 0
+          },
+          "b": {
+            "attach_done_t": 11,
+            "contention_t": 11,
+            "control": {
+              "control_batches_committed": 1790,
+              "control_msgs_received": 7160,
+              "control_updates_applied": 3580,
+              "telemetry_frames": 174664
+            },
+            "counters": {
+              "rx_requests": 151342,
+              "rx_starvations": 35,
+              "tx_pulls": 145135,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": null,
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 17.056,
+                "p50": 0.96,
+                "p90": 1.504,
+                "p99": 5.856
+              },
+              "h2d_us": {
+                "max": 54.528,
+                "p50": 2.176,
+                "p90": 2.88,
+                "p99": 23.52
+              },
+              "kernel_us": {
+                "max": 120.704,
+                "p50": 26.72,
+                "p90": 30.72,
+                "p99": 94.624
+              },
+              "samples": 179
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 0.992,
+                "p50": 0.768,
+                "p90": 0.992,
+                "p99": 0.992
+              },
+              "h2d_us": {
+                "max": 10.592,
+                "p50": 7.936,
+                "p90": 10.592,
+                "p99": 10.592
+              },
+              "kernel_us": {
+                "max": 30.72,
+                "p50": 28.096,
+                "p90": 30.72,
+                "p99": 30.72
+              },
+              "samples": 10
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 17.056,
+                "p50": 0.96,
+                "p90": 1.504,
+                "p99": 5.856
+              },
+              "h2d_us": {
+                "max": 54.528,
+                "p50": 2.176,
+                "p90": 2.784,
+                "p99": 23.52
+              },
+              "kernel_us": {
+                "max": 120.704,
+                "p50": 26.72,
+                "p90": 30.592,
+                "p99": 94.624
+              },
+              "samples": 167
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb1_p0": {
+                "producer_stall": 114649,
+                "puller_idle": 0,
+                "puller_idle_total": 50
+              },
+              "ue1_p0": {
+                "producer_stall": 137271,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              }
+            },
+            "node_stalls_total": 3,
+            "node_stalls_under_contention": 0,
+            "sched": "plain",
+            "status": 0
+          }
+        },
+        "cells": {
+          "a": {
+            "gnb": "gnb0",
+            "sched": "plain",
+            "ue": "ue0"
+          },
+          "b": {
+            "gnb": "gnb1",
+            "sched": "plain",
+            "ue": "ue1"
+          }
+        },
+        "contention": "busy",
+        "docker_used": false,
+        "each_ue_on_its_own_cell": 1,
+        "gnb_alive_at_broker_stop": 1,
+        "hog": {
+          "last": "event=hog t=170 launched=1370467 completed=1370435 rate_per_s=8113.4 kernel_p50_us=3980 kernel_p99_us=4973 queued_mean=32.00 gpu_share=1.00",
+          "reports": 34
+        },
+        "log_dir": "/workspace/ocudu-spark/results/logs/ocudu-robot-fight/20260930T072833Z",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "cell": "a",
+            "expected_pci": 1,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 28.766666666666666,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 36.0,
+              "p50_ms": 26.5,
+              "p90_ms": 36.0
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 36.292,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 60.2,
+              "p50_ms": 34.9,
+              "p90_ms": 47.1
+            },
+            "rrc_connected": 1
+          },
+          "ue1": {
+            "camped_pci": 2,
+            "cell": "b",
+            "expected_pci": 2,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 27.23333333333333,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 34.8,
+              "p50_ms": 27.4,
+              "p90_ms": 34.8
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 33.972,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 48.8,
+              "p50_ms": 33.9,
+              "p90_ms": 41.9
+            },
+            "rrc_connected": 1
+          }
+        },
+        "run_parameters": {
+          "broker_sched": {
+            "a": "plain",
+            "b": "plain"
+          },
+          "contention": {
+            "hog": {
+              "duty": 1.0,
+              "kernel_us": 200,
+              "mps_client": 1,
+              "sm_percent": null
+            },
+            "kind": "busy",
+            "sionna_mps_client": 1,
+            "start": "after-attach"
+          },
+          "cpus": {
+            "gnb": "5-9",
+            "ue": "18,19"
+          },
+          "gnb": {
+            "acceleration": null,
+            "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+            "kind": "cpu"
+          },
+          "gnb_metrics": {
+            "a": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T072833Z/gnb-metrics-a.sock",
+              "gnb": "gnb0",
+              "port": 8001,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T072833Z/gnb-metrics-a.sock"
+            },
+            "b": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T072833Z/gnb-metrics-b.sock",
+              "gnb": "gnb1",
+              "port": 8002,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T072833Z/gnb-metrics-b.sock"
+            }
+          },
+          "mps_server": 1,
+          "plain": {
+            "cpus": ""
+          },
+          "platform_profile": "spark-gb10",
+          "protected": {
+            "broker_env": "OCG_BROKER_SPIN=1",
+            "cpus": "15-17",
+            "mps_client": true,
+            "rt_priority": 0,
+            "stream_priority": "high"
+          },
+          "root_exec": "RF_PYTHON=/workspace/robot-venv/bin/python RF_BOT=balance RF_POLICY=balance RF_POLICY_0=balance_comp RF_POLICY_1=balance RF_SEED=7000 RF_TIME_LIMIT=20 RF_POS_ENDPOINT=ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/root_exec.sh {run_dir} {log_dir} '{ue_ids}' '{ue_ips}' {ue_gateway}",
+          "run_duration_seconds": 180,
+          "sionna_awgn_snr_db": 40.0,
+          "sionna_position_endpoint": "ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock",
+          "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+          "strict_realtime": 0,
+          "ue_exec": "bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/ue_exec.sh {ue_id} {ue_ip} {ue_index} {run_dir} {log_dir}"
+        },
+        "runtime_mode": "rootless_user_net_mount_namespace",
+        "sionna": {
+          "a": {
+            "last_channel_generation_ms": 49.219901964534074,
+            "position_messages_received": 2809,
+            "position_source": "external",
+            "updates": 1790
+          },
+          "b": {
+            "last_channel_generation_ms": 55.32537697581574,
+            "position_messages_received": 2807,
+            "position_source": "external",
+            "updates": 1790
+          }
+        },
+        "srsue_alive_at_broker_stop": 1,
+        "status": "passed",
+        "timestamp": "20260930T072833Z"
+      },
+      "path": "results/robot-fight/r7-live/busy-comp0",
+      "valid": 16,
+      "rejected": [
+        {
+          "fight": null,
+          "seed": null,
+          "reason": "error",
+          "dir": "results/robot-fight/r7-live/busy-comp0/fights/f017",
+          "detail": "unreported fight directory (possibly interrupted)"
+        }
+      ],
+      "comparison": {
+        "fights": 16,
+        "wins": {
+          "balance": 1,
+          "balance_comp": 15
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 15,
+          "ue1": 1
+        },
+        "falls": {
+          "balance": 10,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.9375,
+          "ci95": [
+            0.7167126242970107,
+            0.9888806552353576
+          ],
+          "decided": 16
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 37519.5,
+              "n": 16
+            },
+            "rtt_us.p99": {
+              "median": 66367.0,
+              "n": 16
+            },
+            "state_one_way_us.p50": {
+              "median": 18274.5,
+              "n": 16
+            },
+            "state_one_way_us.p99": {
+              "median": 45786.5,
+              "n": 16
+            },
+            "link_est.rtt_min_us": {
+              "median": 25369.0,
+              "n": 16
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 6997.25008399256,
+              "n": 16
+            },
+            "link_est.state_age_us": {
+              "median": 28477.0,
+              "n": 16
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 28.53,
+              "n": 16
+            },
+            "command_one_way_us.p50": {
+              "median": 16917.0,
+              "n": 16
+            },
+            "command_one_way_us.p99": {
+              "median": 20815.5,
+              "n": 16
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 37548.5,
+              "n": 16
+            },
+            "rtt_us.p99": {
+              "median": 71454.5,
+              "n": 16
+            },
+            "state_one_way_us.p50": {
+              "median": 18320.5,
+              "n": 16
+            },
+            "state_one_way_us.p99": {
+              "median": 52762.5,
+              "n": 16
+            },
+            "link_est.rtt_min_us": {
+              "median": 24202.0,
+              "n": 16
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 5846.050597008918,
+              "n": 16
+            },
+            "link_est.state_age_us": {
+              "median": 25893.0,
+              "n": 16
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 28.42,
+              "n": 16
+            },
+            "command_one_way_us.p50": {
+              "median": 16885.5,
+              "n": 16
+            },
+            "command_one_way_us.p99": {
+              "median": 20785.0,
+              "n": 16
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      }
+    },
+    "busy-comp1": {
+      "attach_summary": {
+        "brokers": {
+          "a": {
+            "attach_done_t": 11,
+            "contention_t": 11,
+            "control": {
+              "control_batches_committed": 1788,
+              "control_msgs_received": 7152,
+              "control_updates_applied": 3576,
+              "telemetry_frames": 174790
+            },
+            "counters": {
+              "rx_requests": 150503,
+              "rx_starvations": 31,
+              "tx_pulls": 146280,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": null,
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 1.952,
+                "p50": 0.992,
+                "p90": 1.184,
+                "p99": 1.792
+              },
+              "h2d_us": {
+                "max": 13.152,
+                "p50": 2.72,
+                "p90": 2.976,
+                "p99": 12.288
+              },
+              "kernel_us": {
+                "max": 920.256,
+                "p50": 23.648,
+                "p90": 30.688,
+                "p99": 920.256
+              },
+              "samples": 178
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 1.088,
+                "p50": 0.8,
+                "p90": 1.088,
+                "p99": 1.088
+              },
+              "h2d_us": {
+                "max": 13.152,
+                "p50": 2.016,
+                "p90": 13.152,
+                "p99": 13.152
+              },
+              "kernel_us": {
+                "max": 920.256,
+                "p50": 287.904,
+                "p90": 920.256,
+                "p99": 920.256
+              },
+              "samples": 10
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 1.952,
+                "p50": 0.992,
+                "p90": 1.184,
+                "p99": 1.792
+              },
+              "h2d_us": {
+                "max": 12.288,
+                "p50": 2.72,
+                "p90": 2.944,
+                "p99": 8.96
+              },
+              "kernel_us": {
+                "max": 83.104,
+                "p50": 23.552,
+                "p90": 29.28,
+                "p99": 72.384
+              },
+              "samples": 166
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb0_p0": {
+                "producer_stall": 143487,
+                "puller_idle": 0,
+                "puller_idle_total": 50
+              },
+              "ue0_p0": {
+                "producer_stall": 132912,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              }
+            },
+            "node_stalls_total": 3,
+            "node_stalls_under_contention": 0,
+            "sched": "plain",
+            "status": 0
+          },
+          "b": {
+            "attach_done_t": 11,
+            "contention_t": 11,
+            "control": {
+              "control_batches_committed": 1790,
+              "control_msgs_received": 7160,
+              "control_updates_applied": 3580,
+              "telemetry_frames": 174770
+            },
+            "counters": {
+              "rx_requests": 147844,
+              "rx_starvations": 26,
+              "tx_pulls": 147445,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": null,
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 12.288,
+                "p50": 0.992,
+                "p90": 1.152,
+                "p99": 2.528
+              },
+              "h2d_us": {
+                "max": 54.88,
+                "p50": 2.464,
+                "p90": 2.816,
+                "p99": 35.04
+              },
+              "kernel_us": {
+                "max": 1151.84,
+                "p50": 24.864,
+                "p90": 29.888,
+                "p99": 1151.84
+              },
+              "samples": 179
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 0.992,
+                "p50": 0.768,
+                "p90": 0.992,
+                "p99": 0.992
+              },
+              "h2d_us": {
+                "max": 2.752,
+                "p50": 2.144,
+                "p90": 2.752,
+                "p99": 2.752
+              },
+              "kernel_us": {
+                "max": 1151.84,
+                "p50": 24.352,
+                "p90": 1151.84,
+                "p99": 1151.84
+              },
+              "samples": 10
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 12.288,
+                "p50": 0.992,
+                "p90": 1.152,
+                "p99": 2.528
+              },
+              "h2d_us": {
+                "max": 54.88,
+                "p50": 2.528,
+                "p90": 2.848,
+                "p99": 35.04
+              },
+              "kernel_us": {
+                "max": 155.488,
+                "p50": 24.864,
+                "p90": 29.728,
+                "p99": 63.744
+              },
+              "samples": 167
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb1_p0": {
+                "producer_stall": 107916,
+                "puller_idle": 0,
+                "puller_idle_total": 51
+              },
+              "ue1_p0": {
+                "producer_stall": 94544,
+                "puller_idle": 0,
+                "puller_idle_total": 52
+              }
+            },
+            "node_stalls_total": 4,
+            "node_stalls_under_contention": 0,
+            "sched": "plain",
+            "status": 0
+          }
+        },
+        "cells": {
+          "a": {
+            "gnb": "gnb0",
+            "sched": "plain",
+            "ue": "ue0"
+          },
+          "b": {
+            "gnb": "gnb1",
+            "sched": "plain",
+            "ue": "ue1"
+          }
+        },
+        "contention": "busy",
+        "docker_used": false,
+        "each_ue_on_its_own_cell": 1,
+        "gnb_alive_at_broker_stop": 1,
+        "hog": {
+          "last": "event=hog t=170 launched=1369348 completed=1369316 rate_per_s=8059.2 kernel_p50_us=3998 kernel_p99_us=5115 queued_mean=32.00 gpu_share=1.00",
+          "reports": 34
+        },
+        "log_dir": "/workspace/ocudu-spark/results/logs/ocudu-robot-fight/20260930T073213Z",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "cell": "a",
+            "expected_pci": 1,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 27.733333333333334,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 33.1,
+              "p50_ms": 28.4,
+              "p90_ms": 33.1
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 41.646,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 98.1,
+              "p50_ms": 38.5,
+              "p90_ms": 62.3
+            },
+            "rrc_connected": 1
+          },
+          "ue1": {
+            "camped_pci": 2,
+            "cell": "b",
+            "expected_pci": 2,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 25.866666666666664,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 31.4,
+              "p50_ms": 24.8,
+              "p90_ms": 31.4
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 38.896,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 85.5,
+              "p50_ms": 36.0,
+              "p90_ms": 60.9
+            },
+            "rrc_connected": 1
+          }
+        },
+        "run_parameters": {
+          "broker_sched": {
+            "a": "plain",
+            "b": "plain"
+          },
+          "contention": {
+            "hog": {
+              "duty": 1.0,
+              "kernel_us": 200,
+              "mps_client": 1,
+              "sm_percent": null
+            },
+            "kind": "busy",
+            "sionna_mps_client": 1,
+            "start": "after-attach"
+          },
+          "cpus": {
+            "gnb": "5-9",
+            "ue": "18,19"
+          },
+          "gnb": {
+            "acceleration": null,
+            "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+            "kind": "cpu"
+          },
+          "gnb_metrics": {
+            "a": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073213Z/gnb-metrics-a.sock",
+              "gnb": "gnb0",
+              "port": 8001,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073213Z/gnb-metrics-a.sock"
+            },
+            "b": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073213Z/gnb-metrics-b.sock",
+              "gnb": "gnb1",
+              "port": 8002,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073213Z/gnb-metrics-b.sock"
+            }
+          },
+          "mps_server": 1,
+          "plain": {
+            "cpus": ""
+          },
+          "platform_profile": "spark-gb10",
+          "protected": {
+            "broker_env": "OCG_BROKER_SPIN=1",
+            "cpus": "15-17",
+            "mps_client": true,
+            "rt_priority": 0,
+            "stream_priority": "high"
+          },
+          "root_exec": "RF_PYTHON=/workspace/robot-venv/bin/python RF_BOT=balance RF_POLICY=balance RF_POLICY_0=balance RF_POLICY_1=balance_comp RF_SEED=7000 RF_TIME_LIMIT=20 RF_POS_ENDPOINT=ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/root_exec.sh {run_dir} {log_dir} '{ue_ids}' '{ue_ips}' {ue_gateway}",
+          "run_duration_seconds": 180,
+          "sionna_awgn_snr_db": 40.0,
+          "sionna_position_endpoint": "ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock",
+          "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+          "strict_realtime": 0,
+          "ue_exec": "bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/ue_exec.sh {ue_id} {ue_ip} {ue_index} {run_dir} {log_dir}"
+        },
+        "runtime_mode": "rootless_user_net_mount_namespace",
+        "sionna": {
+          "a": {
+            "last_channel_generation_ms": 51.23584403190762,
+            "position_messages_received": 2962,
+            "position_source": "external",
+            "updates": 1788
+          },
+          "b": {
+            "last_channel_generation_ms": 41.80328402435407,
+            "position_messages_received": 2963,
+            "position_source": "external",
+            "updates": 1790
+          }
+        },
+        "srsue_alive_at_broker_stop": 1,
+        "status": "passed",
+        "timestamp": "20260930T073213Z"
+      },
+      "path": "results/robot-fight/r7-live/busy-comp1",
+      "valid": 12,
+      "rejected": [
+        {
+          "fight": null,
+          "seed": null,
+          "reason": "error",
+          "dir": "results/robot-fight/r7-live/busy-comp1/fights/f013",
+          "detail": "unreported fight directory (possibly interrupted)"
+        }
+      ],
+      "comparison": {
+        "fights": 12,
+        "wins": {
+          "balance": 0,
+          "balance_comp": 12
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 0,
+          "ue1": 12
+        },
+        "falls": {
+          "balance": 3,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 1.0,
+          "ci95": [
+            0.7575059933447592,
+            1.0
+          ],
+          "decided": 12
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 37758.0,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 71977.5,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 18387.5,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 54603.0,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 24139.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 7019.483384867237,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 28861.5,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 28.79,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 17007.0,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 21289.5,
+              "n": 12
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 37660.0,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 68132.0,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 18399.0,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 48717.0,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 24449.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 6328.98249290799,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 28299.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 28.415,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 16791.5,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 20575.0,
+              "n": 12
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      }
+    },
+    "busy-plainplain": {
+      "attach_summary": {
+        "brokers": {
+          "a": {
+            "attach_done_t": 10,
+            "contention_t": 10,
+            "control": {
+              "control_batches_committed": 1792,
+              "control_msgs_received": 7168,
+              "control_updates_applied": 3584,
+              "telemetry_frames": 174734
+            },
+            "counters": {
+              "rx_requests": 150281,
+              "rx_starvations": 52,
+              "tx_pulls": 142286,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": null,
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 4.288,
+                "p50": 0.96,
+                "p90": 1.088,
+                "p99": 2.4
+              },
+              "h2d_us": {
+                "max": 2400.7,
+                "p50": 2.624,
+                "p90": 2.976,
+                "p99": 2400.0
+              },
+              "kernel_us": {
+                "max": 768.32,
+                "p50": 25.856,
+                "p90": 31.264,
+                "p99": 768.32
+              },
+              "samples": 179
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 2.048,
+                "p50": 0.768,
+                "p90": 2.048,
+                "p99": 2.048
+              },
+              "h2d_us": {
+                "max": 11.104,
+                "p50": 1.952,
+                "p90": 11.104,
+                "p99": 11.104
+              },
+              "kernel_us": {
+                "max": 768.32,
+                "p50": 35.776,
+                "p90": 768.32,
+                "p99": 768.32
+              },
+              "samples": 9
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 4.288,
+                "p50": 0.96,
+                "p90": 1.056,
+                "p99": 2.4
+              },
+              "h2d_us": {
+                "max": 2400.7,
+                "p50": 2.656,
+                "p90": 2.944,
+                "p99": 2400.0
+              },
+              "kernel_us": {
+                "max": 118.496,
+                "p50": 25.856,
+                "p90": 30.112,
+                "p99": 99.968
+              },
+              "samples": 168
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb0_p0": {
+                "producer_stall": 127788,
+                "puller_idle": 0,
+                "puller_idle_total": 50
+              },
+              "ue0_p0": {
+                "producer_stall": 197903,
+                "puller_idle": 0,
+                "puller_idle_total": 50
+              }
+            },
+            "node_stalls_total": 3,
+            "node_stalls_under_contention": 0,
+            "sched": "plain",
+            "status": 0
+          },
+          "b": {
+            "attach_done_t": 10,
+            "contention_t": 10,
+            "control": {
+              "control_batches_committed": 1792,
+              "control_msgs_received": 7168,
+              "control_updates_applied": 3584,
+              "telemetry_frames": 174754
+            },
+            "counters": {
+              "rx_requests": 149319,
+              "rx_starvations": 29,
+              "tx_pulls": 147382,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": null,
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 24.896,
+                "p50": 0.96,
+                "p90": 1.568,
+                "p99": 8.8
+              },
+              "h2d_us": {
+                "max": 40.608,
+                "p50": 2.4,
+                "p90": 2.72,
+                "p99": 39.616
+              },
+              "kernel_us": {
+                "max": 1069.89,
+                "p50": 26.656,
+                "p90": 31.808,
+                "p99": 1069.89
+              },
+              "samples": 179
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 1.76,
+                "p50": 0.96,
+                "p90": 1.76,
+                "p99": 1.76
+              },
+              "h2d_us": {
+                "max": 16.96,
+                "p50": 1.92,
+                "p90": 16.96,
+                "p99": 16.96
+              },
+              "kernel_us": {
+                "max": 1069.89,
+                "p50": 201.024,
+                "p90": 1069.89,
+                "p99": 1069.89
+              },
+              "samples": 9
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 24.896,
+                "p50": 0.96,
+                "p90": 1.472,
+                "p99": 8.8
+              },
+              "h2d_us": {
+                "max": 40.608,
+                "p50": 2.4,
+                "p90": 2.72,
+                "p99": 39.616
+              },
+              "kernel_us": {
+                "max": 129.696,
+                "p50": 26.656,
+                "p90": 30.752,
+                "p99": 93.504
+              },
+              "samples": 168
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb1_p0": {
+                "producer_stall": 125304,
+                "puller_idle": 0,
+                "puller_idle_total": 50
+              },
+              "ue1_p0": {
+                "producer_stall": 113249,
+                "puller_idle": 0,
+                "puller_idle_total": 50
+              }
+            },
+            "node_stalls_total": 3,
+            "node_stalls_under_contention": 0,
+            "sched": "plain",
+            "status": 0
+          }
+        },
+        "cells": {
+          "a": {
+            "gnb": "gnb0",
+            "sched": "plain",
+            "ue": "ue0"
+          },
+          "b": {
+            "gnb": "gnb1",
+            "sched": "plain",
+            "ue": "ue1"
+          }
+        },
+        "contention": "busy",
+        "docker_used": false,
+        "each_ue_on_its_own_cell": 1,
+        "gnb_alive_at_broker_stop": 1,
+        "hog": {
+          "last": "event=hog t=170 launched=1382205 completed=1382173 rate_per_s=8090.4 kernel_p50_us=3895 kernel_p99_us=5204 queued_mean=32.00 gpu_share=1.00",
+          "reports": 34
+        },
+        "log_dir": "/workspace/ocudu-spark/results/logs/ocudu-robot-fight/20260930T073859Z",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "cell": "a",
+            "expected_pci": 1,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 30.5,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 37.4,
+              "p50_ms": 30.8,
+              "p90_ms": 37.4
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 39.018,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 154.0,
+              "p50_ms": 35.7,
+              "p90_ms": 48.2
+            },
+            "rrc_connected": 1
+          },
+          "ue1": {
+            "camped_pci": 2,
+            "cell": "b",
+            "expected_pci": 2,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 30.0,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 36.2,
+              "p50_ms": 29.7,
+              "p90_ms": 36.2
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 37.068000000000005,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 55.4,
+              "p50_ms": 35.9,
+              "p90_ms": 50.2
+            },
+            "rrc_connected": 1
+          }
+        },
+        "run_parameters": {
+          "broker_sched": {
+            "a": "plain",
+            "b": "plain"
+          },
+          "contention": {
+            "hog": {
+              "duty": 1.0,
+              "kernel_us": 200,
+              "mps_client": 1,
+              "sm_percent": null
+            },
+            "kind": "busy",
+            "sionna_mps_client": 1,
+            "start": "after-attach"
+          },
+          "cpus": {
+            "gnb": "5-9",
+            "ue": "18,19"
+          },
+          "gnb": {
+            "acceleration": null,
+            "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+            "kind": "cpu"
+          },
+          "gnb_metrics": {
+            "a": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073859Z/gnb-metrics-a.sock",
+              "gnb": "gnb0",
+              "port": 8001,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073859Z/gnb-metrics-a.sock"
+            },
+            "b": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073859Z/gnb-metrics-b.sock",
+              "gnb": "gnb1",
+              "port": 8002,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T073859Z/gnb-metrics-b.sock"
+            }
+          },
+          "mps_server": 1,
+          "plain": {
+            "cpus": ""
+          },
+          "platform_profile": "spark-gb10",
+          "protected": {
+            "broker_env": "OCG_BROKER_SPIN=1",
+            "cpus": "15-17",
+            "mps_client": true,
+            "rt_priority": 0,
+            "stream_priority": "high"
+          },
+          "root_exec": "RF_PYTHON=/workspace/robot-venv/bin/python RF_BOT=balance RF_POLICY=balance RF_POLICY_0=balance RF_POLICY_1=balance RF_SEED=7000 RF_TIME_LIMIT=20 RF_POS_ENDPOINT=ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/root_exec.sh {run_dir} {log_dir} '{ue_ids}' '{ue_ips}' {ue_gateway}",
+          "run_duration_seconds": 180,
+          "sionna_awgn_snr_db": 40.0,
+          "sionna_position_endpoint": "ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock",
+          "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+          "strict_realtime": 0,
+          "ue_exec": "bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/ue_exec.sh {ue_id} {ue_ip} {ue_index} {run_dir} {log_dir}"
+        },
+        "runtime_mode": "rootless_user_net_mount_namespace",
+        "sionna": {
+          "a": {
+            "last_channel_generation_ms": 58.3340409793891,
+            "position_messages_received": 2738,
+            "position_source": "external",
+            "updates": 1792
+          },
+          "b": {
+            "last_channel_generation_ms": 53.724183002486825,
+            "position_messages_received": 2737,
+            "position_source": "external",
+            "updates": 1792
+          }
+        },
+        "srsue_alive_at_broker_stop": 1,
+        "status": "passed",
+        "timestamp": "20260930T073859Z"
+      },
+      "path": "results/robot-fight/r7-live/busy-plainplain",
+      "valid": 18,
+      "rejected": [
+        {
+          "fight": null,
+          "seed": null,
+          "reason": "error",
+          "dir": "results/robot-fight/r7-live/busy-plainplain/fights/f019",
+          "detail": "unreported fight directory (possibly interrupted)"
+        }
+      ],
+      "comparison": {
+        "fights": 0,
+        "wins": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 0,
+          "ue1": 0
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": null,
+        "metrics_median_of_fights": {
+          "balance": {},
+          "balance_comp": {}
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 18,
+          "wins": {
+            "balance": 18,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 6,
+            "ue1": 12
+          },
+          "falls": {
+            "balance": 13,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {
+              "rtt_us.p50": {
+                "median": 37732.0,
+                "n": 36
+              },
+              "rtt_us.p99": {
+                "median": 73485.5,
+                "n": 36
+              },
+              "state_one_way_us.p50": {
+                "median": 18359.0,
+                "n": 36
+              },
+              "state_one_way_us.p99": {
+                "median": 54499.0,
+                "n": 36
+              },
+              "link_est.rtt_min_us": {
+                "median": 24294.5,
+                "n": 36
+              },
+              "link_est.cmd_one_way_us": {
+                "median": 6368.047293323565,
+                "n": 36
+              },
+              "link_est.state_age_us": {
+                "median": 26434.5,
+                "n": 36
+              },
+              "link_est.horizon_ms_mean": {
+                "median": 28.715,
+                "n": 36
+              },
+              "command_one_way_us.p50": {
+                "median": 16848.5,
+                "n": 36
+              },
+              "command_one_way_us.p99": {
+                "median": 20866.0,
+                "n": 36
+              }
+            },
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      }
+    },
+    "busy-compcomp": {
+      "attach_summary": {
+        "brokers": {
+          "a": {
+            "attach_done_t": 11,
+            "contention_t": 11,
+            "control": {
+              "control_batches_committed": 1791,
+              "control_msgs_received": 7164,
+              "control_updates_applied": 3582,
+              "telemetry_frames": 174806
+            },
+            "counters": {
+              "rx_requests": 150868,
+              "rx_starvations": 17,
+              "tx_pulls": 146591,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": null,
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 24.896,
+                "p50": 0.928,
+                "p90": 1.312,
+                "p99": 24.864
+              },
+              "h2d_us": {
+                "max": 39.648,
+                "p50": 2.112,
+                "p90": 2.624,
+                "p99": 39.424
+              },
+              "kernel_us": {
+                "max": 1451.97,
+                "p50": 28.064,
+                "p90": 31.744,
+                "p99": 1451.97
+              },
+              "samples": 179
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 1.184,
+                "p50": 0.768,
+                "p90": 1.184,
+                "p99": 1.184
+              },
+              "h2d_us": {
+                "max": 10.144,
+                "p50": 2.112,
+                "p90": 10.144,
+                "p99": 10.144
+              },
+              "kernel_us": {
+                "max": 1451.97,
+                "p50": 205.28,
+                "p90": 1451.97,
+                "p99": 1451.97
+              },
+              "samples": 10
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 24.896,
+                "p50": 0.928,
+                "p90": 1.312,
+                "p99": 13.728
+              },
+              "h2d_us": {
+                "max": 39.648,
+                "p50": 2.112,
+                "p90": 2.592,
+                "p99": 39.424
+              },
+              "kernel_us": {
+                "max": 128.064,
+                "p50": 28.032,
+                "p90": 31.072,
+                "p99": 64.288
+              },
+              "samples": 167
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb0_p0": {
+                "producer_stall": 112280,
+                "puller_idle": 0,
+                "puller_idle_total": 50
+              },
+              "ue0_p0": {
+                "producer_stall": 112033,
+                "puller_idle": 0,
+                "puller_idle_total": 50
+              }
+            },
+            "node_stalls_total": 3,
+            "node_stalls_under_contention": 0,
+            "sched": "plain",
+            "status": 0
+          },
+          "b": {
+            "attach_done_t": 11,
+            "contention_t": 11,
+            "control": {
+              "control_batches_committed": 1793,
+              "control_msgs_received": 7172,
+              "control_updates_applied": 3586,
+              "telemetry_frames": 174944
+            },
+            "counters": {
+              "rx_requests": 153118,
+              "rx_starvations": 9,
+              "tx_pulls": 147656,
+              "tx_queue_overflows": 0,
+              "tx_sequence_gaps": 0,
+              "zmq_errors": 0
+            },
+            "cuda_stream_priority": null,
+            "gpu_timings_all": {
+              "d2h_us": {
+                "max": 11.776,
+                "p50": 0.992,
+                "p90": 1.12,
+                "p99": 5.6
+              },
+              "h2d_us": {
+                "max": 39.328,
+                "p50": 2.88,
+                "p90": 3.168,
+                "p99": 35.264
+              },
+              "kernel_us": {
+                "max": 155.2,
+                "p50": 26.016,
+                "p90": 30.56,
+                "p99": 149.92
+              },
+              "samples": 179
+            },
+            "gpu_timings_before_contention": {
+              "d2h_us": {
+                "max": 1.024,
+                "p50": 0.832,
+                "p90": 1.024,
+                "p99": 1.024
+              },
+              "h2d_us": {
+                "max": 6.528,
+                "p50": 6.336,
+                "p90": 6.528,
+                "p99": 6.528
+              },
+              "kernel_us": {
+                "max": 24.544,
+                "p50": 24.416,
+                "p90": 24.544,
+                "p99": 24.544
+              },
+              "samples": 10
+            },
+            "gpu_timings_under_contention": {
+              "d2h_us": {
+                "max": 11.776,
+                "p50": 1.024,
+                "p90": 1.12,
+                "p99": 5.6
+              },
+              "h2d_us": {
+                "max": 39.328,
+                "p50": 2.88,
+                "p90": 3.104,
+                "p99": 35.264
+              },
+              "kernel_us": {
+                "max": 155.2,
+                "p50": 26.08,
+                "p90": 30.56,
+                "p99": 149.92
+              },
+              "samples": 167
+            },
+            "heartbeat_idle_since_contention": {
+              "gnb1_p0": {
+                "producer_stall": 141809,
+                "puller_idle": 0,
+                "puller_idle_total": 50
+              },
+              "ue1_p0": {
+                "producer_stall": 108315,
+                "puller_idle": 0,
+                "puller_idle_total": 50
+              }
+            },
+            "node_stalls_total": 3,
+            "node_stalls_under_contention": 0,
+            "sched": "plain",
+            "status": 0
+          }
+        },
+        "cells": {
+          "a": {
+            "gnb": "gnb0",
+            "sched": "plain",
+            "ue": "ue0"
+          },
+          "b": {
+            "gnb": "gnb1",
+            "sched": "plain",
+            "ue": "ue1"
+          }
+        },
+        "contention": "busy",
+        "docker_used": false,
+        "each_ue_on_its_own_cell": 1,
+        "gnb_alive_at_broker_stop": 1,
+        "hog": {
+          "last": "event=hog t=170 launched=1370060 completed=1370028 rate_per_s=8070.2 kernel_p50_us=3965 kernel_p99_us=5110 queued_mean=32.00 gpu_share=1.00",
+          "reports": 34
+        },
+        "log_dir": "/workspace/ocudu-spark/results/logs/ocudu-robot-fight/20260930T074224Z",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "cell": "a",
+            "expected_pci": 1,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 24.7,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 31.6,
+              "p50_ms": 23.6,
+              "p90_ms": 31.6
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 43.72,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 140.0,
+              "p50_ms": 40.3,
+              "p90_ms": 66.4
+            },
+            "rrc_connected": 1
+          },
+          "ue1": {
+            "camped_pci": 2,
+            "cell": "b",
+            "expected_pci": 2,
+            "pdu_session_established": 1,
+            "ping_attach": {
+              "avg_ms": 24.666666666666668,
+              "count": 3,
+              "loss_pct": 0,
+              "max_ms": 29.7,
+              "p50_ms": 25.5,
+              "p90_ms": 29.7
+            },
+            "ping_ok": 1,
+            "ping_under_contention": {
+              "avg_ms": 42.653999999999996,
+              "count": 50,
+              "loss_pct": 0,
+              "max_ms": 130.0,
+              "p50_ms": 36.0,
+              "p90_ms": 71.8
+            },
+            "rrc_connected": 1
+          }
+        },
+        "run_parameters": {
+          "broker_sched": {
+            "a": "plain",
+            "b": "plain"
+          },
+          "contention": {
+            "hog": {
+              "duty": 1.0,
+              "kernel_us": 200,
+              "mps_client": 1,
+              "sm_percent": null
+            },
+            "kind": "busy",
+            "sionna_mps_client": 1,
+            "start": "after-attach"
+          },
+          "cpus": {
+            "gnb": "5-9",
+            "ue": "18,19"
+          },
+          "gnb": {
+            "acceleration": null,
+            "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+            "kind": "cpu"
+          },
+          "gnb_metrics": {
+            "a": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T074224Z/gnb-metrics-a.sock",
+              "gnb": "gnb0",
+              "port": 8001,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T074224Z/gnb-metrics-a.sock"
+            },
+            "b": {
+              "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T074224Z/gnb-metrics-b.sock",
+              "gnb": "gnb1",
+              "port": 8002,
+              "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T074224Z/gnb-metrics-b.sock"
+            }
+          },
+          "mps_server": 1,
+          "plain": {
+            "cpus": ""
+          },
+          "platform_profile": "spark-gb10",
+          "protected": {
+            "broker_env": "OCG_BROKER_SPIN=1",
+            "cpus": "15-17",
+            "mps_client": true,
+            "rt_priority": 0,
+            "stream_priority": "high"
+          },
+          "root_exec": "RF_PYTHON=/workspace/robot-venv/bin/python RF_BOT=balance RF_POLICY=balance RF_POLICY_0=balance_comp RF_POLICY_1=balance_comp RF_SEED=7000 RF_TIME_LIMIT=20 RF_POS_ENDPOINT=ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/root_exec.sh {run_dir} {log_dir} '{ue_ids}' '{ue_ips}' {ue_gateway}",
+          "run_duration_seconds": 180,
+          "sionna_awgn_snr_db": 40.0,
+          "sionna_position_endpoint": "ipc:///workspace/ocudu-spark/run/r7-arena/positions.sock",
+          "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+          "strict_realtime": 0,
+          "ue_exec": "bash /workspace/gpuch/r7-validation-0930/scripts/robot_fight/launch/ue_exec.sh {ue_id} {ue_ip} {ue_index} {run_dir} {log_dir}"
+        },
+        "runtime_mode": "rootless_user_net_mount_namespace",
+        "sionna": {
+          "a": {
+            "last_channel_generation_ms": 46.03660496650264,
+            "position_messages_received": 3133,
+            "position_source": "external",
+            "updates": 1791
+          },
+          "b": {
+            "last_channel_generation_ms": 48.98588702781126,
+            "position_messages_received": 3135,
+            "position_source": "external",
+            "updates": 1793
+          }
+        },
+        "srsue_alive_at_broker_stop": 1,
+        "status": "passed",
+        "timestamp": "20260930T074224Z"
+      },
+      "path": "results/robot-fight/r7-live/busy-compcomp",
+      "valid": 7,
+      "rejected": [
+        {
+          "fight": null,
+          "seed": null,
+          "reason": "error",
+          "dir": "results/robot-fight/r7-live/busy-compcomp/fights/f008",
+          "detail": "unreported fight directory (possibly interrupted)"
+        }
+      ],
+      "comparison": {
+        "fights": 0,
+        "wins": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 0,
+          "ue1": 0
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": null,
+        "metrics_median_of_fights": {
+          "balance": {},
+          "balance_comp": {}
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 7,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 7
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 2,
+            "ue1": 5
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {
+              "rtt_us.p50": {
+                "median": 37461.5,
+                "n": 14
+              },
+              "rtt_us.p99": {
+                "median": 69388.0,
+                "n": 14
+              },
+              "state_one_way_us.p50": {
+                "median": 17995.5,
+                "n": 14
+              },
+              "state_one_way_us.p99": {
+                "median": 51047.0,
+                "n": 14
+              },
+              "link_est.rtt_min_us": {
+                "median": 23712.5,
+                "n": 14
+              },
+              "link_est.cmd_one_way_us": {
+                "median": 5829.288216477533,
+                "n": 14
+              },
+              "link_est.state_age_us": {
+                "median": 22172.0,
+                "n": 14
+              },
+              "link_est.horizon_ms_mean": {
+                "median": 28.299999999999997,
+                "n": 14
+              },
+              "command_one_way_us.p50": {
+                "median": 16874.5,
+                "n": 14
+              },
+              "command_one_way_us.p99": {
+                "median": 21243.0,
+                "n": 14
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "pairs": {
+    "baseline": {
+      "tags": [
+        "base-comp0",
+        "base-comp1"
+      ],
+      "seeds": [
+        7000,
+        7001,
+        7002,
+        7003,
+        7004,
+        7005,
+        7006,
+        7007,
+        7008,
+        7009
+      ],
+      "excluded_same_assignment": [],
+      "unpaired_seeds": {
+        "base-comp0": [
+          7010
+        ],
+        "base-comp1": []
+      },
+      "comparison": {
+        "fights": 20,
+        "wins": {
+          "balance": 3,
+          "balance_comp": 15
+        },
+        "draws": 2,
+        "side_wins": {
+          "ue0": 10,
+          "ue1": 8
+        },
+        "falls": {
+          "balance": 1,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.8333333333333334,
+          "ci95": [
+            0.6077796189608428,
+            0.9416342319413856
+          ],
+          "decided": 18
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 19757.0,
+              "n": 20
+            },
+            "rtt_us.p99": {
+              "median": 30999.0,
+              "n": 20
+            },
+            "state_one_way_us.p50": {
+              "median": 8016.0,
+              "n": 20
+            },
+            "state_one_way_us.p99": {
+              "median": 18751.0,
+              "n": 20
+            },
+            "link_est.rtt_min_us": {
+              "median": 12865.0,
+              "n": 20
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 4839.9256517596605,
+              "n": 20
+            },
+            "link_est.state_age_us": {
+              "median": 11463.0,
+              "n": 20
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 15.545,
+              "n": 20
+            },
+            "command_one_way_us.p50": {
+              "median": 9242.5,
+              "n": 20
+            },
+            "command_one_way_us.p99": {
+              "median": 10923.5,
+              "n": 20
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 19706.5,
+              "n": 20
+            },
+            "rtt_us.p99": {
+              "median": 31586.0,
+              "n": 20
+            },
+            "state_one_way_us.p50": {
+              "median": 8015.5,
+              "n": 20
+            },
+            "state_one_way_us.p99": {
+              "median": 18848.5,
+              "n": 20
+            },
+            "link_est.rtt_min_us": {
+              "median": 12547.0,
+              "n": 20
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 4094.445420165203,
+              "n": 20
+            },
+            "link_est.state_age_us": {
+              "median": 12809.5,
+              "n": 20
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 15.575,
+              "n": 20
+            },
+            "command_one_way_us.p50": {
+              "median": 9258.0,
+              "n": 20
+            },
+            "command_one_way_us.p99": {
+              "median": 10900.0,
+              "n": 20
+            }
+          }
+        }
+      }
+    },
+    "contention": {
+      "tags": [
+        "busy-comp0",
+        "busy-comp1"
+      ],
+      "seeds": [
+        7000,
+        7001,
+        7002,
+        7003,
+        7004,
+        7005,
+        7006,
+        7007,
+        7008,
+        7009,
+        7010,
+        7011
+      ],
+      "excluded_same_assignment": [],
+      "unpaired_seeds": {
+        "busy-comp0": [
+          7012,
+          7013,
+          7014,
+          7015
+        ],
+        "busy-comp1": []
+      },
+      "comparison": {
+        "fights": 24,
+        "wins": {
+          "balance": 1,
+          "balance_comp": 23
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 11,
+          "ue1": 13
+        },
+        "falls": {
+          "balance": 11,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.9583333333333334,
+          "ci95": [
+            0.7975819352134406,
+            0.9926065438344942
+          ],
+          "decided": 24
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 37730.5,
+              "n": 24
+            },
+            "rtt_us.p99": {
+              "median": 71977.5,
+              "n": 24
+            },
+            "state_one_way_us.p50": {
+              "median": 18372.5,
+              "n": 24
+            },
+            "state_one_way_us.p99": {
+              "median": 54603.0,
+              "n": 24
+            },
+            "link_est.rtt_min_us": {
+              "median": 24173.5,
+              "n": 24
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 6813.42329350478,
+              "n": 24
+            },
+            "link_est.state_age_us": {
+              "median": 28583.0,
+              "n": 24
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 28.79,
+              "n": 24
+            },
+            "command_one_way_us.p50": {
+              "median": 16917.0,
+              "n": 24
+            },
+            "command_one_way_us.p99": {
+              "median": 20969.5,
+              "n": 24
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 37604.0,
+              "n": 24
+            },
+            "rtt_us.p99": {
+              "median": 70145.0,
+              "n": 24
+            },
+            "state_one_way_us.p50": {
+              "median": 18400.0,
+              "n": 24
+            },
+            "state_one_way_us.p99": {
+              "median": 50812.0,
+              "n": 24
+            },
+            "link_est.rtt_min_us": {
+              "median": 24288.0,
+              "n": 24
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 6100.613467348179,
+              "n": 24
+            },
+            "link_est.state_age_us": {
+              "median": 28053.5,
+              "n": 24
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 28.375,
+              "n": 24
+            },
+            "command_one_way_us.p50": {
+              "median": 16821.0,
+              "n": 24
+            },
+            "command_one_way_us.p99": {
+              "median": 20666.5,
+              "n": 24
+            }
+          }
+        }
+      }
+    }
+  }
+}

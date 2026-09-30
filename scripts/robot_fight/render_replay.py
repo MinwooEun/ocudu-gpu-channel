@@ -20,8 +20,12 @@ The video clock is the arena's wall clock, so a 12 s fight is 12 s of video:
 if the emulator were not real time the trace would visibly drift from the
 robots. `--summary-png` draws the whole run on one page.
 
-Rendering is 2-D (matplotlib, Agg). MuJoCo offscreen rendering needs EGL or
-OSMesa, which this workstation does not have; see the R6a record.
+`--view 2d|3d|both` (default both): the 2-D top-down view is matplotlib; the
+3-D view replays the arena's own MJCF (arena.build_model_xml) with the ring
+fence, pillars and gNB mast from the scene manifest as visual geoms, poses set
+from the log, rendered offscreen with MuJoCo (MUJOCO_GL=osmesa; EGL where it
+works). Without a working OpenGL backend `--view 3d/both` fails with a clear
+error and `--view 2d` still works.
 
 Usage:
   render_replay.py <log_dir> --out fight.mp4 [--fight N] [--max-fights K]
@@ -436,20 +440,162 @@ def contention_label(params: dict) -> str:
     return "contention: " + ", ".join(bits)
 
 
+# --- 3-D replay scene -----------------------------------------------------------
+
+class Scene3D:
+    """The arena's MJCF plus visual geoms for the fence, pillars and mast, posed
+    from the log (no physics): free joint = (x, y, z, quat(yaw, pitch)), wheels
+    spun from the forward speed."""
+
+    def __init__(self, run: RunData, fight: Fight, width=640, height=480):
+        os.environ.setdefault("MUJOCO_GL", "osmesa")
+        import mujoco  # noqa: WPS433  (needs MUJOCO_GL before import)
+        sys.path.insert(0, str(HERE))
+        import arena as arena_mod  # noqa: WPS433
+        self.mujoco, self.arena_mod = mujoco, arena_mod
+        self.run, self.fight = run, fight
+        R = fight.ring_radius_m
+        xml = arena_mod.build_model_xml(R, bot_type=fight.bot)
+        # bot colours follow the sides (A blue, B red)
+        side_rgba = {"A": "0.12 0.47 0.71 1", "B": "0.84 0.15 0.16 1"}
+        xml = xml.replace('rgba="0.2 0.4 0.9 1"', f'rgba="{side_rgba[run.robots[0].side]}"')
+        xml = xml.replace('rgba="0.9 0.5 0.15 1"', f'rgba="{side_rgba[run.robots[1].side if len(run.robots) > 1 else "B"]}"')
+        xml = xml.replace('<visual><global offwidth="960" offheight="540"/></visual>',
+                          f'<visual><global offwidth="{width}" offheight="{height}" fovy="50"/><quality shadowsize="2048"/>'
+                          '<headlight ambient="0.35 0.35 0.35" diffuse="0.5 0.5 0.5"/></visual>')
+        xml = xml.replace('<texture name="grid" type="2d"',
+                          '<texture type="skybox" builtin="gradient" rgb1="0.55 0.7 0.9" rgb2="0.9 0.95 1" width="256" height="256"/>'
+                          '<texture name="grid" type="2d"')
+        xml = xml.replace('rgba="0.75 0.2 0.15 0.8"', 'rgba="0.93 0.88 0.78 1"')  # ring floor: sand, not the arena's red
+        xml = xml.replace('<light pos="0 0 6" dir="0 0 -1" diffuse="0.9 0.9 0.9"/>',
+                          '<light pos="0 0 6" dir="0 0 -1" diffuse="0.9 0.9 0.9"/>'
+                          '<light pos="-6 -6 8" dir="0.5 0.5 -0.7" diffuse="0.5 0.5 0.5" castshadow="true"/>')
+        xml = xml.replace(f'size="{R * 3} {R * 3} 0.1" material="floor"', f'size="{max(R * 4, 18.0)} {max(R * 4, 18.0)} 0.1" material="floor"')
+        ox, oy, _ = run.frame_offset
+        extra = []
+        # fence ring (visual only)
+        n_seg = 48
+        for k in range(n_seg):
+            a0 = 2 * math.pi * k / n_seg
+            cx, cy = R * math.cos(a0 + math.pi / n_seg), R * math.sin(a0 + math.pi / n_seg)
+            half = R * math.tan(math.pi / n_seg) * 1.05
+            extra.append(f'<geom type="box" pos="{cx:.4f} {cy:.4f} 0.15" size="0.02 {half:.4f} 0.15" '
+                         f'euler="0 0 {math.degrees(a0 + math.pi / n_seg):.2f}" rgba="0.55 0.55 0.6 1" contype="0" conaffinity="0"/>')
+        for pil in run.scene.get("pillars") or []:
+            cx, cy = pil["centre_m"][0] - ox, pil["centre_m"][1] - oy
+            sd, h = pil.get("side_m", 0.8) / 2, pil.get("height_m", 3.0)
+            extra.append(f'<geom type="box" pos="{cx:.3f} {cy:.3f} {h / 2:.3f}" size="{sd} {sd} {h / 2}" '
+                         f'rgba="0.54 0.5 0.44 1" contype="0" conaffinity="0"/>')
+        mast = run.scene.get("mast") or {}
+        if mast.get("xy_m"):
+            mx, my, mh = mast["xy_m"][0] - ox, mast["xy_m"][1] - oy, mast.get("height_m", 7.5)
+            extra.append(f'<geom type="cylinder" pos="{mx:.3f} {my:.3f} {mh / 2:.3f}" size="0.12 {mh / 2}" '
+                         f'rgba="0.75 0.75 0.78 1" contype="0" conaffinity="0"/>')
+            extra.append(f'<geom type="box" pos="{mx:.3f} {my:.3f} {mh + 0.35:.3f}" size="0.08 0.3 0.35" '
+                         f'rgba="0.2 0.7 0.45 1" contype="0" conaffinity="0"/>')
+            self.mast_xy = (mx, my)
+        else:
+            self.mast_xy = (R + 8, 0.0)
+        xml = xml.replace("  <worldbody>\n", "  <worldbody>\n    " + "\n    ".join(extra) + "\n", 1)
+        self.model = mujoco.MjModel.from_xml_string(xml)
+        self.data = mujoco.MjData(self.model)
+        self.qpos_addr = [self.model.jnt_qposadr[mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, f"bot{i}_free")] for i in range(2)]
+        self.wheel_addr = [tuple(self.model.jnt_qposadr[mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, f"bot{i}_{w}")]
+                                 for w in ("wl", "wr")) for i in range(2)]
+        self.wheel_angle = [0.0, 0.0]
+        self.last_t_ms = None
+        self.renderer = mujoco.Renderer(self.model, height, width)
+        self.cam = mujoco.MjvCamera()
+        self.cam.type = mujoco.mjtCamera.mjCAMERA_FREE
+        # elevated side view: the camera sits beside the ring (90 deg off the mast
+        # direction) so the pillars are not in the way; the mast shows at the
+        # right edge, the pillars on the left
+        ang = math.atan2(self.mast_xy[1], self.mast_xy[0])
+        self.cam.lookat[:] = (0.1 * R * math.cos(ang), 0.1 * R * math.sin(ang), 0.3)
+        self.cam.distance = 2.4 * R
+        self.cam.azimuth = math.degrees(ang) + 90.0   # camera position = lookat - distance * dir(azimuth, elevation)
+        self.cam.elevation = -33.0
+        self.opt = mujoco.MjvOption()
+        self.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = False
+
+    @staticmethod
+    def _quat(yaw: float, pitch: float):
+        """q_yaw(z) * q_pitch(body y): + pitch leans the body toward its heading,
+        matching arena.Arena.lean() (up · heading = sin(pitch))."""
+        cy, sy = math.cos(yaw / 2), math.sin(yaw / 2)
+        cp, sp = math.cos(pitch / 2), math.sin(pitch / 2)
+        return (cy * cp, -sy * sp, cy * sp, sy * cp)
+
+    def render(self, t_ms: int, poses: list):
+        mj, d = self.mujoco, self.data
+        dt = 0.0 if self.last_t_ms is None else max(0.0, (t_ms - self.last_t_ms) / 1000.0)
+        self.last_t_ms = t_ms
+        for r in self.run.robots:
+            p = next((q for q in poses if q.get("robot") == r.index), None)
+            if p is None:
+                continue
+            a = self.qpos_addr[r.index]
+            yaw = p.get("yaw", 0.0)
+            pitch = p.get("pitch", 0.0) if self.fight.bot == "balance" else 0.0
+            up = p.get("up", 1.0)
+            if self.fight.bot != "balance" and up < 0.95:
+                pitch = math.acos(max(-1.0, min(1.0, up)))  # fallen sumo bot: tip it over
+            d.qpos[a:a + 3] = (p["x"], p["y"], p.get("z", self.arena_mod.WHEEL_RADIUS))
+            d.qpos[a + 3:a + 7] = self._quat(yaw, pitch)
+            v = p.get("vx", 0.0) * math.cos(yaw) + p.get("vy", 0.0) * math.sin(yaw)
+            self.wheel_angle[r.index] += v / self.arena_mod.WHEEL_RADIUS * dt
+            for wa in self.wheel_addr[r.index]:
+                d.qpos[wa] = self.wheel_angle[r.index]
+        mj.mj_forward(self.model, d)
+        self.renderer.update_scene(d, self.cam, self.opt)
+        return self.renderer.render()
+
+    def close(self):
+        try:
+            self.renderer.close()
+        except Exception:  # noqa: BLE001
+            pass
+
+
 # --- frame renderer -----------------------------------------------------------
 
 class FightRenderer:
     """One matplotlib figure per fight; static traces drawn once, the cursor,
     robots and banner updated per frame."""
 
-    def __init__(self, run: RunData, fight: Fight, width=1280, height=720, dpi=100, hold_s=1.5):
+    def __init__(self, run: RunData, fight: Fight, width=1280, height=720, dpi=100, hold_s=1.5, view: str = "2d"):
         self.run, self.fight = run, fight
         self.hold_s = hold_s
+        self.view = view
+        self.scene3d = Scene3D(run, fight) if view in ("3d", "both") else None
         self.fig = plt.figure(figsize=(width / dpi, height / dpi), dpi=dpi)
         self.fig.patch.set_facecolor("white")
-        gs = gridspec.GridSpec(4, 2, width_ratios=[1.0, 1.15], height_ratios=[1, 1, 1, 1],
-                               left=0.04, right=0.985, top=0.885, bottom=0.07, wspace=0.18, hspace=0.5)
-        self.ax_ring = self.fig.add_subplot(gs[:, 0])
+        if view == "both":
+            gs = gridspec.GridSpec(4, 2, width_ratios=[1.0, 1.15], height_ratios=[1, 1, 1, 1],
+                                   left=0.04, right=0.985, top=0.885, bottom=0.07, wspace=0.18, hspace=0.5)
+            self.ax_3d = self.fig.add_subplot(gs[0:2, 0])
+            self.ax_ring = self.fig.add_subplot(gs[2:4, 0])
+        elif view == "3d":
+            gs = gridspec.GridSpec(4, 2, width_ratios=[1.0, 1.15], height_ratios=[1, 1, 1, 1],
+                                   left=0.02, right=0.985, top=0.885, bottom=0.07, wspace=0.14, hspace=0.5)
+            self.ax_3d = self.fig.add_subplot(gs[:, 0])
+            self.ax_ring = None
+        else:
+            gs = gridspec.GridSpec(4, 2, width_ratios=[1.0, 1.15], height_ratios=[1, 1, 1, 1],
+                                   left=0.04, right=0.985, top=0.885, bottom=0.07, wspace=0.18, hspace=0.5)
+            self.ax_3d = None
+            self.ax_ring = self.fig.add_subplot(gs[:, 0])
+        if self.ax_3d is not None:
+            self.ax_3d.set_axis_off()
+            self.im_3d = self.ax_3d.imshow(np.zeros((480, 640, 3), dtype=np.uint8), interpolation="bilinear")
+            self.banner_3d = self.ax_3d.text(0.5, 0.94, "", transform=self.ax_3d.transAxes, ha="center", va="center",
+                                             fontsize=15, weight="bold", color="#111",
+                                             bbox=dict(boxstyle="round", fc="#ffe680", ec="#c90"), visible=False, zorder=20)
+            self.pitch_text_3d = self.ax_3d.text(0.01, 0.02, "", transform=self.ax_3d.transAxes, fontsize=9,
+                                                 family="monospace", color="white", va="bottom",
+                                                 bbox=dict(boxstyle="round,pad=0.2", fc="#000", ec="none", alpha=0.45))
+            self.flash_3d = Rectangle((0, 0), 1, 1, transform=self.ax_3d.transAxes, fill=True, color="#e33", alpha=0.0, zorder=10)
+            self.ax_3d.add_patch(self.flash_3d)
         self.ax_lat = self.fig.add_subplot(gs[0, 1])
         self.ax_snr = self.fig.add_subplot(gs[1, 1], sharex=self.ax_lat)
         self.ax_brk = self.fig.add_subplot(gs[2, 1], sharex=self.ax_lat)
@@ -472,8 +618,17 @@ class FightRenderer:
                       ha="center", va="center", fontsize=10.5, color="#222")
         self.header = self.fig.text(0.5, 0.93, "", ha="center", va="center", fontsize=11, family="monospace")
         # ring
-        ax = self.ax_ring
         R = f.ring_radius_m
+        self.trails, self.bodies, self.headings, self.pitch_bars, self.labels = [], [], [], [], []
+        ax = self.ax_ring
+        if ax is None:
+            self.loser_ring = self.banner = self.pitch_text = None
+        else:
+            self._draw_ring(ax, R)
+        self._draw_strips()
+
+    def _draw_ring(self, ax, R):
+        run, f = self.run, self.fight
         ax.set_aspect("equal")
         pad = max(0.6, R * 0.35)
         ax.set_xlim(-R - pad, R + pad)
@@ -498,7 +653,6 @@ class FightRenderer:
                         arrowprops=dict(arrowstyle="-|>", lw=2, color="#2a7"))
             ax.text((R + pad * 0.6) * math.cos(ang), (R + pad * 0.6) * math.sin(ang) + 0.18,
                     f"gNB  {math.hypot(mx, my):.0f} m", color="#2a7", ha="center", fontsize=9)
-        self.trails, self.bodies, self.headings, self.pitch_bars, self.labels = [], [], [], [], []
         for r in run.robots:
             c = COLOURS[r.side]
             (trail,) = ax.plot([], [], "-", color=c, alpha=0.35, lw=1.5)
@@ -517,7 +671,9 @@ class FightRenderer:
         self.banner = ax.text(0, R + pad * 0.5, "", ha="center", va="center", fontsize=15, weight="bold",
                               color="#111", bbox=dict(boxstyle="round", fc="#ffe680", ec="#c90"), visible=False, zorder=20)
         self.pitch_text = ax.text(-R - pad * 0.9, -R - pad * 0.85, "", fontsize=9, family="monospace", va="bottom")
-        # strips
+
+    def _draw_strips(self):
+        run, f = self.run, self.fight
         t0w, t1w = f.t0_ms - 500, f.t1_ms + int(self.hold_s * 1000) + 500
         xs_end = self.end_s
         # 1. latency
@@ -664,6 +820,28 @@ class FightRenderer:
             p = next((q for q in poses if q.get("robot") == r.index), None)
             if p is None:
                 continue
+            if f.bot == "balance" and "pitch" in p:
+                pitch_bits.append(f"{r.side} pitch {math.degrees(p['pitch']):+5.1f}°")
+            else:
+                pitch_bits.append(f"{r.side} up {p.get('up', 1.0):.2f}")
+        ended = f.result_t_ms is not None and t_ms >= f.result_t_ms
+        wr = next((r for r in run.robots if r.node == f.winner_node), None)
+        banner_text = f"{wr.side} ({wr.node}) wins — {f.reason}" if wr else f"draw — {f.reason}"
+        if self.scene3d is not None:
+            self.im_3d.set_data(self.scene3d.render(t_ms, poses))
+            self.pitch_text_3d.set_text("   ".join(pitch_bits))
+            self.banner_3d.set_text(banner_text)
+            self.banner_3d.set_visible(ended)
+            flash = ended and (t_ms - f.result_t_ms) < 1000 and int((t_ms - f.result_t_ms) / 250) % 2 == 0
+            self.flash_3d.set_alpha(0.18 if flash else 0.0)
+        if self.ax_ring is None:
+            self._set_header(t_s)
+            self.fig.canvas.draw()
+            return np.asarray(self.fig.canvas.buffer_rgba())[:, :, :3].copy()
+        for r in run.robots:
+            p = next((q for q in poses if q.get("robot") == r.index), None)
+            if p is None:
+                continue
             x, y, yaw = p["x"], p["y"], p.get("yaw", 0.0)
             self.bodies[r.index].center = (x, y)
             self.labels[r.index].set_position((x, y))
@@ -674,40 +852,39 @@ class FightRenderer:
             if f.bot == "balance" and "pitch" in p:
                 L = 0.6 * p["pitch"]
                 self.pitch_bars[r.index].set_data([x, x + L * math.cos(yaw)], [y, y + L * math.sin(yaw)])
-                pitch_bits.append(f"{r.side} pitch {math.degrees(p['pitch']):+5.1f}°")
-            up = p.get("up", 1.0)
-            if f.bot != "balance":
-                pitch_bits.append(f"{r.side} up {up:.2f}")
         self.pitch_text.set_text("   ".join(pitch_bits))
-        ended = f.result_t_ms is not None and t_ms >= f.result_t_ms
         if ended:
             flash = int((t_ms - f.result_t_ms) / 250) % 2 == 0
             if f.loser_index is not None:
                 self.loser_ring.center = self.bodies[f.loser_index].center
                 self.loser_ring.set_visible(flash or (t_ms - f.result_t_ms) > 1000)
-            wr = next((r for r in run.robots if r.node == f.winner_node), None)
-            wtxt = f"{wr.side} ({wr.node}) wins" if wr else "draw"
-            self.banner.set_text(f"{wtxt} — {f.reason}")
+            self.banner.set_text(banner_text)
             self.banner.set_visible(True)
         else:
             self.loser_ring.set_visible(False)
             self.banner.set_visible(False)
-        rtf = f"{f.rtf:.4f}" if isinstance(f.rtf, (int, float)) else "-"
-        self.header.set_text(f"wall clock +{min(t_s, self.duration_s):6.2f} s   |   video = real time   |   "
-                             f"arena RTF {rtf}   |   bots: {f.bot}")
+        self._set_header(t_s)
         self.fig.canvas.draw()
         buf = np.asarray(self.fig.canvas.buffer_rgba())[:, :, :3].copy()
         return buf
 
+    def _set_header(self, t_s):
+        f = self.fight
+        rtf = f"{f.rtf:.4f}" if isinstance(f.rtf, (int, float)) else "-"
+        self.header.set_text(f"wall clock +{min(t_s, self.duration_s):6.2f} s   |   video = real time   |   "
+                             f"arena RTF {rtf}   |   bots: {f.bot}")
+
     def close(self):
+        if self.scene3d is not None:
+            self.scene3d.close()
         plt.close(self.fig)
 
 
 def iter_frames(run: RunData, fights: list, fps: int = 25, speed: float = 1.0, hold_s: float = 1.5,
-                max_seconds: float | None = None):
+                max_seconds: float | None = None, view: str = "2d"):
     """Yield (fight_number, t_s, frame) at video rate; wall-clock = video clock / speed."""
     for f in fights:
-        rend = FightRenderer(run, f, hold_s=hold_s)
+        rend = FightRenderer(run, f, hold_s=hold_s, view=view)
         n = int(math.ceil(rend.end_s * fps / speed))
         if max_seconds is not None:
             n = min(n, int(max_seconds * fps))
@@ -960,6 +1137,8 @@ def main(argv=None) -> int:
     p.add_argument("--manifest", type=pathlib.Path, default=None, help="ring scene manifest (pillars/mast)")
     p.add_argument("--summary-png", type=pathlib.Path, default=None)
     p.add_argument("--max-seconds", type=float, default=None, help="cap seconds rendered per fight (debug)")
+    p.add_argument("--view", choices=("2d", "3d", "both"), default="both",
+                   help="left pane: 2-D top-down, 3-D MuJoCo replay (needs MUJOCO_GL=osmesa/egl), or both stacked")
     args = p.parse_args(argv)
 
     run = load_run(args.log_dir, frame_offset=args.frame_offset, manifest=args.manifest)
@@ -984,7 +1163,7 @@ def main(argv=None) -> int:
         n = 0
         try:
             for _, _, frame in iter_frames(run, fights, fps=args.fps, speed=args.speed, hold_s=args.hold_s,
-                                           max_seconds=args.max_seconds):
+                                           max_seconds=args.max_seconds, view=args.view):
                 writer.append_data(frame)
                 n += 1
         finally:

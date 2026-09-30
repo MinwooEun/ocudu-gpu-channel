@@ -60,6 +60,59 @@ CELLS = tuple(
     for name, gnb, ue in zip(("a", "b"), multi_gnb.CELLS, legacy.UES[:2])
 )
 PRIORITIES = ("default", "high", "low")
+# RAN latency knobs the R7 benchmark may dose, applied to BOTH cells' gNBs
+# (they must stay identical). Each is a real OCUDU cell_cfg option
+# (du_high_config_cli11_schema.cpp): the fixture leaves them at their defaults.
+CELL_OVERRIDE_KEYS = {
+    "pusch.min_k2": ("pusch", "min_k2"),
+    "pusch.max_nof_harq_retxs": ("pusch", "max_nof_harq_retxs"),
+    "pdsch.max_nof_harq_retxs": ("pdsch", "max_nof_harq_retxs"),
+    "pucch.sr_period_ms": ("pucch", "sr_period_ms"),
+    "pucch.min_k1": ("pucch", "min_k1"),
+}
+
+
+def parse_cell_overrides(text: str | None) -> dict[str, int]:
+    """`pusch.min_k2=6,pucch.sr_period_ms=40` -> {"pusch.min_k2": 6, ...}."""
+    if not text:
+        return {}
+    out: dict[str, int] = {}
+    for item in text.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        key, sep, value = item.partition("=")
+        key = key.strip()
+        if not sep or key not in CELL_OVERRIDE_KEYS:
+            raise ValueError(f"unknown cell override {item!r}; allowed: {', '.join(sorted(CELL_OVERRIDE_KEYS))}")
+        if not value.strip().isdigit():
+            raise ValueError(f"cell override {key} needs a non-negative integer, got {value!r}")
+        out[key] = int(value)
+    return out
+
+
+def apply_cell_overrides(gnb_text: str, overrides: dict[str, int]) -> str:
+    """Insert the overrides into the fixture's cell_cfg text (no-op when empty).
+
+    `pdsch:` / `pusch:` blocks exist in the fixture, so their keys go right
+    under the block header; `pucch:` does not, so one block is inserted
+    before `  pdsch:` (any position inside the cell_cfg mapping is valid).
+    """
+    if not overrides:
+        return gnb_text
+    blocks: dict[str, list[tuple[str, int]]] = {}
+    for key, value in overrides.items():
+        block, leaf = CELL_OVERRIDE_KEYS[key]
+        blocks.setdefault(block, []).append((leaf, value))
+    for block, entries in blocks.items():
+        body = "".join(f"    {leaf}: {value}\n" for leaf, value in entries)
+        header = f"  {block}:\n"
+        if header in gnb_text:
+            gnb_text = legacy.replace_exact(gnb_text, header, header + body, 1, f"gNB cell_cfg.{block} override")
+        else:
+            gnb_text = legacy.insert_before_exact(gnb_text, "  pdsch:\n", header + body,
+                                                  f"gNB cell_cfg.{block} block insertion")
+    return gnb_text
 
 
 def split_scenario(root: dict, cell: dict) -> dict:
@@ -224,6 +277,23 @@ def self_test() -> None:
             assert expected in str(error), (expected, str(error))
         else:
             raise AssertionError(f"should have been refused: {bad}")
+    assert parse_cell_overrides(None) == {} and parse_cell_overrides("") == {}
+    assert parse_cell_overrides("pusch.min_k2=6, pucch.sr_period_ms=40") == {"pusch.min_k2": 6, "pucch.sr_period_ms": 40}
+    fixture = "cell_cfg:\n  pci: 1\n  band: 3\n  pdsch:\n    mcs_table: qam64\n  pusch:\n    mcs_table: qam64\n"
+    assert apply_cell_overrides(fixture, {}) == fixture, "no overrides leaves the text bit-identical"
+    patched = apply_cell_overrides(fixture, {"pusch.min_k2": 6, "pucch.sr_period_ms": 40, "pucch.min_k1": 3,
+                                             "pdsch.max_nof_harq_retxs": 1})
+    assert "  pusch:\n    min_k2: 6\n    mcs_table: qam64\n" in patched, patched
+    assert "  pdsch:\n    max_nof_harq_retxs: 1\n    mcs_table: qam64\n" in patched, patched
+    assert "  pucch:\n    sr_period_ms: 40\n    min_k1: 3\n  pdsch:\n" in patched, patched
+    for bad, expected in (("pusch.nope=1", "unknown cell override"), ("pusch.min_k2=x", "non-negative integer"),
+                          ("pusch.min_k2", "unknown cell override")):
+        try:
+            parse_cell_overrides(bad)
+        except ValueError as error:
+            assert expected in str(error), (expected, str(error))
+        else:
+            raise AssertionError(f"should have been refused: {bad}")
     fail = legacy.fail
     print("event=native_robot_fight_config_renderer_self_test result=pass")
 
@@ -242,6 +312,8 @@ def main() -> int:
     parser.add_argument("--stream-priority-b", choices=PRIORITIES, default="default")
     parser.add_argument("--gnb-acceleration", default=None,
                         help="OCUDU CUDA acceleration stage appended to both gNB configs")
+    parser.add_argument("--gnb-cell-overrides", default=None, metavar="KEY=INT,...",
+                        help="RAN latency knobs for both gNBs: " + ", ".join(sorted(CELL_OVERRIDE_KEYS)))
     parser.add_argument("--gnb-metrics-ports", default=None, metavar="A,B",
                         help="remote-control WebSocket ports for gnb0,gnb1; unset leaves both gNB configs untouched")
     parser.add_argument("--self-test", action="store_true")
@@ -276,6 +348,10 @@ def main() -> int:
     metrics_ports = parse_metrics_ports(args.gnb_metrics_ports)
     for cell, port in zip(cells, metrics_ports):
         cell["metrics_port"] = port
+    try:
+        cell_overrides = parse_cell_overrides(args.gnb_cell_overrides)
+    except ValueError as error:
+        fail(str(error))
     gnb_source = legacy.read_regular(repo_root / "examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml", "gNB fixture")
     open5gs_source = legacy.read_regular(native_root / "src/ocudu/docker/open5gs/open5gs-5gc.yml",
                                          "pinned OCUDU Open5GS template")
@@ -287,7 +363,7 @@ def main() -> int:
         "open5gs.yaml": legacy.render_open5gs(open5gs_source, native_root),
         "subscriber.csv": legacy.validate_subscriber(subscriber_source, legacy.UES[:2]),
     }
-    metadata = {"scenario": str(scenario_path), "cells": {}, "rx_noise": {
+    metadata = {"scenario": str(scenario_path), "cells": {}, "cell_overrides": cell_overrides, "rx_noise": {
         "awgn_snr_db": args.awgn_snr_db, "tx_power_dl": args.tx_power_dl, "tx_power_ul": args.tx_power_ul}}
     for cell in cells:
         name = cell["name"]
@@ -300,6 +376,7 @@ def main() -> int:
         gnb_text = multi_gnb.render_gnb(gnb_source, cell["gnb"], log_dir)
         if args.gnb_acceleration:
             gnb_text = multi_gnb.add_acceleration(gnb_text, args.gnb_acceleration)
+        gnb_text = apply_cell_overrides(gnb_text, cell_overrides)
         if cell["metrics_port"] is not None:
             gnb_text += rank1.render_gnb_metrics(cell["metrics_port"])
         rendered[f"{cell['gnb']['device_id']}.yaml"] = gnb_text

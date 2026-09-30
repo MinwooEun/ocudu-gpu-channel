@@ -4,6 +4,72 @@
 
 ## Repository State
 
+- [2026-09-30 publication checkpoint] User requested publishing all current
+  work to MinwooEun/ocudu-gpu-channel. Target is integration-0928, preserving
+  the existing contributor history and Fable edits. Includes R6c/R7 tools,
+  controller and launcher fixes, Sionna profiling, tests and result summaries.
+  Spark publication-check mirror: robot suite 39 passed/5 skipped; Sionna
+  adapter/position/UI suite 83 passed (13 subtests). Raw logs and videos remain
+  outside Git. This checkpoint is not a claim that all R7 conditions are done.
+
+- [2026-09-30 R7 continuation, in progress] User requested continuing Fable's
+  R7 rather than further Sionna profiling. Recovered 192 existing local fights
+  and the completed 11-run radio-probe batch. Audit under
+  `results/robot-fight/r7-prep-audit/` proves eight AWGN/RAN labels invalid:
+  inherited overrides were erased by sudo; all actual AWGN values are 40 dB
+  and requested RAN overrides absent. Original artifacts preserved.
+- [2026-09-30 R7 fixes] Atomically snapshot controller state and its timestamp
+  to avoid RX races in prediction age; regression covers both clock modes.
+  Added `RF_POLICY_0/1` and policy/link-estimate summaries to the arena launcher,
+  plus `run_r7_spark.sh` with explicit native override forwarding, rejection of
+  inherited overrides, unique output tags and gate exit preservation. New
+  comparison analyzer excludes incomplete/lockstep/non-real-time fights and
+  pairs common seeds across side swaps. No UE/gNB source changes.
+- [2026-09-30 R7 validation batch completed] Isolated source checkout on Spark is
+  `/workspace/gpuch/r7-validation-0930`, native build
+  `/workspace/ocudu-spark/builds/gpuch-r7-0930-release`; Fable's `int0928` is
+  untouched. Spark controller/balance/renderer tests 14/14 pass. Fixed-code
+  workstation delay60ms/side swap at seeds7000–7011 reproduced 12/12 wins for
+  compensated control on each side. Live batch in
+  `/workspace/gpuch/r7-validation-results/batch.sh` runs baseline and symmetric
+  GPU-contention comp0/comp1 plus same-policy controls, 180s each. All six
+  gates passed and batch.log records BATCH_DONE. Matched-seed side swaps:
+  baseline comp15/plain3/draw2 (20 fights); contention comp23/plain1 (24).
+  Same-policy controls: plain18 fights,13 falls; comp7 fights,0 falls.
+  Summaries are promoted to docs/robot-fight-r7-results.json. Strict realtime
+  was disabled; this does not qualify zero-starvation radio timing or hours
+  of uninterrupted connectivity. Further AWGN/RAN conditions remain unvalidated.
+
+- Current work (2026-09-30, supersedes the September 14 checkout/runtime notes
+  below): `/home/minwoo/ocudu-work/ocudu-integration`, branch `integration-0928`,
+  base `a9009a6`. User explicitly authorized Sionna generation profiling while
+  Fable continues R7, and parallel review. R7 brain/fight/native/renderer and
+  scenario edits were preserved. Spark `int0928` remains its older dirty tree;
+  profiling ran only in `/workspace/gpuch/sionna-profile-0930`, never by syncing
+  or resetting that active tree. R7 probe batch had completed all 11 gate runs
+  by 14:48 SGT; the baseline-only table is not a full R7 analysis.
+- [2026-09-30 profiling] Added opt-in `--profile-timing` generation stages to
+  `scripts/sionna_rt/run_bridge.py` and `profile_replay.py` for recorded-position
+  diagnostics. Existing solve/control timing semantics remain intact. Output
+  includes per-round stats, environment/version/source hashes and per-sample
+  coefficient fingerprints. Host stages do not force GPU synchronization.
+- [2026-09-30 robustness] Optional `Paths.vertices` evaluation was outside its
+  exception handler. Moved it inside; a geometry-build failure disables only
+  visualization and leaves profiles intact. Regression covers missing geometry,
+  raised accessor, unchanged channel output and no retry. No UE/gNB source was
+  edited. User's local-patch-only requirement is recorded in the harness.
+- [2026-09-30 validation] Spark adapter/position/UI tests 83/83 pass; bridge
+  `--dry-run --iterations 4 --profile-timing` emits per-group stage fields.
+  R4b recorded-position replay (GB10, no radio/broker, 40 positions x2 at 10 Hz)
+  measured 23.0 ms mean / 21.9 ms median / 79.5 ms max; historical live mean
+  87.8 ms is not an equivalent workload. Disabling geometry did not demonstrate
+  a mean improvement. Evidence and limitations are in `docs/sionna-integration.md`
+  and local `/home/minwoo/ocudu-work/sionna-profile-0930/`. Included in the
+  September 30 publication checkpoint.
+  Next diagnostic: use this opt-in instrumentation during an isolated live
+  R4b-equivalent run after coordinating GPU use with R7; no live speedup or
+  40 ms deadline guarantee has been established.
+
 - Branch cleanup (2026-09-14): only `main` remains as a local branch and on the user-owned `origin` repository. Removed four local branches and three origin branches after verifying every tip is an ancestor of main. Contributor remotes `ehs0` and `fork` remain configured; their repositories and remote-tracking references were not deleted. Exact removed tips are recorded under `.git/branch-cleanup-20260914T081423Z.json`.
 - Publication (2026-09-14): user explicitly requested a push. Fetched `origin/main`, confirmed it had no new commits, and successfully pushed `f51c3fd..0113ddd` to `zhouyou-gu/ocudu-gpu-channel:main`. The integration, retained contributor history, cleanup record and README edit are now published. This documentation follow-up corrects the current guide/reference publication status; no tag or release was created. Runtime qualification limits are unchanged.
 - README cleanup (2026-09-14): focused prose edit on current-folder `main`; Status is now a 91-word capabilities/validation/limits summary. All 12 comparison rows, eight command blocks, section headings, contributor credits and copyright remain unchanged. Detailed channel/update limits and revision-specific validation results remain linked or summarized. Documentation-only change; remote runtime and source are unchanged.

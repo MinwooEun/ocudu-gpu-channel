@@ -340,6 +340,7 @@ GPU. It keeps the multi-UE gate's hooks (`OCUDU_NATIVE_MUE_UE_EXEC`,
 | `OCUDU_NATIVE_RF_WEB_UI` | `0` | Start the read-only web UI on cell a's telemetry (with cell a's gNB KPI feed when metrics are on). |
 | `OCUDU_NATIVE_GNB_METRICS` | **`1`** (this gate only; every other gate defaults off) | Render both gNBs with `metrics.enable_json` + `remote_control` and start one `gnb-metrics-relay.py` per gNB, exporting `gnb-metrics-{a,b}.sock` in the run dir (`run-parameters.json` → `gnb_metrics`). The Web UI's KPI panel needs `--gnb-metrics-endpoint ws+unix://<that socket>`; `robot-fight-webui-follow.sh` does that for the newest run on 8080 (cell a) / 8081 (cell b). `0` leaves the gNB configs and the process list as before. |
 | `OCUDU_NATIVE_GNB_METRICS_PORT_A` / `_B` | `8001` / `8002` | Remote-control ports on the stack loopback; must differ because both gNBs share it. |
+| `OCUDU_NATIVE_RF_GNB_CELL_OVERRIDES` | unset | RAN latency knobs applied to BOTH gNBs (R7-prep): `pusch.min_k2=8,pucch.sr_period_ms=40,pucch.min_k1=7,pdsch.max_nof_harq_retxs=1,pusch.max_nof_harq_retxs=1` (any subset; OCUDU defaults 4 / 20 / 4 / 4 / 4). Recorded in `robot-fight-shape.json` → `cell_overrides`. Unset leaves the gNB yaml bit-identical. |
 
 The verdict (`results/reports/ocudu-robot-fight/<ts>/attach-summary.json`)
 passes on attach, PCI camping, clean transport counters and broker exit; it

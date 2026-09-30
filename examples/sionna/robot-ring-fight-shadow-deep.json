@@ -1,0 +1,103 @@
+{
+  "name": "robot-ring-fight-shadow-deep",
+  "description": "R7-prep dose variant of robot-ring-fight: both UEs behind the pillars, mirrored. R1 coverage grid: (-2.0, +/-1.5) = DL -27.1 dB / UL -25.5 dB. Expect the uplink to fail first (R4c: the OCUDU PUSCH chain leaves ~5 dB of margin regardless of the emulator noise).",
+  "scene": "robot_ring",
+  "simple_road": false,
+  "solver": {
+    "max_depth": 3,
+    "samples_per_source": 200000,
+    "seed": 42,
+    "path_polylines": 6,
+    "propagation": {
+      "los": true,
+      "specular_reflection": true,
+      "diffuse_reflection": false,
+      "refraction": true,
+      "diffraction": false
+    }
+  },
+  "nodes": {
+    "gnb0": {
+      "start_m": [
+        15.0,
+        0.0,
+        8.0
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "gnb1": {
+      "start_m": [
+        15.0,
+        0.0,
+        8.0
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue0": {
+      "start_m": [
+        -2.0,
+        1.5,
+        0.4
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue1": {
+      "start_m": [
+        -2.0,
+        -1.5,
+        0.4
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    }
+  },
+  "links": [
+    {
+      "from": "gnb0",
+      "to": "ue0",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue0",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "gnb1",
+      "to": "ue1",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue1",
+      "to": "gnb1",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    }
+  ]
+}

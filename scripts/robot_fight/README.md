@@ -28,7 +28,9 @@ UE's network namespace that relays to the arena over a unix datagram socket
 | `arena.py` | MuJoCo world + referee + per-robot UDP (or unix) server + position PUB. One process = one fight. |
 | `brain.py` | One controller per robot, own loop at `--rate-hz`, `reactive` (default) and `pusher` policies, `--policy module:callable` hook. |
 | `modem.py` | UDP ⇄ unix-datagram relay run inside a UE network namespace (stdlib only). |
-| `fight.py` | Runs N fights (arena + 2 brains on loopback), optional `--handicap` delay/loss proxy and `--modem` relay, summary JSON/MD. |
+| `fight.py` | Runs N fights (arena + 2 brains on loopback), optional `--handicap` delay/loss proxy (`robot=both` for a symmetric link) and `--modem` relay, `--comp` picks the delay-compensated balance brain per robot, summary JSON/MD. |
+| `offline_loop.py` | Physics + a brain policy through an ideal delay line, no network (threshold probes; the policy is told the true delays). |
+| `offline_curves.py` | Survival-vs-delay and vs-blackout tables for `balance` / `balance_comp` (R7a). |
 | `../../tests/test_robot_fight_protocol.py` | pack/unpack round trips, RTT from echo, position JSON validation. |
 | `../../tests/test_robot_fight_smoke.py` | one 5 s headless fight, checks RTF ≈ 1 and the streams. |
 | `../../tests/test_robot_fight_referee.py` | ring-out / fall / timeout tie-break rules on a constructed world. |
@@ -133,6 +135,47 @@ network; `tests/test_robot_fight_balance.py` pins the ends): stands with
 300 ms blackout while driving and falls at 400 ms (a blackout while standing
 still is harmless up to 400 ms — nothing moves a balanced pendulum). The
 radio's ~30 ms RTT (15 ms one-way) sits inside that with a 3–4× margin.
+
+## Delay-compensated balance (`--policy balance_comp`, R7a)
+
+Same balance law and gains as `balance`, run on the state *predicted for the
+moment the command will be applied* (Smith-predictor style), so the link's
+delay is cancelled up to the model error. Nothing changes on the robot or in
+the protocol; the brain only uses the timestamps it already has:
+
+- **Link estimate** (`Brain.update_link`, logged as `link_est` once a second
+  and in the result's `link_est`): the windowed minimum RTT over
+  `--link-window-s` (0.5 s) strips the STATE-period quantisation; the STATE
+  one-way (`recv − t_send`, low-passed) is trusted only when it is consistent
+  with the RTT (shared clock — true on loopback and on the Spark, where arena,
+  modems and brains share the host clock), otherwise both directions are
+  taken as RTT/2. `state_age = now − t_send(STATE)` and
+  `cmd_one_way = min RTT − state one-way`.
+- **Predictor**: `PendulumModel` — the linearised two-wheeled inverted
+  pendulum derived from the arena's MJCF masses and heights (body 3.5 kg, CoM
+  0.58 m above the axle, `a11 = m_b + 2m_w + 2I_w/r²`, `a12 = m_b l`,
+  `a22 = I_axle`, wheel-hinge damping included; open-loop pole 4.8 rad/s).
+  `tests/test_robot_fight_comp.py` pins it against MuJoCo: within 0.004 rad of
+  pitch over 100 ms with and without torque and while moving.
+- **Rollout**: from the STATE in hand, integrate `state_age + cmd_one_way +
+  horizon_extra_ms` (1 ms) forward at the arena timestep, applying the torques
+  this brain already sent (command history with landing times) — the arena is
+  still executing them while this command is in flight — then feed the
+  predicted (pitch, pitch rate, speed) to the balance law. The horizon is
+  capped at `max_horizon_ms` (500).
+
+Offline thresholds (`offline_curves.py`, exact delays): plain `balance`
+falls at 80 ms one-way at rest and 60 ms cruising at 0.5 m/s; `balance_comp`
+stands through 200 ms in both cases (the end of the sweep). Blackouts are
+unchanged (a pendulum at rest needs nothing; cruising, both fall at a 500 ms
+blackout): prediction cancels delay, not missing commands. A timestamped
+command-sequence variant would cover that case; it needs a protocol change
+and was not built.
+
+`fight.py --bot balance --comp 0` gives robot 0 the compensated brain and
+robot 1 the plain one; `--handicap robot=both,delay_ms=60` puts the same
+proxy on both robots' paths, so the two brains face an identical link and
+only the strategy differs — the R7 benchmark premise.
 
 ## Brain
 
