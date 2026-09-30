@@ -51,6 +51,11 @@ sionna_position_offset=""
 sionna_position_timeout_s=""
 ue_exec=""
 root_exec=""
+# Empty unless the outer enabled gNB metrics; ports must match the rendered gNB yamls.
+gnb_metrics_socket_a=""
+gnb_metrics_port_a="8001"
+gnb_metrics_socket_b=""
+gnb_metrics_port_b="8002"
 
 usage_error()
 {
@@ -102,6 +107,10 @@ while [[ "$#" -gt 0 ]]; do
     --sionna-position-timeout-s) sionna_position_timeout_s="${2:-}"; shift 2 ;;
     --ue-exec) ue_exec="${2:-}"; shift 2 ;;
     --root-exec) root_exec="${2:-}"; shift 2 ;;
+    --gnb-metrics-socket-a) gnb_metrics_socket_a="${2:-}"; shift 2 ;;
+    --gnb-metrics-port-a) gnb_metrics_port_a="${2:-}"; shift 2 ;;
+    --gnb-metrics-socket-b) gnb_metrics_socket_b="${2:-}"; shift 2 ;;
+    --gnb-metrics-port-b) gnb_metrics_port_b="${2:-}"; shift 2 ;;
     *) usage_error "unexpected argument: $1" ;;
   esac
 done
@@ -227,7 +236,7 @@ cleanup()
   # Side processes and the contention source first, then broker admission
   # while both radio requesters are still alive, then the radio peers, then
   # their core/database dependencies.
-  for wanted in ue-exec root-exec hog broker srsue gnb sionna open5gs mongod; do
+  for wanted in ue-exec root-exec hog broker srsue gnb-metrics-relay gnb sionna open5gs mongod; do
     for ((index=0; index<${#process_pids[@]}; index++)); do
       if [[ "${process_names[index]}" == "${wanted}"* ]]; then
         if stop_group "${index}"; then process_pids[index]="0"; else cleanup_failed=1; fi
@@ -496,6 +505,19 @@ done
 for index in "${!gnb_ids[@]}"; do
   wait_log "${log_dir}/${gnb_ids[index]}-console.log" '==== gNB started ===' "${gnb_pids[index]}" "${gnb_start_timeout}" \
     || usage_error "${gnb_ids[index]} did not start"
+done
+# Each gNB's remote-control WebSocket lives on this namespace's loopback; a
+# relay per gNB re-exports it as a socket file in the shared run dir for the
+# Web UI's KPI panel. Empty socket = metrics off, nothing started.
+gnb_metrics_sockets=("${gnb_metrics_socket_a:-}" "${gnb_metrics_socket_b:-}")
+gnb_metrics_ports=("${gnb_metrics_port_a:-8001}" "${gnb_metrics_port_b:-8002}")
+for index in "${!gnb_ids[@]}"; do
+  [[ -n "${gnb_metrics_sockets[index]}" ]] || continue
+  start_group "gnb-metrics-relay-${gnb_ids[index]}" "${log_dir}/gnb-metrics-relay-${gnb_ids[index]}.log" \
+    /usr/bin/python3 "${repo_root}/scripts/native/gnb-metrics-relay.py" \
+    --socket "${gnb_metrics_sockets[index]}" --port "${gnb_metrics_ports[index]}"
+  printf 'event=gnb_metrics_relay gnb=%s port=%s socket=%s\n' \
+    "${gnb_ids[index]}" "${gnb_metrics_ports[index]}" "${gnb_metrics_sockets[index]}"
 done
 sleep 3
 

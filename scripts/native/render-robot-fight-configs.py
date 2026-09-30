@@ -47,6 +47,9 @@ def load(name: str, path: Path):
 
 multi_gnb = load("render_multi_gnb_configs", HERE / "render-multi-gnb-configs.py")
 sionna = load("render_sionna_multi_ue_configs", HERE / "render-sionna-multi-ue-configs.py")
+# Only for render_gnb_metrics(): the metrics + remote_control block the Web UI's
+# KPI panel subscribes to. Two gNBs share one loopback, so each gets its own port.
+rank1 = load("render_sionna_rank1_configs", HERE / "render-sionna-rank1-configs.py")
 legacy = multi_gnb.multi_ue
 fail = legacy.fail
 
@@ -130,6 +133,22 @@ def render_cell_topology(cell: dict, shape: sionna.LiveShape, rx_noise: dict) ->
     return text
 
 
+def parse_metrics_ports(text: str | None) -> tuple[int | None, int | None]:
+    """`A,B` -> two distinct ports; None -> metrics off for both cells."""
+
+    if text is None:
+        return (None, None)
+    parts = text.split(",")
+    if len(parts) != 2 or not all(p.isdigit() for p in parts):
+        fail("--gnb-metrics-ports must be two integers: A,B")
+    ports = tuple(int(p) for p in parts)
+    if not all(1 <= p <= 65535 for p in ports):
+        fail("--gnb-metrics-ports must be in [1, 65535]")
+    if ports[0] == ports[1]:
+        fail("--gnb-metrics-ports must differ: both gNBs bind the same loopback")
+    return ports
+
+
 def self_test() -> None:
     import tempfile
 
@@ -193,6 +212,18 @@ def self_test() -> None:
         path = Path(directory) / "s.json"
         path.write_text(json.dumps(good), encoding="utf-8")
         assert json.loads(path.read_text())["name"] == "t"
+    assert parse_metrics_ports(None) == (None, None)
+    assert parse_metrics_ports("8001,8002") == (8001, 8002)
+    metrics_b = rank1.render_gnb_metrics(8002)
+    for token in ("enable_json: true", "enable_sched_ue: true", "port: 8002", "bind_addr: 127.0.0.1"):
+        assert token in metrics_b, token
+    for bad, expected in (("8001", "two integers"), ("8001,8001", "must differ"), ("0,8002", "[1, 65535]")):
+        try:
+            parse_metrics_ports(bad)
+        except ValueError as error:
+            assert expected in str(error), (expected, str(error))
+        else:
+            raise AssertionError(f"should have been refused: {bad}")
     fail = legacy.fail
     print("event=native_robot_fight_config_renderer_self_test result=pass")
 
@@ -211,6 +242,8 @@ def main() -> int:
     parser.add_argument("--stream-priority-b", choices=PRIORITIES, default="default")
     parser.add_argument("--gnb-acceleration", default=None,
                         help="OCUDU CUDA acceleration stage appended to both gNB configs")
+    parser.add_argument("--gnb-metrics-ports", default=None, metavar="A,B",
+                        help="remote-control WebSocket ports for gnb0,gnb1; unset leaves both gNB configs untouched")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     render_args = (args.repo_root, args.native_root, args.output_dir, args.log_dir, args.scenario_config)
@@ -240,6 +273,9 @@ def main() -> int:
 
     cells = [dict(CELLS[0], cuda_stream_priority=args.stream_priority_a),
              dict(CELLS[1], cuda_stream_priority=args.stream_priority_b)]
+    metrics_ports = parse_metrics_ports(args.gnb_metrics_ports)
+    for cell, port in zip(cells, metrics_ports):
+        cell["metrics_port"] = port
     gnb_source = legacy.read_regular(repo_root / "examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml", "gNB fixture")
     open5gs_source = legacy.read_regular(native_root / "src/ocudu/docker/open5gs/open5gs-5gc.yml",
                                          "pinned OCUDU Open5GS template")
@@ -264,6 +300,8 @@ def main() -> int:
         gnb_text = multi_gnb.render_gnb(gnb_source, cell["gnb"], log_dir)
         if args.gnb_acceleration:
             gnb_text = multi_gnb.add_acceleration(gnb_text, args.gnb_acceleration)
+        if cell["metrics_port"] is not None:
+            gnb_text += rank1.render_gnb_metrics(cell["metrics_port"])
         rendered[f"{cell['gnb']['device_id']}.yaml"] = gnb_text
         rendered[f"topology-{name}.yaml"] = render_cell_topology(cell, shape, rx_noise)
         rendered[f"scenario-{name}.json"] = json.dumps(scenario, indent=2) + "\n"
@@ -271,6 +309,7 @@ def main() -> int:
         metadata["cells"][name] = {
             "gnb": cell["gnb"], "ue": {k: cell["ue"][k] for k in ("device_id", "tx_port", "rx_port", "netns", "ipv4")},
             "cuda_stream_priority": cell["cuda_stream_priority"],
+            "metrics_port": cell["metrics_port"],
             "links": [{"from": l.source, "to": l.destination, "model": l.model} for l in shape.links],
             "noise_power": rx_noise,
         }

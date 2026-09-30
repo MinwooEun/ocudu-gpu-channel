@@ -86,6 +86,14 @@ root_exec="${OCUDU_NATIVE_MUE_ROOT_EXEC:-}"
 skip_ctest="${OCUDU_NATIVE_RF_SKIP_CTEST:-0}"
 web_port="${OCUDU_NATIVE_WEB_PORT:-8080}"
 web_ui="${OCUDU_NATIVE_RF_WEB_UI:-0}"
+# gNB KPI feed for the Web UI (the same switch as the legacy 1x1 gate). ON by
+# default here: this is the demo gate and the dashboard's KPI panel is empty
+# without it. Each gNB gets its own remote-control port on the stack loopback
+# and its own relay socket in the run dir (gnb-metrics-{a,b}.sock). 0 leaves
+# the gNB configs and the process list exactly as before.
+gnb_metrics_enabled="${OCUDU_NATIVE_GNB_METRICS:-1}"
+gnb_metrics_port_a="${OCUDU_NATIVE_GNB_METRICS_PORT_A:-8001}"
+gnb_metrics_port_b="${OCUDU_NATIVE_GNB_METRICS_PORT_B:-8002}"
 audited_ocudu="a1916edcdbcd70ba6e0af47ee87be061dad5a4e4"
 audited_srsran="eea87b1d893ae58e0b08bc381730c502024ae71f"
 audited_open5gs="d9d3abdd480be96fac3bc8a997e83446648763ca"
@@ -142,6 +150,15 @@ done
 [[ "${strict_realtime}" =~ ^[01]$ ]] || usage_error "OCUDU_NATIVE_MUE_STRICT_REALTIME must be 0 or 1"
 [[ "${skip_ctest}" =~ ^[01]$ && "${web_ui}" =~ ^[01]$ ]] || usage_error "OCUDU_NATIVE_RF_{SKIP_CTEST,WEB_UI} must be 0 or 1"
 [[ "${web_port}" =~ ^[1-9][0-9]*$ && "${web_port}" -le 65535 ]] || usage_error "invalid OCUDU_NATIVE_WEB_PORT"
+case "${gnb_metrics_enabled,,}" in
+  1|true|yes|on) gnb_metrics_enabled=1 ;;
+  0|false|no|off|"") gnb_metrics_enabled=0 ;;
+  *) usage_error "OCUDU_NATIVE_GNB_METRICS must be 0 or 1" ;;
+esac
+for value in "${gnb_metrics_port_a}" "${gnb_metrics_port_b}"; do
+  [[ "${value}" =~ ^[1-9][0-9]*$ && "${value}" -le 65535 ]] || usage_error "invalid OCUDU_NATIVE_GNB_METRICS_PORT_{A,B}"
+done
+[[ "${gnb_metrics_port_a}" != "${gnb_metrics_port_b}" ]] || usage_error "OCUDU_NATIVE_GNB_METRICS_PORT_{A,B} must differ"
 
 # gNB: the audited CPU build, or the CUDA build when contention asks for it.
 gnb_kind="cpu"
@@ -255,6 +272,12 @@ if [[ "${sionna_awgn_snr_db}" != "off" ]]; then
   [[ -z "${sionna_tx_power_ul}" ]] || renderer_args+=(--tx-power-ul "${sionna_tx_power_ul}")
 fi
 [[ -z "${acceleration}" ]] || renderer_args+=(--gnb-acceleration "${acceleration}")
+gnb_metrics_socket_a=""; gnb_metrics_socket_b=""
+if [[ "${gnb_metrics_enabled}" == "1" ]]; then
+  renderer_args+=(--gnb-metrics-ports "${gnb_metrics_port_a},${gnb_metrics_port_b}")
+  gnb_metrics_socket_a="${run_dir}/gnb-metrics-a.sock"
+  gnb_metrics_socket_b="${run_dir}/gnb-metrics-b.sock"
+fi
 "/usr/bin/python3" "${renderer}" "${renderer_args[@]}" >"${log_dir}/render.log" 2>&1 || {
   cat "${log_dir}/render.log" >&2; usage_error "config rendering failed"
 }
@@ -290,13 +313,19 @@ parent_mntns="$(readlink /proc/self/ns/mnt)"
   "${protected_stream_priority}" "${mps_active}" "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" "${hog_sm_percent}" \
   "${protected_cpus}" "${plain_cpus}" "${OCUDU_NATIVE_GNB_CPUS:-}" "${OCUDU_NATIVE_NRUE_CPUS:-}" \
   "${OCUDU_NATIVE_BROKER_ENV:-}" "${gnb_kind}" "${gnb_commit}" "${acceleration}" \
-  "${sionna_awgn_snr_db}" "${sionna_scenario}" "${sionna_position_endpoint}" "${ue_exec}" "${root_exec}"
+  "${sionna_awgn_snr_db}" "${sionna_scenario}" "${sionna_position_endpoint}" "${ue_exec}" "${root_exec}" \
+  "${gnb_metrics_socket_a}" "${gnb_metrics_port_a}" "${gnb_metrics_socket_b}" "${gnb_metrics_port_b}"
 import json, sys
 (out, duration, strict, sched_a, sched_b, contention, contention_start, hog_kernel_us, hog_duty, hog_mps,
  sionna_mps, rt_priority, stream_priority, mps_active, profile, hog_sm_percent, protected_cpus, plain_cpus, gnb_cpus,
  ue_cpus, broker_env, gnb_kind, gnb_commit, acceleration, awgn, scenario, position_endpoint,
- ue_exec, root_exec) = sys.argv[1:]
+ ue_exec, root_exec, metrics_sock_a, metrics_port_a, metrics_sock_b, metrics_port_b) = sys.argv[1:]
 json.dump({
+    "gnb_metrics": None if not metrics_sock_a else {
+        "a": {"gnb": "gnb0", "socket": metrics_sock_a, "port": int(metrics_port_a),
+              "endpoint": "ws+unix://" + metrics_sock_a},
+        "b": {"gnb": "gnb1", "socket": metrics_sock_b, "port": int(metrics_port_b),
+              "endpoint": "ws+unix://" + metrics_sock_b}},
     "run_duration_seconds": int(duration), "strict_realtime": int(strict),
     "broker_sched": {"a": sched_a, "b": sched_b},
     "protected": {"rt_priority": int(rt_priority), "stream_priority": stream_priority,
@@ -341,14 +370,18 @@ declare -a inner_args=(
   --sionna-position-offset "${sionna_position_offset}"
   --sionna-position-timeout-s "${sionna_position_timeout_s}"
   --ue-exec "${ue_exec}" --root-exec "${root_exec}"
+  --gnb-metrics-socket-a "${gnb_metrics_socket_a}" --gnb-metrics-port-a "${gnb_metrics_port_a}"
+  --gnb-metrics-socket-b "${gnb_metrics_socket_b}" --gnb-metrics-port-b "${gnb_metrics_port_b}"
 )
 web_pid=""
 if [[ "${web_ui}" == "1" ]]; then
   # Read-only observer of cell a only (one telemetry socket per web server).
+  web_metrics_args=()
+  [[ -z "${gnb_metrics_socket_a}" ]] || web_metrics_args=(--gnb-metrics-endpoint "ws+unix://${gnb_metrics_socket_a}")
   "${sionna_python}" "${repo_root}/scripts/web_ui/server.py" \
     --port "${web_port}" --telemetry-endpoint "ipc://${run_dir}/telemetry-a.sock" \
     --status-jsonl "${log_dir}/sionna-status-a.jsonl" \
-    --index "${repo_root}/scripts/web_ui/index.html" \
+    --index "${repo_root}/scripts/web_ui/index.html" "${web_metrics_args[@]}" \
     >"${log_dir}/web-ui.log" 2>&1 &
   web_pid="$!"
   printf 'Web UI (cell a): http://127.0.0.1:%s\n' "${web_port}"
