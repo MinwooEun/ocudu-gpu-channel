@@ -60,7 +60,7 @@ brain-B ──(N6/tun)── gNB ═══╣  links: gnb→ueA, ueA→gnb, gnb�
 | **R2** | **로봇 아레나** — MuJoCo 스모봇 2대, ring-out 규칙, 두뇌 프로세스, UDP 프로토콜(seq+timestamp), 위치 PUB. 무선 없음 | 로컬 루프로 경기 완주, MuJoCo wall-clock 스텝, 명령 부재 정책 정의, 동일 두뇌 승률 50±x% 노이즈 플로어(N≥30) | **완료 2026-09-29** — `scripts/robot_fight/` (protocol/arena/brain/fight), 테스트 6개 통과. 30판 노이즈 플로어 5:5:20(승률 0.5, 95% CI 0.24–0.76), RTF 1.000. 핸디캡: +100 ms 편도 → 11:2:5(승률 0.85), +50 ms·손실 10/30% → 잡음 안. 무승부 67–83%는 **R2b에서 해결**(가장자리 타이브레이크 + `reactive` 정책: 24판 배치 무승부 0, ring_out 100 %); netns 모뎀 완료(Spark root netns 테스트 통과). **링크 민감도는 미달**: 편도 ≤100 ms·손실 20 %·정전 20 % duty 어느 것도 승률을 재현 가능하게 바꾸지 못함 → R5 1차 지표는 링크 지표, 경기는 데모(R2b 절) |
 | **R3** | **위치 → Sionna live** — 브리지 `update_positions`를 외부 입력(ZMQ SUB)으로 교체, MuJoCo → 브리지 → 브로커 | 로봇이 기둥 뒤로 가면 KPI 패널의 채널이 따라옴, 위치→적용 지연 < 예산 | **부분 완료 2026-09-29** — 브리지 `--position-endpoint` + 게이트 env 배선, 단위 테스트 11개, Spark dry-run에서 원 궤도 추종 오차 0 m, solve 유지(링 씬 6링크 53 ms). MuJoCo→KPI 실물 연결은 R2/R4에서 |
 | **R4** | **무선 폐루프** — srsUE 2대 attach(`run-ocudu-sionna-multi-ue.sh` 기반), 제어 루프가 tun 통과, RTT/손실 로그를 브로커 슬롯 로그와 조인 | strict-realtime on, RTF = 1.0 로그, 경기 완주, RTT 분포, 무효 판 규칙 적용 | **부분 완료 2026-09-29 (R4a 무선 절반)** — 2-UE Sionna 렌더러 수정, 절대 수신 잡음 바닥(`OCUDU_NATIVE_SIONNA_AWGN_SNR_DB`, 기본 40), 게이트 훅(`MUE_UE_EXEC`/`ROOT_EXEC`/duration/strict/핀/캡처/UE metrics CSV). 링 씬 walk 시나리오 PASS: LOS UE 34 dB, 그림자 UE 31→16 dB(r=0.42), ping 32/37 ms. **R4b(아레나 절반) 완료(조건부) 2026-09-29** — 에뮬레이터 링크 위에서 32판 전부 완주(16:16, RTF 1.000 전 경기), RTT p50 21 ms / 편도 8.4 ms / stale 0, Sionna 외부 위치 10 Hz, 조인 타임라인(`analyze_run.py`). 조건: 링을 기둥 동쪽 LOS에 두었고(그림자 진입 시 UL이 먼저 죽어 두 UE 동시 RLF), strict-realtime은 attach starvation 때문에 off. 발견: UL PUSCH SINR(2.5–5 dB)은 잡음 knob과 무관, 동시 `cmake -j20`만으로 RTT 4배 · R4c(09-30): UL PUSCH SINR 5–8 dB 바닥은 에뮬레이터 밖(직결 ZMQ·OAI UE에서 동일, `docs/plans/r4c-ul-noise.patch`), 브로커 heartbeat에 초당 starvation/gap/overflow 델타 추가 |
-| **R5** | **스케줄링 배틀** — 브로커 2개(셀 2개), GPU 경합원(Sionna 버스트 + hog/CUDA gNB), 스케줄링 off vs on, N판 | 스케줄링 유무로 승률이 뒤집히고 브로커별 `rx_starvations`/`node_stall`/`process_us` p99가 그 이유를 설명 | **부분 완료 2026-09-29(R5a)** — `cuda_stream_priority` 손잡이, `ocudu-gpu-hog`, 2셀·2브로커 게이트 `run-ocudu-robot-fight.sh` 12런 PASS. 컨텍스트 간 time slicing은 안에서 못 이기고(2 ms 커널 세입자 → 모두 2.3 ms/슬롯), 경합원을 브로커와 한 MPS 컨텍스트에 두고 브로커 스트림을 high로 하면 p99 1,493 → 211 µs(Sionna), 1,866 → 859 µs(200 µs hog). FIFO는 해롭다. 아레나 결합은 R5b |
+| **R5** | **스케줄링 배틀** — 브로커 2개(셀 2개), GPU 경합원(Sionna 버스트 + hog/CUDA gNB), 스케줄링 off vs on, N판 | 스케줄링 유무로 승률이 뒤집히고 브로커별 `rx_starvations`/`node_stall`/`process_us` p99가 그 이유를 설명 | **완료 2026-09-30** — R5b: 밸런스 봇, hog(200 µs×2×16, MPS) 아래 **a protected / b plain 77판 63:12, ue0 승률 0.84(0.74–0.91), ue1 넘어짐 59회**; 대조 plain/plain 0.33, protected/protected 0.48, 경합 없음 0.57. 원인: b 브로커 슬롯당 2.2 ms quantum 대기 → RTT 20 → 37 ms, a는 MPS+high로 0.4 ms. R5a: — `cuda_stream_priority` 손잡이, `ocudu-gpu-hog`, 2셀·2브로커 게이트 `run-ocudu-robot-fight.sh` 12런 PASS. 컨텍스트 간 time slicing은 안에서 못 이기고(2 ms 커널 세입자 → 모두 2.3 ms/슬롯), 경합원을 브로커와 한 MPS 컨텍스트에 두고 브로커 스트림을 high로 하면 p99 1,493 → 211 µs(Sionna), 1,866 → 859 µs(200 µs hog). FIFO는 해롭다. 아레나 결합은 R5b |
 | **R6** | **데모 패키징** — 영상, KPI 패널 동기 재생, 선택: LLM 두뇌 / G1 / Isaac | 발표용 영상 1편 | |
 
 R0–R2는 서로 독립(병렬 가능), R3부터 직렬.
@@ -370,3 +370,45 @@ event=stop tx_pulls=7767 rx_requests=7715 rx_starvations=0 tx_queue_overflows=0 
 빌드·테스트: 호스트 스크래치 빌드(`~/ocudu-work/builds-scratch/r4c-host`, CPU-only — 호스트에 nvcc가 없고 컨테이너에 cmake가 없어 sm_120 CUDA 빌드는 이 세션에서 불가; 변경은 backend 무관한 `broker.cpp`뿐) ctest `broker`/`ring`/`config`/`processing` 4/4 PASS. 분석기 반영: `scripts/robot_fight/analyze_run.py`의 `hb_delta`가 경기 창 안 `starvations/gaps/overflows`(및 발생 초)를 합산하고, 구형 로그면 `null`; `scripts/native/analyze-sionna-multi-ue-run.py`에 `load_broker_health`(`--steady-after-s`, 기본 60: attach 구간과 정상 상태 분리)와 `== broker <dev>:` 줄 추가. a3 로그(구형 브로커)에서는 둘 다 "카운터 없음"으로 정직하게 떨어지는 것 확인. **R5부터 starvation의 1차 지표는 이 heartbeat 델타다** — `event=stop` 총합은 attach의 수십 회와 섞인다.
 
 파일: `src/broker.cpp`, `scripts/robot_fight/analyze_run.py`, `scripts/native/analyze-sionna-multi-ue-run.py`, `docs/plans/r4c-ul-noise.patch`(신규, 미적용). 재검사 스크립트 `pusch_stats.py`, `cp_timing.py`, `ul_edges.py`는 스크래치(레포 밖).
+
+### R5b — 2026-09-29/30 (스케줄링 배틀: 밸런스 봇, 브로커 a protected / b plain, Spark GB10)
+
+R5a의 게이트에 R2c의 원격 밸런스 봇을 얹어 **같은 GPU에서 스케줄링만 다른 두 브로커** 아래 경기를 돌렸다. 트리 `/workspace/gpuch/int0928`을 `b3cd457`로 올리고(번들 fetch, git 레포 유지) robot_fight 패키지 v2를 양쪽 sha256 대조, Spark root에서 robot_fight 테스트 15/15(netns 모뎀 포함). 래퍼 `/workspace/gpuch/r5b-run.sh <tag> [ENV=..]`(r5-run.sh + R4b 훅, `RF_BOT=balance RF_POLICY=balance` 기본), 대기 러너 `r5b-go.sh`, 배치 `r5b-sweep.sh`·`r5b-battle.sh`. 새 분석기 `scripts/robot_fight/analyze_battle.py`(경기 창 × 브로커 a/b `process_us`·kernel·stall·starvation(heartbeat 델타가 있으면) × 두뇌 RTT × 브리지 갱신, Wilson CI). 결과 사본 `results/robot-fight/r5b/`(git 제외). 모든 런 GPU에 다른 프로세스 없음, 게이트 전부 PASS, 종료 후 고아 0.
+
+**세션 재시작.** 09-30 05:20 UTC에 Claude 세션이 재시작돼 sweep 대기가 끊겼다. 네 셀은 Spark에서 끝까지 돌았고(`r5b-q1..q4.out`, `SWEEP_DONE`) 출력에서 복구했다 — 재실행 없음.
+
+**1. 기준선(`151114Z`, a·b plain, 경합 없음, 300 s, 밸런스 봇, 20 s 제한):** 22판, 12:9:1, ue0 승률 0.57(0.37–0.76), RTF 1.0000–1.0002, RTT p50 19.5 / p99 30 ms 양쪽, 편도 8.8 ms, stale 0, 브로커 proc 111/238(a) · 111/262(b) µs, 브리지 10 Hz 양쪽. **밸런스 봇은 20 ms RTT 링크 위에서 선다**: 넘어짐은 22판 중 3회(ue1 fall 3 — 밀기 충돌 중 넘어짐, R2c 로컬 0/24보다 잦음), 나머지는 ring_out·가장자리 타이브레이크. 진자 손잡이는 바꾸지 않았다.
+
+**2. 비대칭 경합점 탐색 — hog 큐 깊이 sweep(`r5b-sweep.sh`, A protected / B plain, hog MPS 클라이언트, scripted UE, 180 s).** `ocudu-gpu-hog`에 `--streams S --queue-depth K`(스트림당 K개 커널을 이벤트로 유지, `--queue-depth 1`은 이전과 같음)를 넣고 게이트에 `OCUDU_NATIVE_RF_HOG_STREAMS/_QUEUE_DEPTH`로 배선했다. proc = `process_us` p50/p99(경합 창, µs), ping = p50/p90 ms.
+
+| 런 | hog | a(protected) proc | b(plain) proc | a ping | b ping | starv a/b | hog 자체 큐 지연 p50 |
+|---|---|---|---|---|---|---|---|
+| R5a t3 `144449Z` | 없음(Sionna MPS) | 110 / 211 | 112 / 1,493 | 29 / 38 | 29 / 38 | 2 / 1 | — |
+| q1 `151722Z` | 200 µs ×1×8 | 209 / 1,227 | **2,191 / 2,306** | 29 / 37 | **70 / 86** | 3 / 1 | 1.7 ms |
+| q2 `152107Z` | 200 µs ×2×16 | **399 / 838** | 2,206 / 2,314 | 28 / 37 | 65 / 85 | 3 / 4 | 3.8 ms |
+| q3 `152452Z` | 200 µs ×4×32 | 415 / 1,025 | 2,231 / 2,328 | 30 / 39 | 67 / 88 | 6 / 2 | 12.3 ms |
+| q4 `152837Z` | 100 µs ×4×64 | 261 / 660 | 2,228 / 2,390 | 31 / 38 | 68 / 87 | 6 / 28 | 13.1 ms |
+
+- **비대칭은 큐 깊이가 아니라 컨텍스트 소속에서 온다.** plain 브로커(자기 컨텍스트)는 hog가 MPS 컨텍스트를 항상 바쁘게 만드는 순간 슬롯마다 time-slice quantum(≈2.2 ms)을 기다리고, 깊이 8이든 256이든 같다(2.19–2.23 ms p50). protected 브로커는 hog와 같은 MPS 컨텍스트에 있어 quantum을 기다리지 않고, high 스트림이라 hog의 큐(3.8–13 ms)도 건너뛴다 → p50 0.2–0.4 ms, p99 0.66–1.2 ms. 큐 깊이는 protected 쪽 꼬리만 조금 움직인다(q2 최소).
+- 링크로 번역하면 **a RTT 28–31 ms vs b 65–70 ms**(+~19 ms 편도), starvation·stall은 양쪽 0에 가깝다 — 즉 경합은 "정전"이 아니라 **지속적 지연 증가**로 나타난다. R2c가 예측한 바로 그 형태라 밸런스 봇이 볼 수 있다(+20 ms 편도 → 0.67).
+- 채택: **q2**(200 µs × 2 × 16, MPS 클라이언트). (a) 많은 스트림·높은 duty, (b) Sionna+hog(기본이 이미 Sionna MPS), (c) CPU 압박은 필요 없었다 — GPU 스케줄링만으로 비대칭이 났다. `nvidia-smi compute-policy --set-timeslice`는 건드리지 않았다(GPU 전역).
+
+**3. 배틀(`r5b-battle.sh`, q2 경합, 밸런스 봇, 300 s/런, 20 s 제한, 경합은 attach 직후 시작이라 모든 경기가 경합 중).** ue0 = 셀 a, ue1 = 셀 b.
+
+| 셀 | 런 | 경기 | ue0:ue1(무) | ue0 승률 (95 % CI) | 넘어짐 ue0/ue1 | a proc p50/p99 (µs) | b proc p50/p99 | a RTT p50/p99 (ms) | b RTT p50/p99 | starv a/b | RTF |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 기준 plain/plain, 경합 없음 | `151114Z` | 22 | 12:9 (1) | 0.57 (0.37–0.76) | 0 / 3 | 111/238 | 111/262 | 19.5/30 | 19.5/31 | –/– | 1.0000–1.0002 |
+| **a protected / b plain** | `052100Z` | 32 | 21:9 (2) | 0.70 (0.52–0.83) | 2 / 20 | 413/784 | 2,207/2,292 | 20.0/32 | 36.5/66 | 105/71 | 1.0000–1.0003 |
+| **a protected / b plain** | `053241Z` | 45 | 42:3 (0) | 0.93 (0.82–0.98) | 2 / 39 | 387/716 | 2,213/2,301 | 20.0/31 | 36.9/72 | 109/68 | 1.0000–1.0003 |
+| **합산 a protected / b plain** | | **77** | **63:12 (2)** | **0.84 (0.74–0.91)** | **4 / 59** | | | | | | |
+| 대조 plain/plain, 같은 경합 | `052651Z` | 31 | 10:20 (1) | 0.33 (0.19–0.51) | 15 / 6 | 2,318/2,402 | 2,320/2,385 | 37.5/69 | 37.5/68 | 45/30 | 1.0000–1.0003 |
+| 대조 protected/protected, 같은 경합 | `053831Z` | 25 | 11:12 (2) | 0.48 (0.29–0.67) | 3 / 3 | 226/608 | 218/604 | 19.9/32 | 19.9/32 | 70/55 | 1.0000–1.0002 |
+
+- **승률이 뒤집힌다.** 경합 없이 0.57, 둘 다 보호 0.48, 둘 다 무보호 0.33(잡음 안, 아래), **a만 보호 0.84(0.74–0.91)** — 77판 중 ue1이 59판을 **넘어져서** 졌다(기준선 3/22, 둘 다 보호 3/25). 두 번째 런은 42:3. 패인이 `fall`이라 "링크 때문에 졌다"가 로그에 있다.
+- **메커니즘의 증거는 브로커 로그에 있다.** 같은 GPU, 같은 hog, 같은 씬·잡음·두뇌인데 셀 b의 에뮬레이터 호출이 슬롯마다 2.2 ms(quantum)를 기다려 UE ping·두뇌 RTT가 20 → 37 ms(p99 66–72)가 되고, 셀 a는 MPS 컨텍스트 안 high 스트림이라 0.4 ms에 머물러 RTT 20 ms 그대로다. 밸런스 루프의 위상 여유(R2c: 편도 45–60 ms 한계, +20 ms에서 넘어짐 시작)가 b에서만 깎였다. starvation(`event=stop` 총합 68–109, attach 포함; R4c의 heartbeat 델타는 이 빌드에 없음)과 node_stall 0은 양쪽 비슷하다 — 즉 승패를 가른 것은 **꼬리가 아니라 중앙값의 +17 ms**다.
+- 둘 다 무보호(0.33)는 양쪽이 같은 37.5 ms RTT에서 서로 밀다 넘어지는 잡음이 큰 경기(넘어짐 21/31)다. 0.5와의 차이(CI 0.19–0.51)는 경계선이고 방향이 반대라 스케줄링 효과로 읽지 않는다. 둘 다 보호는 기준선과 구분되지 않는다(넘어짐 6/25, RTT 19.9).
+- 부수 관찰: 브리지 갱신은 hog 아래에서도 2,990/300 s(10 Hz) 유지 — Sionna가 MPS 클라이언트라 hog와 한 컨텍스트에서 돈다. RTF는 전 경기 1.0000–1.0003(아레나가 아무도 기다리지 않음 확인).
+
+**정직한 한계.** (1) 이 경합원은 합성 hog다. 실제 세입자(CUDA gNB, Sionna)가 같은 비대칭을 내려면 그것도 브로커의 MPS 컨텍스트 밖에 있어야 한다 — R5a s-ii처럼 "무례한 자기 컨텍스트 세입자"가 있으면 protected도 quantum을 기다린다(안에서 못 이김). (2) 시간 기준: 브로커 로그의 `t=`를 파일 생성 시각으로 절대시간에 맞췄다(±1 s). (3) 승률 뒤집힘의 크기는 봇의 지연 허용 한계(R2c 진자 0.95 m)에 달려 있다 — 더 튼튼한 봇이면 같은 +17 ms가 안 보인다. 그래서 1차 지표는 여전히 `process_us`·RTT이고, 경기는 그것을 사람이 보게 하는 층이다.
+
+**재현.** `bash /workspace/gpuch/r5b-go.sh <tag> OCUDU_NATIVE_RF_BROKER_A_SCHED=protected OCUDU_NATIVE_RF_BROKER_B_SCHED=plain OCUDU_NATIVE_RF_CONTENTION=busy OCUDU_NATIVE_RF_HOG_MPS=1 OCUDU_NATIVE_RF_HOG_KERNEL_US=200 OCUDU_NATIVE_RF_HOG_STREAMS=2 OCUDU_NATIVE_RF_HOG_QUEUE_DEPTH=16 OCUDU_NATIVE_RF_DURATION_SECONDS=300 OCUDU_NATIVE_RF_SKIP_CTEST=1` → 분석 `python3 scripts/robot_fight/analyze_battle.py --log-dir <log_dir> --markdown r.md`. 파일: `apps/ocudu_gpu_hog.cu`(streams/queue-depth), `scripts/native/run-ocudu-robot-fight{,-inner}.sh`(두 knob), `scripts/native/README.md`(표), 신규 `scripts/robot_fight/analyze_battle.py`.

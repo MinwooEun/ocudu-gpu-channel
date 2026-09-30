@@ -32,6 +32,8 @@ hog_kernel_us="2000"
 hog_duty="1.0"
 hog_mps="1"
 hog_sm_percent=""
+hog_streams="1"
+hog_queue_depth="1"
 sionna_mps="0"
 rt_priority="0"
 protected_cpus=""
@@ -81,6 +83,8 @@ while [[ "$#" -gt 0 ]]; do
     --hog-duty) hog_duty="${2:-}"; shift 2 ;;
     --hog-mps) hog_mps="${2:-}"; shift 2 ;;
     --hog-sm-percent) hog_sm_percent="${2:-}"; shift 2 ;;
+    --hog-streams) hog_streams="${2:-}"; shift 2 ;;
+    --hog-queue-depth) hog_queue_depth="${2:-}"; shift 2 ;;
     --sionna-mps) sionna_mps="${2:-}"; shift 2 ;;
     --rt-priority) rt_priority="${2:-}"; shift 2 ;;
     --protected-cpus) protected_cpus="${2:-}"; shift 2 ;;
@@ -470,9 +474,10 @@ start_contention()
     fi
     hog_env+=("CUDA_VISIBLE_DEVICES=${physical_gpu}")
     start_group hog "${log_dir}/hog.log" "${hog_env[@]}" "${hog}" \
-      --duration-s "${remaining}" --kernel-us "${hog_kernel_us}" --duty "${hog_duty}"
-    printf 'event=contention_start kind=%s t=%s hog_pid=%s hog_mps=%s hog_sm_percent=%s\n' \
-      "${contention}" "${SECONDS}" "${started_pid}" "${hog_mps}" "${hog_sm_percent:-all}"
+      --duration-s "${remaining}" --kernel-us "${hog_kernel_us}" --duty "${hog_duty}" \
+      --streams "${hog_streams}" --queue-depth "${hog_queue_depth}"
+    printf 'event=contention_start kind=%s t=%s hog_pid=%s hog_mps=%s hog_sm_percent=%s hog_streams=%s hog_queue_depth=%s\n' \
+      "${contention}" "${SECONDS}" "${started_pid}" "${hog_mps}" "${hog_sm_percent:-all}" "${hog_streams}" "${hog_queue_depth}"
   else
     printf 'event=contention_start kind=%s t=%s\n' "${contention}" "${SECONDS}"
   fi

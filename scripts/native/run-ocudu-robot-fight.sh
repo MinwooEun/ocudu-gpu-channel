@@ -58,6 +58,11 @@ contention_start="${OCUDU_NATIVE_RF_CONTENTION_START:-after-attach}"
 hog_kernel_us="${OCUDU_NATIVE_RF_HOG_KERNEL_US:-2000}"
 hog_duty="${OCUDU_NATIVE_RF_HOG_DUTY:-1.0}"
 hog_mps="${OCUDU_NATIVE_RF_HOG_MPS:-1}"
+# Kernels kept queued by the hog: S streams x K deep (R5b). A default-priority
+# kernel from another client of the same MPS context lines up behind all of
+# them; a high-priority stream only waits for the running blocks.
+hog_streams="${OCUDU_NATIVE_RF_HOG_STREAMS:-1}"
+hog_queue_depth="${OCUDU_NATIVE_RF_HOG_QUEUE_DEPTH:-1}"
 # SM share of the hog when it is an MPS client (CUDA_MPS_ACTIVE_THREAD_PERCENTAGE,
 # the one partitioning knob MPS offers); empty = the server default (all SMs).
 hog_sm_percent="${OCUDU_NATIVE_RF_HOG_SM_PERCENT:-}"
@@ -125,6 +130,8 @@ done
   usage_error "OCUDU_NATIVE_RF_CONTENTION_START must be after-attach or immediate"
 [[ "${hog_kernel_us}" =~ ^[1-9][0-9]*$ ]] || usage_error "OCUDU_NATIVE_RF_HOG_KERNEL_US must be a positive integer"
 [[ "${hog_duty}" =~ ^(0\.[0-9]+|1(\.0+)?)$ ]] || usage_error "OCUDU_NATIVE_RF_HOG_DUTY must be in (0, 1]"
+[[ "${hog_streams}" =~ ^[1-9][0-9]?$ ]] || usage_error "OCUDU_NATIVE_RF_HOG_STREAMS must be 1..64"
+[[ "${hog_queue_depth}" =~ ^[1-9][0-9]{0,3}$ ]] || usage_error "OCUDU_NATIVE_RF_HOG_QUEUE_DEPTH must be 1..1024"
 [[ "${hog_mps}" =~ ^[01]$ && "${sionna_mps}" =~ ^[01]$ ]] || usage_error "OCUDU_NATIVE_RF_{HOG,SIONNA}_MPS must be 0 or 1"
 [[ -z "${hog_sm_percent}" || ( "${hog_sm_percent}" =~ ^[1-9][0-9]?$|^100$ ) ]] || \
   usage_error "OCUDU_NATIVE_RF_HOG_SM_PERCENT must be 1..100"
@@ -323,7 +330,7 @@ declare -a inner_args=(
   --sched-a "${sched_a}" --sched-b "${sched_b}"
   --contention "${contention}" --contention-start "${contention_start}"
   --hog-kernel-us "${hog_kernel_us}" --hog-duty "${hog_duty}" --hog-mps "${hog_mps}"
-  --hog-sm-percent "${hog_sm_percent}"
+  --hog-sm-percent "${hog_sm_percent}" --hog-streams "${hog_streams}" --hog-queue-depth "${hog_queue_depth}"
   --sionna-mps "${sionna_mps}" --rt-priority "${protected_rt_priority}"
   --protected-cpus "${protected_cpus}" --plain-cpus "${plain_cpus}"
   --control-endpoint-a "ipc://${run_dir}/control-a.sock" --telemetry-endpoint-a "ipc://${run_dir}/telemetry-a.sock"
