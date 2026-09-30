@@ -4,6 +4,14 @@
 
 ## Repository State
 
+- [R7 video complete] Local results/robot-fight/videos/r7-comparison.mp4:
+  209.05s, 1280×72020fps, 9,679,686bytes. Recorded first six fights from each
+  fixed-repeat assignment (seeds9000–9005), 3D/overhead replay and measured
+  link traces, with selection/aggregate-result and side-swap title cards.
+  Full ffmpeg decode passed; sampled frames visually checked; five replay
+  tests passed. Renderer labels actual per-fight policies and seeds. Adjacent
+  r7-video-manifest.json records source runs and SHA-256; raw video is ignored.
+
 - [2026-09-30 R7 campaign complete] Completed the requested continuation:
   eight radio arena gates, nine requested radio-probe conditions and 96 local
   impairment fights. Final report docs/robot-fight-r7.md, four static figures,

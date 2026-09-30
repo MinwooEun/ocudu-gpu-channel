@@ -147,6 +147,8 @@ class Fight:
     result_t_ms: int | None
     rtt_ms: dict                     # robot index -> {"p50":..,"p99":..}
     loser_index: int | None
+    policies: dict = field(default_factory=dict)  # robot index -> actual brain policy
+    seed: int | None = None
 
 
 @dataclass
@@ -270,10 +272,13 @@ def load_fight(summary: dict, log_dir: pathlib.Path, n_robots: int) -> Fight:
         fdir = log_dir / "fights" / pathlib.Path(summary["dir"]).name
     poses, cmds, stale, open_stale = [], {}, {}, {}
     result_t, bot, radius, loser = None, "sumo", 2.0, None
+    seed = summary.get("seed")
     for ev in read_jsonl(fdir / "arena.jsonl"):
         kind = ev.get("event")
         t_ms = int(ev["t_unix_us"] / 1000) if "t_unix_us" in ev else None
         if kind == "spawn":
+            if seed is None:
+                seed = ev.get("seed")
             bot = ev.get("bot", "sumo")
             radius = float(ev.get("ring_radius_m", radius))
         elif kind == "pose" and t_ms is not None:
@@ -294,8 +299,10 @@ def load_fight(summary: dict, log_dir: pathlib.Path, n_robots: int) -> Fight:
             poses.append((t_ms, ev.get("robots") or [])) if t_ms is not None else None
     for r, t_begin in open_stale.items():
         stale.setdefault(r, []).append((t_begin, summary["t_end_unix_ms"]))
-    rtt = {}
+    rtt, policies = {}, {}
     for b in summary.get("brains") or []:
+        if b.get("policy") and b.get("robot_id") is not None:
+            policies[int(b["robot_id"])] = str(b["policy"])
         d = b.get("rtt_us") or {}
         if d.get("p50") is not None:
             rtt[int(b["robot_id"])] = {"p50": d["p50"] / 1000.0, "p99": (d.get("p99") or d["p50"]) / 1000.0}
@@ -303,7 +310,8 @@ def load_fight(summary: dict, log_dir: pathlib.Path, n_robots: int) -> Fight:
     return Fight(number=int(summary["fight"]), t0_ms=int(summary["t_start_unix_ms"]),
                  t1_ms=int(summary["t_end_unix_ms"]), winner_node=summary.get("winner_node"),
                  reason=summary.get("reason"), rtf=summary.get("rtf"), bot=bot, ring_radius_m=radius,
-                 poses=poses, cmds=cmds, stale=stale, result_t_ms=result_t, rtt_ms=rtt, loser_index=loser)
+                 poses=poses, cmds=cmds, stale=stale, result_t_ms=result_t, rtt_ms=rtt, loser_index=loser,
+                 policies=policies, seed=seed)
 
 
 def parse_offset(params: dict, override: str | None) -> tuple:
@@ -412,10 +420,16 @@ def window(rows, t0, t1, key=0):
     return rows[lo:hi]
 
 
-def robot_label(run: RunData, r: Robot) -> str:
+def robot_label(run: RunData, r: Robot, fight: Fight | None = None) -> str:
     cell = "" if r.broker == "default" else f" · broker {r.broker}"
     sched = f" ({r.sched})" if r.sched else ""
-    return f"{r.side}: {r.node}{cell}{sched}"
+    if fight is not None:
+        policy = fight.policies.get(r.index)
+    else:
+        policies = {f.policies.get(r.index) for f in run.fights}
+        policy = next(iter(policies)) if len(policies) == 1 else "varies by fight" if any(policies) else None
+    controller = f" · {policy}" if policy else ""
+    return f"{r.side}: {r.node}{cell}{sched}{controller}"
 
 
 def node_colour(run: RunData, node: str) -> str:
@@ -612,11 +626,13 @@ class FightRenderer:
     def _draw_static(self):
         run, f = self.run, self.fight
         # header
-        sides = "   ".join(robot_label(run, r) for r in run.robots)
-        self.fig.text(0.5, 0.965, f"run {run.run_id} — fight {f.number}/{len(run.fights)}   ·   "
-                      f"{sides}   ·   {contention_label(run.params)}",
+        sides = "   ".join(robot_label(run, r, f) for r in run.robots)
+        seed = f" · seed {f.seed}" if f.seed is not None else ""
+        self.fig.text(0.5, 0.977, f"run {run.run_id} — fight {f.number}/{len(run.fights)}   ·   "
+                      f"{contention_label(run.params)}{seed}",
                       ha="center", va="center", fontsize=10.5, color="#222")
-        self.header = self.fig.text(0.5, 0.93, "", ha="center", va="center", fontsize=11, family="monospace")
+        self.fig.text(0.5, 0.949, sides, ha="center", va="center", fontsize=10, color="#222")
+        self.header = self.fig.text(0.5, 0.921, "", ha="center", va="center", fontsize=11, family="monospace")
         # ring
         R = f.ring_radius_m
         self.trails, self.bodies, self.headings, self.pitch_bars, self.labels = [], [], [], [], []
@@ -778,7 +794,7 @@ class FightRenderer:
                 break
         ax.set_ylabel("ms")
         ax.set_xlabel("time since fight start (s)")
-        ax.set_title("Sionna RT: channel solve per update (solid) and age of the arena position it used (dotted; y clipped at 250 ms)",
+        ax.set_title("Sionna: solve (solid), input-position age (dotted); axis capped at 250 ms",
                      fontsize=8.5, loc="left")
         ax.grid(True, alpha=0.25)
         ax.set_ylim(0, 250)  # between fights the arena is down and the age climbs to seconds; clip

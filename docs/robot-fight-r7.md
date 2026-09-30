@@ -142,6 +142,47 @@ controller stability proof follows from these runs. UE/gNB source trees were
 not edited for this work; unsupported settings were recorded rather than
 enabled by changing upstream limits.
 
+## Recorded fight video
+
+The completed video is the local file `results/robot-fight/videos/r7-comparison.mp4`
+(209.05 seconds, 1280×720, 20 fps, 9,679,686 bytes), assembled from the two
+clips below with introduction and side-swap cards. They replay recorded robot poses in 3D
+alongside the arena view and measured latency, SNR, broker and Sionna traces.
+This is a replay of the recorded experiments, not a new physics or radio run.
+Headers identify each robot's actual `balance` / `balance_comp` policy and seed.
+
+The selection is the first six chronological fights from each fixed-parameter
+repeat: seeds 9000–9005 with compensation on UE0, followed by those seeds with
+compensation on UE1. These 12 selected fights illustrate the experiment;
+the aggregate result remains the full matched 44 fights: 33 compensated wins,
+10 plain wins, one draw, and 8 / 13 compensated/plain falls.
+
+Inputs are `results/robot-fight/r7-live/fixed-repeat-comp0` and
+`results/robot-fight/r7-live/fixed-repeat-comp1`, collected respectively from
+Spark `20260930T081504Z` and `20260930T082029Z` under
+`/workspace/ocudu-spark/results/logs/ocudu-robot-fight/`.
+From the integration repository root, render each 1280×720 clip at 20 fps
+using local CPU OSMesa. Playback defaults to wall-clock speed, with a 1.5-second
+result hold after each fight:
+
+```bash
+MUJOCO_GL=osmesa /home/minwoo/ocudu-work/venvs/robot/bin/python scripts/robot_fight/render_replay.py \
+  results/robot-fight/r7-live/fixed-repeat-comp0 \
+  --max-fights 6 --fps 20 --view both --frame-offset 2,0,0 \
+  --out results/robot-fight/videos/r7-fixed-comp0-first6-3d.mp4 \
+  --summary-png results/robot-fight/videos/r7-fixed-comp0-summary.png
+
+MUJOCO_GL=osmesa /home/minwoo/ocudu-work/venvs/robot/bin/python scripts/robot_fight/render_replay.py \
+  results/robot-fight/r7-live/fixed-repeat-comp1 \
+  --max-fights 6 --fps 20 --view both --frame-offset 2,0,0 \
+  --out results/robot-fight/videos/r7-fixed-comp1-first6-3d.mp4 \
+  --summary-png results/robot-fight/videos/r7-fixed-comp1-summary.png
+```
+
+The MP4 paths refer to local artifacts. The adjacent `r7-video-manifest.json`
+records source runs, selection, duration and SHA-256. Full video decoding passed,
+sampled frames were visually checked, and all five replay tests passed.
+
 ## Artifacts and reproduction
 
 - [Radio comparisons and run parameters](robot-fight-r7-results.json)

@@ -1,6 +1,7 @@
 """render_replay.py: frames from a synthetic run, one- and two-cell layouts."""
 
 import pathlib
+import json
 import sys
 import tempfile
 import unittest
@@ -20,6 +21,37 @@ if matplotlib is not None:
 
 @unittest.skipIf(matplotlib is None, "matplotlib/numpy not installed")
 class ReplayTest(unittest.TestCase):
+    def test_per_fight_controller_labels_follow_swapped_assignment(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = rr.make_synthetic_run(pathlib.Path(td) / "run", seconds=2.0, two_cell=True, bot="balance")
+            (root / "report" / "run-parameters.json").write_text(json.dumps({"broker_sched": {"a": "plain", "b": "plain"}}))
+            path = root / "fights" / "summary.jsonl"
+            original = json.loads(path.read_text().splitlines()[0])
+            summaries = []
+            for number, comp in ((1, 0), (2, 1)):
+                row = dict(original, fight=number, seed=8100, dir="/remote/fights/f001")
+                row["brains"] = [dict(b, policy="balance_comp" if b["robot_id"] == comp else "balance") for b in original["brains"]]
+                summaries.append(row)
+            path.write_text("".join(json.dumps(row) + "\n" for row in summaries))
+            run = rr.load_run(root)
+            self.assertEqual([r.sched for r in run.robots], ["plain", "plain"])
+            for f, comp in zip(run.fights, (0, 1)):
+                self.assertEqual(f.seed, 8100)
+                self.assertEqual(f.policies[comp], "balance_comp")
+                renderer = rr.FightRenderer(run, f)
+                try:
+                    header = "\n".join(text.get_text() for text in renderer.fig.texts)
+                    self.assertIn("seed 8100", header)
+                    for r in run.robots:
+                        expected = "balance_comp" if r.index == comp else "balance"
+                        label = rr.robot_label(run, r, f)
+                        self.assertTrue(label.endswith(" · " + expected))
+                        self.assertIn(label, header)
+                        self.assertNotIn("protected", label)
+                finally:
+                    renderer.close()
+            self.assertIn("varies by fight", rr.robot_label(run, run.robots[0]))
+
     def test_single_cell_frames_and_summary(self):
         with tempfile.TemporaryDirectory() as td:
             root = rr.make_synthetic_run(pathlib.Path(td) / "run", seconds=4.0, two_cell=False, bot="balance")
