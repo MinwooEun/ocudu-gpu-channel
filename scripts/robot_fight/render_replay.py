@@ -896,11 +896,47 @@ class FightRenderer:
         plt.close(self.fig)
 
 
+class ArenaRenderer:
+    """Recorded fight footage with only controller and result labels."""
+
+    def __init__(self, run, fight, hold_s=1.5):
+        from PIL import Image, ImageDraw, ImageFont
+        self.Image, self.ImageDraw = Image, ImageDraw
+        self.font = ImageFont.truetype("DejaVuSans.ttf", 18)
+        self.run, self.fight = run, fight
+        self.scene = Scene3D(run, fight, width=960, height=540)
+        self.pose_keys = [t for t, _ in fight.poses]
+        if not self.pose_keys:
+            self.scene.close()
+            raise ValueError(f"No recorded poses for fight {fight.number}")
+        self.end_s = max((fight.t1_ms - fight.t0_ms) / 1000.0, 0.5) + hold_s
+
+    def render(self, t_s):
+        f = self.fight
+        t_ms = f.t0_ms + int(t_s * 1000)
+        i = max(0, bisect.bisect_right(self.pose_keys, t_ms) - 1)
+        frame = self.Image.fromarray(self.scene.render(t_ms, f.poses[i][1]))
+        draw = self.ImageDraw.Draw(frame)
+        labels = "     ".join(
+            f"{r.side}: {f.policies.get(r.index, f.bot)}" for r in self.run.robots)
+        draw.text((16, 12), labels, font=self.font, fill="white", stroke_width=2, stroke_fill="black")
+        if f.result_t_ms is not None and t_ms >= f.result_t_ms:
+            winner = next((r.side for r in self.run.robots if r.node == f.winner_node), None)
+            result = f"{winner} wins" if winner else "Draw"
+            draw.text((16, 510), f"{result} / {f.reason}", font=self.font,
+                      fill="white", stroke_width=2, stroke_fill="black")
+        return np.asarray(frame)
+
+    def close(self):
+        self.scene.close()
+
+
 def iter_frames(run: RunData, fights: list, fps: int = 25, speed: float = 1.0, hold_s: float = 1.5,
                 max_seconds: float | None = None, view: str = "2d"):
     """Yield (fight_number, t_s, frame) at video rate; wall-clock = video clock / speed."""
     for f in fights:
-        rend = FightRenderer(run, f, hold_s=hold_s, view=view)
+        rend = (ArenaRenderer(run, f, hold_s=hold_s) if view == "arena"
+                else FightRenderer(run, f, hold_s=hold_s, view=view))
         n = int(math.ceil(rend.end_s * fps / speed))
         if max_seconds is not None:
             n = min(n, int(max_seconds * fps))
@@ -1153,8 +1189,8 @@ def main(argv=None) -> int:
     p.add_argument("--manifest", type=pathlib.Path, default=None, help="ring scene manifest (pillars/mast)")
     p.add_argument("--summary-png", type=pathlib.Path, default=None)
     p.add_argument("--max-seconds", type=float, default=None, help="cap seconds rendered per fight (debug)")
-    p.add_argument("--view", choices=("2d", "3d", "both"), default="both",
-                   help="left pane: 2-D top-down, 3-D MuJoCo replay (needs MUJOCO_GL=osmesa/egl), or both stacked")
+    p.add_argument("--view", choices=("2d", "3d", "both", "arena"), default="both",
+                   help="arena: fight footage only; other views include telemetry panels (3-D needs MUJOCO_GL=osmesa/egl)")
     args = p.parse_args(argv)
 
     run = load_run(args.log_dir, frame_offset=args.frame_offset, manifest=args.manifest)

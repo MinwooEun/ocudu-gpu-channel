@@ -19,6 +19,14 @@ This workspace starts as a new repository for a GPU-backed channel-emulation lay
 
 ## Reusable Preferences
 
+- Deliver robot-fighting videos as one arena-only final MP4 per milestone.
+  Keep only small controller/result labels; omit telemetry panels and title
+  cards unless requested. Retain existing milestone summary images and the
+  original timeline summary graphs for R7 (fight results, latency, SNR,
+  broker timing and Sionna on a shared time axis, as for R4b/R5b). Do not
+  replace these with report-figure collages. Only remove disposable render checks
+  and intermediate clips; preserve final figures alongside the final videos.
+
 - For UE or gNB software defects, preserve their source checkouts and deliver
   fixes as separate local patch artifacts with reproducible application and
   validation records. Do not directly edit those upstream source trees.
