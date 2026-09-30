@@ -5,7 +5,9 @@
 ## Repository State
 
 - [2026-09-30 publication checkpoint] User requested publishing all current
-  work to MinwooEun/ocudu-gpu-channel. Target is integration-0928, preserving
+  work to MinwooEun/ocudu-gpu-channel. Checkpoint fcbcb6e was pushed and
+  verified at remote integration-0928; local branch tracks minwoo/integration-0928.
+  Publication preserves
   the existing contributor history and Fable edits. Includes R6c/R7 tools,
   controller and launcher fixes, Sionna profiling, tests and result summaries.
   Spark publication-check mirror: robot suite 39 passed/5 skipped; Sionna
