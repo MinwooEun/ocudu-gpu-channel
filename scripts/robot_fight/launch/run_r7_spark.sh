@@ -2,7 +2,7 @@
 # Run one paired-policy R7 radio experiment on Spark. Run sequentially.
 # Usage: bash run_r7_spark.sh TAG [OCUDU_NATIVE_...=value ...]
 # Every experiment override must be an argument, not inherited through sudo.
-# RF_POLICY_0/1, RF_DURATION, RF_SEED are expanded explicitly into the root hook.
+# RF_POLICY_0/1, RF_DURATION, RF_SEED and RF_PARAM_JITTER are forwarded explicitly.
 set -euo pipefail
 tag="${1:?provide a unique run tag}"; shift
 [[ "$tag" =~ ^[a-zA-Z0-9_-]+$ ]] || { echo "invalid tag" >&2; exit 2; }
@@ -25,7 +25,9 @@ done < <(compgen -e)
 nvidia-smi --query-compute-apps=pid,name --format=csv,noheader > "$out/$tag.gpu-before"
 [[ ! -s "$out/$tag.gpu-before" ]] || { echo "GPU already in use; defer this experiment" >&2; exit 3; }
 pos="ipc://${native_root}/run/r7-arena/positions.sock"
-root_hook="RF_PYTHON=/workspace/robot-venv/bin/python RF_BOT=balance RF_POLICY=balance RF_POLICY_0=${RF_POLICY_0:-balance_comp} RF_POLICY_1=${RF_POLICY_1:-balance} RF_SEED=${RF_SEED:-7000} RF_TIME_LIMIT=${RF_TIME_LIMIT:-20} RF_POS_ENDPOINT=$pos bash $tree/scripts/robot_fight/launch/root_exec.sh {run_dir} {log_dir} '{ue_ids}' '{ue_ips}' {ue_gateway}"
+jitter="${RF_PARAM_JITTER:-0.1}"
+[[ "$jitter" =~ ^(0([.][0-9]+)?|1([.]0+)?)$ ]] || { echo 'RF_PARAM_JITTER must be between 0 and 1' >&2; exit 2; }
+root_hook="RF_PYTHON=/workspace/robot-venv/bin/python RF_BOT=balance RF_POLICY=balance RF_POLICY_0=${RF_POLICY_0:-balance_comp} RF_POLICY_1=${RF_POLICY_1:-balance} RF_SEED=${RF_SEED:-7000} RF_TIME_LIMIT=${RF_TIME_LIMIT:-20} RF_BRAIN_EXTRA='--param-jitter $jitter' RF_POS_ENDPOINT=$pos bash $tree/scripts/robot_fight/launch/root_exec.sh {run_dir} {log_dir} '{ue_ids}' '{ue_ips}' {ue_gateway}"
 cd "$tree"
 set +e
 sudo env PATH="$PATH" CUDACXX=/usr/local/cuda/bin/nvcc \

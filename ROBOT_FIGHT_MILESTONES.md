@@ -61,7 +61,8 @@ brain-B ──(N6/tun)── gNB ═══╣  links: gnb→ueA, ueA→gnb, gnb�
 | **R3** | **위치 → Sionna live** — 브리지 `update_positions`를 외부 입력(ZMQ SUB)으로 교체, MuJoCo → 브리지 → 브로커 | 로봇이 기둥 뒤로 가면 KPI 패널의 채널이 따라옴, 위치→적용 지연 < 예산 | **부분 완료 2026-09-29** — 브리지 `--position-endpoint` + 게이트 env 배선, 단위 테스트 11개, Spark dry-run에서 원 궤도 추종 오차 0 m, solve 유지(링 씬 6링크 53 ms). MuJoCo→KPI 실물 연결은 R2/R4에서 |
 | **R4** | **무선 폐루프** — srsUE 2대 attach(`run-ocudu-sionna-multi-ue.sh` 기반), 제어 루프가 tun 통과, RTT/손실 로그를 브로커 슬롯 로그와 조인 | strict-realtime on, RTF = 1.0 로그, 경기 완주, RTT 분포, 무효 판 규칙 적용 | **부분 완료 2026-09-29 (R4a 무선 절반)** — 2-UE Sionna 렌더러 수정, 절대 수신 잡음 바닥(`OCUDU_NATIVE_SIONNA_AWGN_SNR_DB`, 기본 40), 게이트 훅(`MUE_UE_EXEC`/`ROOT_EXEC`/duration/strict/핀/캡처/UE metrics CSV). 링 씬 walk 시나리오 PASS: LOS UE 34 dB, 그림자 UE 31→16 dB(r=0.42), ping 32/37 ms. **R4b(아레나 절반) 완료(조건부) 2026-09-29** — 에뮬레이터 링크 위에서 32판 전부 완주(16:16, RTF 1.000 전 경기), RTT p50 21 ms / 편도 8.4 ms / stale 0, Sionna 외부 위치 10 Hz, 조인 타임라인(`analyze_run.py`). 조건: 링을 기둥 동쪽 LOS에 두었고(그림자 진입 시 UL이 먼저 죽어 두 UE 동시 RLF), strict-realtime은 attach starvation 때문에 off. 발견: UL PUSCH SINR(2.5–5 dB)은 잡음 knob과 무관, 동시 `cmake -j20`만으로 RTT 4배 · R4c(09-30): UL PUSCH SINR 5–8 dB 바닥은 에뮬레이터 밖(직결 ZMQ·OAI UE에서 동일, `docs/plans/r4c-ul-noise.patch`), 브로커 heartbeat에 초당 starvation/gap/overflow 델타 추가 |
 | **R5** | **스케줄링 배틀** — 브로커 2개(셀 2개), GPU 경합원(Sionna 버스트 + hog/CUDA gNB), 스케줄링 off vs on, N판 | 스케줄링 유무로 승률이 뒤집히고 브로커별 `rx_starvations`/`node_stall`/`process_us` p99가 그 이유를 설명 | **완료 2026-09-30** — R5b: 밸런스 봇, hog(200 µs×2×16, MPS) 아래 **a protected / b plain 77판 63:12, ue0 승률 0.84(0.74–0.91), ue1 넘어짐 59회**; 대조 plain/plain 0.33, protected/protected 0.48, 경합 없음 0.57. 원인: b 브로커 슬롯당 2.2 ms quantum 대기 → RTT 20 → 37 ms, a는 MPS+high로 0.4 ms. R5a: — `cuda_stream_priority` 손잡이, `ocudu-gpu-hog`, 2셀·2브로커 게이트 `run-ocudu-robot-fight.sh` 12런 PASS. 컨텍스트 간 time slicing은 안에서 못 이기고(2 ms 커널 세입자 → 모두 2.3 ms/슬롯), 경합원을 브로커와 한 MPS 컨텍스트에 두고 브로커 스트림을 high로 하면 p99 1,493 → 211 µs(Sionna), 1,866 → 859 µs(200 µs hog). FIFO는 해롭다. 아레나 결합은 R5b |
-| **R6** | **데모 패키징** — 영상, KPI 패널 동기 재생, 선택: LLM 두뇌 / G1 / Isaac | 발표용 영상 1편 | 부분 완료 2026-09-30 (R6a) — `render_replay.py`: 게이트 런 로그에서 실시간 속도의 리플레이 MP4(링 + 링크 패널 동기) + 런 요약 PNG. R4b 8판(78.5 s), R5b 32판(5:19) 렌더. 3D(MuJoCo EGL)·LLM·G1은 미착수. (R6b) 라이브 웹 UI에 gNB KPI 패널: robot-fight 게이트가 gNB마다 metrics 릴레이를 띄우고(기본 on) 팔로워가 8080/8081에 셀별 KPI를 붙임 |
+| **R6** | **데모 패키징** — 영상, KPI 패널 동기 재생, 선택: LLM 두뇌 / G1 / Isaac | 발표용 영상 1편 | 부분 완료 2026-09-30 (R6a) — `render_replay.py`: 게이트 런 로그에서 실시간 속도의 리플레이 MP4(링 + 링크 패널 동기) + 런 요약 PNG. R4b 8판(78.5 s), R5b 32판(5:19) 렌더. 3D(MuJoCo EGL)는 R6c에서 완료; LLM·G1은 미착수. (R6b) 라이브 웹 UI에 gNB KPI 패널: robot-fight 게이트가 gNB마다 metrics 릴레이를 띄우고(기본 on) 팔로워가 8080/8081에 셀별 KPI를 붙임 |
+| **R7** | **지연 보상 제어** — 모델 기반 예측, 같은 게인, 정책 좌우 교환 | 실환경 반복 비교와 단절·손실 한계 검증 | **완료 2026-09-30 (측정 범위 한정)** — 새 시드·속도 변동 0·300초씩 반복: 공통 44경기 보상33승/일반10승/무승부1, 넘어짐8/13. AWGN/RAN 9조건 및 로컬 96경기 검증. [보고서·그래프](docs/robot-fight-r7.md) |
 
 R0–R2는 서로 독립(병렬 가능), R3부터 직렬.
 
@@ -449,48 +450,34 @@ R5a의 게이트에 R2c의 원격 밸런스 봇을 얹어 **같은 GPU에서 스
 - `/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/videos/r5b-20260930T052100Z-all-3d.mp4` — R5b 첫 배틀 런 32판 전부, 5:19, 실시간 속도. 3-D에서 B(빨강) 역진자가 기울다 넘어지는 장면과 패널 ③의 B 브로커 호출 ~2.2 ms가 같은 시간축에 보인다.
 - `/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/videos/r4b-20260929T144912Z-fights1-8-3d.mp4` — R4b 스모봇 1–8판, 78.5 s.
 
-**파일.** `scripts/robot_fight/render_replay.py`(Scene3D, `--view`), `tests/test_robot_fight_replay.py`. 커밋 안 함.
+**파일.** `scripts/robot_fight/render_replay.py`(Scene3D, `--view`), `tests/test_robot_fight_replay.py`. `fcbcb6e`에 포함해 게시함.
 
 
-### R7 — 2026-09-30 checkpoint (delay-compensated control)
+### R7 — 2026-09-30 완료: 지연 보상 제어기와 검증
 
-`balance_comp` predicts the robot state at command application using measured
-link delay and a pendulum model. The baseline uses the same balance gains.
-The controller now snapshots the state and its receive timestamp atomically;
-`RF_POLICY_0/1` selects policies independently. `run_r7_spark.sh` forwards explicit
-native overrides through sudo and rejects inherited overrides that would be
-silently lost. Eight earlier AWGN/RAN probe labels were invalid for that reason;
-they must not be used as evidence of the requested configurations.
+동일한 밸런스 봇·균형 게인에 `balance`와 `balance_comp`를 적용하고,
+정책을 좌우로 교환해 공통 시드끼리 비교했다. Spark GB10, 23.04 MSamples/s,
+CPU gNB 2개·서로 다른 셀의 srsUE 2개·CUDA 브로커 2개·Sionna+AWGN 구성이다.
 
-The DGX Spark GB10 live batch completed six 180-second gates using two CPU gNBs,
-two srsUEs on separate cells, two CUDA channel brokers, and the Sionna robot-ring
-channel with AWGN 40 dB. This is the R5 two-cell topology, distinct from R4b's
-single-cell topology. Baseline uses protected brokers without a GPU hog;
-contention uses plain brokers with an MPS GPU hog (200 us requested kernel,
-two streams, queue depth 16). Saved reports confirm the broker modes, policies,
-actual contention and successful attachment on PCI 1 and PCI 2.
+| 비교 | 공통 시드 경기 수 | 보상 승 | 일반 승 | 무승부 | 보상/일반 넘어짐 |
+|---|---:|---:|---:|---:|---:|
+| 기본, 180초씩 | 20 | 15 | 3 | 2 | 0 / 1 |
+| GPU 경합, 180초씩 | 24 | 23 | 1 | 0 | 0 / 11 |
+| GPU 경합 재실험, 새 시드·속도 변동 0·300초씩 | 44 | 33 | 10 | 1 | 8 / 13 |
 
-| Comparison (common seeds across side swaps) | Fights | Comp wins | Plain wins | Draws |
-|---|---:|---:|---:|---:|
-| Baseline | 20 | 15 | 3 | 2 |
-| GPU contention | 24 | 23 | 1 | 0 |
+보상 제어기는 이번 비교에서 더 자주 이겼지만, 짧은 첫 실험의 넘어짐 0회가
+재실험에서도 유지되지는 않았다. 같은 정책끼리의 대조군과 로컬 단절·손실
+96경기도 완료했다. 잘못 전달됐던 AWGN/RAN 조건은 실제 생성 설정까지 감사해
+재검증했다: 요청 9개 중 7개 통과, K2=8 및 K1=7/K2=8은 gNB 지원 범위 밖으로
+실행 전 거부됐다. 지원하지 않는 값을 UE/gNB 소스 수정으로 강제하지 않았다.
 
-Same-policy contention controls completed 18 plain/plain fights (13 falls,
-UE0/UE1 wins 6/12) and seven comp/comp fights (zero falls, wins 2/5).
-One incomplete final fight per run is excluded. The analyzer accepts only
-completed, non-lockstep fights with simulation/wall-time ratio 0.98–1.02 and
-pairs only common seeds with reversed policy assignments. The full
-[results JSON](docs/robot-fight-r7-results.json) records run timestamps,
-per-run summaries, exclusions, seeds, parameters and link metrics.
+구현과 이번 검증 캠페인을 완료한 상태다. strict realtime은 꺼져 있었고,
+연속 PHY 동기 보장이나 단절 면역성을 입증한 결과는 아니다. 8개 경기 런 모두
+UE별 RRC/PDU 수립 1회와 콘솔상 재접속 표시 없음이 관측됐다.
 
-These results support a benefit in this tested setup. Small same-policy controls
-do not establish side symmetry; repeated seeds are not independent replicates.
-Radio strict-realtime checking was disabled and broker starvation counters are
-nonzero: successful gates do not prove deadline compliance or hours of continuous
-UE connectivity. AWGN/RAN sweeps, blackout robustness and broader controller
-qualification remain open. UE/gNB source trees were not edited.
-
-Publication validation on Spark: robot tests 39 passed, five skipped;
-Sionna adapter/position/UI tests 83 passed, with 13 subtests. Raw run artifacts
-remain on Spark under `r7-validation-results` and the native result directories;
-local copies are under ignored `results/robot-fight/r7-live/`.
+**[최종 보고서·그래프·실행 방법](docs/robot-fight-r7.md)** 에 실제 설정,
+승패·넘어짐·RTT, 무효 경기, 프로브 결과, 관측 한계를 모았다.
+[경기 JSON](docs/robot-fight-r7-results.json),
+[프로브 JSON](docs/robot-fight-r7-probes.json),
+[단절·손실 JSON](docs/robot-fight-r7-robustness.json),
+[설정·연결 감사](docs/robot-fight-r7-audit.json).

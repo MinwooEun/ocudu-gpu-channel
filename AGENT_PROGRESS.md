@@ -4,6 +4,47 @@
 
 ## Repository State
 
+- [2026-09-30 R7 campaign complete] Completed the requested continuation:
+  eight radio arena gates, nine requested radio-probe conditions and 96 local
+  impairment fights. Final report docs/robot-fight-r7.md, four static figures,
+  and comparison/probe/robustness/audit JSONs are ready for publication on
+  MinwooEun/ocudu-gpu-channel:integration-0928. Scope is measured control benefit
+  and its failure envelope, not strict radio deadlines or general stability.
+- [Corrected radio sweep] Explicit sudo forwarding and actual rendered-config
+  auditing account for all nine conditions: baseline and AWGN34/30/27/24,
+  SR40 and HARQ-retx1 passed; K2=8 and K1=7/K2=8 were rejected by pinned gNB
+  a1916edcdb (both supported ranges1..4, defaults4). Original sweep stopped at
+  K2 exit2; corrected-ran resumed remaining conditions. Sweep now records native
+  config failures and continues, while wrapper/GPU refusals stop it. Actual
+  topology noise, RX wiring, sample rates and both gNB settings were checked.
+  AWGN medians remain near16ms; SR40 gives19.5ms; resolved losses0. Unresolved
+  requests and late bursts are retained; median stability is not a tail bound.
+- [Fresh fixed-parameter repeat] run_r7_repeat.sh ran300s per side, new seeds9000,
+  jitter0, both plain brokers and the existing200us-request MPS hog. Comp0 had
+  22 complete fights, comp1 had28; matched seeds9000–9021 yield44 fights,
+  comp33/plain10/draw1 and comp8/plain13 falls. RTT per-fight-p50 medians37.5/
+  37.6ms. Both actual policies, seeds, speed0.7 and shared gains were verified
+  for every complete pair. The earlier zero-comp-fall result does not generalize.
+  Last run finished08:25:56UTC, session68465 exited0, GPU processes empty08:26:16.
+- [Local robustness] 96/96 complete real-time UDP/MuJoCo fights: baseline
+  comp20/plain3/draw1, outage100ms21/2/1, outage300ms19/5/0, loss10%21/3/0.
+  All impairment runs had actual drops. One compensated fall occurred under
+  the300ms condition; no blackout immunity or blackout-specific gain claimed.
+  Ideal-delay500ms blackout made both policies fall. Source/raw artifacts remain
+  under results/robot-fight/r7-robustness-20260930T075317Z; no Spark load for these.
+- [Reproducibility and validation] Added small-artifact collection preserving
+  failures/incomplete fights, configuration and console-lifecycle auditing,
+  supported local report paths, probe/fixed-repeat launchers and plot generators.
+  23 focused tooling tests passed (auditor16, collector2, sweep2, launcher3),
+  plus Python compilation, shell syntax and diff checks. Figures visually reviewed.
+  All eight arena runs show one observed attach/RRC/PDU perUE and no console
+  reconnection markers. Deployed srsUE eea87b1d8 NR sync callbacks are empty;
+  internal logs remain unscanned and continuous PHY sync is not certified.
+  Strict realtime was disabled, starvation counters nonzero. No UE/gNB source
+  edits. Spark int0928/Fable tree preserved; run artifacts under
+  /workspace/gpuch/r7-validation-results and native results. Local copies:
+  results/robot-fight/r7-live and r7-corrected. No R7 batch remains running.
+
 - [2026-09-30 publication checkpoint] User requested publishing all current
   work to MinwooEun/ocudu-gpu-channel. Checkpoint fcbcb6e was pushed and
   verified at remote integration-0928; local branch tracks minwoo/integration-0928.
@@ -14,7 +55,7 @@
   adapter/position/UI suite 83 passed (13 subtests). Raw logs and videos remain
   outside Git. This checkpoint is not a claim that all R7 conditions are done.
 
-- [2026-09-30 R7 continuation, in progress] User requested continuing Fable's
+- [2026-09-30 R7 initial continuation, historical checkpoint] User requested continuing Fable's
   R7 rather than further Sionna profiling. Recovered 192 existing local fights
   and the completed 11-run radio-probe batch. Audit under
   `results/robot-fight/r7-prep-audit/` proves eight AWGN/RAN labels invalid:
@@ -40,7 +81,8 @@
   Same-policy controls: plain18 fights,13 falls; comp7 fights,0 falls.
   Summaries are promoted to docs/robot-fight-r7-results.json. Strict realtime
   was disabled; this does not qualify zero-starvation radio timing or hours
-  of uninterrupted connectivity. Further AWGN/RAN conditions remain unvalidated.
+  of uninterrupted connectivity. AWGN/RAN conditions were still unvalidated at this checkpoint; the completed
+  follow-up above supersedes that state.
 
 - Current work (2026-09-30, supersedes the September 14 checkout/runtime notes
   below): `/home/minwoo/ocudu-work/ocudu-integration`, branch `integration-0928`,

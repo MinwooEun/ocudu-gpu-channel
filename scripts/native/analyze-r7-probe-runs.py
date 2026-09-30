@@ -146,8 +146,10 @@ def broker_stop(log_dir: pathlib.Path, cell: str):
 
 
 def gate_result(log_dir: pathlib.Path):
-    report = log_dir.parent.parent.parent / "reports" / "ocudu-robot-fight" / log_dir.name / "attach-summary.json"
-    if not report.exists():
+    candidates = [log_dir / "report" / "attach-summary.json",
+                  log_dir.parent.parent.parent / "reports" / "ocudu-robot-fight" / log_dir.name / "attach-summary.json"]
+    report = next((path for path in candidates if path.exists()), None)
+    if report is None:
         return {}
     data = json.loads(report.read_text(encoding="utf-8"))
     return {"result": next((data[key] for key in ("status", "result", "verdict") if key in data), None),

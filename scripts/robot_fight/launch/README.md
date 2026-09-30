@@ -57,6 +57,9 @@ Notes.
 `RF_POLICY` for each unset value. Fight summaries retain each brain's policy
 and link estimate. Both controllers receive the same strategy/gains by default;
 `balance_comp` changes prediction, not the robot or packet protocol.
+The brain's default seeded speed jitter is 10%; use `RF_PARAM_JITTER=0` to
+remove that variation in a controlled comparison. Strategy noise and physical
+positions still vary, so retain the side swap and matched seeds.
 
 On an idle Spark, from a separate validation checkout:
 
@@ -81,3 +84,39 @@ Run side swaps sequentially with the same seed range and link treatment.
 Compare the intersection of completed seeds: fixed-duration runs need not
 finish the same number of fights. Preserve and exclude interrupted final
 fights, missing results, lockstep fights and out-of-range RTF explicitly.
+
+For the radio characterization matrix (UDP echo probes, without a fighting
+arena), run `bash scripts/robot_fight/launch/run_r7_probe_sweep.sh UNIQUE_PREFIX`.
+It executes a fresh baseline and eight AWGN/RAN conditions sequentially, with
+160-second gates by default. Requested overrides are saved in a TSV manifest;
+failed radio gates are retained as results. Scripted scenario positions replace
+the arena feed in this mode. Its offset and uplink power follow the R7 runner,
+so use the new baseline when comparing these probes with earlier experiments.
+
+For a fresh-seed contention repeat with speed jitter disabled, run
+`bash scripts/robot_fight/launch/run_r7_repeat.sh UNIQUE_PREFIX`. Defaults are
+seed9000 and 300seconds per assignment; `RF_SEED` and `RF_DURATION` override
+those values. This runner uses both plain brokers and the same 200us-request
+MPS GPU hog as the first contention comparison.
+
+The pinned gNB accepts K1/K2 only in `[1,4]`, with both defaults4. The historical
+K2=8 and K1=7/K2=8 sweep entries deliberately preserve the unsupported-condition
+result; they do not create a valid higher-latency radio condition. The sweep
+continues after native configuration rejection and stops on wrapper/GPU refusal.
+Use `R7_PROBE_CASES=sr40,k1k2,retx1` with a fresh prefix to run a subset.
+
+`collect_r7_results.py` streams selected completed runs as a small-artifact tar
+archive, including failed runners and incomplete fight directories. It excludes
+subscriber configs and large internal logs. For example, from the local checkout:
+
+```bash
+mkdir -p results/robot-fight/r7-collected
+ssh spark-minwoo 'python3 - --prefix MY_PREFIX' \
+  < scripts/robot_fight/collect_r7_results.py | \
+  tar -xf - -C results/robot-fight/r7-collected
+```
+
+Check `collection.json` for missing artifacts; an early dry-run failure can have
+no run timestamp in its console output. Audit conditions with
+`scripts/native/audit-r7-artifacts.py`: reported SNR alone is insufficient; the
+helper checks rendered noise powers, RX model wiring, and both gNB cell settings.
