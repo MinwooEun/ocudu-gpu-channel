@@ -296,6 +296,50 @@ lock-step time, so both UEs RACH on the same occasion, and with one root each
 gNB also detected the other cell's preamble over the inter-cell path and
 admitted a phantom UE (`crc=KO` PUSCH for an RNTI the real UE never followed).
 
+## OAI nrUE gates: wire capture, carrier labels, UE transmit scale, TDD multi-UE (X-track)
+
+The OAI gates (`run-ocudu-oai-1x1.sh`, `run-ocudu-oai-2x2.sh`) now render the
+same per-port carrier labels as the srsUE gates (gNB `n3-dl`/`n3-ul`, UE the
+reverse) and a UE `tx_scale_db`. The OAI nrUE emits every uplink channel at a
+fixed digital amplitude per resource element and the ZMQ module scales int16
+by 1/32767, so its wire level is tiny and follows the allocation width:
+measured 1.17e-5 (-49.3 dB, PUSCH+PUCCH mix over the gate's pings,
+oai-1x1/20261001T110037Z) against the gNB's 1.12e-2, i.e. 29.8 dB *quieter*
+than the gNB where srsUE is 64 dB hotter. With 23 dBm vs 30 dBm the UE port
+gets `tx_scale_db` +22.8 dB. The fixed-TDL OAI topologies have no absolute
+noise floor, so the scale only changes the level the gNB receives (PUSCH now
+about -22 dB instead of -45 dB). The 2x2 gate assumes the same per-port level
+as 1x1 (unmeasured).
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `OCUDU_NATIVE_OAI1X1_WIRE_CAPTURE_SAMPLES` / `_SKIP_SECONDS` | `0` / `2` | Broker wire capture for the OAI 1x1 gate (per port, skip counts from the port's first sample). |
+| `OCUDU_NATIVE_OAI_UE_TX_POWER` | `1.17e-5` | Measured OAI nrUE wire level the scale is derived from. |
+| `OCUDU_NATIVE_OAI_UE_TX_SCALE_DB` | derived (`+22.8`) | Force the UE `tx_scale_db`, or `off` for the pre-X1 topology. |
+
+Observed once at the scaled level (oai-1x1/20261001T110703Z): the gNB PRACH
+detector mis-estimated the timing advance (14 us instead of 0.78 us) and the UE
+needed two more RAs; two further scaled runs and all unscaled runs detected
+correctly. If it recurs, `OCUDU_NATIVE_OAI_UE_TX_SCALE_DB=off` restores the
+old level while it is investigated.
+
+**TDD two-UE gate (`run-ocudu-oai-multi-ue.sh`, X3/X4).** One OCUDU gNB on a
+TDD n78 20 MHz 30 kHz cell (dl_arfcn 632628, 51 PRB, 23.04 MS/s with the
+nrUE's `-E` 3/4 sampling, tdd period 10 slots 7D/1S/2U, PRACH index 159), two
+OAI nrUEs in their own namespaces (IMSIs from the multi-UE subscriber fixture),
+Open5GS, the broker in Sionna mode with `carrier: n78` on every port (one
+carrier, so UE<->UE edges are admitted), and the strict verdict applied to the
+nrUE log (`State = NR_RRC_CONNECTED`, `Received PDU Session Establishment
+Accept`, `SR not served!`, new RA procedures, `Timer T310 expired`, plus a late
+5-ping check 30 s before the broker stops). Knobs: `OCUDU_NATIVE_SIONNA_SCENARIO`
+(`examples/sionna/robot-ring-walk-tdd*.json`; the `-los` variants keep both
+robots on the line-of-sight side because the nrUE has no AGC and loses sync in
+the pillar shadow), `OCUDU_NATIVE_OAI_MUE_UE_CPUS="a;b"` (default `18,4;19,14`
+on the GB10), the multi-UE gate's duration / wire-capture / `UE_EXEC` knobs,
+`OCUDU_NATIVE_SIONNA_TX_POWER_UL` to override the OAI level.
+`wire-capture-tdd-slots.py` cuts a capture into 0.5 ms slots. Design and runs:
+`docs/plans/x3-tdd-multi-ue.md`.
+
 ## Common blockers
 
 - `unshare: ... Operation not permitted`: the containing host, VM, LXC, or

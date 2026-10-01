@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import math
 import sys
 from pathlib import Path
 
@@ -157,33 +158,104 @@ def render_uecap_ul2(source: str, band: int = 3) -> str:
     return rendered
 
 
+# Each port's `rx_endpoint` line is the anchor the labels go after; the two
+# gNB ports bind loopback 2001/2003, the two UE ports the veth host side.
+GNB_PORT_RX_ENDPOINTS = ("    rx_endpoint: tcp://127.0.0.1:2001\n", "    rx_endpoint: tcp://127.0.0.1:2003\n")
+UE_PORT_RX_ENDPOINTS = (f"    rx_endpoint: tcp://{VETH_HOST_IP}:2100\n", f"    rx_endpoint: tcp://{VETH_HOST_IP}:2102\n")
+
+
 def validate_topology(source: str) -> str:
     for required in (
         "  - id: gnb0\n    tx_ports:\n      - gnb0_p0\n      - gnb0_p1\n",
         "  - id: ue0\n    tx_ports:\n      - ue0_p0\n      - ue0_p1\n",
         f"    tx_endpoint: tcp://{VETH_UE_IP}:2101\n",
         f"    tx_endpoint: tcp://{VETH_UE_IP}:2103\n",
-        f"    rx_endpoint: tcp://{VETH_HOST_IP}:2100\n",
-        f"    rx_endpoint: tcp://{VETH_HOST_IP}:2102\n",
+        *UE_PORT_RX_ENDPOINTS,
         "    tx_endpoint: tcp://127.0.0.1:2000\n",
         "    tx_endpoint: tcp://127.0.0.1:2002\n",
+        *GNB_PORT_RX_ENDPOINTS,
     ):
         if source.count(required) != 1:
             legacy.fail(f"2x2 topology invariant is missing or ambiguous: {required!r}")
+    for forbidden in ("tx_carrier:", "rx_carrier:", "carrier:", "tx_scale_db:"):
+        if forbidden in source:
+            legacy.fail(f"2x2 topology fixture already carries {forbidden!r}; the renderer adds it")
     return source
+
+
+def render_topology_2x2(source: str, ue_scale_db: float | None = None) -> str:
+    """The validated 2x2 fixture with carrier labels on every port and the UE scale.
+
+    Same labels and `tx_scale_db` as the OAI 1x1 renderer (render-oai-1x1-configs.py
+    render_topology_oai), applied to each of the four ports: the broker requires
+    the two ports of a radio node to agree on tx_scale_db. The fixed 2x2 matrix
+    and the 0 dB tdl stay byte-identical; there is no absolute noise floor in
+    this fixture, so the scale only sets the level the gNB receives.
+    """
+    rendered = validate_topology(source)
+    if ue_scale_db is not None and not (math.isfinite(ue_scale_db) and abs(ue_scale_db) <= 200.0):
+        raise ValueError(f"ue_scale_db must be finite and within +/-200 dB: {ue_scale_db}")
+    ue_extra = oai.UE_CARRIERS
+    if ue_scale_db is not None:
+        ue_extra += f"    tx_scale_db: {ue_scale_db:.3f}\n"
+    for index, anchor in enumerate(GNB_PORT_RX_ENDPOINTS):
+        rendered = insert_after_exact(rendered, anchor, oai.GNB_CARRIERS, f"gNB port {index} carriers")
+    for index, anchor in enumerate(UE_PORT_RX_ENDPOINTS):
+        rendered = insert_after_exact(rendered, anchor, ue_extra, f"UE port {index} carriers / scale")
+    return rendered
+
+
+def insert_after_exact(text: str, anchor: str, insertion: str, label: str) -> str:
+    """`insertion` right after the single occurrence of `anchor` (a whole line)."""
+    if text.count(anchor) != 1:
+        legacy.fail(f"{label}: expected exactly one anchor, found {text.count(anchor)}")
+    return text.replace(anchor, anchor + insertion)
+
+
+def self_test() -> None:
+    fixture = Path(__file__).resolve().parents[2] / "examples/native/topology.ocudu.oai-2x2.cuda.yaml"
+    source = fixture.read_text(encoding="utf-8")
+    assert validate_topology(source) == source
+    plain = render_topology_2x2(source)
+    assert plain.count("tx_carrier: n3-dl") == 2 and plain.count("tx_carrier: n3-ul") == 2, plain
+    assert plain.count("rx_carrier: n3-ul") == 2 and plain.count("rx_carrier: n3-dl") == 2, plain
+    assert "tx_scale_db" not in plain
+    # Each label sits inside its own port's device entry (before the next `- id:`).
+    for anchor, labels in ((GNB_PORT_RX_ENDPOINTS[0], oai.GNB_CARRIERS), (GNB_PORT_RX_ENDPOINTS[1], oai.GNB_CARRIERS),
+                           (UE_PORT_RX_ENDPOINTS[0], oai.UE_CARRIERS), (UE_PORT_RX_ENDPOINTS[1], oai.UE_CARRIERS)):
+        assert anchor + labels in plain, anchor
+    scaled = render_topology_2x2(source, -40.0)
+    assert scaled.count("    tx_scale_db: -40.000\n") == 2, scaled
+    assert scaled.index("tx_scale_db") > scaled.index("id: ue0_p0"), scaled
+    # Lines outside the device entries are untouched: same radio nodes, links, models.
+    for section in ("radio_nodes:", "links:", "models:"):
+        assert scaled[scaled.index(section):] == source[source.index(section):], section
+    try:
+        validate_topology(scaled)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("a labelled topology must not pass as a fixture")
+    try:
+        render_topology_2x2(source, float("nan"))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("render_topology_2x2 accepted a NaN scale")
+    print("event=native_oai_2x2_config_renderer_self_test result=pass")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo-root", type=Path, required=True)
-    parser.add_argument("--native-root", type=Path, required=True)
-    parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--log-dir", type=Path, required=True)
-    parser.add_argument("--path", choices=("broker", "direct"), required=True)
-    parser.add_argument("--max-rank", type=int, choices=(1, 2), required=True)
+    parser.add_argument("--repo-root", type=Path)
+    parser.add_argument("--native-root", type=Path)
+    parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--log-dir", type=Path)
+    parser.add_argument("--path", choices=("broker", "direct"))
+    parser.add_argument("--max-rank", type=int, choices=(1, 2))
     parser.add_argument("--max-ue-mcs", type=int)
     parser.add_argument("--csi-rs", choices=("on", "off"), default="on")
-    parser.add_argument("--topology", type=Path, required=True)
+    parser.add_argument("--topology", type=Path)
     parser.add_argument("--tx-backoff-db", type=float)
     # S12: the same per-bandwidth rewrite as the OAI 1x1 gate
     # (render-1x1-bw-configs.py apply_bandwidth), applied to the 2x2 render.
@@ -192,7 +264,21 @@ def main() -> int:
     parser.add_argument("--ul-max-rank", type=int, choices=(1, 2))
     parser.add_argument("--srs-period-ms", type=float, default=10.0)
     parser.add_argument("--gnb-phy-log", choices=("info", "debug"), default="info")
+    # Uplink wire level -> emitted power, shared with the 1x1 renderer
+    # (--tx-power-ul / --ue-tx-scale-db and their OCUDU_NATIVE_OAI_UE_* defaults).
+    oai.add_tx_scale_arguments(parser)
+    parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
+    required = {"--repo-root": args.repo_root, "--native-root": args.native_root, "--output-dir": args.output_dir,
+                "--log-dir": args.log_dir, "--topology": args.topology, "--path": args.path, "--max-rank": args.max_rank}
+    if args.self_test:
+        if any(value is not None for value in required.values()):
+            parser.error("--self-test cannot be combined with render arguments")
+        self_test()
+        return 0
+    missing = [name for name, value in required.items() if value is None]
+    if missing:
+        parser.error(f"render mode requires {', '.join(missing)}")
     if args.bw_mhz not in bw_configs.BANDWIDTHS and args.bw_mhz != 100:
         legacy.fail(f"--bw-mhz must be one of {sorted(bw_configs.BANDWIDTHS) + [100]}")
 
@@ -214,6 +300,10 @@ def main() -> int:
         repo_root / "examples/native/open5gs/subscriber-legacy-1x1.csv", "native subscriber template"
     )
     topology_source = legacy.read_regular(args.topology.resolve(strict=True), "2x2 topology fixture")
+    try:
+        ue_scale_db = oai.resolve_ue_tx_scale_db(args)
+    except ValueError as error:
+        legacy.fail(str(error))
 
     rendered = {
         "gnb.yaml": render_gnb_2x2(
@@ -227,7 +317,7 @@ def main() -> int:
             args.ul_max_rank,
             args.srs_period_ms,
         ),
-        "topology.yaml": validate_topology(topology_source),
+        "topology.yaml": render_topology_2x2(topology_source, ue_scale_db),
         "open5gs.yaml": legacy.render_open5gs(open5gs_source, native_root),
         "nrue.conf": oai.validate_nrue(nrue_source),
         "subscriber.csv": legacy.validate_subscriber(subscriber_source),
@@ -255,7 +345,8 @@ def main() -> int:
         sample_rate_entries=4, uecap_name="uecap_ports2.xml",
     )
     print(f'event=native_oai_2x2_configs_rendered output_dir="{output_dir}" path={args.path} max_rank={args.max_rank} '
-          f'ul_max_rank={args.ul_max_rank} bw_mhz={args.bw_mhz} prb={prb} srate_msps={srate} cuda_host_memory={args.cuda_host_memory or "default"}')
+          f'ul_max_rank={args.ul_max_rank} bw_mhz={args.bw_mhz} prb={prb} srate_msps={srate} cuda_host_memory={args.cuda_host_memory or "default"} '
+          f'ue_tx_scale_db={"off" if ue_scale_db is None else f"{ue_scale_db:.3f}"}')
     return 0
 
 
