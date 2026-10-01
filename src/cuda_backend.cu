@@ -1596,6 +1596,17 @@ private:
           running_power *= static_cast<double>(factor) * factor;
           break;
         }
+        case ModelStepType::Gain: {
+          // Constant YAML scale (DeviceConfig::tx_scale_db after the fold).
+          // Same Scale GpuStep as path_loss, but read from the step itself,
+          // never from `live`, so no runtime update can move it. The factor
+          // is computed with the identical double->float expression as the
+          // CPU backend so the two stay bit-comparable.
+          const float factor = static_cast<float>(std::pow(10.0, param_or(step, "gain_db", 0.0) / 20.0));
+          gpu_step = make_step(Scale, factor, 0.0F);
+          running_power *= static_cast<double>(factor) * factor;
+          break;
+        }
         case ModelStepType::Phase:
         case ModelStepType::Cfo: {
           // Phase 3 C2a: cfo_hz sourced from per-link `live`. phase_rad stays

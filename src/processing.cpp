@@ -19,7 +19,8 @@ namespace {
 bool cuda_step_supported(ModelStepType type)
 {
   return type == ModelStepType::PathLoss || type == ModelStepType::Phase ||
-         type == ModelStepType::Cfo || type == ModelStepType::Awgn;
+         type == ModelStepType::Cfo || type == ModelStepType::Awgn ||
+         type == ModelStepType::Gain;
 }
 
 // Steps the CPU backend's chain loop knows how to execute. `tdl` covers what
@@ -29,7 +30,7 @@ bool cpu_step_supported(ModelStepType type)
 {
   return type == ModelStepType::PathLoss || type == ModelStepType::Phase ||
          type == ModelStepType::Cfo || type == ModelStepType::Awgn ||
-         type == ModelStepType::Tdl;
+         type == ModelStepType::Tdl || type == ModelStepType::Gain;
 }
 
 // The step that must lead the chain on the CUDA backend because the per-sample

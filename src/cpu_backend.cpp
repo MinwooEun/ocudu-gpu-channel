@@ -291,6 +291,16 @@ ocg::PhysicalLinkRuntime* CpuChannelProcessor::apply_chain_to_link(const std::st
         }
         break;
       }
+      case ModelStepType::Gain: {
+        // Constant YAML scale (carries DeviceConfig::tx_scale_db after the
+        // load-time fold). Deliberately NOT sourced from `live`: a runtime
+        // path_loss_db update or a profile swap must leave it untouched.
+        const float factor = static_cast<float>(std::pow(10.0, param_or(step, "gain_db", 0.0) / 20.0));
+        for (std::size_t i = 0; i != current.size(); ++i) {
+          next[i] = scale(current[i], factor);
+        }
+        break;
+      }
       case ModelStepType::Awgn: {
         // v1-fin-A: AWGN with two source modes.
         //   - explicit `noise_power`: an absolute knob, independent of
