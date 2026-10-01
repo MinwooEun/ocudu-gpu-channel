@@ -102,9 +102,62 @@ upper-PHY가 **스레드 하나**에서 돌아, UE 2대의 PUSCH 복호 + DL이 
 테스트). 근본 해결은 gNB 쪽: `ru_sdr` lower-PHY 스레드 프로파일을 sequential에서 바꾸거나 UL 부하를 제한.
 멈춘 시점에 `gdb -p <gnb> -batch -ex "thread apply all bt"`로 막힌 지점을 확정할 것.
 
+## 중계 정지의 진짜 원인 — OCUDU main_pool 고갈 (2026-10-01 저녁, Track E, `docs/plans/x6-gnb-realtime-traffic.md`)
+
+멈춘 순간 gNB를 gdb로 떠 보니(`/workspace/gpuch/xt/gnb-threads-20261001T115426Z.txt`) phy_worker는
+`sync_task_executor::execute ← mac_cell_processor::handle_slot_indication ← lower-PHY dl_process`에서,
+main_pool 스레드 둘은 각각 RLC AM 버퍼 상태 처리와 타이머 처리의 `sync_task_executor::defer`에서 대기 중이었다.
+OCUDU는 **ZMQ 모드에서 DU-high 셀 실행기를 main_pool 위의 동기 strand로** 만들고(`du_high_executor_mapper.cpp`,
+`is_sync = !rt_mode`), 풀 크기는 `min(5, 가용 코어 − 3)`이라 gNB를 5코어에 고정하면 **2개**다. 동기 대기자 둘이
+풀을 다 차지하면 슬롯 인디케이션이 영영 실행되지 않아 DL이 멈추고, lock-step 중계가 따라 멈춘다. CPU 부하도,
+lower-PHY 프로파일도 아니다(ZMQ는 sequential을 소스 3곳에서 강제하므로 YAML로 못 바꾼다; 노브
+`OCUDU_NATIVE_GNB_LOWER_PHY_PROFILE`은 기록용으로만 남겼다).
+
+조치: `expert_execution.threads.main_pool.nof_threads`를 쓰는 노브 `OCUDU_NATIVE_GNB_MAIN_POOL_THREADS`, GB10
+프로파일 기본값 5(`platform-profiles.json` `gnb_env`). 결과: 기본 풀은 4런 중 3런 정지, 풀 5는 1/1에서 2×20 Mbit/s
+UL로 200 s 유지(`ocudu-multi-ue/20261001T120308Z`, ue0 UL 20.0 Mbit/s 내내). 업스트림 OCUDU에 알릴 사항.
+
+트래픽 하 wire 레벨: gNB −24.7…−23.9 dB, ue0 풀레이트 PUSCH +39.9…+42.0 dB — 둘 다 상수보다 ~5 dB 낮지만
+UL/DL 비(64.6 vs 64.3 dB)는 그대로라 **상수는 유지**(한쪽만 바꾸면 스케일이 4.9 dB 틀어지고, 둘 다 바꾸면 R4a 잡음
+바닥 보정이 움직인다). 남은 UE 쪽 문제: 그림자 쪽 srsUE가 풀버퍼 UL(MCS 28)에서 RLF — 별도 트랙.
+
+## X5 — 패턴이 다른 두 TDD 셀의 UE↔UE 간섭(CLI) (2026-10-01 저녁, Track F, `docs/plans/x5-tdd-cli.md`)
+
+새 게이트 `run-ocudu-oai-two-cell-tdd.sh`: X3의 TDD n78 20 MHz 셀 둘(PCI 1/2, PRACH 루트 1/70), OAI nrUE 각 1대,
+Sionna, 모든 포트 `carrier: n78`, 노브 `OCUDU_NATIVE_TDD_PATTERNS=same|"7D2U;3D6U"`. 기하는 링 씬에서
+gNB (±12, 6, 8), UE (±2, 0.8, 0.4) — 기둥 틈 4 m. 탭: serving −7.4, 셀 간 −47/−52(기둥 차폐), **UE↔UE +6.0 dB**.
+GB10에서 gNB 2대 + nrUE 2대가 실시간(ping RTT 22–28 ms, starvation ≤ 15/200 s).
+
+| 런 | 패턴 | 링크 | 판정 | 피해 ue0: 자기 DL 슬롯 수신 (ue1 송신 있음 / 없음) | ue0 CQI | gnb0 DL nok | RTT max |
+|---|---|---|---|---|---|---|---|
+| `ocudu-oai-two-cell-tdd/20261001T115703Z` | 동일 | 8 | pass | — / −36.4 dB (겹침 0) | 15 ×147 | 0 | 41 ms |
+| `…/20261001T120703Z` | 동일 | 10 (+UE↔UE) | pass | — / −36.4 (겹침 0; ue1 UL은 ue0의 UL 슬롯에만 −24.4) | 15 ×146 | 0 | 51 ms |
+| `…/20261001T121059Z` | 상이, 대조 | 8 | pass | −44.1 (gnb0 자체 S 슬롯) / −36.4 | 15 ×146 | 0 | 42 ms |
+| `…/20261001T121443Z` | **상이** | **10** | pass (attach 유지) | **−24.3 / −36.4** (DL 슬롯 266개 중 11개 피격; 빈 DL 슬롯 4–6에서 −32.2 vs 대조 −59.5) | **0 ×27, 5 ×3**, 15 ×116 | **3** (0.15 %) | **87 ms** |
+
+읽는 법: 어제 FDD의 "가짜 재머"(존재하지 않는 경로, 60–80 dB)와 달리, 여기서는 **존재하는 경로**로 상대 UE의 UL이
+피해 UE의 DL 슬롯 3.5/7.4개에 자기 하향보다 큰 레벨로 떨어지고, 그 결과가 CQI 붕괴·DL NACK·RTT 스파이크로 스택에
+나타난다. SSB/SIB1/PDCCH가 실리는 슬롯 0–2는 두 패턴 모두 DL이라 동기와 제어는 살아남는다. 미실행: gNB↔gNB 12링크,
+2D7U, CLI 하의 UL 트래픽.
+
+## OAI 2x2 레벨, PRACH TA 오검출, 그리고 브로커 CFO 2배 버그 (2026-10-01 저녁, Track G, `docs/plans/x7-oai-levels-prach.md`)
+
+- **2x2 포트별 레벨**: 1x1과 채널별 0.3 dB 이내로 같다(OAI는 RE당 고정 진폭). 기본 1레이어 UL은 포트 1이 무음,
+  UL rank 2면 두 포트가 같은 레벨. 상수 공유 유지, 2x2 게이트 wire capture 노브 추가, 스케일 적용 상태로 4런 통과
+  (NACK 0, DL 80 Mb/s, UL-MIMO 60 Mb/s).
+- **PRACH TA 14 µs**: 레벨 문제가 아니다. gNB에 도달한 UL의 CFO가 +601 Hz = PRACH 서브캐리어 간격의 0.48이라
+  Zadoff-Chu 부엽이 주엽 대비 −0.7 dB로 u⁻¹ 샘플 떨어진 곳에 생기고, 그 프리앰블(17, u=60)에서는 13.3 µs 뒤였다.
+  64개 중 22개 프리앰블이 취약, 레벨과 무관. 601 Hz의 출처 둘: (1) **브로커 버그** — `phase` 스텝이 `cfo` 코드 경로를
+  공유해 링크의 cfo_hz를 한 번 더 곱했다. `phase`+`cfo`를 같이 쓰는 체인(legacy 1x1 `cuda_mvp`, OAI 1x1, graph,
+  multi-gnb, mvp, stress 예제)에서 설정 125 Hz가 **250 Hz**로 나갔다. 두 백엔드 모두 수정, 회귀 테스트
+  (`[phase, cfo 125]`의 측정 주파수 = 125 Hz, `[cfo 125]` 뒤 고정 회전과 일치) 추가. 그동안 "cold Msg3 허용 ~155 Hz"
+  같은 기록은 실제로는 2배 CFO에서 잰 값이다. (2) OAI `--cont-fo-comp 1`이 UL을 상쇄하는 대신 +351 Hz로 미리
+  회전시킨다 → `OCUDU_NATIVE_OAI_UE_CONT_FO_COMP=3`(DL만 보정)로 두면 UL CFO 0 Hz, 부엽 −12 dB(검증 런
+  `oai-1x1/20261001T120048Z`).
+
 ## 남은 것
 
 - **X5**: 셀 간 TDD 패턴이 다른 두 셀(CLI). 2-gNB OAI TDD 게이트가 필요.
-- **gNB 실시간 확보**: lower-PHY 프로파일 변경 후 트래픽 재측정(`TX_POWER_UL` 상수 재확인 포함).
-- OAI 2x2 포트별 레벨 미측정(1x1 값 가정), PRACH TA 오검출 1회 원인.
+- 그림자 쪽 srsUE의 풀버퍼 UL RLF(MCS 28) — UE/링크 문제, 별도 트랙. gNB main_pool 결함은 업스트림 OCUDU 보고 대상.
+- OAI 1x1 게이트 기본 `--cont-fo-comp`를 3으로 바꿀지 결정(현재 1).
 - 업스트림 보고 초안 `docs/upstream/followup-2026-10-01-ue-crosstalk.md` (미게시, 승인 필요).
