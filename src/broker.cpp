@@ -167,6 +167,19 @@ SocketPtr make_socket(void* context, int type)
 //                       the channel writes each output row straight into its
 //                       RX ring storage instead of a staging row that is then
 //                       pushed (falls back when the tail space wraps).
+// Fail-fast knob:
+//   OCG_BROKER_WEDGE_TIMEOUT_MS
+//                       relay wedge detector (default 10000; 0 disables). Once
+//                       every puller has pulled at least once (every radio has
+//                       transmitted), a run in which NO worker -- puller,
+//                       producer or REP -- makes progress for this long is
+//                       declared wedged: `event=relay_wedged` is logged with
+//                       every worker's state, BrokerStats.relay_wedged is set,
+//                       zmq_errors is bumped so the gate scripts and the strict
+//                       exit path fail, and the run stops. Lock-step radios can
+//                       only freeze all together (the 2026-10-01 multi-UE gates
+//                       sat 190 s with every puller in recv_reply), so a frozen
+//                       relay is never a valid measurement, only a void one.
 struct BrokerDiagKnobs {
   std::chrono::microseconds poll{50};
   bool tight_slack = false;
@@ -177,6 +190,7 @@ struct BrokerDiagKnobs {
   std::chrono::microseconds spin_budget{0};
   bool fewer_copies = false;
   bool direct_rows = false;
+  std::chrono::milliseconds wedge_timeout{10000};
 };
 
 // True unless the variable is set to "0".
@@ -208,6 +222,9 @@ BrokerDiagKnobs read_diag_knobs()
   }
   knobs.fewer_copies = env_default_on("OCG_BROKER_FEWER_COPIES");
   knobs.direct_rows = env_default_on("OCG_BROKER_DIRECT_ROWS");
+  if (const char* wedge = std::getenv("OCG_BROKER_WEDGE_TIMEOUT_MS"); wedge != nullptr && *wedge != '\0') {
+    knobs.wedge_timeout = std::chrono::milliseconds(std::strtol(wedge, nullptr, 10));
+  }
   return knobs;
 }
 
@@ -519,6 +536,7 @@ struct AtomicStats {
   std::atomic<std::uint64_t> tx_queue_overflows{0};
   std::atomic<std::uint64_t> tx_sequence_gaps{0};
   std::atomic<std::uint64_t> zmq_errors{0};
+  std::atomic<std::uint64_t> relay_wedged{0};
 };
 
 // Lock-free live diagnostics for one worker thread. `state` always points at a
@@ -1653,8 +1671,46 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
     std::cout.flush();
   };
 
+  // Relay wedge detector (OCG_BROKER_WEDGE_TIMEOUT_MS). The sum of every
+  // worker's progress counter is the relay's clock; it arms once every puller
+  // has pulled (the stagger-started UEs are all up) and trips when that clock
+  // has not moved for the timeout. It does not try to say WHO stopped -- the
+  // per-worker states in the event line do that -- only that a run with no
+  // movement anywhere is void and must not run out its duration in silence.
+  const auto relay_progress = [&]() {
+    std::uint64_t total = 0;
+    for (const auto& d : puller_diag) {
+      total += d.progress.load(std::memory_order_relaxed);
+    }
+    for (const auto& d : producer_diag) {
+      total += d.progress.load(std::memory_order_relaxed);
+    }
+    for (const auto& d : rep_diag) {
+      total += d.progress.load(std::memory_order_relaxed);
+    }
+    return total;
+  };
+  const auto report_relay_wedged = [&](std::chrono::steady_clock::duration waited) {
+    std::ostringstream line;
+    line << "event=relay_wedged waited_ms="
+         << std::chrono::duration_cast<std::chrono::milliseconds>(waited).count() << " ports=[";
+    for (std::size_t d = 0; d != ports.size(); ++d) {
+      const WorkerDiag& p = puller_diag[d];
+      const WorkerDiag& s = producer_diag[ports[d]->node_index];
+      const WorkerDiag& r = rep_diag[d];
+      line << (d == 0 ? "" : " ") << ports[d]->config->id << ":puller=" << p.state.load() << "/"
+           << p.progress.load() << "/" << p.total_samples.load() << ",producer=" << s.state.load() << "/"
+           << s.progress.load() << ",rep=" << r.state.load() << "/" << r.progress.load();
+    }
+    line << "]\n";
+    std::cout << line.str() << std::flush;
+  };
+
   const auto start = std::chrono::steady_clock::now();
   auto next_heartbeat = start + std::chrono::seconds(1);
+  bool wedge_armed = false;
+  std::uint64_t wedge_last_progress = 0;
+  auto wedge_last_change = start;
   while (!stop_requested.load()) {
     const auto now = std::chrono::steady_clock::now();
     if (duration.count() > 0 && now - start >= duration) {
@@ -1664,6 +1720,33 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
       const auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
       emit_heartbeat(static_cast<std::uint64_t>(elapsed));
       next_heartbeat += std::chrono::seconds(1);
+    }
+    if (knobs.wedge_timeout.count() > 0) {
+      if (!wedge_armed) {
+        wedge_armed = true;
+        for (std::size_t p = 0; p != ports.size(); ++p) {
+          if (ports[p]->tx_port >= 0 && puller_diag[p].progress.load(std::memory_order_relaxed) == 0) {
+            wedge_armed = false;
+          }
+        }
+        wedge_last_progress = relay_progress();
+        wedge_last_change = now;
+      } else {
+        const std::uint64_t progress = relay_progress();
+        if (progress != wedge_last_progress) {
+          wedge_last_progress = progress;
+          wedge_last_change = now;
+        } else if (now - wedge_last_change >= knobs.wedge_timeout) {
+          report_relay_wedged(now - wedge_last_change);
+          stats.relay_wedged.store(1);
+          // Counted as a transport error too: it is the counter the gate
+          // scripts and the strict exit path already fail on, and a relay no
+          // radio answers is dead transport whatever the radios' reason.
+          stats.zmq_errors.fetch_add(1);
+          stop_requested.store(true);
+          break;
+        }
+      }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
@@ -1781,6 +1864,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   result.tx_queue_overflows = stats.tx_queue_overflows.load();
   result.tx_sequence_gaps = stats.tx_sequence_gaps.load();
   result.zmq_errors = stats.zmq_errors.load();
+  result.relay_wedged = stats.relay_wedged.load();
   return result;
 }
 

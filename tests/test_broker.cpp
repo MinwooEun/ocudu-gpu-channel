@@ -255,12 +255,18 @@ struct RadioState {
 // radio is granted before any RX flows is `tx_offset`. With `tx_offset` smaller
 // than the broker batch, no ring can ever reach a full batch -- so a fixed-batch
 // relay dead-locks here and a variable-size relay does not.
+//
+// `stall_after` (0 = never): once the radio has transmitted that many samples
+// it accepts the next pull request and then never answers it -- the shape of
+// OCUDU's ZMQ TX channel sitting in "Waiting for data" when its lower PHY has
+// stopped producing, which is what the 2026-10-01 multi-UE gates froze on.
 void run_lockstep_tx(void* context,
                      std::string endpoint,
                      std::size_t chunk,
                      std::size_t tx_offset,
                      RadioState& radio,
-                     std::atomic<bool>& stop)
+                     std::atomic<bool>& stop,
+                     std::size_t stall_after)
 {
   void* socket = zmq_socket(context, ZMQ_REP);
   set_timeouts(socket);
@@ -274,6 +280,13 @@ void run_lockstep_tx(void* context,
     std::uint8_t dummy = 0;
     if (zmq_recv(socket, &dummy, sizeof(dummy), 0) < 0) {
       continue; // timed out; observe stop
+    }
+    if (stall_after != 0 && radio.tx_sent.load() >= stall_after) {
+      // Radio stalled: the request stays pending and is never answered.
+      while (!stop.load()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      }
+      break;
     }
     // Hold the pull until the lock-step budget allows the next chunk.
     while (!stop.load() && radio.tx_sent.load() + chunk > radio.rx_consumed.load() + tx_offset) {
@@ -549,31 +562,21 @@ void scenario_relay_knobs_bit_identical()
   std::cout << "relay knobs parity: " << compared << " samples bit-identical across 4 ports\n";
 }
 
-void scenario_multi_ue_lockstep()
+// One gNB + two UEs on the CPU backend, endpoints at base_port.. base_port+5.
+// Downlink fan-out gnb0->{ue0,ue1}; uplink fan-in {ue0,ue1}->gnb0. The two
+// uplinks superpose at the gNB RX.
+ocg::TopologyConfig make_multi_ue_lockstep_config(unsigned base_port)
 {
+  const auto ep = [base_port](unsigned k) { return "tcp://127.0.0.1:" + std::to_string(base_port + k); };
   ocg::TopologyConfig config;
   config.runtime.backend = ocg::Backend::Cpu;
   config.runtime.batch_samples_auto = false;
   config.runtime.batch_samples = 23040;
   config.runtime.queue_samples = 131072;
   config.devices = {
-      {.id = "gnb0",
-       .role = "gnb",
-       .sample_rate_hz = 23040000,
-       .tx_endpoint = "tcp://127.0.0.1:25600",
-       .rx_endpoint = "tcp://127.0.0.1:25601"},
-      {.id = "ue0",
-       .role = "ue",
-       .sample_rate_hz = 23040000,
-       .tx_endpoint = "tcp://127.0.0.1:25602",
-       .rx_endpoint = "tcp://127.0.0.1:25603"},
-      {.id = "ue1",
-       .role = "ue",
-       .sample_rate_hz = 23040000,
-       .tx_endpoint = "tcp://127.0.0.1:25604",
-       .rx_endpoint = "tcp://127.0.0.1:25605"}};
-  // Downlink fan-out gnb0->{ue0,ue1}; uplink fan-in {ue0,ue1}->gnb0. The two
-  // uplinks superpose at the gNB RX.
+      {.id = "gnb0", .role = "gnb", .sample_rate_hz = 23040000, .tx_endpoint = ep(0), .rx_endpoint = ep(1)},
+      {.id = "ue0", .role = "ue", .sample_rate_hz = 23040000, .tx_endpoint = ep(2), .rx_endpoint = ep(3)},
+      {.id = "ue1", .role = "ue", .sample_rate_hz = 23040000, .tx_endpoint = ep(4), .rx_endpoint = ep(5)}};
   config.links = {{.from = "gnb0", .to = "ue0", .model = "clean"},
                   {.from = "gnb0", .to = "ue1", .model = "clean"},
                   {.from = "ue0", .to = "gnb0", .model = "clean"},
@@ -585,6 +588,12 @@ void scenario_multi_ue_lockstep()
                          .taps = {{.delay_samples = 0.0, .gain_db = 0.0, .phase_rad = 0.0}},
                          .taps_declared = true});
   config.models.emplace(model.id, model);
+  return config;
+}
+
+void scenario_multi_ue_lockstep()
+{
+  const ocg::TopologyConfig config = make_multi_ue_lockstep_config(25600);
 
   // Sub-batch chunk (not a divisor of the 23040 batch) and a tx_offset smaller
   // than the batch: both are required to dead-lock a fixed-batch relay.
@@ -602,11 +611,11 @@ void scenario_multi_ue_lockstep()
 
   std::vector<std::thread> peers;
   peers.emplace_back(run_lockstep_tx, context, config.devices[0].tx_endpoint, chunk, tx_offset, std::ref(gnb_radio),
-                     std::ref(stop));
+                     std::ref(stop), std::size_t{0});
   peers.emplace_back(run_lockstep_tx, context, config.devices[1].tx_endpoint, chunk, tx_offset, std::ref(ue0_radio),
-                     std::ref(stop));
+                     std::ref(stop), std::size_t{0});
   peers.emplace_back(run_lockstep_tx, context, config.devices[2].tx_endpoint, chunk, tx_offset, std::ref(ue1_radio),
-                     std::ref(stop));
+                     std::ref(stop), std::size_t{0});
   peers.emplace_back(run_lockstep_rx, context, config.devices[0].rx_endpoint, std::ref(gnb_radio), std::ref(stop),
                      std::ref(gnb_received));
   peers.emplace_back(run_lockstep_rx, context, config.devices[1].rx_endpoint, std::ref(ue0_radio), std::ref(stop),
@@ -639,6 +648,74 @@ void scenario_multi_ue_lockstep()
   require(gnb_received.load() > 0, "gnb0 RX received no superposed uplink");
   require(ue0_received.load() > 0, "ue0 RX received no downlink");
   require(ue1_received.load() > 0, "ue1 RX received no downlink");
+}
+
+// Fail-fast regression for the 2026-10-01 multi-UE wedge: the same lock-step
+// topology, but the gNB radio stops transmitting part-way (its REP accepts the
+// pull and never answers, as OCUDU's TX channel does once its lower PHY has
+// stalled). The UEs then consume the downlink already in flight, pre-transmit
+// their lock-step lead, and block on RX; every ring drains to zero and the
+// relay freezes with every puller in recv_reply. Without the detector the
+// broker would sit like that for the whole duration and report a clean
+// event=stop; with OCG_BROKER_WEDGE_TIMEOUT_MS it must end the run early,
+// flag relay_wedged and fail the strict counters.
+void scenario_multi_ue_lockstep_wedge_fails_fast()
+{
+  const ocg::TopologyConfig config = make_multi_ue_lockstep_config(25610);
+  constexpr std::size_t chunk = 6000;
+  constexpr std::size_t tx_offset = 12000;
+  constexpr std::size_t gnb_stall_after = 20 * chunk; // ~5 ms of virtual time
+
+  void* context = zmq_ctx_new();
+  std::atomic<bool> stop{false};
+  RadioState gnb_radio;
+  RadioState ue0_radio;
+  RadioState ue1_radio;
+  std::atomic<std::uint64_t> gnb_received{0};
+  std::atomic<std::uint64_t> ue0_received{0};
+  std::atomic<std::uint64_t> ue1_received{0};
+
+  std::vector<std::thread> peers;
+  peers.emplace_back(run_lockstep_tx, context, config.devices[0].tx_endpoint, chunk, tx_offset, std::ref(gnb_radio),
+                     std::ref(stop), gnb_stall_after);
+  peers.emplace_back(run_lockstep_tx, context, config.devices[1].tx_endpoint, chunk, tx_offset, std::ref(ue0_radio),
+                     std::ref(stop), std::size_t{0});
+  peers.emplace_back(run_lockstep_tx, context, config.devices[2].tx_endpoint, chunk, tx_offset, std::ref(ue1_radio),
+                     std::ref(stop), std::size_t{0});
+  peers.emplace_back(run_lockstep_rx, context, config.devices[0].rx_endpoint, std::ref(gnb_radio), std::ref(stop),
+                     std::ref(gnb_received));
+  peers.emplace_back(run_lockstep_rx, context, config.devices[1].rx_endpoint, std::ref(ue0_radio), std::ref(stop),
+                     std::ref(ue0_received));
+  peers.emplace_back(run_lockstep_rx, context, config.devices[2].rx_endpoint, std::ref(ue1_radio), std::ref(stop),
+                     std::ref(ue1_received));
+
+  // The knob is read at run(); 300 ms keeps the test short while staying far
+  // above the broker's 100 ms socket timeouts and the peers' sleeps.
+  setenv("OCG_BROKER_WEDGE_TIMEOUT_MS", "300", 1);
+  ocg::Broker broker(config);
+  const auto t0 = std::chrono::steady_clock::now();
+  const auto stats = broker.run(std::chrono::milliseconds(8000));
+  const auto elapsed = std::chrono::steady_clock::now() - t0;
+  unsetenv("OCG_BROKER_WEDGE_TIMEOUT_MS");
+
+  stop.store(true);
+  for (auto& peer : peers) {
+    peer.join();
+  }
+  zmq_ctx_shutdown(context);
+  zmq_ctx_destroy(context);
+
+  std::cout << "multi-ue lockstep wedge: elapsed_ms="
+            << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count()
+            << " tx_pulls=" << stats.tx_pulls << " rx_requests=" << stats.rx_requests
+            << " relay_wedged=" << stats.relay_wedged << " zmq_errors=" << stats.zmq_errors
+            << " gnb_tx_sent=" << gnb_radio.tx_sent.load() << " ue0_received=" << ue0_received.load() << "\n";
+
+  require(stats.rx_requests > 0, "relay never flowed before the gNB stalled");
+  require(gnb_radio.tx_sent.load() == gnb_stall_after, "gNB peer did not stall where the scenario said");
+  require(stats.relay_wedged == 1, "wedge detector did not flag the frozen relay");
+  require(stats.zmq_errors == 1, "wedge was not counted as a transport error (gate/strict path)");
+  require(elapsed < std::chrono::milliseconds(4000), "wedge detector did not end the run early");
 }
 
 // M5.4 regression: the producer's real-time pacer must not convert an idle
@@ -703,6 +780,7 @@ int main()
   scenario_pacer_drops_unrecoverable_debt();
   scenario_loopback();
   scenario_multi_ue_lockstep();
+  scenario_multi_ue_lockstep_wedge_fails_fast();
   std::cout << "test_broker OK\n";
   return 0;
 }
