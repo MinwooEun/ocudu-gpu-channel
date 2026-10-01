@@ -1610,9 +1610,12 @@ private:
         case ModelStepType::Phase:
         case ModelStepType::Cfo: {
           // Phase 3 C2a: cfo_hz sourced from per-link `live`. phase_rad stays
-          // on the step (not a v1 mutable param).
+          // on the step (not a v1 mutable param). Only a `cfo` step rotates
+          // with the link's cfo_hz; a `phase` step is a fixed rotation (the
+          // shared increment used to apply the CFO twice in phase+cfo chains).
           const double fixed_phase = param_or(step, "phase_rad", 0.0);
-          const double cfo_hz = static_cast<double>(ms.live.cfo_hz);
+          const double cfo_hz =
+              step.type == ModelStepType::Cfo ? static_cast<double>(ms.live.cfo_hz) : 0.0;
           const double phase_increment =
               sample_rate_hz == 0 ? 0.0 : 2.0 * kPi * cfo_hz / static_cast<double>(sample_rate_hz);
           gpu_step = make_step(Rotate, static_cast<float>(fixed_phase + ms.phase_rad[step_index]),

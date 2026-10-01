@@ -3380,5 +3380,72 @@ int main()
 #endif
   }
 
+  // --- phase + cfo in one chain must apply the CFO exactly once. ---
+  // The `phase` step used to share the cfo code path and rotate with the
+  // link's live cfo_hz too, so [phase, cfo 125 Hz] delivered 250 Hz. Compare
+  // [phase 0.125, cfo f] against [cfo f] followed by a fixed 0.125 rotation,
+  // on a 1 ms batch at 23.04 MS/s, on both backends.
+  {
+    const std::uint64_t fs = 23040000;
+    const std::size_t n = 23040;
+    const double f_hz = 125.0;
+    ocg::IqBuffer input(n);
+    for (std::size_t i = 0; i != n; ++i) {
+      input[i] = {0.5F, 0.0F};
+    }
+    // One link per config: the CUDA processor expects every incoming lane of a
+    // destination in one call, so the two chains get their own topologies.
+    auto make_config = [&](ocg::Backend backend, const char* model_id, bool with_phase) {
+      ocg::TopologyConfig c;
+      c.runtime.backend = backend;
+      c.runtime.batch_samples_auto = false;
+      c.runtime.batch_samples = n;
+      c.runtime.queue_samples = 4 * n;
+      c.devices = {
+          {.id = "gnb0", .role = "gnb", .sample_rate_hz = fs, .tx_endpoint = "tx0", .rx_endpoint = "rx0"},
+          {.id = "ue0", .role = "ue", .sample_rate_hz = fs, .tx_endpoint = "tx1", .rx_endpoint = "rx1"}};
+      c.links = {{.from = "gnb0", .to = "ue0", .model = model_id}};
+      ocg::ModelConfig m;
+      m.id = model_id;
+      if (with_phase) {
+        m.chain.push_back({.type = ocg::ModelStepType::Phase, .params = {{"phase_rad", 0.125}}});
+      }
+      m.chain.push_back({.type = ocg::ModelStepType::Cfo, .params = {{"cfo_hz", f_hz}}});
+      c.models.emplace(m.id, m);
+      return c;
+    };
+    auto check = [&](ocg::Backend backend, const char* label) {
+      const auto cfg_both = make_config(backend, "both", true);
+      const auto cfg_cfo = make_config(backend, "cfo_only", false);
+      auto proc_both = ocg::create_channel_processor(cfg_both);
+      auto proc_cfo = ocg::create_channel_processor(cfg_cfo);
+      const auto out_both = shape_link_buf(*proc_both, "ue0", "gnb0>ue0:both", cfg_both.models.at("both"), input, fs);
+      const auto out_cfo =
+          shape_link_buf(*proc_cfo, "ue0", "gnb0>ue0:cfo_only", cfg_cfo.models.at("cfo_only"), input, fs);
+      // Measured frequency of the phase+cfo output over the batch: unwrap the
+      // phase of the last sample relative to the first.
+      const double ph0 = std::atan2(out_both.front().q, out_both.front().i);
+      const double ph1 = std::atan2(out_both.back().q, out_both.back().i);
+      double dphi = ph1 - ph0;
+      while (dphi > M_PI) dphi -= 2.0 * M_PI;
+      while (dphi < -M_PI) dphi += 2.0 * M_PI;
+      const double f_meas = dphi / (2.0 * M_PI) * static_cast<double>(fs) / static_cast<double>(n - 1);
+      std::cout << label << ": phase+cfo chain measured " << f_meas << " Hz (configured " << f_hz << ")\n";
+      require(std::fabs(f_meas - f_hz) < 2.0, "phase+cfo chain must apply the CFO once, not twice");
+      ocg::IqBuffer rotated(n);
+      const float cs = std::cos(0.125F), sn = std::sin(0.125F);
+      for (std::size_t k = 0; k != n; ++k) {
+        rotated[k] = {out_cfo[k].i * cs - out_cfo[k].q * sn, out_cfo[k].i * sn + out_cfo[k].q * cs};
+      }
+      require_near_buffer(out_both, rotated, "phase+cfo must equal cfo followed by the fixed rotation");
+    };
+    check(ocg::Backend::Cpu, "CPU");
+#if OCUDU_GPU_CHANNEL_HAS_CUDA
+    if (ocg::cuda_compiled()) {
+      check(ocg::Backend::Cuda, "CUDA");
+    }
+#endif
+  }
+
   return 0;
 }

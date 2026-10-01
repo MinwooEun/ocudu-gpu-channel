@@ -328,9 +328,13 @@ ocg::PhysicalLinkRuntime* CpuChannelProcessor::apply_chain_to_link(const std::st
       case ModelStepType::Phase:
       case ModelStepType::Cfo: {
         // Phase 3 C2a: cfo_hz sourced from per-link `live`. phase_rad stays on
-        // the step (not a v1 mutable param).
+        // the step (not a v1 mutable param). Only a `cfo` step rotates with the
+        // link's cfo_hz: a `phase` step is a fixed rotation. Sharing the
+        // increment made every chain with both steps apply the CFO twice
+        // (configured 125 Hz arrived as 250 Hz at the radios).
         const double fixed_phase = param_or(step, "phase_rad", 0.0);
-        const double cfo_hz = static_cast<double>(state.live.cfo_hz);
+        const double cfo_hz =
+            step.type == ModelStepType::Cfo ? static_cast<double>(state.live.cfo_hz) : 0.0;
         const double phase_increment =
             sample_rate_hz == 0 ? 0.0 : 2.0 * std::numbers::pi * cfo_hz / static_cast<double>(sample_rate_hz);
         for (std::size_t i = 0; i != current.size(); ++i) {
