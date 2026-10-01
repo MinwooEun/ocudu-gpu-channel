@@ -55,8 +55,56 @@ A3/B3를 만드는 과정에서 2-gNB 게이트의 별개 결함 둘을 고쳤�
 (`set -e` 아래 `[[ -n web_pid ]] && wait`의 마지막 명령은 면제가 아님). 브로커가 토폴로지를
 거부하면 게이트가 `event=fatal` 줄을 그대로 보여준다.
 
-## 남은 것 (X3–X5)
+## 후속 (2026-10-01 오후)
 
-UE↔UE가 물리적으로 존재하는 배치(TDD, 셀 간 패턴 상이 = CLI)에서의 검증. srsUE는 15 kHz
-FDD만 버티므로 OAI nrUE(n78 TDD) 멀티-UE 게이트가 먼저 필요하다. OAI UE의 wire 레벨도
-같은 방식으로 재서 `tx_scale_db`로 맞춰야 한다.
+- **Spark `int0928` 트리 정렬:** ad8427c로 올림. b3cd457 대비 달랐던 4개 파일(`scripts/native/README.md`,
+  `render-robot-fight-configs.py`, `run-ocudu-multi-gnb-inner.sh`, `analyze-r7-probe-runs.py`)은 Spark 브랜치
+  `spark-local-1001`(61a8c57)에 보존, 스냅샷 `/workspace/gpuch/int0928-uncommitted-1001.diff`.
+- **트래픽 하의 wire 레벨 재측정 — 실패, 상수 유지.** iperf3 UL 2×20 Mbit/s를 걸자 ~30 s 뒤 중계가 완전히 멈췄다
+  (`ocudu-multi-ue/20261001T105444Z`: 모든 puller `recv_reply`, 모든 producer `wait_data`, gNB "Waiting for data",
+  `node_stall waited_ms=158000`). 같은 설정의 다른 런(`…T104716Z`)은 UE 시작 직후 t≈6 s에 같은 모양으로 멈췄다.
+  ping만 있는 런은 오늘 하루 한 번도 멈추지 않았다. `TX_POWER_DL/UL` 상수는 그대로 둔다. 캡처 skip은 "중계된 샘플 수"
+  기준이라 멈춘 런에서는 0 샘플이 남는다. 브로커 lock-step 데드락(B2.2 계열)으로 Track D에서 분석 중.
+
+## X3/X4 — TDD에서 UE↔UE가 물리적으로 존재할 때 (2026-10-01 오후, Spark)
+
+새 게이트 `run-ocudu-oai-multi-ue.sh`: OCUDU gNB **TDD n78 20 MHz 30 kHz**(dl_arfcn 632628, 51 PRB,
+23.04 MS/s, 7D/1S/2U) + OAI nrUE 2대 + Sionna, 모든 포트 `carrier: n78`. 설계·런 표는
+`docs/plans/x3-tdd-multi-ue.md`.
+
+| 런 | 링크 | 결과 | 피해 UE 수신: 상대 UE UL 슬롯 / gNB DL 슬롯 / 무음 |
+|---|---|---|---|
+| `ocudu-oai-multi-ue/20261001T110816Z` | 4 (베이스라인, 양쪽 LOS) | **pass**, 둘 다 clean | −59.5 / −33.6 / −59.5 dB |
+| `…/20261001T111857Z` | 6 (+ue0↔ue1, 탭 중앙값 +4 dB) | **pass**, 둘 다 clean | **−36.9** / −33.6 / −59.5 dB |
+
+즉 같은 TDD 반송파에서는 UE↔UE 엣지가 있어도 상대 UL이 **내 UL 슬롯에만** 떨어지고(gNB TX ∩ UE TX
+슬롯 = 0) DL 슬롯은 그대로라 attach가 유지된다. 어제 FDD에서 깨진 것과 대비되는, 물리에 맞는 동작이다.
+UE↔UE가 성능에 영향을 주려면 셀 간 TDD 패턴이 달라야 한다(X5, 미착수).
+제약: OAI nrUE는 AGC가 없어 기둥 그림자(−25 dB)에서 동기를 잃는다(`…/20261001T110320Z`, srsUE는 버팀).
+
+## OAI nrUE 송신 스케일 (2026-10-01 오후)
+
+OAI 1x1 게이트에 wire capture 노브를 넣어 측정: nrUE UL wire 레벨 **1.17e-5 (−49.3 dB)**, PUSCH+PUCCH
+혼합(`oai-1x1/20261001T110037Z`). OAI는 UL을 RE당 고정 진폭으로 내보내므로 srsUE(+44 dB)와 반대로 gNB보다
+29.8 dB 조용하다. 23/30 dBm 기준 UE 포트 `tx_scale_db` **+22.8 dB**. OAI 1x1/2x2 렌더러에 라벨·스케일 적용,
+스케일 적용 상태로 1x1 게이트 2/3 통과(1회 PRACH TA 오검출 14 µs, 미해결 리스크;
+`OCUDU_NATIVE_OAI_UE_TX_SCALE_DB=off`로 복귀 가능).
+
+## 트래픽 하 중계 정지 — 원인은 gNB (2026-10-01 오후, Track D)
+
+두 런(`ocudu-multi-ue/20261001T104716Z`, `…T105444Z`)의 heartbeat를 1초 단위로 추적하면 **먼저 멈춘 것은
+OCUDU gNB의 송신**이다(gNB TX "Waiting for data"가 RX보다 먼저, UE TX는 lock-step 선행분 68,833샘플 =
+2.99 ms를 다 보내고 RX 대기, 브로커 링은 전부 0). gNB는 "sequential baseband" 프로파일로 lower-PHY 송수신과
+upper-PHY가 **스레드 하나**에서 돌아, UE 2대의 PUSCH 복호 + DL이 1 ms 슬롯에 안 들어가면(iperf 2×20 Mbit/s,
+또는 동시 attach 버스트) 멈춘다. M5.4의 "OCUDU ZMQ 라디오 자체 데드락"과 같은 계열. 브로커 측 조치:
+`OCG_BROKER_WEDGE_TIMEOUT_MS`(기본 10 s, 0 = 끔) — 모든 워커의 진행이 멈추면 `event=relay_wedged`를 찍고
+`zmq_errors`를 올린 뒤 정지해 런이 조용히 무효가 되지 않게 한다(`scenario_multi_ue_lockstep_wedge_fails_fast`
+테스트). 근본 해결은 gNB 쪽: `ru_sdr` lower-PHY 스레드 프로파일을 sequential에서 바꾸거나 UL 부하를 제한.
+멈춘 시점에 `gdb -p <gnb> -batch -ex "thread apply all bt"`로 막힌 지점을 확정할 것.
+
+## 남은 것
+
+- **X5**: 셀 간 TDD 패턴이 다른 두 셀(CLI). 2-gNB OAI TDD 게이트가 필요.
+- **gNB 실시간 확보**: lower-PHY 프로파일 변경 후 트래픽 재측정(`TX_POWER_UL` 상수 재확인 포함).
+- OAI 2x2 포트별 레벨 미측정(1x1 값 가정), PRACH TA 오검출 1회 원인.
+- 업스트림 보고 초안 `docs/upstream/followup-2026-10-01-ue-crosstalk.md` (미게시, 승인 필요).
