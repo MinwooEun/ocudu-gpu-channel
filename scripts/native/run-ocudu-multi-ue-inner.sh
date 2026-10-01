@@ -156,6 +156,10 @@ ue_gateway="10.45.1.1"
 # per-UE near/far channel asymmetry set the sync times, which is where the
 # separation has to come from.
 stagger_ues="${OCUDU_NATIVE_MUE_STAGGER:-0}"
+# Strict attach verdict (X0): a UE counts as attached only if it also stayed
+# attached -- no scheduling-request failure, no PRACH after RRC Connected, no
+# RLF, and every ping answered. 0 restores the old "ever pinged once" verdict.
+attach_strict="${OCUDU_NATIVE_ATTACH_STRICT:-1}"
 
 mount_active=0
 root_tun=""
@@ -447,7 +451,7 @@ broker_exit_deadline=$((SECONDS + run_duration_seconds + 10))
 # Both lines mean the same thing here: that node's transport is bound.
 for id in "${ue_ids[@]}"; do
   wait_log "${log_dir}/broker.log" "event=socket_ready device=${id}" "${broker_pid}" 15 \
-    || usage_error "broker did not bind ${id}"
+    || { grep -m1 "event=fatal" "${log_dir}/broker.log" >&2 || true; usage_error "broker did not bind ${id}"; }
 done
 
 # Sionna has to be streaming before the gNB is admitted. Every link starts as a
@@ -584,11 +588,11 @@ for pid in "${srsue_pids[@]}"; do process_running "${pid}" || srsue_alive=0; don
 /usr/bin/python3 - \
   "${log_dir}" "${native_root}/results/reports/ocudu-multi-ue/${timestamp}/attach-summary.json" \
   "${timestamp}" "${broker_status}" "${gnb_alive}" "${srsue_alive}" \
-  "${rrc[*]}" "${pdu[*]}" "${ping_ok[*]}" "${ue_ids[*]}" <<'PY'
+  "${rrc[*]}" "${pdu[*]}" "${ping_ok[*]}" "${ue_ids[*]}" "${attach_strict}" <<'PY'
 import json, pathlib, re, sys
 
 (log_dir, out_path, timestamp, broker_status, gnb_alive, srsue_alive,
- rrc, pdu, ping_ok, ue_ids) = sys.argv[1:]
+ rrc, pdu, ping_ok, ue_ids, attach_strict) = sys.argv[1:]
 
 log_dir = pathlib.Path(log_dir)
 stop = ""
@@ -606,8 +610,53 @@ per_ue = {
     }
     for ue, r, p, q in zip(ids, rrc.split(), pdu.split(), ping_ok.split())
 }
+
+def attach_evidence(ue):
+    """Strict evidence from the srsUE console log and the ping log. A UE that
+    attached and then lost the link (Scheduling request failed -> RRC release
+    -> renewed PRACH) once pinged, so rrc/pdu/ping_ok alone call it attached.
+    "Received RRC Release" is deliberately not counted: the gate's own
+    teardown releases every UE once right before "Stopping ..".
+    """
+    text = ""
+    path = log_dir / f"srsue-{ue}.log"
+    if path.exists():
+        text = path.read_text(encoding="utf-8", errors="replace")
+    lines = text.splitlines()
+    first_connected = next((i for i, l in enumerate(lines) if "RRC Connected" in l), None)
+    reattach = 0
+    if first_connected is not None:
+        reattach = sum(1 for l in lines[first_connected + 1:] if "Random Access Transmission" in l)
+    sent = received = 0
+    ping_path = log_dir / f"ue-ping-{ue}.log"
+    if ping_path.exists():
+        m = re.search(r"(\d+) packets transmitted, (\d+) (?:packets )?received",
+                      ping_path.read_text(encoding="utf-8", errors="replace"))
+        if m:
+            sent, received = int(m.group(1)), int(m.group(2))
+    return {
+        "sr_failures": text.count("Scheduling request failed"),
+        "reattach_attempts": reattach,
+        "rlf_count": sum(1 for l in lines if re.search(r"RLF|Radio Link Failure", l, re.I)),
+        "ping_sent": sent,
+        "ping_received": received,
+    }
+
+
+for ue, v in per_ue.items():
+    v.update(attach_evidence(ue))
+    v["attach_clean"] = int(bool(v["rrc_connected"] and v["pdu_session_established"]
+                                 and v["ping_sent"] > 0 and v["ping_received"] == v["ping_sent"]
+                                 and v["sr_failures"] == 0 and v["reattach_attempts"] == 0
+                                 and v["rlf_count"] == 0))
+    print(f"event=ue_attach_evidence ue={ue} rrc={v['rrc_connected']} "
+          f"pdu={v['pdu_session_established']} ping={v['ping_received']}/{v['ping_sent']} "
+          f"sr_failures={v['sr_failures']} reattach_attempts={v['reattach_attempts']} "
+          f"rlf={v['rlf_count']} clean={v['attach_clean']}", flush=True)
 all_attached = all(v["rrc_connected"] and v["pdu_session_established"] and v["ping_ok"]
                    for v in per_ue.values())
+if int(attach_strict):
+    all_attached = all_attached and all(v["attach_clean"] for v in per_ue.values())
 strict_clean = all(counters.get(k, 1) == 0
                    for k in ("tx_queue_overflows", "tx_sequence_gaps", "zmq_errors"))
 summary = {
@@ -615,6 +664,7 @@ summary = {
     "docker_used": False,
     "runtime_mode": "rootless_user_net_mount_namespace",
     "ue_count": len(ids),
+    "attach_strict": int(attach_strict),
     "per_ue": per_ue,
     "broker_status": int(broker_status),
     "gnb_alive_at_broker_stop": int(gnb_alive),

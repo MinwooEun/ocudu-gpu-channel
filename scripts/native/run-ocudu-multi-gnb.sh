@@ -16,6 +16,12 @@
 #   OCUDU_NATIVE_SKIP_WORKSPACE_LOCK=1  skip the x86 native-workspace lock check
 #     (it cannot pass on aarch64); the three source revisions are still checked.
 #   OCUDU_NATIVE_GNB_START_TIMEOUT_SECONDS  per-gNB start window (default 15, CUDA 120).
+#   OCUDU_NATIVE_CHANNEL_MODE=legacy|sionna  sionna runs the Sionna RT bridge against
+#     the broker control plane (as the multi-UE gate does) on a sionna_rt topology:
+#     OCUDU_NATIVE_SIONNA_SCENARIO (absolute scenario JSON naming gnb0/gnb1/ue0/ue1),
+#     OCUDU_NATIVE_SIONNA_PYTHON, OCUDU_NATIVE_SIONNA_UPDATE_HZ (10).
+#   OCUDU_NATIVE_MGNB_TOPOLOGY  broker topology (default: the fixed-TDL
+#     topology.multi-gnb.cuda.yaml; sionna: topology.sionna-2gnb-2ue.cuda.yaml, 10 links).
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -30,6 +36,15 @@ cuda_arch="${OCUDU_NATIVE_CUDA_ARCH:-120}"
 acceleration="${OCUDU_NATIVE_GNB_ACCELERATION:-}"
 inner="${script_dir}/run-ocudu-multi-gnb-inner.sh"
 renderer="${script_dir}/render-multi-gnb-configs.py"
+channel_mode="${OCUDU_NATIVE_CHANNEL_MODE:-legacy}"
+sionna_scenario="${OCUDU_NATIVE_SIONNA_SCENARIO:-}"
+sionna_python="${OCUDU_NATIVE_SIONNA_PYTHON:-}"
+sionna_update_hz="${OCUDU_NATIVE_SIONNA_UPDATE_HZ:-10}"
+if [[ "${channel_mode}" == "sionna" ]]; then
+  topology="${OCUDU_NATIVE_MGNB_TOPOLOGY:-${repo_root}/examples/topology.sionna-2gnb-2ue.cuda.yaml}"
+else
+  topology="${OCUDU_NATIVE_MGNB_TOPOLOGY:-${repo_root}/examples/topology.multi-gnb.cuda.yaml}"
+fi
 audited_ocudu="a1916edcdbcd70ba6e0af47ee87be061dad5a4e4"
 audited_srsran="eea87b1d893ae58e0b08bc381730c502024ae71f"
 audited_open5gs="d9d3abdd480be96fac3bc8a997e83446648763ca"
@@ -44,6 +59,15 @@ usage_error()
 [[ "${physical_gpu}" =~ ^(0|[1-9][0-9]*)$ && "${physical_gpu}" -le 255 ]] || usage_error "invalid GPU device"
 [[ "${cuda_arch}" =~ ^[1-9][0-9]*$ ]] || usage_error "invalid OCUDU_NATIVE_CUDA_ARCH"
 [[ -x "${cuda_compiler}" ]] || usage_error "missing CUDA compiler: ${cuda_compiler}"
+[[ "${channel_mode}" == "legacy" || "${channel_mode}" == "sionna" ]] || \
+  usage_error "unsupported OCUDU_NATIVE_CHANNEL_MODE: ${channel_mode}"
+[[ "${topology}" == /* && -f "${topology}" ]] || usage_error "OCUDU_NATIVE_MGNB_TOPOLOGY must be an absolute regular file"
+if [[ "${channel_mode}" == "sionna" ]]; then
+  [[ "${sionna_scenario}" == /* && -f "${sionna_scenario}" && ! -L "${sionna_scenario}" ]] || \
+    usage_error "OCUDU_NATIVE_SIONNA_SCENARIO must be an absolute regular file"
+  [[ -x "${sionna_python}" ]] || usage_error "OCUDU_NATIVE_SIONNA_PYTHON must point at the Sionna interpreter"
+  [[ "${sionna_update_hz}" =~ ^[0-9]+(\.[0-9]+)?$ ]] || usage_error "invalid OCUDU_NATIVE_SIONNA_UPDATE_HZ"
+fi
 for command_name in unshare nsenter ip mount umount flock cmake ctest ss setsid stdbuf; do
   command -v "${command_name}" >/dev/null 2>&1 || usage_error "missing command: ${command_name}"
 done
@@ -70,7 +94,7 @@ for path in "${inner}" "${renderer}" "${gnb_binary}" \
   "${native_root}/builds/srsran4g-zmq-release/srsue/src/srsue" \
   "${native_root}/builds/open5gs-v2.7.6/tests/app/5gc" \
   "${native_root}/install/mongodb-6.0.29/bin/mongod" \
-  "${repo_root}/examples/topology.multi-gnb.cuda.yaml"; do
+  "${topology}"; do
   [[ -e "${path}" ]] || usage_error "missing required path: ${path}"
 done
 [[ -c /dev/net/tun ]] || usage_error "/dev/net/tun is absent"
@@ -103,12 +127,13 @@ for path in "${log_dir}" "${report_dir}" "${config_dir}" "${data_dir}" "${netns_
   [[ ! -e "${path}" && ! -L "${path}" ]] || usage_error "run path already exists: ${path}"
 done
 mkdir -p "${log_dir}" "${report_dir}" "${config_dir}" "${data_dir}" "${netns_dir}"
-printf 'event=native_multi_gnb_launch gnb=%s kind=%s commit=%s acceleration=%s host_memory=%s\n' \
+printf 'event=native_multi_gnb_launch gnb=%s kind=%s commit=%s acceleration=%s host_memory=%s channel_mode=%s topology=%s scenario=%s\n' \
   "${gnb_binary}" "${gnb_kind}" "${gnb_commit:0:10}" "${acceleration:-none}" \
-  "${OCUDU_NATIVE_CUDA_HOST_MEMORY:-default}" | tee "${log_dir}/launch.log"
+  "${OCUDU_NATIVE_CUDA_HOST_MEMORY:-default}" "${channel_mode}" "${topology}" "${sionna_scenario:-none}" | tee "${log_dir}/launch.log"
 
 "/usr/bin/python3" "${renderer}" --repo-root "${repo_root}" --native-root "${native_root}" \
-  --output-dir "${config_dir}" --log-dir "${log_dir}" >"${log_dir}/render.log" 2>&1 || {
+  --output-dir "${config_dir}" --log-dir "${log_dir}" --topology "${topology}" \
+  --channel-mode "${channel_mode}" >"${log_dir}/render.log" 2>&1 || {
   cat "${log_dir}/render.log" >&2; usage_error "config rendering failed"
 }
 for cell in gnb0 gnb1; do
@@ -129,6 +154,24 @@ CUDA_VISIBLE_DEVICES="${physical_gpu}" \
   ctest --test-dir "${channel_build}" --output-on-failure >"${log_dir}/ctest.log" 2>&1 \
   || { tail -20 "${log_dir}/ctest.log" >&2; usage_error "ctest"; }
 
+sionna_args=()
+if [[ "${channel_mode}" == "sionna" ]]; then
+  # ipc:// under the run directory: the control and telemetry sockets live on
+  # the shared filesystem, which is what crosses the inner network namespace.
+  run_dir="${native_root}/run/ocudu-multi-gnb-native/${timestamp}"
+  sionna_args=(
+    --channel-mode sionna
+    --control-endpoint "ipc://${run_dir}/control.sock"
+    --telemetry-endpoint "ipc://${run_dir}/telemetry.sock"
+    --sionna-python "${sionna_python}"
+    --sionna-bridge "${repo_root}/scripts/sionna_rt/run_bridge.py"
+    --sionna-scenario-config "${sionna_scenario}"
+    --sionna-status-jsonl "${log_dir}/sionna-status.jsonl"
+    --sionna-update-hz "${sionna_update_hz}"
+    --sionna-ready-seconds 180
+  )
+fi
+
 parent_netns="$(readlink /proc/self/ns/net)"
 parent_mntns="$(readlink /proc/self/ns/mnt)"
 set +e
@@ -140,7 +183,7 @@ unshare --user --map-root-user --net --mount --fork --kill-child --propagation p
   --channel-build "${channel_build}" --gnb-binary "${gnb_binary}" \
   --gnb-start-timeout "${gnb_start_timeout}" \
   --parent-netns "${parent_netns}" --parent-mntns "${parent_mntns}" \
-  --outer-uid "$(id -u)"
+  --outer-uid "$(id -u)" ${sionna_args[@]+"${sionna_args[@]}"}
 inner_status="$?"
 set -e
 

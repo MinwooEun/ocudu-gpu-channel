@@ -176,7 +176,8 @@ def cell_shape(cell: dict, scenario: dict) -> sionna.LiveShape:
 
 
 def render_cell_topology(cell: dict, shape: sionna.LiveShape, rx_noise: dict) -> str:
-    text = sionna.render_topology(shape, rx_noise, (cell["gnb"]["tx_port"], cell["gnb"]["rx_port"]))
+    text = sionna.render_topology(shape, rx_noise, (cell["gnb"]["tx_port"], cell["gnb"]["rx_port"]),
+                                  ue_scale_db=sionna.ue_tx_scale_db())
     priority = cell["cuda_stream_priority"]
     if priority not in PRIORITIES:
         fail(f"cell {cell['name']}: cuda_stream_priority must be one of {PRIORITIES}")
@@ -370,7 +371,8 @@ def main() -> int:
         scenario = split_scenario(root, cell)
         shape = cell_shape(cell, scenario)
         try:
-            rx_noise = sionna.rx_noise_powers(shape, args.awgn_snr_db, args.tx_power_dl, args.tx_power_ul)
+            rx_noise = sionna.rx_noise_powers(shape, args.awgn_snr_db, args.tx_power_dl, args.tx_power_ul,
+                                              sionna.ue_tx_scale_db(args.tx_power_dl, args.tx_power_ul))
         except ValueError as error:
             fail(str(error))
         gnb_text = multi_gnb.render_gnb(gnb_source, cell["gnb"], log_dir)

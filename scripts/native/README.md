@@ -178,11 +178,13 @@ run the gate always did:
 | --- | --- | --- |
 | `OCUDU_NATIVE_SIONNA_AWGN_SNR_DB` | `40` (`off` = none) | Absolute receiver noise floor on every node (`rx_model`, an `awgn` step with `noise_power`), sized so a unit-gain link sees this SNR: `noise = tx_power / 10^(snr/10)` with the transmit levels measured on the wire (`render-sionna-multi-ue-configs.py` `TX_POWER_DL`/`TX_POWER_UL`, `wire-capture-power.py`). A `snr_db` step would size its noise against the *faded* signal and give a shadowed UE the same SNR as one in line of sight; the absolute floor is what makes Sionna's path loss reach the decoder. On the ring scene 40 dB reads as 34 dB (LOS) / ~16 dB (pillar shadow) at srsUE; 26.6 and 34.6 break srsUE's initial access and sync in the shadow. Sionna mode only. |
 | `OCUDU_NATIVE_SIONNA_TX_POWER_DL` / `_UL` | renderer constants | Override the measured transmit levels (mean `\|x\|^2` of active samples). |
+| `OCUDU_NATIVE_SIONNA_UL_POWER_OFFSET_DB` | `-7` (23 dBm UE vs 30 dBm gNB) | Emitted UE power relative to the gNB. The renderer folds it, together with the measured wire levels, into each UE port's `tx_scale_db` (`ue_tx_scale_db = offset - 10 log10(TX_POWER_UL / TX_POWER_DL)`, about -71 dB), so a 0 dB tap means the same emitted power in both directions; the gNB noise floor is sized from the scaled uplink. srsUE cannot do this itself: a negative `[rf] tx_gain` means automatic (measured: -21 applied 40 dB) and its floor is 0 dB. |
 | `OCUDU_NATIVE_MUE_DURATION_SECONDS` | `240` (min 160) | Broker `--duration`; the attach window is the first 150 s. |
 | `OCUDU_NATIVE_MUE_STRICT_REALTIME` | `0` | Pass `--strict-realtime` to the broker (it then exits 1 if any starvation/overflow/gap counter is non-zero, which fails the gate). |
 | `OCUDU_NATIVE_MUE_UE_EXEC` | unset | A `bash -c` template started inside each UE's network namespace right after that UE's ping passes (the tun and its address exist only then). Placeholders: `{ue_id}` (ue0…), `{ue_ip}` (10.45.1.2…), `{ue_index}`, `{ue_netns}`, `{ue_gateway}`, `{log_dir}`, `{run_dir}`, `{config_dir}`. Only the network namespace is entered, so the filesystem (ipc sockets, logs) is shared with the stack. Logged to `ue-exec-<ue>.log`, stopped first at teardown. |
 | `OCUDU_NATIVE_MUE_ROOT_EXEC` | unset | The same for one command in the stack's own namespace (where `ogstun` 10.45.1.1, the broker and the bridge live), started as soon as `ogstun` exists — the place for a robot brain the UEs reach at `{ue_gateway}`. Placeholders: `{ue_ids}`, `{ue_ips}`, `{ue_gateway}`, `{log_dir}`, `{run_dir}`, `{config_dir}`. Logged to `root-exec.log`. |
 | `OCUDU_NATIVE_MUE_WIRE_CAPTURE_SAMPLES` / `_SKIP_SECONDS` | `0` / `60` | Broker wire capture per port and direction into `<log_dir>/wire-capture`; `wire-capture-power.py` reads it. |
+| `OCUDU_NATIVE_ATTACH_STRICT` | `1` | Strict attach verdict (X0) in the native multi-UE and multi-gNB inner gates. `1`: a UE is attached only if, besides RRC Connected + PDU session + ping, its srsUE log shows no `Scheduling request failed`, no `Random Access Transmission` after the first `RRC Connected`, no RLF, and every ping was answered (`ping_received == ping_sent > 0`); `0`: the old verdict (ever RRC + PDU + one `ping -c 3` exit 0, which passed a run whose UEs lost the link 30 s after attaching). The summary records `attach_strict` and, per UE, `sr_failures`, `reattach_attempts`, `rlf_count`, `ping_sent`, `ping_received`, `attach_clean`; the gate log gets one `event=ue_attach_evidence ue=… clean=0/1` line per UE. The gate's own teardown release (`Received RRC Release` right before `Stopping ..`) is not counted. |
 | `OCUDU_NATIVE_MUE_PIN_UES` | `1` | With a platform profile, the srsUEs are pinned to the profile's UE cores like the OAI gates' nrUE; `0` leaves them unpinned. |
 
 The gate also applies the platform CPU placement of `platform-profiles.json`
@@ -273,6 +275,26 @@ does not declare `fixed_mimo`; Sionna supplies a complete matrix profile for
 each direction before the gNB and srsUE start. Readiness is reported as
 `event=native_sionna_rank1_live_ready`, and run artifacts are stored under
 `results/{logs,reports}/ocudu-sionna-rank1/`.
+
+## Run the two-cell native gate with Sionna RT (X-track)
+
+`run-ocudu-multi-gnb.sh` is the Docker-free two-cell gate (two OCUDU gNBs,
+two srsUEs, one core, one broker). Besides the fixed-TDL topology it always
+ran, it now takes the Sionna bridge the multi-UE gate uses:
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `OCUDU_NATIVE_CHANNEL_MODE` | `legacy` | `sionna`: broker `--control-endpoint`/`--telemetry-endpoint` under the run directory, the bridge (`run_bridge.py --scenario-config …`) started after the broker and before the gNBs, first `sionna_rt_update` awaited (180 s). |
+| `OCUDU_NATIVE_SIONNA_SCENARIO` | required in sionna mode | Absolute scenario JSON naming `gnb0`, `gnb1`, `ue0`, `ue1`. Its `links` must be exactly the topology's (same `from>to:model` keys) and its gNB arrays one port, or the broker rejects the first profile swap (`unknown link_id`, `dimensions 1x4 do not match`). |
+| `OCUDU_NATIVE_SIONNA_PYTHON` / `_UPDATE_HZ` | required / `10` | As in the multi-UE gate. |
+| `OCUDU_NATIVE_MGNB_TOPOLOGY` | `examples/topology.multi-gnb.cuda.yaml`; sionna: `examples/topology.sionna-2gnb-2ue.cuda.yaml` | Broker topology (absolute path). The Sionna one carries the eight serving/intercell `sionna_rt` links, carrier labels, UE `tx_scale_db` and absolute noise floors. |
+| `OCUDU_NATIVE_MGNB_WIRE_CAPTURE_SAMPLES` / `_SKIP_SECONDS` | `0` / `60` | Broker wire capture, as in the multi-UE gate. |
+
+The renderer gives the two cells distinct PRACH root sequences
+(`prach_root_sequence_index` 1 and 200): the ZMQ radios share the broker's
+lock-step time, so both UEs RACH on the same occasion, and with one root each
+gNB also detected the other cell's preamble over the inter-cell path and
+admitted a phantom UE (`crc=KO` PUSCH for an RNTI the real UE never followed).
 
 ## Common blockers
 

@@ -47,6 +47,9 @@ web_port="${OCUDU_NATIVE_WEB_PORT:-8080}"
 sionna_awgn_snr_db="${OCUDU_NATIVE_SIONNA_AWGN_SNR_DB:-40}"
 sionna_tx_power_dl="${OCUDU_NATIVE_SIONNA_TX_POWER_DL:-}"
 sionna_tx_power_ul="${OCUDU_NATIVE_SIONNA_TX_POWER_UL:-}"
+# Emitted UE power relative to the gNB (dB), folded into each UE port's
+# tx_scale_db by the renderer; default 23 dBm - 30 dBm. See ue_tx_scale_db.
+sionna_ul_power_offset_db="${OCUDU_NATIVE_SIONNA_UL_POWER_OFFSET_DB:-}"
 # Run length (the broker's --duration), and what runs next to the stack:
 # OCUDU_NATIVE_MUE_UE_EXEC starts a command inside each UE's netns once that
 # UE has pinged the core (placeholders {ue_id} {ue_ip} {ue_index} {ue_netns}
@@ -106,6 +109,8 @@ number_re='^-?[0-9]+([.][0-9]+)?([eE][-+]?[0-9]+)?$'
   usage_error "OCUDU_NATIVE_SIONNA_TX_POWER_DL must be a number"
 [[ -z "${sionna_tx_power_ul}" || "${sionna_tx_power_ul}" =~ ${number_re} ]] || \
   usage_error "OCUDU_NATIVE_SIONNA_TX_POWER_UL must be a number"
+[[ -z "${sionna_ul_power_offset_db}" || "${sionna_ul_power_offset_db}" =~ ${number_re} ]] || \
+  usage_error "OCUDU_NATIVE_SIONNA_UL_POWER_OFFSET_DB must be a number"
 # The attach window is 150 s of the run; anything shorter cannot verify.
 [[ "${mue_duration_seconds}" =~ ^[1-9][0-9]*$ && "${mue_duration_seconds}" -ge 160 ]] || \
   usage_error "OCUDU_NATIVE_MUE_DURATION_SECONDS must be an integer >= 160"
@@ -181,6 +186,9 @@ if [[ "${channel_mode}" == "sionna" && "${sionna_awgn_snr_db}" != "off" ]]; then
   renderer_args+=(--awgn-snr-db "${sionna_awgn_snr_db}")
   [[ -z "${sionna_tx_power_dl}" ]] || renderer_args+=(--tx-power-dl "${sionna_tx_power_dl}")
   [[ -z "${sionna_tx_power_ul}" ]] || renderer_args+=(--tx-power-ul "${sionna_tx_power_ul}")
+fi
+if [[ "${channel_mode}" == "sionna" ]]; then
+  [[ -z "${sionna_ul_power_offset_db}" ]] || renderer_args+=(--ul-power-offset-db "${sionna_ul_power_offset_db}")
 fi
 "/usr/bin/python3" "${renderer}" "${renderer_args[@]}" >"${log_dir}/render.log" 2>&1 || {
   cat "${log_dir}/render.log" >&2; usage_error "config rendering failed"
@@ -289,8 +297,13 @@ unshare --user --map-root-user --net --mount --fork --kill-child --propagation p
   "${inner}" "${inner_args[@]}"
 inner_status="$?"
 set -e
-[[ -n "${web_pid}" ]] && kill "${web_pid}" >/dev/null 2>&1
-[[ -n "${web_pid}" ]] && wait "${web_pid}" >/dev/null 2>&1
+# `|| true`: under set -e the command after the final && is NOT exempt, and
+# `wait` returns the killed Web UI's 143 -- which used to end the gate here,
+# before the result line, with exit 143 even for a passing Sionna run.
+if [[ -n "${web_pid}" ]]; then
+  kill "${web_pid}" >/dev/null 2>&1 || true
+  wait "${web_pid}" >/dev/null 2>&1 || true
+fi
 
 summary="${report_dir}/attach-summary.json"
 if [[ "${inner_status}" -eq 0 && -f "${summary}" ]]; then
