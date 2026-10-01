@@ -262,18 +262,6 @@
       "to": "gnb0",
       "direction": "uplink",
       "model": "intercell"
-    },
-    {
-      "from": "ue0",
-      "to": "ue1",
-      "direction": "crosstalk",
-      "model": "crosstalk"
-    },
-    {
-      "from": "ue1",
-      "to": "ue0",
-      "direction": "crosstalk",
-      "model": "crosstalk"
     }
   ]
 }

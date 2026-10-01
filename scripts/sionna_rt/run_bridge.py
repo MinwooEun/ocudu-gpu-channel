@@ -65,7 +65,10 @@ UPLINK_LINKS = tuple(
     for source in ("ue0", "ue1")
     for destination in ("gnb0", "gnb1")
 )
-CROSSTALK_LINKS = (("ue0", "ue1"), ("ue1", "ue0"))
+# No UE<->UE edge by default: the fixtures are FDD cells, where a UE never
+# hears another UE's uplink carrier. A scenario may still declare a
+# `crosstalk` link explicitly for a shared-carrier (TDD) study.
+CROSSTALK_LINKS: tuple[tuple[str, str], ...] = ()
 LINKS = DOWNLINK_LINKS + UPLINK_LINKS + CROSSTALK_LINKS
 ONE_GNB_ONE_UE_NODE_IDS = ("gnb0", "ue0")
 ONE_GNB_ONE_UE_DOWNLINK_LINKS = (("gnb0", "ue0"),)

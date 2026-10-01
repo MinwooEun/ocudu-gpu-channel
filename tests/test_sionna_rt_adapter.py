@@ -90,13 +90,13 @@ class AdapterTests(unittest.TestCase):
             client.request({"type": "batch_begin", "id": "sionna-0"})
 
     def test_two_gnb_two_ue_graph_and_horizontal_motion(self) -> None:
-        self.assertEqual(len(LINKS), 10)
-        self.assertEqual(len(set(LINKS)), 10)
+        self.assertEqual(len(LINKS), 8)
+        self.assertEqual(len(set(LINKS)), 8)
         self.assertEqual(len(DOWNLINK_LINKS), 4)
         self.assertEqual(len(UPLINK_LINKS), 4)
         self.assertTrue(all(source.startswith("gnb") for source, _ in DOWNLINK_LINKS))
         self.assertTrue(all(source.startswith("ue") for source, _ in UPLINK_LINKS))
-        self.assertEqual(CROSSTALK_LINKS, (("ue0", "ue1"), ("ue1", "ue0")))
+        self.assertEqual(CROSSTALK_LINKS, ())  # FDD: no UE<->UE edge by default
         self.assertEqual(MODEL_ID, "sionna_rt")
         self.assertEqual(
             Motion((1.0, 2.0, 3.0), (0.5, 0.0, 0.0)).position_at(4.0),
@@ -160,7 +160,7 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(environment["nodes"]["gnb0"]["velocity_mps"], (0.0, 0.0, 0.0))
         self.assertEqual(environment["nodes"]["ue0"]["mobility"], "car")
         self.assertEqual(environment["nodes"]["ue1"]["mobility"], "pedestrian")
-        self.assertEqual(environment["link_count"], 10)
+        self.assertEqual(environment["link_count"], 8)
         self.assertEqual(environment["nodes"]["gnb0"]["start_m"][2], 60.0)
 
     def test_floor_is_split_into_ui_visible_road_and_ground(self) -> None:

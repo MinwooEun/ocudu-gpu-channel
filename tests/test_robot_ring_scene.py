@@ -49,11 +49,9 @@ class RobotRingScenarioTest(unittest.TestCase):
         # Transmission through the pillars is what keeps a shadowed robot at
         # roughly -25 dB instead of outage (R1 sweep), so it must stay on.
         self.assertTrue(definition.solver["refraction"])
-        crosstalk = load_scenario_config(SCENARIO.with_name("robot-ring-crosstalk.json"))
-        self.assertEqual(
-            {(l.source, l.destination, l.direction) for l in crosstalk.links},
-            links | {("ue0", "ue1", "crosstalk"), ("ue1", "ue0", "crosstalk")},
-        )
+        # No UE<->UE edge: the ring cell is FDD band 3, where one robot's uplink
+        # carrier is never heard by the other's downlink receiver.
+        self.assertFalse(any(l.direction == "crosstalk" for l in definition.links))
         for node_id in ("ue0", "ue1"):
             motion = definition.nodes[node_id].motion
             self.assertEqual(motion.route_mode, "pingpong")
@@ -126,8 +124,6 @@ class RobotRingScenarioTest(unittest.TestCase):
             {(link.source, link.destination) for link in shape.links},
             {("gnb0", "ue0"), ("gnb0", "ue1"), ("ue0", "gnb0"), ("ue1", "gnb0")},
         )
-        crosstalk = renderer.load_live_shape(SCENARIO.with_name("robot-ring-crosstalk.json"))
-        self.assertEqual(len(crosstalk.links), 6)
 
 
 if __name__ == "__main__":

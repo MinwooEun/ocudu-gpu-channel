@@ -254,7 +254,7 @@ End-to-end-validated topologies:
 
 - Single-cell, single-UE: [`examples/topology.ocudu-docker.cuda.yaml`](examples/topology.ocudu-docker.cuda.yaml)
 - Multi-UE, one cell, realistic per-UE channel: [`examples/topology.ocudu-docker.multi-ue.cuda.yaml`](examples/topology.ocudu-docker.multi-ue.cuda.yaml)
-- 3-node interference + crosstalk graph: [`examples/topology.graph.cuda.yaml`](examples/topology.graph.cuda.yaml)
+- 3-node shared-carrier interference graph (UE->UE edges are physical only because all ports share one carrier): [`examples/topology.graph.cuda.yaml`](examples/topology.graph.cuda.yaml)
 - 2-cell / 4-node / 8-edge multi-gNB: [`examples/topology.multi-gnb.cuda.yaml`](examples/topology.multi-gnb.cuda.yaml)
 
 Synthetic-loop validation matches the analytic superposition to < 0.3 % on real
