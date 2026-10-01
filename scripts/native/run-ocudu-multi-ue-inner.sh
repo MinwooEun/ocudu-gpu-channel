@@ -696,6 +696,13 @@ for line in (log_dir / "broker.log").read_text(encoding="utf-8", errors="replace
                 "producer_stall": int((re.search(r"producer\[[^\]]*stall=(\d+)", line) or [0, -1])[1]),
             }
 summary["last_heartbeat"] = heartbeats
+# X6: which lower-PHY executor profile the gNB really ran ("Lower PHY in
+# executor sequential baseband mode." etc.), so a profile request that the
+# gNB silently overrides (zmq forces sequential on a1916edc) is visible here.
+console = log_dir / "gnb-console.log"
+summary["gnb_lower_phy_mode"] = next(
+    (line.strip() for line in console.read_text(encoding="utf-8", errors="replace").splitlines()
+     if line.startswith("Lower PHY in ")), None) if console.exists() else None
 status_jsonl = log_dir / "sionna-status.jsonl"
 if status_jsonl.exists():
     updates = 0

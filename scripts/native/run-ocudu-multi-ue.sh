@@ -66,6 +66,16 @@ mue_strict_realtime="${OCUDU_NATIVE_MUE_STRICT_REALTIME:-0}"
 # noise floor is sized against.
 mue_wire_capture_samples="${OCUDU_NATIVE_MUE_WIRE_CAPTURE_SAMPLES:-0}"
 mue_wire_capture_skip_seconds="${OCUDU_NATIVE_MUE_WIRE_CAPTURE_SKIP_SECONDS:-60}"
+# X6: the gNB lower-PHY thread profile the renderer writes into gnb.yaml
+# (single|dual|triple; empty = fixture untouched). See
+# docs/plans/x6-gnb-realtime-traffic.md: on OCUDU a1916edc the zmq driver
+# forces the sequential profile after parsing, so this is accepted but inert
+# until the gNB source is patched; the summary records the mode it printed.
+gnb_lower_phy_profile="${OCUDU_NATIVE_GNB_LOWER_PHY_PROFILE:-}"
+# X6: the gNB main worker pool size (expert_execution.threads.main_pool.nof_threads;
+# empty = OCUDU default, which the 5-core GB10 pin shrinks to 2 and which
+# deadlocks under two-UE traffic -- see the renderer and the plan note).
+gnb_main_pool_threads="${OCUDU_NATIVE_GNB_MAIN_POOL_THREADS:-}"
 if [[ "${channel_mode}" == "sionna" ]]; then
   renderer="${script_dir}/render-sionna-multi-ue-configs.py"
 else
@@ -119,6 +129,10 @@ number_re='^-?[0-9]+([.][0-9]+)?([eE][-+]?[0-9]+)?$'
   usage_error "OCUDU_NATIVE_MUE_WIRE_CAPTURE_SAMPLES must be a non-negative integer"
 [[ "${mue_wire_capture_skip_seconds}" =~ ^(0|[1-9][0-9]*)$ ]] || \
   usage_error "OCUDU_NATIVE_MUE_WIRE_CAPTURE_SKIP_SECONDS must be a non-negative integer"
+[[ -z "${gnb_lower_phy_profile}" || "${gnb_lower_phy_profile}" =~ ^(single|dual|triple)$ ]] || \
+  usage_error "OCUDU_NATIVE_GNB_LOWER_PHY_PROFILE must be single, dual, triple or empty"
+[[ -z "${gnb_main_pool_threads}" || "${gnb_main_pool_threads}" =~ ^[1-9][0-9]?$ ]] || \
+  usage_error "OCUDU_NATIVE_GNB_MAIN_POOL_THREADS must be a small positive integer or empty"
 # CPU placement from platform-profiles.json (spark-gb10: gNB 5-9, broker
 # 15-17, UEs 18,19; a no-op on an unknown host; OCUDU_NATIVE_PLATFORM=none
 # turns it off). The same resolver the OAI gates use, so the pinned runs
@@ -237,11 +251,11 @@ declare -a inner_args=(
   "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" "${OCUDU_NATIVE_GNB_CPUS:-}" \
   "${OCUDU_NATIVE_BROKER_CPUS:-}" "${OCUDU_NATIVE_NRUE_CPUS:-}" "${OCUDU_NATIVE_BROKER_ENV:-}" \
   "${mue_ue_exec}" "${mue_root_exec}" "${mue_wire_capture_samples}" "${mue_wire_capture_skip_seconds}" \
-  "${sionna_scenario}" "${sionna_position_endpoint}"
+  "${sionna_scenario}" "${sionna_position_endpoint}" "${gnb_lower_phy_profile}" "${gnb_main_pool_threads}"
 import json, sys
 (out, channel_mode, ue_count, duration, strict, awgn, tx_dl, tx_ul, profile, gnb_cpus,
  broker_cpus, ue_cpus, broker_env, ue_exec, root_exec, cap_samples, cap_skip,
- scenario, position_endpoint) = sys.argv[1:]
+ scenario, position_endpoint, gnb_lower_phy_profile, gnb_main_pool_threads) = sys.argv[1:]
 json.dump({
     "channel_mode": channel_mode, "ue_count": int(ue_count),
     "run_duration_seconds": int(duration), "strict_realtime": int(strict),
@@ -253,12 +267,14 @@ json.dump({
     "broker_env": broker_env, "ue_exec": ue_exec, "root_exec": root_exec,
     "wire_capture": {"samples": int(cap_samples), "skip_seconds": int(cap_skip)},
     "sionna_scenario": scenario or None, "sionna_position_endpoint": position_endpoint or None,
+    "gnb_lower_phy_profile": gnb_lower_phy_profile or None,
+    "gnb_main_pool_threads": int(gnb_main_pool_threads) if gnb_main_pool_threads else None,
 }, open(out, "w"), indent=2, sort_keys=True)
 PY
-printf 'event=native_multi_ue_gate_parameters duration=%ss strict_realtime=%s platform=%s gnb_cpus=%s broker_cpus=%s ue_cpus=%s awgn_snr_db=%s\n' \
+printf 'event=native_multi_ue_gate_parameters duration=%ss strict_realtime=%s platform=%s gnb_cpus=%s broker_cpus=%s ue_cpus=%s awgn_snr_db=%s gnb_lower_phy_profile=%s gnb_main_pool_threads=%s\n' \
   "${mue_duration_seconds}" "${mue_strict_realtime}" "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" \
   "${OCUDU_NATIVE_GNB_CPUS:-}" "${OCUDU_NATIVE_BROKER_CPUS:-}" "${OCUDU_NATIVE_NRUE_CPUS:-}" \
-  "${sionna_awgn_snr_db}"
+  "${sionna_awgn_snr_db}" "${gnb_lower_phy_profile:-default}" "${gnb_main_pool_threads:-default}"
 web_pid=""
 if [[ "${channel_mode}" == "sionna" ]]; then
   # ipc:// under the run directory, so the control and telemetry sockets live

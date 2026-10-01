@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import math
+import os
 import pathlib
 import subprocess
 import sys
 import unittest
+from unittest import mock
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[1]
 RENDERER_1X1 = PROJECT_ROOT / "scripts" / "native" / "render-oai-1x1-configs.py"
@@ -78,6 +81,30 @@ class RendererTests(unittest.TestCase):
             self.assertEqual(entry.count("tx_scale_db:"), 1 if entry.startswith("ue0") else 0, entry)
         self.assertEqual(rendered[rendered.index("radio_nodes:"):], source[source.index("radio_nodes:"):])
         self.assertNotIn("tx_scale_db", two.render_topology_2x2(source))
+
+    def test_2x2_default_scale_is_the_1x1_scale_on_both_ue_ports(self):
+        # X7 measured the 2x2 UE's port 0 at the 1x1 per-channel wire level and
+        # port 1 silent, so the renderers share OAI_UE_TX_POWER and the derived
+        # +22.8 dB; the 2x2 parser must resolve the same default and keep the
+        # env/CLI overrides of the shared argument layer.
+        oai = load(RENDERER_1X1, "render_oai_1x1_for_test")
+        two = load(RENDERER_2X2, "render_oai_2x2_for_test")
+        parser = argparse.ArgumentParser()
+        two.oai.add_tx_scale_arguments(parser)
+        default = two.oai.resolve_ue_tx_scale_db(parser.parse_args([]))
+        self.assertAlmostEqual(default, oai.ue_tx_scale_db(), places=9)
+        self.assertAlmostEqual(default, 22.81, places=2)
+        source = TOPOLOGY_2X2.read_text(encoding="utf-8")
+        rendered = two.render_topology_2x2(source, default)
+        self.assertEqual(rendered.count(f"    tx_scale_db: {default:.3f}\n"), 2)
+        self.assertIsNone(two.oai.resolve_ue_tx_scale_db(parser.parse_args(["--ue-tx-scale-db", "off"])))
+        self.assertAlmostEqual(
+            two.oai.resolve_ue_tx_scale_db(parser.parse_args(["--tx-power-ul", str(oai.OAI_UE_TX_POWER * 10.0)])),
+            default - 10.0, places=9)
+        with mock.patch.dict(os.environ, {"OCUDU_NATIVE_OAI_UE_TX_SCALE_DB": "-3.5"}):
+            env_parser = argparse.ArgumentParser()
+            two.oai.add_tx_scale_arguments(env_parser)
+            self.assertAlmostEqual(two.oai.resolve_ue_tx_scale_db(env_parser.parse_args([])), -3.5, places=9)
 
 
 if __name__ == "__main__":

@@ -184,6 +184,8 @@ run the gate always did:
 | `OCUDU_NATIVE_MUE_UE_EXEC` | unset | A `bash -c` template started inside each UE's network namespace right after that UE's ping passes (the tun and its address exist only then). Placeholders: `{ue_id}` (ue0…), `{ue_ip}` (10.45.1.2…), `{ue_index}`, `{ue_netns}`, `{ue_gateway}`, `{log_dir}`, `{run_dir}`, `{config_dir}`. Only the network namespace is entered, so the filesystem (ipc sockets, logs) is shared with the stack. Logged to `ue-exec-<ue>.log`, stopped first at teardown. |
 | `OCUDU_NATIVE_MUE_ROOT_EXEC` | unset | The same for one command in the stack's own namespace (where `ogstun` 10.45.1.1, the broker and the bridge live), started as soon as `ogstun` exists — the place for a robot brain the UEs reach at `{ue_gateway}`. Placeholders: `{ue_ids}`, `{ue_ips}`, `{ue_gateway}`, `{log_dir}`, `{run_dir}`, `{config_dir}`. Logged to `root-exec.log`. |
 | `OCUDU_NATIVE_MUE_WIRE_CAPTURE_SAMPLES` / `_SKIP_SECONDS` | `0` / `60` | Broker wire capture per port and direction into `<log_dir>/wire-capture`; `wire-capture-power.py` reads it. |
+| `OCUDU_NATIVE_GNB_MAIN_POOL_THREADS` | `5` on `spark-gb10`, unset elsewhere | `expert_execution.threads.main_pool.nof_threads` in the rendered gNB config. In ZMQ mode OCUDU runs every DU-high cell executor as a synchronous strand over this pool and sizes it `min(5, cores-3)`, i.e. 2 under a 5-core gNB pin; two synchronous waiters (RLC buffer-state, timers) then exhaust it, the slot indication never runs, the downlink stops and the lock-step relay wedges (3 of 4 two-UE uplink-load runs). With 5 threads the gNB held 2x20 Mbit/s uplink for 200 s. See `docs/plans/x6-gnb-realtime-traffic.md`. |
+| `OCUDU_NATIVE_GNB_LOWER_PHY_PROFILE` | unset | Writes `expert_execution.threads.lower_phy.execution_profile`; recorded as `gnb_lower_phy_mode` in the summary. Inert for ZMQ radios: OCUDU forces the sequential profile in three source sites. |
 | `OCUDU_NATIVE_ATTACH_STRICT` | `1` | Strict attach verdict (X0) in the native multi-UE and multi-gNB inner gates. `1`: a UE is attached only if, besides RRC Connected + PDU session + ping, its srsUE log shows no `Scheduling request failed`, no `Random Access Transmission` after the first `RRC Connected`, no RLF, and every ping was answered (`ping_received == ping_sent > 0`); `0`: the old verdict (ever RRC + PDU + one `ping -c 3` exit 0, which passed a run whose UEs lost the link 30 s after attaching). The summary records `attach_strict` and, per UE, `sr_failures`, `reattach_attempts`, `rlf_count`, `ping_sent`, `ping_received`, `attach_clean`; the gate log gets one `event=ue_attach_evidence ue=… clean=0/1` line per UE. The gate's own teardown release (`Received RRC Release` right before `Stopping ..`) is not counted. |
 | `OCUDU_NATIVE_MUE_PIN_UES` | `1` | With a platform profile, the srsUEs are pinned to the profile's UE cores like the OAI gates' nrUE; `0` leaves them unpinned. |
 
@@ -308,20 +310,29 @@ oai-1x1/20261001T110037Z) against the gNB's 1.12e-2, i.e. 29.8 dB *quieter*
 than the gNB where srsUE is 64 dB hotter. With 23 dBm vs 30 dBm the UE port
 gets `tx_scale_db` +22.8 dB. The fixed-TDL OAI topologies have no absolute
 noise floor, so the scale only changes the level the gNB receives (PUSCH now
-about -22 dB instead of -45 dB). The 2x2 gate assumes the same per-port level
-as 1x1 (unmeasured).
+about -22 dB instead of -45 dB). The 2x2 gate uses the same constant: its
+per-channel levels match 1x1 within 0.3 dB (OAI emits a fixed amplitude per
+RE) and the stock single-layer uplink leaves port 1 silent
+(oai-2x2/20261001T114323Z; with UL rank 2 both ports transmit at the same
+per-RE level).
 
 | Variable | Default | Effect |
 | --- | --- | --- |
 | `OCUDU_NATIVE_OAI1X1_WIRE_CAPTURE_SAMPLES` / `_SKIP_SECONDS` | `0` / `2` | Broker wire capture for the OAI 1x1 gate (per port, skip counts from the port's first sample). |
 | `OCUDU_NATIVE_OAI_UE_TX_POWER` | `1.17e-5` | Measured OAI nrUE wire level the scale is derived from. |
 | `OCUDU_NATIVE_OAI_UE_TX_SCALE_DB` | derived (`+22.8`) | Force the UE `tx_scale_db`, or `off` for the pre-X1 topology. |
+| `OCUDU_NATIVE_OAI2X2_WIRE_CAPTURE_SAMPLES` / `_SKIP_SECONDS` | `0` / `2` | Broker wire capture for the OAI 2x2 gate (same semantics as 1x1). |
 
-Observed once at the scaled level (oai-1x1/20261001T110703Z): the gNB PRACH
-detector mis-estimated the timing advance (14 us instead of 0.78 us) and the UE
-needed two more RAs; two further scaled runs and all unscaled runs detected
-correctly. If it recurs, `OCUDU_NATIVE_OAI_UE_TX_SCALE_DB=off` restores the
-old level while it is investigated.
+A PRACH timing-advance mis-detection seen once at the scaled level
+(oai-1x1/20261001T110703Z: 14 us instead of 0.78 us, two extra RAs) is not a
+level effect. The uplink reached the gNB with a +601 Hz offset, 0.48 of a PRACH
+subcarrier, which puts a Zadoff-Chu side peak at -0.7 dB of the main one and
+13.3 us away for that preamble's root; 22 of 64 preambles are vulnerable at
+any level. Two causes: the broker's `phase` step also applied the link's CFO
+(fixed: 125 Hz is now 125 Hz, it used to arrive as 250 Hz), and the gate's
+`--cont-fo-comp 1` pre-rotates the uplink instead of cancelling. Setting
+`OCUDU_NATIVE_OAI_UE_CONT_FO_COMP=3` leaves the uplink unrotated (verified:
+side peak -12 dB, TA 0.78 us). See `docs/plans/x7-oai-levels-prach.md`.
 
 **TDD two-UE gate (`run-ocudu-oai-multi-ue.sh`, X3/X4).** One OCUDU gNB on a
 TDD n78 20 MHz 30 kHz cell (dl_arfcn 632628, 51 PRB, 23.04 MS/s with the

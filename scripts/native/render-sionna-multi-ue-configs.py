@@ -50,6 +50,15 @@ DEFAULT_UE_COUNT = 2
 # (-19.5 dB, peak amplitude 0.39) on the wire; srsUE (srsue_zmq_multi_ue.conf.in,
 # whose [rf] tx_gain = 50 dB the ZMQ radio applies numerically, peak 313)
 # 2.8e4-3.3e4 (+44..45 dB) while sending PUCCH/SRS/ping-sized PUSCH.
+# Under traffic (X6, docs/plans/x6-gnb-realtime-traffic.md, runs 20261001T114501Z
+# and T115125Z, two UEs at 20 Mbit/s UL, capture at run-second 20): the gNB's
+# PDSCH-filled slots measure 3.4e-3..3.7e-3 (-24.7..-24.3 dB) and a UE sending
+# full-rate PUSCH 9.7e3..9.9e3 (+39.9 dB), both ~5 dB below the idle-regime
+# values above, while a UE sending only control bursts still measures 3.25e4.
+# The UL/DL ratio -- all ue_tx_scale_db uses -- is 64.6 dB vs 64.3 dB here, so
+# the constants stay at the idle-regime values they document; moving only
+# TX_POWER_UL to the traffic value would skew the UE scale by +4.9 dB, and
+# moving both would shift the absolute floor the R4a SNR calibration rests on.
 TX_POWER_DL = 1.12e-2
 TX_POWER_UL = 3.0e4
 # Emulated transmit powers. The wire levels above are software scales (srsUE

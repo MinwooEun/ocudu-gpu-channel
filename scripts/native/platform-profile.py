@@ -5,7 +5,8 @@ OCUDU_NATIVE_PLATFORM selects the profile: `auto` (default) matches the host
 against platform-profiles.json, `none` applies nothing, any other value must be
 a profile name. An unknown host resolves to no placement, so the gates behave
 exactly as before there. A per-process OCUDU_NATIVE_{GNB,BROKER,NRUE}_CPUS that
-is already set wins over the profile.
+is already set wins over the profile, as does any OCUDU_NATIVE_GNB_* the
+profile's `gnb_env` would export.
 
 usage: platform-profile.py --shell   (prints shell assignments to eval)
        platform-profile.py --json    (prints the resolution record)
@@ -102,6 +103,20 @@ def resolve():
     for item in record['broker_env'].split():
         if '=' not in item or not item.split('=', 1)[0].replace('_', '').isalnum():
             sys.exit(f'error: broker env entry is not KEY=VALUE: {item}')
+    # gNB environment the profile asks for (X6: the OCUDU main worker pool is
+    # sized from the pinned CPU count, so a pin needs to restore it). Each
+    # entry is exported into the gate only when the caller has not set it.
+    record['gnb_env'] = {}
+    if record['profile']:
+        for key, value in sorted(profiles[record['profile']].get('gnb_env', {}).items()):
+            if not key.startswith('OCUDU_NATIVE_GNB_') or not key.replace('_', '').isalnum():
+                sys.exit(f'error: gnb_env key must be an OCUDU_NATIVE_GNB_* name: {key}')
+            if os.environ.get(key):
+                record['gnb_env'][key] = os.environ[key]
+                record['source'][key] = 'env'
+            else:
+                record['gnb_env'][key] = str(value)
+                record['source'][key] = 'profile'
     return record
 
 
@@ -116,6 +131,10 @@ def main():
     for role in ROLES:
         print(f"OCUDU_NATIVE_{role.upper()}_CPUS='{record['cpus'].get(role, '')}'")
     print(f"OCUDU_NATIVE_BROKER_ENV='{record['broker_env']}'")
+    for key, value in record['gnb_env'].items():
+        if "'" in value:
+            sys.exit(f'error: gnb_env value must not contain a quote: {key}')
+        print(f"export {key}='{value}'")
     return 0
 
 

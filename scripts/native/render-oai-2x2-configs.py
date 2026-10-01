@@ -191,6 +191,22 @@ def render_topology_2x2(source: str, ue_scale_db: float | None = None) -> str:
     the two ports of a radio node to agree on tx_scale_db. The fixed 2x2 matrix
     and the 0 dB tdl stay byte-identical; there is no absolute noise floor in
     this fixture, so the scale only sets the level the gNB receives.
+
+    The per-port level behind the shared OAI_UE_TX_POWER was measured for this
+    gate (X7, oai-2x2/20261001T114323Z, 3 s wire capture after a 2 s skip,
+    docs/plans/x7-oai-levels-prach.md): the UE's port 0 carries every uplink
+    channel at the 1x1 per-channel level (0.3 ms PUCCH -60.5 dB vs -60.2 dB,
+    1 ms narrow bursts -57.4/-57.6 vs -57.2 dB; the nrUE's digital amplitude per
+    resource element is the same whatever the antenna count) and port 1 is
+    silent with the stock 1-layer uplink (all zeros), so the gNB's second port
+    only hears port 0 through the matrix. The traffic-weighted active mean of
+    that window (2.15e-6) is 7.4 dB under the 1x1 constant only because the
+    window held the DL-iperf HARQ-ACK PUCCH phase instead of the 1x1
+    calibration's wideband attach/ping PUSCH; a 0 s-skip window of the same
+    gate (20261001T120129Z) gives 3.17e-6 for the same reason (the 2-port gNB
+    grants the attach signalling at a far higher MCS, so fewer PRBs). The
+    constant stays shared: a given allocation has the same wire power in both
+    gates, which is what `tx_scale_db` maps onto emitted power.
     """
     rendered = validate_topology(source)
     if ue_scale_db is not None and not (math.isfinite(ue_scale_db) and abs(ue_scale_db) <= 200.0):
