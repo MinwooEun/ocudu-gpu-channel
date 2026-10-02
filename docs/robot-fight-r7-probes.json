@@ -1,0 +1,1979 @@
+[
+  {
+    "tag": "corrected-awgn24",
+    "log_dir": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-awgn24",
+    "gate": {
+      "result": "passed",
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-awgn24/report/attach-summary.json",
+      "run_parameters": {
+        "broker_sched": {
+          "a": "protected",
+          "b": "protected"
+        },
+        "contention": {
+          "hog": {
+            "duty": 1.0,
+            "kernel_us": 2000,
+            "mps_client": 1,
+            "sm_percent": null
+          },
+          "kind": "none",
+          "sionna_mps_client": 1,
+          "start": "after-attach"
+        },
+        "cpus": {
+          "gnb": "5-9",
+          "ue": "18,19"
+        },
+        "gnb": {
+          "acceleration": null,
+          "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+          "kind": "cpu"
+        },
+        "gnb_metrics": {
+          "a": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080547Z/gnb-metrics-a.sock",
+            "gnb": "gnb0",
+            "port": 8001,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080547Z/gnb-metrics-a.sock"
+          },
+          "b": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080547Z/gnb-metrics-b.sock",
+            "gnb": "gnb1",
+            "port": 8002,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080547Z/gnb-metrics-b.sock"
+          }
+        },
+        "mps_server": 1,
+        "plain": {
+          "cpus": ""
+        },
+        "platform_profile": "spark-gb10",
+        "protected": {
+          "broker_env": "OCG_BROKER_SPIN=1",
+          "cpus": "15-17",
+          "mps_client": true,
+          "rt_priority": 0,
+          "stream_priority": "high"
+        },
+        "root_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py server --bind {ue_gateway}:7000 --log {log_dir}/probe-server.jsonl",
+        "run_duration_seconds": 160,
+        "sionna_awgn_snr_db": 24.0,
+        "sionna_position_endpoint": null,
+        "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+        "strict_realtime": 0,
+        "ue_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py client --robot {ue_id} --bind {ue_ip}:0 --server {ue_gateway}:7000 --rate-hz 100 --log {log_dir}/probe-{ue_id}.jsonl"
+      }
+    },
+    "ues": {
+      "ue0": {
+        "probe": {
+          "steady": {
+            "requests": 13186,
+            "answered": 13186,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7124.616,
+              "p90": 19650.141,
+              "p99": 33933.071,
+              "max": 162832.494,
+              "mean": 9663.906624298497
+            },
+            "dl_us": {
+              "p50": 9004.648,
+              "p90": 10042.991,
+              "p99": 10246.945,
+              "max": 18164.833,
+              "mean": 8973.571208251176
+            },
+            "rtt_us": {
+              "p50": 16058.432,
+              "p90": 28602.273,
+              "p99": 42784.563,
+              "max": 171357.393,
+              "mean": 18646.323142423782
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 15186,
+            "answered": 15186,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7063.001,
+              "p90": 19588.381,
+              "p99": 32989.365,
+              "max": 162832.494,
+              "mean": 9541.01592644541
+            },
+            "dl_us": {
+              "p50": 9004.584,
+              "p90": 10044.977,
+              "p99": 10245.299,
+              "max": 18164.833,
+              "mean": 8977.122332082183
+            },
+            "rtt_us": {
+              "p50": 16029.17,
+              "p90": 28475.876,
+              "p99": 41787.61,
+              "max": 171357.393,
+              "mean": 18527.04516317661
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755578732815894,
+          "end_ns": 1790755710583177659,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15360,
+            "unresolved_at_stop": 174,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 132,
+          "dl_snr": 28.0,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.013636363636363636,
+          "ul_mcs": 12.090909090909092,
+          "ul_bler": 0.9810606060606061,
+          "dl_brate": 248285.86470170456,
+          "ul_brate": 305422.7137784091,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 37.345,
+          "p99": 206.626,
+          "max": 271.57,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 1,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      },
+      "ue1": {
+        "probe": {
+          "steady": {
+            "requests": 12985,
+            "answered": 12985,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7152.441,
+              "p90": 19677.708,
+              "p99": 76705.107,
+              "max": 275712.016,
+              "mean": 10324.19516981132
+            },
+            "dl_us": {
+              "p50": 8990.664,
+              "p90": 10037.105,
+              "p99": 10235.347,
+              "max": 17374.762,
+              "mean": 8968.670909896035
+            },
+            "rtt_us": {
+              "p50": 16105.552,
+              "p90": 28645.876,
+              "p99": 85364.632,
+              "max": 283368.974,
+              "mean": 19301.191649980745
+            },
+            "outages": {
+              "count": 2,
+              "total_ms": 259.994774,
+              "max_ms": 169.998395,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 14985,
+            "answered": 14985,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7105.098,
+              "p90": 19617.55,
+              "p99": 59490.255,
+              "max": 275712.016,
+              "mean": 10112.714706506507
+            },
+            "dl_us": {
+              "p50": 8989.56,
+              "p90": 10034.848,
+              "p99": 10230.403,
+              "max": 17374.762,
+              "mean": 8967.26714641308
+            },
+            "rtt_us": {
+              "p50": 16065.824,
+              "p90": 28483.812,
+              "p99": 68475.507,
+              "max": 283368.974,
+              "mean": 19088.35731484818
+            },
+            "outages": {
+              "count": 2,
+              "total_ms": 259.994774,
+              "max_ms": 169.998395,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755580766739304,
+          "end_ns": 1790755710607035879,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15158,
+            "unresolved_at_stop": 173,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 130,
+          "dl_snr": 28.0,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.01846153846153846,
+          "ul_mcs": 10.936923076923076,
+          "ul_bler": 0.8846153846153846,
+          "dl_brate": 248428.42620192308,
+          "ul_brate": 305607.49855769234,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 37.472,
+          "p99": 257.282,
+          "max": 299.074,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 4,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      }
+    }
+  },
+  {
+    "tag": "corrected-awgn27",
+    "log_dir": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-awgn27",
+    "gate": {
+      "result": "passed",
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-awgn27/report/attach-summary.json",
+      "run_parameters": {
+        "broker_sched": {
+          "a": "protected",
+          "b": "protected"
+        },
+        "contention": {
+          "hog": {
+            "duty": 1.0,
+            "kernel_us": 2000,
+            "mps_client": 1,
+            "sm_percent": null
+          },
+          "kind": "none",
+          "sionna_mps_client": 1,
+          "start": "after-attach"
+        },
+        "cpus": {
+          "gnb": "5-9",
+          "ue": "18,19"
+        },
+        "gnb": {
+          "acceleration": null,
+          "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+          "kind": "cpu"
+        },
+        "gnb_metrics": {
+          "a": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080248Z/gnb-metrics-a.sock",
+            "gnb": "gnb0",
+            "port": 8001,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080248Z/gnb-metrics-a.sock"
+          },
+          "b": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080248Z/gnb-metrics-b.sock",
+            "gnb": "gnb1",
+            "port": 8002,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080248Z/gnb-metrics-b.sock"
+          }
+        },
+        "mps_server": 1,
+        "plain": {
+          "cpus": ""
+        },
+        "platform_profile": "spark-gb10",
+        "protected": {
+          "broker_env": "OCG_BROKER_SPIN=1",
+          "cpus": "15-17",
+          "mps_client": true,
+          "rt_priority": 0,
+          "stream_priority": "high"
+        },
+        "root_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py server --bind {ue_gateway}:7000 --log {log_dir}/probe-server.jsonl",
+        "run_duration_seconds": 160,
+        "sionna_awgn_snr_db": 27.0,
+        "sionna_position_endpoint": null,
+        "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+        "strict_realtime": 0,
+        "ue_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py client --robot {ue_id} --bind {ue_ip}:0 --server {ue_gateway}:7000 --rate-hz 100 --log {log_dir}/probe-{ue_id}.jsonl"
+      }
+    },
+    "ues": {
+      "ue0": {
+        "probe": {
+          "steady": {
+            "requests": 13191,
+            "answered": 13191,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7360.508,
+              "p90": 19806.677,
+              "p99": 33867.277,
+              "max": 189028.474,
+              "mean": 9781.60405753923
+            },
+            "dl_us": {
+              "p50": 8955.947,
+              "p90": 9986.595,
+              "p99": 10192.723,
+              "max": 18393.51,
+              "mean": 8932.118532711696
+            },
+            "rtt_us": {
+              "p50": 16230.309,
+              "p90": 28751.311,
+              "p99": 42462.53,
+              "max": 197196.461,
+              "mean": 18722.195507163975
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 15191,
+            "answered": 15191,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7349.39,
+              "p90": 19748.29,
+              "p99": 33356.211,
+              "max": 189028.474,
+              "mean": 9720.898394509908
+            },
+            "dl_us": {
+              "p50": 8945.931,
+              "p90": 9977.187,
+              "p99": 10190.821,
+              "max": 18393.51,
+              "mean": 8920.882367388585
+            },
+            "rtt_us": {
+              "p50": 16202.726,
+              "p90": 28685.502,
+              "p99": 41989.228,
+              "max": 197196.461,
+              "mean": 18650.211938121254
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755399631177859,
+          "end_ns": 1790755531531489267,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15348,
+            "unresolved_at_stop": 157,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 132,
+          "dl_snr": 30.0,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.0,
+          "ul_mcs": 11.871212121212121,
+          "ul_bler": 0.8878787878787879,
+          "dl_brate": 246928.70703125,
+          "ul_brate": 300269.4353693182,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 37.936,
+          "p99": 278.739,
+          "max": 295.858,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 3,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      },
+      "ue1": {
+        "probe": {
+          "steady": {
+            "requests": 12984,
+            "answered": 12984,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7056.124,
+              "p90": 19694.417,
+              "p99": 84088.668,
+              "max": 369956.689,
+              "mean": 10416.200564926063
+            },
+            "dl_us": {
+              "p50": 8975.051,
+              "p90": 10039.491,
+              "p99": 10238.58,
+              "max": 17700.211,
+              "mean": 8955.89153650647
+            },
+            "rtt_us": {
+              "p50": 15993.78,
+              "p90": 28679.066,
+              "p99": 93228.344,
+              "max": 379184.718,
+              "mean": 19380.364970887247
+            },
+            "outages": {
+              "count": 1,
+              "total_ms": 229.993085,
+              "max_ms": 229.993085,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 14984,
+            "answered": 14984,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7032.666,
+              "p90": 19650.228,
+              "p99": 79009.893,
+              "max": 369956.689,
+              "mean": 10274.740133942872
+            },
+            "dl_us": {
+              "p50": 8978.379,
+              "p90": 10039.22,
+              "p99": 10232.436,
+              "max": 17700.211,
+              "mean": 8954.420997664176
+            },
+            "rtt_us": {
+              "p50": 15966.53,
+              "p90": 28614.626,
+              "p99": 87739.234,
+              "max": 379184.718,
+              "mean": 19237.412549986653
+            },
+            "outages": {
+              "count": 1,
+              "total_ms": 229.993085,
+              "max_ms": 229.993085,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755401674096592,
+          "end_ns": 1790755531504400342,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15144,
+            "unresolved_at_stop": 160,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 130,
+          "dl_snr": 30.0,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.0,
+          "ul_mcs": 10.861538461538462,
+          "ul_bler": 0.8692307692307693,
+          "dl_brate": 249000.6200721154,
+          "ul_brate": 303688.0675480769,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 38.352,
+          "p99": 242.738,
+          "max": 274.178,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 1,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      }
+    }
+  },
+  {
+    "tag": "corrected-awgn30",
+    "log_dir": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-awgn30",
+    "gate": {
+      "result": "passed",
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-awgn30/report/attach-summary.json",
+      "run_parameters": {
+        "broker_sched": {
+          "a": "protected",
+          "b": "protected"
+        },
+        "contention": {
+          "hog": {
+            "duty": 1.0,
+            "kernel_us": 2000,
+            "mps_client": 1,
+            "sm_percent": null
+          },
+          "kind": "none",
+          "sionna_mps_client": 1,
+          "start": "after-attach"
+        },
+        "cpus": {
+          "gnb": "5-9",
+          "ue": "18,19"
+        },
+        "gnb": {
+          "acceleration": null,
+          "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+          "kind": "cpu"
+        },
+        "gnb_metrics": {
+          "a": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075949Z/gnb-metrics-a.sock",
+            "gnb": "gnb0",
+            "port": 8001,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075949Z/gnb-metrics-a.sock"
+          },
+          "b": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075949Z/gnb-metrics-b.sock",
+            "gnb": "gnb1",
+            "port": 8002,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075949Z/gnb-metrics-b.sock"
+          }
+        },
+        "mps_server": 1,
+        "plain": {
+          "cpus": ""
+        },
+        "platform_profile": "spark-gb10",
+        "protected": {
+          "broker_env": "OCG_BROKER_SPIN=1",
+          "cpus": "15-17",
+          "mps_client": true,
+          "rt_priority": 0,
+          "stream_priority": "high"
+        },
+        "root_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py server --bind {ue_gateway}:7000 --log {log_dir}/probe-server.jsonl",
+        "run_duration_seconds": 160,
+        "sionna_awgn_snr_db": 30.0,
+        "sionna_position_endpoint": null,
+        "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+        "strict_realtime": 0,
+        "ue_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py client --robot {ue_id} --bind {ue_ip}:0 --server {ue_gateway}:7000 --rate-hz 100 --log {log_dir}/probe-{ue_id}.jsonl"
+      }
+    },
+    "ues": {
+      "ue0": {
+        "probe": {
+          "steady": {
+            "requests": 13191,
+            "answered": 13191,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7128.239,
+              "p90": 19631.036,
+              "p99": 33446.094,
+              "max": 132682.624,
+              "mean": 9544.74995277083
+            },
+            "dl_us": {
+              "p50": 8980.22,
+              "p90": 10029.654,
+              "p99": 10227.705,
+              "max": 15398.936,
+              "mean": 8976.676537790918
+            },
+            "rtt_us": {
+              "p50": 16070.525,
+              "p90": 28650.249,
+              "p99": 42363.553,
+              "max": 141393.979,
+              "mean": 18530.178509059206
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 15191,
+            "answered": 15191,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7125.326,
+              "p90": 19616.364,
+              "p99": 33446.094,
+              "max": 188996.162,
+              "mean": 9613.683421499572
+            },
+            "dl_us": {
+              "p50": 8982.767,
+              "p90": 10032.424,
+              "p99": 10230.248,
+              "max": 15398.936,
+              "mean": 8977.899854584952
+            },
+            "rtt_us": {
+              "p50": 16069.645,
+              "p90": 28644.475,
+              "p99": 42283.399,
+              "max": 197267.531,
+              "mean": 18600.334185438747
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755220458033400,
+          "end_ns": 1790755352358423744,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15354,
+            "unresolved_at_stop": 163,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 132,
+          "dl_snr": 32.0,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.0,
+          "ul_mcs": 11.866666666666667,
+          "ul_bler": 0.8075757575757575,
+          "dl_brate": 249925.81557765152,
+          "ul_brate": 301287.54261363635,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 37.328,
+          "p99": 331.171,
+          "max": 506.212,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 5,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      },
+      "ue1": {
+        "probe": {
+          "steady": {
+            "requests": 12985,
+            "answered": 12985,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 6959.292,
+              "p90": 19616.523,
+              "p99": 32181.335,
+              "max": 143302.382,
+              "mean": 9592.588900808625
+            },
+            "dl_us": {
+              "p50": 8988.271,
+              "p90": 10014.231,
+              "p99": 10211.433,
+              "max": 18366.018,
+              "mean": 8968.228490874086
+            },
+            "rtt_us": {
+              "p50": 15967.164,
+              "p90": 28616.505,
+              "p99": 41475.949,
+              "max": 152328.451,
+              "mean": 18569.504028340394
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 14985,
+            "answered": 14985,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 6950.765,
+              "p90": 19568.67,
+              "p99": 28437.173,
+              "max": 143302.382,
+              "mean": 9487.67534874875
+            },
+            "dl_us": {
+              "p50": 8988.527,
+              "p90": 10016.553,
+              "p99": 10216.428,
+              "max": 18366.018,
+              "mean": 8970.132287620956
+            },
+            "rtt_us": {
+              "p50": 15952.664,
+              "p90": 28536.969,
+              "p99": 37420.066,
+              "max": 152328.451,
+              "mean": 18466.509819953288
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755222490402776,
+          "end_ns": 1790755352330787669,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15152,
+            "unresolved_at_stop": 167,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 130,
+          "dl_snr": 32.0,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.0,
+          "ul_mcs": 11.196923076923076,
+          "ul_bler": 0.9115384615384615,
+          "dl_brate": 249127.06370192306,
+          "ul_brate": 300018.0129807692,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 38.017,
+          "p99": 281.346,
+          "max": 310.882,
+          "n": 279,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 2,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      }
+    }
+  },
+  {
+    "tag": "corrected-awgn34",
+    "log_dir": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-awgn34",
+    "gate": {
+      "result": "passed",
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-awgn34/report/attach-summary.json",
+      "run_parameters": {
+        "broker_sched": {
+          "a": "protected",
+          "b": "protected"
+        },
+        "contention": {
+          "hog": {
+            "duty": 1.0,
+            "kernel_us": 2000,
+            "mps_client": 1,
+            "sm_percent": null
+          },
+          "kind": "none",
+          "sionna_mps_client": 1,
+          "start": "after-attach"
+        },
+        "cpus": {
+          "gnb": "5-9",
+          "ue": "18,19"
+        },
+        "gnb": {
+          "acceleration": null,
+          "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+          "kind": "cpu"
+        },
+        "gnb_metrics": {
+          "a": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075649Z/gnb-metrics-a.sock",
+            "gnb": "gnb0",
+            "port": 8001,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075649Z/gnb-metrics-a.sock"
+          },
+          "b": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075649Z/gnb-metrics-b.sock",
+            "gnb": "gnb1",
+            "port": 8002,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075649Z/gnb-metrics-b.sock"
+          }
+        },
+        "mps_server": 1,
+        "plain": {
+          "cpus": ""
+        },
+        "platform_profile": "spark-gb10",
+        "protected": {
+          "broker_env": "OCG_BROKER_SPIN=1",
+          "cpus": "15-17",
+          "mps_client": true,
+          "rt_priority": 0,
+          "stream_priority": "high"
+        },
+        "root_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py server --bind {ue_gateway}:7000 --log {log_dir}/probe-server.jsonl",
+        "run_duration_seconds": 160,
+        "sionna_awgn_snr_db": 34.0,
+        "sionna_position_endpoint": null,
+        "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+        "strict_realtime": 0,
+        "ue_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py client --robot {ue_id} --bind {ue_ip}:0 --server {ue_gateway}:7000 --rate-hz 100 --log {log_dir}/probe-{ue_id}.jsonl"
+      }
+    },
+    "ues": {
+      "ue0": {
+        "probe": {
+          "steady": {
+            "requests": 13187,
+            "answered": 13187,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7355.734,
+              "p90": 19812.828,
+              "p99": 33416.868,
+              "max": 220477.797,
+              "mean": 9809.100712899068
+            },
+            "dl_us": {
+              "p50": 8913.395,
+              "p90": 9935.677,
+              "p99": 10152.076,
+              "max": 16625.991,
+              "mean": 8872.84776901494
+            },
+            "rtt_us": {
+              "p50": 16172.598,
+              "p90": 28695.036,
+              "p99": 42076.385,
+              "max": 228441.245,
+              "mean": 18690.570057177523
+            },
+            "outages": {
+              "count": 1,
+              "total_ms": 40.002721,
+              "max_ms": 40.002721,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 15187,
+            "answered": 15187,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7323.747,
+              "p90": 19728.715,
+              "p99": 31071.722,
+              "max": 220477.797,
+              "mean": 9689.429409099886
+            },
+            "dl_us": {
+              "p50": 8917.334,
+              "p90": 9941.773,
+              "p99": 10155.76,
+              "max": 16625.991,
+              "mean": 8878.115896424573
+            },
+            "rtt_us": {
+              "p50": 16146.643,
+              "p90": 28610.837,
+              "p99": 40503.852,
+              "max": 228441.245,
+              "mean": 18576.17789537104
+            },
+            "outages": {
+              "count": 1,
+              "total_ms": 40.002721,
+              "max_ms": 40.002721,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755041053040687,
+          "end_ns": 1790755172913424022,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15360,
+            "unresolved_at_stop": 173,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 132,
+          "dl_snr": 34.0,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.0,
+          "ul_mcs": 11.65,
+          "ul_bler": 0.9727272727272728,
+          "dl_brate": 247677.42270359848,
+          "ul_brate": 300957.1934185606,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 36.432,
+          "p99": 106.481,
+          "max": 148.337,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 5,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      },
+      "ue1": {
+        "probe": {
+          "steady": {
+            "requests": 12981,
+            "answered": 12981,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7106.578,
+              "p90": 19711.943,
+              "p99": 48942.416,
+              "max": 143476.538,
+              "mean": 9769.846061782606
+            },
+            "dl_us": {
+              "p50": 8946.819,
+              "p90": 9981.916,
+              "p99": 10205.647,
+              "max": 18136.551,
+              "mean": 8902.806040135583
+            },
+            "rtt_us": {
+              "p50": 15961.14,
+              "p90": 28659.373,
+              "p99": 57883.602,
+              "max": 151662.532,
+              "mean": 18681.13361181727
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 14981,
+            "answered": 14981,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7075.667,
+              "p90": 19630.97,
+              "p99": 38948.609,
+              "max": 143476.538,
+              "mean": 9634.31167672385
+            },
+            "dl_us": {
+              "p50": 8950.549,
+              "p90": 9983.904,
+              "p99": 10203.646,
+              "max": 18136.551,
+              "mean": 8908.314286829984
+            },
+            "rtt_us": {
+              "p50": 15939.127,
+              "p90": 28497.421,
+              "p99": 47586.547,
+              "max": 151662.532,
+              "mean": 18551.139025432214
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755043114771878,
+          "end_ns": 1790755172915233302,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15155,
+            "unresolved_at_stop": 174,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 130,
+          "dl_snr": 34.0,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.0,
+          "ul_mcs": 11.096153846153847,
+          "ul_bler": 0.8923076923076924,
+          "dl_brate": 247494.984375,
+          "ul_brate": 300948.76153846155,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 35.632,
+          "p99": 56.337,
+          "max": 263.506,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 2,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      }
+    }
+  },
+  {
+    "tag": "corrected-base",
+    "log_dir": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-base",
+    "gate": {
+      "result": "passed",
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-base/report/attach-summary.json",
+      "run_parameters": {
+        "broker_sched": {
+          "a": "protected",
+          "b": "protected"
+        },
+        "contention": {
+          "hog": {
+            "duty": 1.0,
+            "kernel_us": 2000,
+            "mps_client": 1,
+            "sm_percent": null
+          },
+          "kind": "none",
+          "sionna_mps_client": 1,
+          "start": "after-attach"
+        },
+        "cpus": {
+          "gnb": "5-9",
+          "ue": "18,19"
+        },
+        "gnb": {
+          "acceleration": null,
+          "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+          "kind": "cpu"
+        },
+        "gnb_metrics": {
+          "a": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075350Z/gnb-metrics-a.sock",
+            "gnb": "gnb0",
+            "port": 8001,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075350Z/gnb-metrics-a.sock"
+          },
+          "b": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075350Z/gnb-metrics-b.sock",
+            "gnb": "gnb1",
+            "port": 8002,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T075350Z/gnb-metrics-b.sock"
+          }
+        },
+        "mps_server": 1,
+        "plain": {
+          "cpus": ""
+        },
+        "platform_profile": "spark-gb10",
+        "protected": {
+          "broker_env": "OCG_BROKER_SPIN=1",
+          "cpus": "15-17",
+          "mps_client": true,
+          "rt_priority": 0,
+          "stream_priority": "high"
+        },
+        "root_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py server --bind {ue_gateway}:7000 --log {log_dir}/probe-server.jsonl",
+        "run_duration_seconds": 160,
+        "sionna_awgn_snr_db": 40.0,
+        "sionna_position_endpoint": null,
+        "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+        "strict_realtime": 0,
+        "ue_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py client --robot {ue_id} --bind {ue_ip}:0 --server {ue_gateway}:7000 --rate-hz 100 --log {log_dir}/probe-{ue_id}.jsonl"
+      }
+    },
+    "ues": {
+      "ue0": {
+        "probe": {
+          "steady": {
+            "requests": 13186,
+            "answered": 13186,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7141.048,
+              "p90": 19468.074,
+              "p99": 28443.465,
+              "max": 140445.47,
+              "mean": 9349.315669877142
+            },
+            "dl_us": {
+              "p50": 8978.509,
+              "p90": 10019.446,
+              "p99": 10215.355,
+              "max": 17727.247,
+              "mean": 8964.46037919005
+            },
+            "rtt_us": {
+              "p50": 16058.216,
+              "p90": 28462.13,
+              "p99": 37582.18,
+              "max": 148688.466,
+              "mean": 18322.70249036857
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 15186,
+            "answered": 15186,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7125.351,
+              "p90": 19444.1,
+              "p99": 26204.841,
+              "max": 140445.47,
+              "mean": 9287.167828262873
+            },
+            "dl_us": {
+              "p50": 8981.881,
+              "p90": 10026.58,
+              "p99": 10218.697,
+              "max": 17727.247,
+              "mean": 8968.54954313183
+            },
+            "rtt_us": {
+              "p50": 16057.53,
+              "p90": 28379.546,
+              "p99": 34748.669,
+              "max": 148688.466,
+              "mean": 18264.61385855393
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790754861995569758,
+          "end_ns": 1790754993845985735,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15358,
+            "unresolved_at_stop": 172,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 132,
+          "dl_snr": 36.11363636363637,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.0,
+          "ul_mcs": 12.174242424242424,
+          "ul_bler": 0.8606060606060606,
+          "dl_brate": 250349.41086647726,
+          "ul_brate": 303366.0009469697,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 37.457,
+          "p99": 79.777,
+          "max": 162.162,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 2,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      },
+      "ue1": {
+        "probe": {
+          "steady": {
+            "requests": 12982,
+            "answered": 12982,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 6984.52,
+              "p90": 19664.599,
+              "p99": 44707.261,
+              "max": 180216.052,
+              "mean": 9736.508464489292
+            },
+            "dl_us": {
+              "p50": 9008.027,
+              "p90": 10034.694,
+              "p99": 10226.838,
+              "max": 14943.37,
+              "mean": 8991.920082113696
+            },
+            "rtt_us": {
+              "p50": 15963.583,
+              "p90": 28644.215,
+              "p99": 53829.304,
+              "max": 187684.911,
+              "mean": 18737.095120782622
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 14982,
+            "answered": 14982,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 6984.247,
+              "p90": 19616.072,
+              "p99": 36222.029,
+              "max": 180216.052,
+              "mean": 9644.790149646244
+            },
+            "dl_us": {
+              "p50": 9006.7,
+              "p90": 10035.544,
+              "p99": 10230.344,
+              "max": 15686.183,
+              "mean": 8990.401579228408
+            },
+            "rtt_us": {
+              "p50": 15948.802,
+              "p90": 28598.41,
+              "p99": 45277.996,
+              "max": 187684.911,
+              "mean": 18643.84661480443
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790754864031713466,
+          "end_ns": 1790754993842158001,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15156,
+            "unresolved_at_stop": 174,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 130,
+          "dl_snr": 36.08461538461538,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.0,
+          "ul_mcs": 11.163076923076924,
+          "ul_bler": 0.7838461538461539,
+          "dl_brate": 249914.50384615385,
+          "ul_brate": 302704.21009615384,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 37.073,
+          "p99": 86.689,
+          "max": 160.178,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 2,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      }
+    }
+  },
+  {
+    "tag": "corrected-k2",
+    "log_dir": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-k2",
+    "gate": {},
+    "ues": {
+      "ue0": {
+        "probe": null,
+        "srsue": {},
+        "broker": {},
+        "broker_stop": {}
+      },
+      "ue1": {
+        "probe": null,
+        "srsue": {},
+        "broker": {},
+        "broker_stop": {}
+      }
+    }
+  },
+  {
+    "tag": "corrected-ran-k1k2",
+    "log_dir": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-ran-k1k2",
+    "gate": {},
+    "ues": {
+      "ue0": {
+        "probe": null,
+        "srsue": {},
+        "broker": {},
+        "broker_stop": {}
+      },
+      "ue1": {
+        "probe": null,
+        "srsue": {},
+        "broker": {},
+        "broker_stop": {}
+      }
+    }
+  },
+  {
+    "tag": "corrected-ran-retx1",
+    "log_dir": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-ran-retx1",
+    "gate": {
+      "result": "passed",
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-ran-retx1/report/attach-summary.json",
+      "run_parameters": {
+        "broker_sched": {
+          "a": "protected",
+          "b": "protected"
+        },
+        "contention": {
+          "hog": {
+            "duty": 1.0,
+            "kernel_us": 2000,
+            "mps_client": 1,
+            "sm_percent": null
+          },
+          "kind": "none",
+          "sionna_mps_client": 1,
+          "start": "after-attach"
+        },
+        "cpus": {
+          "gnb": "5-9",
+          "ue": "18,19"
+        },
+        "gnb": {
+          "acceleration": null,
+          "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+          "kind": "cpu"
+        },
+        "gnb_metrics": {
+          "a": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T081205Z/gnb-metrics-a.sock",
+            "gnb": "gnb0",
+            "port": 8001,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T081205Z/gnb-metrics-a.sock"
+          },
+          "b": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T081205Z/gnb-metrics-b.sock",
+            "gnb": "gnb1",
+            "port": 8002,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T081205Z/gnb-metrics-b.sock"
+          }
+        },
+        "mps_server": 1,
+        "plain": {
+          "cpus": ""
+        },
+        "platform_profile": "spark-gb10",
+        "protected": {
+          "broker_env": "OCG_BROKER_SPIN=1",
+          "cpus": "15-17",
+          "mps_client": true,
+          "rt_priority": 0,
+          "stream_priority": "high"
+        },
+        "root_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py server --bind {ue_gateway}:7000 --log {log_dir}/probe-server.jsonl",
+        "run_duration_seconds": 160,
+        "sionna_awgn_snr_db": 30.0,
+        "sionna_position_endpoint": null,
+        "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+        "strict_realtime": 0,
+        "ue_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py client --robot {ue_id} --bind {ue_ip}:0 --server {ue_gateway}:7000 --rate-hz 100 --log {log_dir}/probe-{ue_id}.jsonl"
+      }
+    },
+    "ues": {
+      "ue0": {
+        "probe": {
+          "steady": {
+            "requests": 13168,
+            "answered": 13168,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7246.173,
+              "p90": 19946.535,
+              "p99": 53871.848,
+              "max": 160411.977,
+              "mean": 10009.474262758202
+            },
+            "dl_us": {
+              "p50": 8942.698,
+              "p90": 9976.111,
+              "p99": 10199.886,
+              "max": 17785.418,
+              "mean": 8898.124953068043
+            },
+            "rtt_us": {
+              "p50": 16167.819,
+              "p90": 28840.783,
+              "p99": 62795.36,
+              "max": 168934.714,
+              "mean": 18916.41768119684
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 15168,
+            "answered": 15168,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7224.421,
+              "p90": 19871.432,
+              "p99": 51122.334,
+              "max": 160411.977,
+              "mean": 9876.51590888713
+            },
+            "dl_us": {
+              "p50": 8944.229,
+              "p90": 9976.364,
+              "p99": 10207.664,
+              "max": 17785.418,
+              "mean": 8899.822421677216
+            },
+            "rtt_us": {
+              "p50": 16159.051,
+              "p90": 28770.889,
+              "p99": 60058.498,
+              "max": 168934.714,
+              "mean": 18785.22173477057
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755957290290963,
+          "end_ns": 1790756088960729017,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15331,
+            "unresolved_at_stop": 163,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 131,
+          "dl_snr": 32.0,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.0,
+          "ul_mcs": 11.83969465648855,
+          "ul_bler": 0.7122137404580152,
+          "dl_brate": 246122.00608301527,
+          "ul_brate": 299809.14503816795,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 37.504,
+          "p99": 188.363,
+          "max": 283.17,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 6,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      },
+      "ue1": {
+        "probe": {
+          "steady": {
+            "requests": 12961,
+            "answered": 12961,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7179.973,
+              "p90": 19952.041,
+              "p99": 90311.586,
+              "max": 328724.621,
+              "mean": 10940.689986112182
+            },
+            "dl_us": {
+              "p50": 8971.117,
+              "p90": 9990.332,
+              "p99": 10211.63,
+              "max": 18799.855,
+              "mean": 8912.18229804799
+            },
+            "rtt_us": {
+              "p50": 16038.994,
+              "p90": 28971.891,
+              "p99": 99418.599,
+              "max": 336944.268,
+              "mean": 19861.6381800787
+            },
+            "outages": {
+              "count": 1,
+              "total_ms": 219.989619,
+              "max_ms": 219.989619,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 14961,
+            "answered": 14961,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 7159.415,
+              "p90": 19889.989,
+              "p99": 80999.919,
+              "max": 328724.621,
+              "mean": 10675.310659314217
+            },
+            "dl_us": {
+              "p50": 8978.405,
+              "p90": 9993.02,
+              "p99": 10220.158,
+              "max": 18799.855,
+              "mean": 8917.091089298843
+            },
+            "rtt_us": {
+              "p50": 16023.303,
+              "p90": 28916.061,
+              "p99": 90031.476,
+              "max": 336944.268,
+              "mean": 19601.156528908494
+            },
+            "outages": {
+              "count": 1,
+              "total_ms": 219.989619,
+              "max_ms": 219.989619,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755959337787195,
+          "end_ns": 1790756088938178801,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15128,
+            "unresolved_at_stop": 167,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 129,
+          "dl_snr": 31.984496124031008,
+          "dl_mcs": 27.0,
+          "dl_bler": 0.0,
+          "ul_mcs": 11.550387596899224,
+          "ul_bler": 0.655813953488372,
+          "dl_brate": 247436.0180474806,
+          "ul_brate": 303665.3249757752,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 36.8,
+          "p99": 173.868,
+          "max": 201.121,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 2,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      }
+    }
+  },
+  {
+    "tag": "corrected-ran-sr40",
+    "log_dir": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-ran-sr40",
+    "gate": {
+      "result": "passed",
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-ran-sr40/report/attach-summary.json",
+      "run_parameters": {
+        "broker_sched": {
+          "a": "protected",
+          "b": "protected"
+        },
+        "contention": {
+          "hog": {
+            "duty": 1.0,
+            "kernel_us": 2000,
+            "mps_client": 1,
+            "sm_percent": null
+          },
+          "kind": "none",
+          "sionna_mps_client": 1,
+          "start": "after-attach"
+        },
+        "cpus": {
+          "gnb": "5-9",
+          "ue": "18,19"
+        },
+        "gnb": {
+          "acceleration": null,
+          "commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+          "kind": "cpu"
+        },
+        "gnb_metrics": {
+          "a": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080903Z/gnb-metrics-a.sock",
+            "gnb": "gnb0",
+            "port": 8001,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080903Z/gnb-metrics-a.sock"
+          },
+          "b": {
+            "endpoint": "ws+unix:///workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080903Z/gnb-metrics-b.sock",
+            "gnb": "gnb1",
+            "port": 8002,
+            "socket": "/workspace/ocudu-spark/run/ocudu-robot-fight-native/20260930T080903Z/gnb-metrics-b.sock"
+          }
+        },
+        "mps_server": 1,
+        "plain": {
+          "cpus": ""
+        },
+        "platform_profile": "spark-gb10",
+        "protected": {
+          "broker_env": "OCG_BROKER_SPIN=1",
+          "cpus": "15-17",
+          "mps_client": true,
+          "rt_priority": 0,
+          "stream_priority": "high"
+        },
+        "root_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py server --bind {ue_gateway}:7000 --log {log_dir}/probe-server.jsonl",
+        "run_duration_seconds": 160,
+        "sionna_awgn_snr_db": 40.0,
+        "sionna_position_endpoint": null,
+        "sionna_scenario": "/workspace/gpuch/r7-validation-0930/examples/sionna/robot-ring-fight.json",
+        "strict_realtime": 0,
+        "ue_exec": "/usr/bin/python3 /workspace/gpuch/r7-validation-0930/scripts/native/robot-fight-probe.py client --robot {ue_id} --bind {ue_ip}:0 --server {ue_gateway}:7000 --rate-hz 100 --log {log_dir}/probe-{ue_id}.jsonl"
+      }
+    },
+    "ues": {
+      "ue0": {
+        "probe": {
+          "steady": {
+            "requests": 13186,
+            "answered": 13186,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 10420.321,
+              "p90": 29052.495,
+              "p99": 50777.02,
+              "max": 181748.742,
+              "mean": 13467.749112543608
+            },
+            "dl_us": {
+              "p50": 8889.221,
+              "p90": 9924.189,
+              "p99": 10213.088,
+              "max": 17013.893,
+              "mean": 8828.747119899894
+            },
+            "rtt_us": {
+              "p50": 19577.382,
+              "p90": 37768.483,
+              "p99": 59620.396,
+              "max": 190084.295,
+              "mean": 22304.75910708327
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 15186,
+            "answered": 15186,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 10299.535,
+              "p90": 28964.163,
+              "p99": 50677.019,
+              "max": 181748.742,
+              "mean": 13374.772127288292
+            },
+            "dl_us": {
+              "p50": 8889.493,
+              "p90": 9923.166,
+              "p99": 10214.719,
+              "max": 17013.893,
+              "mean": 8830.789777229027
+            },
+            "rtt_us": {
+              "p50": 19422.87,
+              "p90": 37726.837,
+              "p99": 59568.848,
+              "max": 190084.295,
+              "mean": 22213.824993941787
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755774985549991,
+          "end_ns": 1790755906835838048,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15350,
+            "unresolved_at_stop": 164,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 132,
+          "dl_snr": 36.0,
+          "dl_mcs": 27.204545454545453,
+          "dl_bler": 0.0,
+          "ul_mcs": 10.315151515151515,
+          "ul_bler": 0.9393939393939394,
+          "dl_brate": 215780.96022727274,
+          "ul_brate": 204340.3017282197,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 40.048,
+          "p99": 607.957,
+          "max": 875.43,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 4,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      },
+      "ue1": {
+        "probe": {
+          "steady": {
+            "requests": 12981,
+            "answered": 12981,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 10266.464,
+              "p90": 28759.439,
+              "p99": 50879.692,
+              "max": 156787.527,
+              "mean": 13216.625306678992
+            },
+            "dl_us": {
+              "p50": 8947.589,
+              "p90": 9946.541,
+              "p99": 10217.871,
+              "max": 16962.532,
+              "mean": 8847.022527309144
+            },
+            "rtt_us": {
+              "p50": 19476.694,
+              "p90": 37274.834,
+              "p99": 59789.438,
+              "max": 165138.345,
+              "mean": 22071.662657114244
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "all": {
+            "requests": 14981,
+            "answered": 14981,
+            "lost": 0,
+            "loss_pct": 0.0,
+            "ul_us": {
+              "p50": 10047.822,
+              "p90": 28538.989,
+              "p99": 50749.624,
+              "max": 156787.527,
+              "mean": 13089.245960883787
+            },
+            "dl_us": {
+              "p50": 8935.173,
+              "p90": 9941.437,
+              "p99": 10218.031,
+              "max": 16962.532,
+              "mean": 8831.755917896002
+            },
+            "rtt_us": {
+              "p50": 19287.015,
+              "p90": 36678.7,
+              "p99": 59690.236,
+              "max": 165138.345,
+              "mean": 21928.896037113678
+            },
+            "outages": {
+              "count": 0,
+              "total_ms": 0,
+              "max_ms": 0.0,
+              "threshold_ms": 200.0
+            }
+          },
+          "steady_from_ns": 1790755777024657423,
+          "end_ns": 1790755906825244062,
+          "coverage": {
+            "client_stop_present": true,
+            "sent": 15147,
+            "unresolved_at_stop": 166,
+            "loss_denominator": "resolved reply/lost records; unresolved requests excluded"
+          }
+        },
+        "srsue": {
+          "rows": 130,
+          "dl_snr": 36.0,
+          "dl_mcs": 27.153846153846153,
+          "dl_bler": 0.0,
+          "ul_mcs": 10.73076923076923,
+          "ul_bler": 0.8384615384615385,
+          "dl_brate": 216895.44579326923,
+          "ul_brate": 202783.12463942307,
+          "rf_u": 0.0,
+          "rf_l": 0.0,
+          "attached": 0.0
+        },
+        "broker": {
+          "p50": 35.712,
+          "p99": 325.906,
+          "max": 503.556,
+          "n": 280,
+          "window_basis": "broker elapsed seconds, not probe steady window",
+          "node_scope": "all nodes pooled"
+        },
+        "broker_stop": {
+          "rx_starvations": 4,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0
+        }
+      }
+    }
+  }
+]

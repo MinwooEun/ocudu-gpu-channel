@@ -4,6 +4,127 @@
 
 ## Repository State
 
+- [R7 delivery simplified and original graphs restored] Replaced local
+  results/robot-fight/videos/r7-comparison.mp4 with arena-only footage:
+  195.05s, 3901frames, 960×54020fps, same first six fights per assignment.
+  Only controller/outcome labels; no graph panels or title cards. Full ffmpeg
+  decode and visual sample passed; five existing replay tests pass.
+  Existing summary_png renderer restored r7-fixed-comp0-summary.png and
+  r7-fixed-comp1-summary.png in the R4b/R5b timeline style. R4b/R5b summary
+  PNGs restored to their original location; unwanted R7 collage removed.
+  Removed21 R7 intermediate artifacts. Only older duplicate 2D video variants
+  remain archived under results/robot-fight/archive/replay-variants. All raw
+  experiment data/report figures preserved. No radio/UE/gNB source changes.
+- [2026-09-30 R7 campaign complete] Completed the requested continuation:
+  eight radio arena gates, nine requested radio-probe conditions and 96 local
+  impairment fights. Final report docs/robot-fight-r7.md, four static figures,
+  and comparison/probe/robustness/audit JSONs were published in19667aa to
+  MinwooEun/ocudu-gpu-channel:integration-0928; remote tip verified after push. Scope is measured control benefit
+  and its failure envelope, not strict radio deadlines or general stability.
+- [Corrected radio sweep] Explicit sudo forwarding and actual rendered-config
+  auditing account for all nine conditions: baseline and AWGN34/30/27/24,
+  SR40 and HARQ-retx1 passed; K2=8 and K1=7/K2=8 were rejected by pinned gNB
+  a1916edcdb (both supported ranges1..4, defaults4). Original sweep stopped at
+  K2 exit2; corrected-ran resumed remaining conditions. Sweep now records native
+  config failures and continues, while wrapper/GPU refusals stop it. Actual
+  topology noise, RX wiring, sample rates and both gNB settings were checked.
+  AWGN medians remain near16ms; SR40 gives19.5ms; resolved losses0. Unresolved
+  requests and late bursts are retained; median stability is not a tail bound.
+- [Fresh fixed-parameter repeat] run_r7_repeat.sh ran300s per side, new seeds9000,
+  jitter0, both plain brokers and the existing200us-request MPS hog. Comp0 had
+  22 complete fights, comp1 had28; matched seeds9000–9021 yield44 fights,
+  comp33/plain10/draw1 and comp8/plain13 falls. RTT per-fight-p50 medians37.5/
+  37.6ms. Both actual policies, seeds, speed0.7 and shared gains were verified
+  for every complete pair. The earlier zero-comp-fall result does not generalize.
+  Last run finished08:25:56UTC, session68465 exited0, GPU processes empty08:26:16.
+- [Local robustness] 96/96 complete real-time UDP/MuJoCo fights: baseline
+  comp20/plain3/draw1, outage100ms21/2/1, outage300ms19/5/0, loss10%21/3/0.
+  All impairment runs had actual drops. One compensated fall occurred under
+  the300ms condition; no blackout immunity or blackout-specific gain claimed.
+  Ideal-delay500ms blackout made both policies fall. Source/raw artifacts remain
+  under results/robot-fight/r7-robustness-20260930T075317Z; no Spark load for these.
+- [Reproducibility and validation] Added small-artifact collection preserving
+  failures/incomplete fights, configuration and console-lifecycle auditing,
+  supported local report paths, probe/fixed-repeat launchers and plot generators.
+  23 focused tooling tests passed (auditor16, collector2, sweep2, launcher3),
+  plus Python compilation, shell syntax and diff checks. Figures visually reviewed.
+  All eight arena runs show one observed attach/RRC/PDU perUE and no console
+  reconnection markers. Deployed srsUE eea87b1d8 NR sync callbacks are empty;
+  internal logs remain unscanned and continuous PHY sync is not certified.
+  Strict realtime was disabled, starvation counters nonzero. No UE/gNB source
+  edits. Spark int0928/Fable tree preserved; run artifacts under
+  /workspace/gpuch/r7-validation-results and native results. Local copies:
+  results/robot-fight/r7-live and r7-corrected. No R7 batch remains running.
+
+- [2026-09-30 publication checkpoint] User requested publishing all current
+  work to MinwooEun/ocudu-gpu-channel. Checkpoint fcbcb6e was pushed and
+  verified at remote integration-0928; local branch tracks minwoo/integration-0928.
+  Publication preserves
+  the existing contributor history and Fable edits. Includes R6c/R7 tools,
+  controller and launcher fixes, Sionna profiling, tests and result summaries.
+  Spark publication-check mirror: robot suite 39 passed/5 skipped; Sionna
+  adapter/position/UI suite 83 passed (13 subtests). Raw logs and videos remain
+  outside Git. This checkpoint is not a claim that all R7 conditions are done.
+
+- [2026-09-30 R7 initial continuation, historical checkpoint] User requested continuing Fable's
+  R7 rather than further Sionna profiling. Recovered 192 existing local fights
+  and the completed 11-run radio-probe batch. Audit under
+  `results/robot-fight/r7-prep-audit/` proves eight AWGN/RAN labels invalid:
+  inherited overrides were erased by sudo; all actual AWGN values are 40 dB
+  and requested RAN overrides absent. Original artifacts preserved.
+- [2026-09-30 R7 fixes] Atomically snapshot controller state and its timestamp
+  to avoid RX races in prediction age; regression covers both clock modes.
+  Added `RF_POLICY_0/1` and policy/link-estimate summaries to the arena launcher,
+  plus `run_r7_spark.sh` with explicit native override forwarding, rejection of
+  inherited overrides, unique output tags and gate exit preservation. New
+  comparison analyzer excludes incomplete/lockstep/non-real-time fights and
+  pairs common seeds across side swaps. No UE/gNB source changes.
+- [2026-09-30 R7 validation batch completed] Isolated source checkout on Spark is
+  `/workspace/gpuch/r7-validation-0930`, native build
+  `/workspace/ocudu-spark/builds/gpuch-r7-0930-release`; Fable's `int0928` is
+  untouched. Spark controller/balance/renderer tests 14/14 pass. Fixed-code
+  workstation delay60ms/side swap at seeds7000–7011 reproduced 12/12 wins for
+  compensated control on each side. Live batch in
+  `/workspace/gpuch/r7-validation-results/batch.sh` runs baseline and symmetric
+  GPU-contention comp0/comp1 plus same-policy controls, 180s each. All six
+  gates passed and batch.log records BATCH_DONE. Matched-seed side swaps:
+  baseline comp15/plain3/draw2 (20 fights); contention comp23/plain1 (24).
+  Same-policy controls: plain18 fights,13 falls; comp7 fights,0 falls.
+  Summaries are promoted to docs/robot-fight-r7-results.json. Strict realtime
+  was disabled; this does not qualify zero-starvation radio timing or hours
+  of uninterrupted connectivity. AWGN/RAN conditions were still unvalidated at this checkpoint; the completed
+  follow-up above supersedes that state.
+
+- Current work (2026-09-30, supersedes the September 14 checkout/runtime notes
+  below): `/home/minwoo/ocudu-work/ocudu-integration`, branch `integration-0928`,
+  base `a9009a6`. User explicitly authorized Sionna generation profiling while
+  Fable continues R7, and parallel review. R7 brain/fight/native/renderer and
+  scenario edits were preserved. Spark `int0928` remains its older dirty tree;
+  profiling ran only in `/workspace/gpuch/sionna-profile-0930`, never by syncing
+  or resetting that active tree. R7 probe batch had completed all 11 gate runs
+  by 14:48 SGT; the baseline-only table is not a full R7 analysis.
+- [2026-09-30 profiling] Added opt-in `--profile-timing` generation stages to
+  `scripts/sionna_rt/run_bridge.py` and `profile_replay.py` for recorded-position
+  diagnostics. Existing solve/control timing semantics remain intact. Output
+  includes per-round stats, environment/version/source hashes and per-sample
+  coefficient fingerprints. Host stages do not force GPU synchronization.
+- [2026-09-30 robustness] Optional `Paths.vertices` evaluation was outside its
+  exception handler. Moved it inside; a geometry-build failure disables only
+  visualization and leaves profiles intact. Regression covers missing geometry,
+  raised accessor, unchanged channel output and no retry. No UE/gNB source was
+  edited. User's local-patch-only requirement is recorded in the harness.
+- [2026-09-30 validation] Spark adapter/position/UI tests 83/83 pass; bridge
+  `--dry-run --iterations 4 --profile-timing` emits per-group stage fields.
+  R4b recorded-position replay (GB10, no radio/broker, 40 positions x2 at 10 Hz)
+  measured 23.0 ms mean / 21.9 ms median / 79.5 ms max; historical live mean
+  87.8 ms is not an equivalent workload. Disabling geometry did not demonstrate
+  a mean improvement. Evidence and limitations are in `docs/sionna-integration.md`
+  and local `/home/minwoo/ocudu-work/sionna-profile-0930/`. Included in the
+  September 30 publication checkpoint.
+  Next diagnostic: use this opt-in instrumentation during an isolated live
+  R4b-equivalent run after coordinating GPU use with R7; no live speedup or
+  40 ms deadline guarantee has been established.
+
 - Branch cleanup (2026-09-14): only `main` remains as a local branch and on the user-owned `origin` repository. Removed four local branches and three origin branches after verifying every tip is an ancestor of main. Contributor remotes `ehs0` and `fork` remain configured; their repositories and remote-tracking references were not deleted. Exact removed tips are recorded under `.git/branch-cleanup-20260914T081423Z.json`.
 - Publication (2026-09-14): user explicitly requested a push. Fetched `origin/main`, confirmed it had no new commits, and successfully pushed `f51c3fd..0113ddd` to `zhouyou-gu/ocudu-gpu-channel:main`. The integration, retained contributor history, cleanup record and README edit are now published. This documentation follow-up corrects the current guide/reference publication status; no tag or release was created. Runtime qualification limits are unchanged.
 - README cleanup (2026-09-14): focused prose edit on current-folder `main`; Status is now a 91-word capabilities/validation/limits summary. All 12 comparison rows, eight command blocks, section headings, contributor credits and copyright remain unchanged. Detailed channel/update limits and revision-specific validation results remain linked or summarized. Documentation-only change; remote runtime and source are unchanged.

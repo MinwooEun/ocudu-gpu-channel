@@ -90,13 +90,13 @@ class AdapterTests(unittest.TestCase):
             client.request({"type": "batch_begin", "id": "sionna-0"})
 
     def test_two_gnb_two_ue_graph_and_horizontal_motion(self) -> None:
-        self.assertEqual(len(LINKS), 10)
-        self.assertEqual(len(set(LINKS)), 10)
+        self.assertEqual(len(LINKS), 8)
+        self.assertEqual(len(set(LINKS)), 8)
         self.assertEqual(len(DOWNLINK_LINKS), 4)
         self.assertEqual(len(UPLINK_LINKS), 4)
         self.assertTrue(all(source.startswith("gnb") for source, _ in DOWNLINK_LINKS))
         self.assertTrue(all(source.startswith("ue") for source, _ in UPLINK_LINKS))
-        self.assertEqual(CROSSTALK_LINKS, (("ue0", "ue1"), ("ue1", "ue0")))
+        self.assertEqual(CROSSTALK_LINKS, ())  # FDD: no UE<->UE edge by default
         self.assertEqual(MODEL_ID, "sionna_rt")
         self.assertEqual(
             Motion((1.0, 2.0, 3.0), (0.5, 0.0, 0.0)).position_at(4.0),
@@ -160,7 +160,7 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(environment["nodes"]["gnb0"]["velocity_mps"], (0.0, 0.0, 0.0))
         self.assertEqual(environment["nodes"]["ue0"]["mobility"], "car")
         self.assertEqual(environment["nodes"]["ue1"]["mobility"], "pedestrian")
-        self.assertEqual(environment["link_count"], 10)
+        self.assertEqual(environment["link_count"], 8)
         self.assertEqual(environment["nodes"]["gnb0"]["start_m"][2], 60.0)
 
     def test_floor_is_split_into_ui_visible_road_and_ground(self) -> None:
@@ -388,6 +388,48 @@ class AdapterTests(unittest.TestCase):
                 direction="downlink",
                 carrier_frequency_hz=args.downlink_frequency_hz,
             )
+            timing = {}
+            timed_profiles, timed_statuses = scenario.profiles(
+                FakePaths(), [link], direction="downlink",
+                carrier_frequency_hz=args.downlink_frequency_hz, timing=timing,
+            )
+            self.assertEqual(profiles, timed_profiles)
+            self.assertEqual(statuses, timed_statuses)
+            self.assertEqual(set(timing), {
+                "cir_numpy", "array_export", "geometry_export",
+                "tap_and_status_pack", "path_polylines",
+            })
+            self.assertTrue(all(value >= 0 for value in timing.values()))
+            self.assertEqual(timing["path_polylines"], 0.0)
+
+            class BrokenGeometryPaths(FakePaths):
+                vertex_reads = 0
+
+                @property
+                def vertices(self) -> object:
+                    self.vertex_reads += 1
+                    raise RuntimeError("geometry component build failed")
+
+            args.path_polylines = 6
+            # Missing optional geometry remains supported without disabling it.
+            scenario.profiles(
+                FakePaths(), [link], direction="downlink",
+                carrier_frequency_hz=args.downlink_frequency_hz,
+            )
+            self.assertIsNone(scenario.path_polylines_error)
+            broken_paths = BrokenGeometryPaths()
+            for _ in range(2):
+                fallback_profiles, fallback_statuses = scenario.profiles(
+                    broken_paths, [link], direction="downlink",
+                    carrier_frequency_hz=args.downlink_frequency_hz,
+                )
+                self.assertEqual(profiles, fallback_profiles)
+                self.assertEqual(statuses, fallback_statuses)
+            self.assertEqual(
+                scenario.path_polylines_error,
+                "RuntimeError: geometry component build failed",
+            )
+            self.assertEqual(broken_paths.vertex_reads, 1)
 
         profile = profiles["gnb>ue:h"]
         self.assertEqual((profile.nr, profile.nt), (1, 2))

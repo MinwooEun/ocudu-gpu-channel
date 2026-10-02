@@ -17,6 +17,10 @@ struct BrokerStats {
   std::uint64_t tx_queue_overflows = 0;
   std::uint64_t tx_sequence_gaps = 0;
   std::uint64_t zmq_errors = 0;
+  // 1 if the relay wedge detector stopped the run (OCG_BROKER_WEDGE_TIMEOUT_MS):
+  // every radio stopped transmitting and no worker made progress for the
+  // timeout. Also counted in zmq_errors so the existing gate checks fail.
+  std::uint64_t relay_wedged = 0;
 };
 
 // Bounded wire-boundary capture, off unless a directory is set.

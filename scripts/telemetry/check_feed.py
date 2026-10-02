@@ -23,8 +23,6 @@ DEFAULT_LINKS = (
     "ue0>gnb1:sionna_rt",
     "ue1>gnb0:sionna_rt",
     "ue1>gnb1:sionna_rt",
-    "ue0>ue1:sionna_rt",
-    "ue1>ue0:sionna_rt",
 )
 
 

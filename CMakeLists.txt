@@ -111,6 +111,15 @@ if(OCUDU_GPU_CHANNEL_HAS_CUDA)
   )
 endif()
 
+# R5a: a synthetic GPU tenant (back-to-back spin kernels) for the scheduling
+# experiments of the robot-fight gate. See apps/ocudu_gpu_hog.cu.
+if(OCUDU_GPU_CHANNEL_HAS_CUDA)
+  add_executable(ocudu-gpu-hog apps/ocudu_gpu_hog.cu)
+  set_target_properties(ocudu-gpu-hog PROPERTIES
+    CUDA_ARCHITECTURES "${OCUDU_GPU_CHANNEL_CUDA_ARCHITECTURES}"
+  )
+endif()
+
 if(OCUDU_GPU_CHANNEL_BUILD_TESTS)
   enable_testing()
 

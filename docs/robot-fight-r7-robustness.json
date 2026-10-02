@@ -1,0 +1,3029 @@
+{
+  "rtf_bounds": [
+    0.98,
+    1.02
+  ],
+  "metric_note": "Medians of per-fight summaries; Wilson CI is descriptive and treats fights as independent.",
+  "runs": {
+    "base-comp0": {
+      "attach_summary": null,
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-robustness-20260930T075317Z/base-comp0",
+      "valid": 12,
+      "rejected": [],
+      "comparison": {
+        "fights": 12,
+        "wins": {
+          "balance": 1,
+          "balance_comp": 10
+        },
+        "draws": 1,
+        "side_wins": {
+          "ue0": 10,
+          "ue1": 1
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.9090909090909091,
+          "ci95": [
+            0.6226415635484043,
+            0.9837678271141151
+          ],
+          "decided": 11
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33299.5,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 36894.5,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15265.5,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15796.5,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30579.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15286.854752585563,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 17956.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 33.42,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15748.0,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16456.5,
+              "n": 12
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33269.5,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 36719.5,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15228.5,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15810.0,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30621.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15353.764660453671,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 16658.5,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 33.415,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15735.0,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16512.0,
+              "n": 12
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      },
+      "exposure": {
+        "fights_with_proxy_drops": 0,
+        "fights_without_proxy_drops": 12,
+        "rows": [
+          {
+            "seed": 8100,
+            "valid": true,
+            "dropped": 0,
+            "winner": null,
+            "reason": "timeout",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8101,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8102,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8103,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8104,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8105,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8106,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8107,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8108,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8109,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8110,
+            "valid": true,
+            "dropped": 0,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8111,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          }
+        ]
+      }
+    },
+    "base-comp1": {
+      "attach_summary": null,
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-robustness-20260930T075317Z/base-comp1",
+      "valid": 12,
+      "rejected": [],
+      "comparison": {
+        "fights": 12,
+        "wins": {
+          "balance": 2,
+          "balance_comp": 10
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 2,
+          "ue1": 10
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.8333333333333334,
+          "ci95": [
+            0.5519691377470266,
+            0.9530348578161463
+          ],
+          "decided": 12
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33176.0,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 36795.5,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15258.0,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15860.0,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30586.5,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15280.60154985933,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 18687.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 33.45,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15736.0,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16562.0,
+              "n": 12
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33416.5,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 37026.5,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15312.5,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15983.0,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30690.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15274.920329544148,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 18350.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 33.459999999999994,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15755.5,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16592.0,
+              "n": 12
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      },
+      "exposure": {
+        "fights_with_proxy_drops": 0,
+        "fights_without_proxy_drops": 12,
+        "rows": [
+          {
+            "seed": 8100,
+            "valid": true,
+            "dropped": 0,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8101,
+            "valid": true,
+            "dropped": 0,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8102,
+            "valid": true,
+            "dropped": 0,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8103,
+            "valid": true,
+            "dropped": 0,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8104,
+            "valid": true,
+            "dropped": 0,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8105,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8106,
+            "valid": true,
+            "dropped": 0,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8107,
+            "valid": true,
+            "dropped": 0,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8108,
+            "valid": true,
+            "dropped": 0,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8109,
+            "valid": true,
+            "dropped": 0,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8110,
+            "valid": true,
+            "dropped": 0,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8111,
+            "valid": true,
+            "dropped": 0,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          }
+        ]
+      }
+    },
+    "out100-comp0": {
+      "attach_summary": null,
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-robustness-20260930T075317Z/out100-comp0",
+      "valid": 12,
+      "rejected": [],
+      "comparison": {
+        "fights": 12,
+        "wins": {
+          "balance": 1,
+          "balance_comp": 11
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 11,
+          "ue1": 1
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.9166666666666666,
+          "ci95": [
+            0.646120088858883,
+            0.9851349055950829
+          ],
+          "decided": 12
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33384.0,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 37107.5,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15267.5,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15828.5,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30584.5,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15242.118725531549,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 18192.5,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.19,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15757.5,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16567.5,
+              "n": 12
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33345.5,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 37045.5,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15238.5,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15767.0,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30618.5,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15298.979820273289,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 17177.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.075,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15738.5,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16512.5,
+              "n": 12
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      },
+      "exposure": {
+        "fights_with_proxy_drops": 12,
+        "fights_without_proxy_drops": 0,
+        "rows": [
+          {
+            "seed": 8100,
+            "valid": true,
+            "dropped": 52,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.049,
+              "balance": 0.05
+            }
+          },
+          {
+            "seed": 8101,
+            "valid": true,
+            "dropped": 52,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.049,
+              "balance": 0.049
+            }
+          },
+          {
+            "seed": 8102,
+            "valid": true,
+            "dropped": 54,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.05,
+              "balance": 0.049
+            }
+          },
+          {
+            "seed": 8103,
+            "valid": true,
+            "dropped": 52,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance_comp": 0.051,
+              "balance": 0.05
+            }
+          },
+          {
+            "seed": 8104,
+            "valid": true,
+            "dropped": 52,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.051,
+              "balance": 0.049
+            }
+          },
+          {
+            "seed": 8105,
+            "valid": true,
+            "dropped": 52,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.05,
+              "balance": 0.049
+            }
+          },
+          {
+            "seed": 8106,
+            "valid": true,
+            "dropped": 54,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance_comp": 0.05,
+              "balance": 0.05
+            }
+          },
+          {
+            "seed": 8107,
+            "valid": true,
+            "dropped": 52,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.049,
+              "balance": 0.049
+            }
+          },
+          {
+            "seed": 8108,
+            "valid": true,
+            "dropped": 52,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.05,
+              "balance": 0.05
+            }
+          },
+          {
+            "seed": 8109,
+            "valid": true,
+            "dropped": 52,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance_comp": 0.05,
+              "balance": 0.05
+            }
+          },
+          {
+            "seed": 8110,
+            "valid": true,
+            "dropped": 52,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.049,
+              "balance": 0.049
+            }
+          },
+          {
+            "seed": 8111,
+            "valid": true,
+            "dropped": 51,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.049,
+              "balance": 0.049
+            }
+          }
+        ]
+      }
+    },
+    "out100-comp1": {
+      "attach_summary": null,
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-robustness-20260930T075317Z/out100-comp1",
+      "valid": 12,
+      "rejected": [],
+      "comparison": {
+        "fights": 12,
+        "wins": {
+          "balance": 1,
+          "balance_comp": 10
+        },
+        "draws": 1,
+        "side_wins": {
+          "ue0": 1,
+          "ue1": 10
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.9090909090909091,
+          "ci95": [
+            0.6226415635484043,
+            0.9837678271141151
+          ],
+          "decided": 11
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33322.0,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 37236.5,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15250.5,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15905.5,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30634.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15359.746052900635,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 17874.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.15,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15746.5,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16597.5,
+              "n": 12
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33399.5,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 36970.0,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15292.0,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15891.5,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30618.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15291.99863395318,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 18372.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.165,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15780.5,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16579.5,
+              "n": 12
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      },
+      "exposure": {
+        "fights_with_proxy_drops": 12,
+        "fights_without_proxy_drops": 0,
+        "rows": [
+          {
+            "seed": 8100,
+            "valid": true,
+            "dropped": 52,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance": 0.05,
+              "balance_comp": 0.049
+            }
+          },
+          {
+            "seed": 8101,
+            "valid": true,
+            "dropped": 53,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.05,
+              "balance_comp": 0.049
+            }
+          },
+          {
+            "seed": 8102,
+            "valid": true,
+            "dropped": 52,
+            "winner": null,
+            "reason": "timeout",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.05,
+              "balance_comp": 0.05
+            }
+          },
+          {
+            "seed": 8103,
+            "valid": true,
+            "dropped": 52,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance": 0.05,
+              "balance_comp": 0.049
+            }
+          },
+          {
+            "seed": 8104,
+            "valid": true,
+            "dropped": 52,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.05,
+              "balance_comp": 0.05
+            }
+          },
+          {
+            "seed": 8105,
+            "valid": true,
+            "dropped": 53,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.049,
+              "balance_comp": 0.049
+            }
+          },
+          {
+            "seed": 8106,
+            "valid": true,
+            "dropped": 53,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.05,
+              "balance_comp": 0.05
+            }
+          },
+          {
+            "seed": 8107,
+            "valid": true,
+            "dropped": 52,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.049,
+              "balance_comp": 0.05
+            }
+          },
+          {
+            "seed": 8108,
+            "valid": true,
+            "dropped": 52,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.05,
+              "balance_comp": 0.051
+            }
+          },
+          {
+            "seed": 8109,
+            "valid": true,
+            "dropped": 50,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.049,
+              "balance_comp": 0.049
+            }
+          },
+          {
+            "seed": 8110,
+            "valid": true,
+            "dropped": 52,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance": 0.049,
+              "balance_comp": 0.049
+            }
+          },
+          {
+            "seed": 8111,
+            "valid": true,
+            "dropped": 52,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.049,
+              "balance_comp": 0.05
+            }
+          }
+        ]
+      }
+    },
+    "out300-comp0": {
+      "attach_summary": null,
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-robustness-20260930T075317Z/out300-comp0",
+      "valid": 12,
+      "rejected": [],
+      "comparison": {
+        "fights": 12,
+        "wins": {
+          "balance": 1,
+          "balance_comp": 11
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 11,
+          "ue1": 1
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.9166666666666666,
+          "ci95": [
+            0.646120088858883,
+            0.9851349055950829
+          ],
+          "decided": 12
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33421.0,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 37118.5,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15292.0,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15870.5,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30596.5,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15212.26617742855,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 17652.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 39.515,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15793.5,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16623.5,
+              "n": 12
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33366.0,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 37124.5,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15249.0,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15940.0,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30525.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15262.495258911385,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 18119.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 39.515,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15766.5,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16687.0,
+              "n": 12
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      },
+      "exposure": {
+        "fights_with_proxy_drops": 12,
+        "fights_without_proxy_drops": 0,
+        "rows": [
+          {
+            "seed": 8100,
+            "valid": true,
+            "dropped": 158,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.251,
+              "balance": 0.251
+            }
+          },
+          {
+            "seed": 8101,
+            "valid": true,
+            "dropped": 158,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.25,
+              "balance": 0.25
+            }
+          },
+          {
+            "seed": 8102,
+            "valid": true,
+            "dropped": 157,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.25,
+              "balance": 0.249
+            }
+          },
+          {
+            "seed": 8103,
+            "valid": true,
+            "dropped": 159,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.25,
+              "balance": 0.249
+            }
+          },
+          {
+            "seed": 8104,
+            "valid": true,
+            "dropped": 158,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.252,
+              "balance": 0.25
+            }
+          },
+          {
+            "seed": 8105,
+            "valid": true,
+            "dropped": 157,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.249,
+              "balance": 0.249
+            }
+          },
+          {
+            "seed": 8106,
+            "valid": true,
+            "dropped": 156,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.251,
+              "balance": 0.25
+            }
+          },
+          {
+            "seed": 8107,
+            "valid": true,
+            "dropped": 159,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.25,
+              "balance": 0.25
+            }
+          },
+          {
+            "seed": 8108,
+            "valid": true,
+            "dropped": 159,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance_comp": 0.249,
+              "balance": 0.249
+            }
+          },
+          {
+            "seed": 8109,
+            "valid": true,
+            "dropped": 157,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance_comp": 0.25,
+              "balance": 0.249
+            }
+          },
+          {
+            "seed": 8110,
+            "valid": true,
+            "dropped": 158,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance_comp": 0.251,
+              "balance": 0.25
+            }
+          },
+          {
+            "seed": 8111,
+            "valid": true,
+            "dropped": 157,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.251,
+              "balance": 0.249
+            }
+          }
+        ]
+      }
+    },
+    "out300-comp1": {
+      "attach_summary": null,
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-robustness-20260930T075317Z/out300-comp1",
+      "valid": 12,
+      "rejected": [],
+      "comparison": {
+        "fights": 12,
+        "wins": {
+          "balance": 4,
+          "balance_comp": 8
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 4,
+          "ue1": 8
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 1
+        },
+        "comp_share_of_decided": {
+          "share": 0.6666666666666666,
+          "ci95": [
+            0.39062208887279953,
+            0.8618799089087867
+          ],
+          "decided": 12
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33397.5,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 37233.0,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15244.5,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15898.0,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30657.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15321.390657489386,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 18252.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 39.605000000000004,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15788.0,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16652.0,
+              "n": 12
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33509.5,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 37209.0,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15309.0,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15906.0,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30567.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15203.011007968933,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 17219.5,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 39.61,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15800.0,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16659.5,
+              "n": 12
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      },
+      "exposure": {
+        "fights_with_proxy_drops": 12,
+        "fights_without_proxy_drops": 0,
+        "rows": [
+          {
+            "seed": 8100,
+            "valid": true,
+            "dropped": 156,
+            "winner": 0,
+            "reason": "fall",
+            "sim_time_s": 3.42,
+            "stale_s_by_policy": {
+              "balance": 0.25,
+              "balance_comp": 0.25
+            }
+          },
+          {
+            "seed": 8101,
+            "valid": true,
+            "dropped": 156,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.25,
+              "balance_comp": 0.25
+            }
+          },
+          {
+            "seed": 8102,
+            "valid": true,
+            "dropped": 158,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.25,
+              "balance_comp": 0.248
+            }
+          },
+          {
+            "seed": 8103,
+            "valid": true,
+            "dropped": 157,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.251,
+              "balance_comp": 0.25
+            }
+          },
+          {
+            "seed": 8104,
+            "valid": true,
+            "dropped": 159,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.25,
+              "balance_comp": 0.249
+            }
+          },
+          {
+            "seed": 8105,
+            "valid": true,
+            "dropped": 159,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.249,
+              "balance_comp": 0.249
+            }
+          },
+          {
+            "seed": 8106,
+            "valid": true,
+            "dropped": 156,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.249,
+              "balance_comp": 0.25
+            }
+          },
+          {
+            "seed": 8107,
+            "valid": true,
+            "dropped": 156,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.249,
+              "balance_comp": 0.248
+            }
+          },
+          {
+            "seed": 8108,
+            "valid": true,
+            "dropped": 156,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.25,
+              "balance_comp": 0.25
+            }
+          },
+          {
+            "seed": 8109,
+            "valid": true,
+            "dropped": 158,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.25,
+              "balance_comp": 0.25
+            }
+          },
+          {
+            "seed": 8110,
+            "valid": true,
+            "dropped": 158,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.249,
+              "balance_comp": 0.251
+            }
+          },
+          {
+            "seed": 8111,
+            "valid": true,
+            "dropped": 160,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.25,
+              "balance_comp": 0.25
+            }
+          }
+        ]
+      }
+    },
+    "loss10-comp0": {
+      "attach_summary": null,
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-robustness-20260930T075317Z/loss10-comp0",
+      "valid": 12,
+      "rejected": [],
+      "comparison": {
+        "fights": 12,
+        "wins": {
+          "balance": 1,
+          "balance_comp": 11
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 11,
+          "ue1": 1
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.9166666666666666,
+          "ci95": [
+            0.646120088858883,
+            0.9851349055950829
+          ],
+          "decided": 12
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33639.0,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 40082.0,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15319.5,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15874.5,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30586.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15300.718986610333,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 18438.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.125,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15790.0,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16627.5,
+              "n": 12
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33631.5,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 40183.0,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15282.0,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15944.5,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30608.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15307.038592209363,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 16620.5,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.115,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15763.0,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16626.5,
+              "n": 12
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      },
+      "exposure": {
+        "fights_with_proxy_drops": 12,
+        "fights_without_proxy_drops": 0,
+        "rows": [
+          {
+            "seed": 8100,
+            "valid": true,
+            "dropped": 445,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8101,
+            "valid": true,
+            "dropped": 440,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8102,
+            "valid": true,
+            "dropped": 424,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8103,
+            "valid": true,
+            "dropped": 432,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8104,
+            "valid": true,
+            "dropped": 420,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8105,
+            "valid": true,
+            "dropped": 394,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8106,
+            "valid": true,
+            "dropped": 427,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8107,
+            "valid": true,
+            "dropped": 435,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8108,
+            "valid": true,
+            "dropped": 419,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8109,
+            "valid": true,
+            "dropped": 415,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8110,
+            "valid": true,
+            "dropped": 396,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          },
+          {
+            "seed": 8111,
+            "valid": true,
+            "dropped": 383,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance_comp": 0.0,
+              "balance": 0.0
+            }
+          }
+        ]
+      }
+    },
+    "loss10-comp1": {
+      "attach_summary": null,
+      "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-robustness-20260930T075317Z/loss10-comp1",
+      "valid": 12,
+      "rejected": [],
+      "comparison": {
+        "fights": 12,
+        "wins": {
+          "balance": 2,
+          "balance_comp": 10
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 2,
+          "ue1": 10
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.8333333333333334,
+          "ci95": [
+            0.5519691377470266,
+            0.9530348578161463
+          ],
+          "decided": 12
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33543.5,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 40208.5,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15243.5,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15802.5,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30492.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15233.333047675244,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 17205.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.07,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15766.0,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16540.5,
+              "n": 12
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33654.5,
+              "n": 12
+            },
+            "rtt_us.p99": {
+              "median": 40102.0,
+              "n": 12
+            },
+            "state_one_way_us.p50": {
+              "median": 15314.5,
+              "n": 12
+            },
+            "state_one_way_us.p99": {
+              "median": 15924.0,
+              "n": 12
+            },
+            "link_est.rtt_min_us": {
+              "median": 30684.0,
+              "n": 12
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15285.982217804987,
+              "n": 12
+            },
+            "link_est.state_age_us": {
+              "median": 19148.0,
+              "n": 12
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.135000000000005,
+              "n": 12
+            },
+            "command_one_way_us.p50": {
+              "median": 15765.0,
+              "n": 12
+            },
+            "command_one_way_us.p99": {
+              "median": 16609.0,
+              "n": 12
+            }
+          }
+        }
+      },
+      "controls": {
+        "balance": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        },
+        "balance_comp": {
+          "fights": 0,
+          "wins": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "draws": 0,
+          "side_wins": {
+            "ue0": 0,
+            "ue1": 0
+          },
+          "falls": {
+            "balance": 0,
+            "balance_comp": 0
+          },
+          "metrics_median_of_fights": {
+            "balance": {},
+            "balance_comp": {}
+          }
+        }
+      },
+      "exposure": {
+        "fights_with_proxy_drops": 12,
+        "fights_without_proxy_drops": 0,
+        "rows": [
+          {
+            "seed": 8100,
+            "valid": true,
+            "dropped": 445,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8101,
+            "valid": true,
+            "dropped": 441,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8102,
+            "valid": true,
+            "dropped": 428,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8103,
+            "valid": true,
+            "dropped": 433,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8104,
+            "valid": true,
+            "dropped": 420,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8105,
+            "valid": true,
+            "dropped": 394,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8106,
+            "valid": true,
+            "dropped": 422,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8107,
+            "valid": true,
+            "dropped": 436,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8108,
+            "valid": true,
+            "dropped": 423,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8109,
+            "valid": true,
+            "dropped": 410,
+            "winner": 0,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8110,
+            "valid": true,
+            "dropped": 393,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.0,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          },
+          {
+            "seed": 8111,
+            "valid": true,
+            "dropped": 385,
+            "winner": 1,
+            "reason": "timeout_edge",
+            "sim_time_s": 8.001,
+            "stale_s_by_policy": {
+              "balance": 0.0,
+              "balance_comp": 0.0
+            }
+          }
+        ]
+      }
+    }
+  },
+  "pairs": {
+    "base": {
+      "tags": [
+        "base-comp0",
+        "base-comp1"
+      ],
+      "seeds": [
+        8100,
+        8101,
+        8102,
+        8103,
+        8104,
+        8105,
+        8106,
+        8107,
+        8108,
+        8109,
+        8110,
+        8111
+      ],
+      "excluded_same_assignment": [],
+      "unpaired_seeds": {
+        "base-comp0": [],
+        "base-comp1": []
+      },
+      "comparison": {
+        "fights": 24,
+        "wins": {
+          "balance": 3,
+          "balance_comp": 20
+        },
+        "draws": 1,
+        "side_wins": {
+          "ue0": 12,
+          "ue1": 11
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.8695652173913043,
+          "ci95": [
+            0.6787251772990404,
+            0.9546234090636876
+          ],
+          "decided": 23
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33274.5,
+              "n": 24
+            },
+            "rtt_us.p99": {
+              "median": 36795.5,
+              "n": 24
+            },
+            "state_one_way_us.p50": {
+              "median": 15264.0,
+              "n": 24
+            },
+            "state_one_way_us.p99": {
+              "median": 15806.0,
+              "n": 24
+            },
+            "link_est.rtt_min_us": {
+              "median": 30586.5,
+              "n": 24
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15286.854752585563,
+              "n": 24
+            },
+            "link_est.state_age_us": {
+              "median": 18687.0,
+              "n": 24
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 33.43,
+              "n": 24
+            },
+            "command_one_way_us.p50": {
+              "median": 15741.0,
+              "n": 24
+            },
+            "command_one_way_us.p99": {
+              "median": 16542.5,
+              "n": 24
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33315.5,
+              "n": 24
+            },
+            "rtt_us.p99": {
+              "median": 36924.5,
+              "n": 24
+            },
+            "state_one_way_us.p50": {
+              "median": 15276.5,
+              "n": 24
+            },
+            "state_one_way_us.p99": {
+              "median": 15916.5,
+              "n": 24
+            },
+            "link_est.rtt_min_us": {
+              "median": 30667.0,
+              "n": 24
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15334.135874106194,
+              "n": 24
+            },
+            "link_est.state_age_us": {
+              "median": 17099.0,
+              "n": 24
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 33.435,
+              "n": 24
+            },
+            "command_one_way_us.p50": {
+              "median": 15747.0,
+              "n": 24
+            },
+            "command_one_way_us.p99": {
+              "median": 16526.5,
+              "n": 24
+            }
+          }
+        }
+      }
+    },
+    "out100": {
+      "tags": [
+        "out100-comp0",
+        "out100-comp1"
+      ],
+      "seeds": [
+        8100,
+        8101,
+        8102,
+        8103,
+        8104,
+        8105,
+        8106,
+        8107,
+        8108,
+        8109,
+        8110,
+        8111
+      ],
+      "excluded_same_assignment": [],
+      "unpaired_seeds": {
+        "out100-comp0": [],
+        "out100-comp1": []
+      },
+      "comparison": {
+        "fights": 24,
+        "wins": {
+          "balance": 2,
+          "balance_comp": 21
+        },
+        "draws": 1,
+        "side_wins": {
+          "ue0": 12,
+          "ue1": 11
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.9130434782608695,
+          "ci95": [
+            0.7320401892425634,
+            0.9758199955157796
+          ],
+          "decided": 23
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33355.5,
+              "n": 24
+            },
+            "rtt_us.p99": {
+              "median": 37176.5,
+              "n": 24
+            },
+            "state_one_way_us.p50": {
+              "median": 15262.0,
+              "n": 24
+            },
+            "state_one_way_us.p99": {
+              "median": 15874.5,
+              "n": 24
+            },
+            "link_est.rtt_min_us": {
+              "median": 30630.0,
+              "n": 24
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15282.490719266892,
+              "n": 24
+            },
+            "link_est.state_age_us": {
+              "median": 17874.0,
+              "n": 24
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.17,
+              "n": 24
+            },
+            "command_one_way_us.p50": {
+              "median": 15754.5,
+              "n": 24
+            },
+            "command_one_way_us.p99": {
+              "median": 16583.5,
+              "n": 24
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33348.5,
+              "n": 24
+            },
+            "rtt_us.p99": {
+              "median": 37032.0,
+              "n": 24
+            },
+            "state_one_way_us.p50": {
+              "median": 15261.0,
+              "n": 24
+            },
+            "state_one_way_us.p99": {
+              "median": 15857.5,
+              "n": 24
+            },
+            "link_est.rtt_min_us": {
+              "median": 30618.0,
+              "n": 24
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15296.065932307989,
+              "n": 24
+            },
+            "link_est.state_age_us": {
+              "median": 17814.0,
+              "n": 24
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.1,
+              "n": 24
+            },
+            "command_one_way_us.p50": {
+              "median": 15755.0,
+              "n": 24
+            },
+            "command_one_way_us.p99": {
+              "median": 16559.5,
+              "n": 24
+            }
+          }
+        }
+      }
+    },
+    "out300": {
+      "tags": [
+        "out300-comp0",
+        "out300-comp1"
+      ],
+      "seeds": [
+        8100,
+        8101,
+        8102,
+        8103,
+        8104,
+        8105,
+        8106,
+        8107,
+        8108,
+        8109,
+        8110,
+        8111
+      ],
+      "excluded_same_assignment": [],
+      "unpaired_seeds": {
+        "out300-comp0": [],
+        "out300-comp1": []
+      },
+      "comparison": {
+        "fights": 24,
+        "wins": {
+          "balance": 5,
+          "balance_comp": 19
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 15,
+          "ue1": 9
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 1
+        },
+        "comp_share_of_decided": {
+          "share": 0.7916666666666666,
+          "ci95": [
+            0.5952954674681133,
+            0.9075517464714814
+          ],
+          "decided": 24
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33412.0,
+              "n": 24
+            },
+            "rtt_us.p99": {
+              "median": 37145.5,
+              "n": 24
+            },
+            "state_one_way_us.p50": {
+              "median": 15286.5,
+              "n": 24
+            },
+            "state_one_way_us.p99": {
+              "median": 15880.5,
+              "n": 24
+            },
+            "link_est.rtt_min_us": {
+              "median": 30606.5,
+              "n": 24
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15312.672370559176,
+              "n": 24
+            },
+            "link_est.state_age_us": {
+              "median": 17824.5,
+              "n": 24
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 39.535,
+              "n": 24
+            },
+            "command_one_way_us.p50": {
+              "median": 15788.0,
+              "n": 24
+            },
+            "command_one_way_us.p99": {
+              "median": 16640.5,
+              "n": 24
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33446.5,
+              "n": 24
+            },
+            "rtt_us.p99": {
+              "median": 37189.5,
+              "n": 24
+            },
+            "state_one_way_us.p50": {
+              "median": 15278.5,
+              "n": 24
+            },
+            "state_one_way_us.p99": {
+              "median": 15930.5,
+              "n": 24
+            },
+            "link_est.rtt_min_us": {
+              "median": 30557.5,
+              "n": 24
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15232.906947192872,
+              "n": 24
+            },
+            "link_est.state_age_us": {
+              "median": 17296.5,
+              "n": 24
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 39.545,
+              "n": 24
+            },
+            "command_one_way_us.p50": {
+              "median": 15775.5,
+              "n": 24
+            },
+            "command_one_way_us.p99": {
+              "median": 16662.5,
+              "n": 24
+            }
+          }
+        }
+      }
+    },
+    "loss10": {
+      "tags": [
+        "loss10-comp0",
+        "loss10-comp1"
+      ],
+      "seeds": [
+        8100,
+        8101,
+        8102,
+        8103,
+        8104,
+        8105,
+        8106,
+        8107,
+        8108,
+        8109,
+        8110,
+        8111
+      ],
+      "excluded_same_assignment": [],
+      "unpaired_seeds": {
+        "loss10-comp0": [],
+        "loss10-comp1": []
+      },
+      "comparison": {
+        "fights": 24,
+        "wins": {
+          "balance": 3,
+          "balance_comp": 21
+        },
+        "draws": 0,
+        "side_wins": {
+          "ue0": 13,
+          "ue1": 11
+        },
+        "falls": {
+          "balance": 0,
+          "balance_comp": 0
+        },
+        "comp_share_of_decided": {
+          "share": 0.875,
+          "ci95": [
+            0.6899611872949993,
+            0.9565566591987655
+          ],
+          "decided": 24
+        },
+        "metrics_median_of_fights": {
+          "balance": {
+            "rtt_us.p50": {
+              "median": 33590.5,
+              "n": 24
+            },
+            "rtt_us.p99": {
+              "median": 40098.0,
+              "n": 24
+            },
+            "state_one_way_us.p50": {
+              "median": 15288.0,
+              "n": 24
+            },
+            "state_one_way_us.p99": {
+              "median": 15831.5,
+              "n": 24
+            },
+            "link_est.rtt_min_us": {
+              "median": 30535.5,
+              "n": 24
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15257.105600852203,
+              "n": 24
+            },
+            "link_est.state_age_us": {
+              "median": 17977.0,
+              "n": 24
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.09,
+              "n": 24
+            },
+            "command_one_way_us.p50": {
+              "median": 15775.0,
+              "n": 24
+            },
+            "command_one_way_us.p99": {
+              "median": 16593.0,
+              "n": 24
+            }
+          },
+          "balance_comp": {
+            "rtt_us.p50": {
+              "median": 33654.5,
+              "n": 24
+            },
+            "rtt_us.p99": {
+              "median": 40144.5,
+              "n": 24
+            },
+            "state_one_way_us.p50": {
+              "median": 15294.0,
+              "n": 24
+            },
+            "state_one_way_us.p99": {
+              "median": 15942.0,
+              "n": 24
+            },
+            "link_est.rtt_min_us": {
+              "median": 30638.5,
+              "n": 24
+            },
+            "link_est.cmd_one_way_us": {
+              "median": 15301.38953413822,
+              "n": 24
+            },
+            "link_est.state_age_us": {
+              "median": 18773.5,
+              "n": 24
+            },
+            "link_est.horizon_ms_mean": {
+              "median": 34.13,
+              "n": 24
+            },
+            "command_one_way_us.p50": {
+              "median": 15765.0,
+              "n": 24
+            },
+            "command_one_way_us.p99": {
+              "median": 16609.0,
+              "n": 24
+            }
+          }
+        }
+      }
+    }
+  },
+  "experiment": {
+    "scope": "Local MuJoCo with UDP delay/loss proxies, no radio/Spark/Sionna.",
+    "strategy": "ram",
+    "seeds": [
+      8100,
+      8111
+    ],
+    "base_one_way_ms": 15,
+    "ttl_ms": 60,
+    "once_outage_after_first_forward_ms": 1500,
+    "time_limit_s": 8,
+    "parallel": 4,
+    "note": "Identical seeds and swapped controller assignments; scheduling and packet loss draw order may still vary. Outage suppresses newly scheduled datagrams, queued datagrams still arrive."
+  }
+}

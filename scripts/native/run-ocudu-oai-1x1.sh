@@ -101,11 +101,14 @@ else
     --root "${native_root}" --repo-root "${repo_root}" \
     --lock "${script_dir}/native-workspace.lock.json"
 fi
-# The gNB-side fixtures must stay byte-identical to the pre-MIMO baseline: the
-# UE process is the only variable this gate is allowed to change.
-git -C "${repo_root}" diff --quiet 0c13a1a -- \
-  examples/topology.ocudu-docker.cuda.yaml \
-  examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml || \
+# The gNB-side fixtures must stay byte-identical to the pre-MIMO baseline
+# (commit 0c13a1a): the UE process is the only variable this gate is allowed
+# to change. Pinned by content, so a snapshot checkout without that commit in
+# its history (the Spark validation trees) is held to the same bytes.
+printf '%s  %s\n' \
+  7560250a7eff4ee125999a9eb15c386064a7a1de2cce276721b7ee866ab1cd67 "${repo_root}/examples/topology.ocudu-docker.cuda.yaml" \
+  720fac823f216db74b8c17d8a6bc92242a462a9be50e9316aa0c7b103fd7699f "${repo_root}/examples/ocudu/gnb_zmq_b210_fdd_srsue.yaml" | \
+  sha256sum --check --quiet --strict - >/dev/null 2>&1 || \
   usage_error "shared legacy fixture changed"
 grep -qx 'ENABLE_ZEROMQ:BOOL=ON' "${native_root}/builds/ocudu-zmq-release/CMakeCache.txt" || usage_error "gNB lacks ZMQ"
 for binary in \

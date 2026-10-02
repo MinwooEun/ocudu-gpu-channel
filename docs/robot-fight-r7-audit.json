@@ -1,0 +1,1368 @@
+{
+  "scope": "8 R7 arena runs and completed corrected probe condition checks; internal logs not scanned during radio experiments.",
+  "qualifications": [
+    "No observed console reconnections does not certify continuous PHY synchronization.",
+    "Broker elapsed time bounds the runtime, not exact attached duration; console events lack timestamps.",
+    "AWGN check verifies rendered noise power and RX model wiring against declared transmit powers; it does not measure received SNR."
+  ],
+  "live_runs": {
+    "base-comp0": {
+      "timestamp": "20260930T072455Z",
+      "report_path": "results/robot-fight/r7-live/base-comp0/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-live/base-comp0/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "configured_duration_s": 180,
+      "ues": {
+        "ue0": {
+          "console_path": "results/robot-fight/r7-live/base-comp0/srsue-ue0.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        },
+        "ue1": {
+          "console_path": "results/robot-fight/r7-live/base-comp0/srsue-ue1.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        }
+      }
+    },
+    "base-comp1": {
+      "timestamp": "20260930T073538Z",
+      "report_path": "results/robot-fight/r7-live/base-comp1/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-live/base-comp1/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "configured_duration_s": 180,
+      "ues": {
+        "ue0": {
+          "console_path": "results/robot-fight/r7-live/base-comp1/srsue-ue0.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        },
+        "ue1": {
+          "console_path": "results/robot-fight/r7-live/base-comp1/srsue-ue1.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        }
+      }
+    },
+    "busy-comp0": {
+      "timestamp": "20260930T072833Z",
+      "report_path": "results/robot-fight/r7-live/busy-comp0/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-live/busy-comp0/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "configured_duration_s": 180,
+      "ues": {
+        "ue0": {
+          "console_path": "results/robot-fight/r7-live/busy-comp0/srsue-ue0.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        },
+        "ue1": {
+          "console_path": "results/robot-fight/r7-live/busy-comp0/srsue-ue1.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        }
+      }
+    },
+    "busy-comp1": {
+      "timestamp": "20260930T073213Z",
+      "report_path": "results/robot-fight/r7-live/busy-comp1/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-live/busy-comp1/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "configured_duration_s": 180,
+      "ues": {
+        "ue0": {
+          "console_path": "results/robot-fight/r7-live/busy-comp1/srsue-ue0.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        },
+        "ue1": {
+          "console_path": "results/robot-fight/r7-live/busy-comp1/srsue-ue1.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        }
+      }
+    },
+    "busy-compcomp": {
+      "timestamp": "20260930T074224Z",
+      "report_path": "results/robot-fight/r7-live/busy-compcomp/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-live/busy-compcomp/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "configured_duration_s": 180,
+      "ues": {
+        "ue0": {
+          "console_path": "results/robot-fight/r7-live/busy-compcomp/srsue-ue0.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        },
+        "ue1": {
+          "console_path": "results/robot-fight/r7-live/busy-compcomp/srsue-ue1.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        }
+      }
+    },
+    "busy-plainplain": {
+      "timestamp": "20260930T073859Z",
+      "report_path": "results/robot-fight/r7-live/busy-plainplain/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-live/busy-plainplain/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "configured_duration_s": 180,
+      "ues": {
+        "ue0": {
+          "console_path": "results/robot-fight/r7-live/busy-plainplain/srsue-ue0.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        },
+        "ue1": {
+          "console_path": "results/robot-fight/r7-live/busy-plainplain/srsue-ue1.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 179,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        }
+      }
+    },
+    "fixed-repeat-comp0": {
+      "timestamp": "20260930T081504Z",
+      "report_path": "results/robot-fight/r7-live/fixed-repeat-comp0/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-live/fixed-repeat-comp0/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "configured_duration_s": 300,
+      "ues": {
+        "ue0": {
+          "console_path": "results/robot-fight/r7-live/fixed-repeat-comp0/srsue-ue0.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 299,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        },
+        "ue1": {
+          "console_path": "results/robot-fight/r7-live/fixed-repeat-comp0/srsue-ue1.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 299,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        }
+      },
+      "controllers": {
+        "status": "passed_completed_fights",
+        "compensated_side": 0,
+        "base_seed": 9000,
+        "run_checks": [
+          {
+            "field": "broker_sched",
+            "expected": {
+              "a": "plain",
+              "b": "plain"
+            },
+            "actual": {
+              "a": "plain",
+              "b": "plain"
+            },
+            "status": "passed"
+          },
+          {
+            "field": "contention.kind",
+            "expected": "busy",
+            "actual": "busy",
+            "status": "passed"
+          },
+          {
+            "field": "declared_param_jitter_zero",
+            "expected": true,
+            "actual": true,
+            "status": "passed"
+          }
+        ],
+        "completed_fights": [
+          {
+            "fight": "f001",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f002",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f003",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f004",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f005",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f006",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f007",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f008",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f009",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f010",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f011",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f012",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f013",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f014",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f015",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f016",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f017",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f018",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f019",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f020",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f021",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f022",
+            "checks": 20,
+            "nonpassing": []
+          }
+        ],
+        "incomplete_fights": [
+          "f023"
+        ],
+        "note": "Jitter zero is declared in the launch hook and effective v_cmd_max/shared gains are checked in each completed brain pair; unfinished fights remain listed."
+      }
+    },
+    "fixed-repeat-comp1": {
+      "timestamp": "20260930T082029Z",
+      "report_path": "results/robot-fight/r7-live/fixed-repeat-comp1/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-live/fixed-repeat-comp1/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "configured_duration_s": 300,
+      "ues": {
+        "ue0": {
+          "console_path": "results/robot-fight/r7-live/fixed-repeat-comp1/srsue-ue0.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 299,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        },
+        "ue1": {
+          "console_path": "results/robot-fight/r7-live/fixed-repeat-comp1/srsue-ue1.log",
+          "counts": {
+            "rrc_connected": 1,
+            "pdu_established": 1,
+            "attach_attempt": 1,
+            "random_access_complete": 1,
+            "out_of_sync": 0,
+            "radio_link_failure": 0,
+            "rrc_release": 0,
+            "reestablishment": 0,
+            "shutdown": 1
+          },
+          "status": "no_repeat_or_failure_in_scanned_logs",
+          "last_broker_elapsed_s": 299,
+          "sync_coverage": "console_only_incomplete",
+          "internal_log_scanned": false,
+          "alive_at_broker_stop": 1
+        }
+      },
+      "controllers": {
+        "status": "passed_completed_fights",
+        "compensated_side": 1,
+        "base_seed": 9000,
+        "run_checks": [
+          {
+            "field": "broker_sched",
+            "expected": {
+              "a": "plain",
+              "b": "plain"
+            },
+            "actual": {
+              "a": "plain",
+              "b": "plain"
+            },
+            "status": "passed"
+          },
+          {
+            "field": "contention.kind",
+            "expected": "busy",
+            "actual": "busy",
+            "status": "passed"
+          },
+          {
+            "field": "declared_param_jitter_zero",
+            "expected": true,
+            "actual": true,
+            "status": "passed"
+          }
+        ],
+        "completed_fights": [
+          {
+            "fight": "f001",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f002",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f003",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f004",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f005",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f006",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f007",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f008",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f009",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f010",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f011",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f012",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f013",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f014",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f015",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f016",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f017",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f018",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f019",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f020",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f021",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f022",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f023",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f024",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f025",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f026",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f027",
+            "checks": 20,
+            "nonpassing": []
+          },
+          {
+            "fight": "f028",
+            "checks": 20,
+            "nonpassing": []
+          }
+        ],
+        "incomplete_fights": [
+          "f029"
+        ],
+        "note": "Jitter zero is declared in the launch hook and effective v_cmd_max/shared gains are checked in each completed brain pair; unfinished fights remain listed."
+      }
+    }
+  },
+  "corrected_probes": {
+    "corrected-base": {
+      "timestamp": "20260930T075350Z",
+      "runner_exit": 0,
+      "failure_class": "none",
+      "failure_evidence": [],
+      "report_path": "results/robot-fight/r7-corrected/corrected-base/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-corrected/corrected-base/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "steady_probe": {
+        "ue0": {
+          "resolved_requests": 13186,
+          "rtt_p50_ms": 16.06,
+          "rtt_p99_ms": 37.58,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 172
+        },
+        "ue1": {
+          "resolved_requests": 12982,
+          "rtt_p50_ms": 15.96,
+          "rtt_p99_ms": 53.83,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 174
+        }
+      }
+    },
+    "corrected-awgn34": {
+      "timestamp": "20260930T075649Z",
+      "runner_exit": 0,
+      "failure_class": "none",
+      "failure_evidence": [],
+      "report_path": "results/robot-fight/r7-corrected/corrected-awgn34/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-corrected/corrected-awgn34/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "steady_probe": {
+        "ue0": {
+          "resolved_requests": 13187,
+          "rtt_p50_ms": 16.17,
+          "rtt_p99_ms": 42.08,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 173
+        },
+        "ue1": {
+          "resolved_requests": 12981,
+          "rtt_p50_ms": 15.96,
+          "rtt_p99_ms": 57.88,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 174
+        }
+      }
+    },
+    "corrected-awgn30": {
+      "timestamp": "20260930T075949Z",
+      "runner_exit": 0,
+      "failure_class": "none",
+      "failure_evidence": [],
+      "report_path": "results/robot-fight/r7-corrected/corrected-awgn30/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-corrected/corrected-awgn30/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "steady_probe": {
+        "ue0": {
+          "resolved_requests": 13191,
+          "rtt_p50_ms": 16.07,
+          "rtt_p99_ms": 42.36,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 163
+        },
+        "ue1": {
+          "resolved_requests": 12985,
+          "rtt_p50_ms": 15.97,
+          "rtt_p99_ms": 41.48,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 167
+        }
+      }
+    },
+    "corrected-awgn27": {
+      "timestamp": "20260930T080248Z",
+      "runner_exit": 0,
+      "failure_class": "none",
+      "failure_evidence": [],
+      "report_path": "results/robot-fight/r7-corrected/corrected-awgn27/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-corrected/corrected-awgn27/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "steady_probe": {
+        "ue0": {
+          "resolved_requests": 13191,
+          "rtt_p50_ms": 16.23,
+          "rtt_p99_ms": 42.46,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 157
+        },
+        "ue1": {
+          "resolved_requests": 12984,
+          "rtt_p50_ms": 15.99,
+          "rtt_p99_ms": 93.23,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 160
+        }
+      }
+    },
+    "corrected-awgn24": {
+      "timestamp": "20260930T080547Z",
+      "runner_exit": 0,
+      "failure_class": "none",
+      "failure_evidence": [],
+      "report_path": "results/robot-fight/r7-corrected/corrected-awgn24/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-corrected/corrected-awgn24/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 26,
+        "nonpassing": []
+      },
+      "steady_probe": {
+        "ue0": {
+          "resolved_requests": 13186,
+          "rtt_p50_ms": 16.06,
+          "rtt_p99_ms": 42.78,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 174
+        },
+        "ue1": {
+          "resolved_requests": 12985,
+          "rtt_p50_ms": 16.11,
+          "rtt_p99_ms": 85.36,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 173
+        }
+      }
+    },
+    "corrected-k2": {
+      "timestamp": null,
+      "runner_exit": 2,
+      "failure_class": "configuration_not_supported",
+      "failure_evidence": [
+        {
+          "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-k2/runner.out",
+          "line": 6,
+          "text": "--min_k2: Value 8 not in range [1 - 4]"
+        }
+      ],
+      "report_path": "results/robot-fight/r7-corrected/corrected-k2/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-corrected/corrected-k2/config",
+      "conditions": {
+        "status": "unverified",
+        "checks": 28,
+        "nonpassing": [
+          {
+            "field": "sionna_awgn_snr_db",
+            "expected": 40,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "shape.rx_noise.awgn_snr_db",
+            "expected": 40,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.device_count",
+            "expected": 1,
+            "actual": 0,
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.rx_model",
+            "expected": "rx_noise_gnb0",
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.sample_rate_hz",
+            "expected": 23040000,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.noise_chain_types",
+            "expected": [
+              "awgn"
+            ],
+            "actual": [],
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.topology_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.shape_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.device_count",
+            "expected": 1,
+            "actual": 0,
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.rx_model",
+            "expected": "rx_noise_ue0",
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.sample_rate_hz",
+            "expected": 23040000,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.noise_chain_types",
+            "expected": [
+              "awgn"
+            ],
+            "actual": [],
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.topology_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.shape_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.device_count",
+            "expected": 1,
+            "actual": 0,
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.rx_model",
+            "expected": "rx_noise_gnb1",
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.sample_rate_hz",
+            "expected": 23040000,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.noise_chain_types",
+            "expected": [
+              "awgn"
+            ],
+            "actual": [],
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.topology_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.shape_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.device_count",
+            "expected": 1,
+            "actual": 0,
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.rx_model",
+            "expected": "rx_noise_ue1",
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.sample_rate_hz",
+            "expected": 23040000,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.noise_chain_types",
+            "expected": [
+              "awgn"
+            ],
+            "actual": [],
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.topology_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.shape_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "gnb0.cell_cfg.pusch.min_k2",
+            "expected": 8,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "gnb1.cell_cfg.pusch.min_k2",
+            "expected": 8,
+            "actual": null,
+            "status": "unverified"
+          }
+        ]
+      },
+      "steady_probe": {
+        "ue0": null,
+        "ue1": null
+      }
+    },
+    "corrected-ran-k1k2": {
+      "timestamp": null,
+      "runner_exit": 2,
+      "failure_class": "configuration_not_supported",
+      "failure_evidence": [
+        {
+          "path": "/home/minwoo/ocudu-work/ocudu-integration/results/robot-fight/r7-corrected/corrected-ran-k1k2/runner.out",
+          "line": 6,
+          "text": "--min_k1: Value 7 not in range [1 - 4]"
+        }
+      ],
+      "report_path": "results/robot-fight/r7-corrected/corrected-ran-k1k2/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-corrected/corrected-ran-k1k2/config",
+      "conditions": {
+        "status": "unverified",
+        "checks": 30,
+        "nonpassing": [
+          {
+            "field": "sionna_awgn_snr_db",
+            "expected": 40,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "shape.rx_noise.awgn_snr_db",
+            "expected": 40,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.device_count",
+            "expected": 1,
+            "actual": 0,
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.rx_model",
+            "expected": "rx_noise_gnb0",
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.sample_rate_hz",
+            "expected": 23040000,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.noise_chain_types",
+            "expected": [
+              "awgn"
+            ],
+            "actual": [],
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.topology_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.gnb0.shape_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.device_count",
+            "expected": 1,
+            "actual": 0,
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.rx_model",
+            "expected": "rx_noise_ue0",
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.sample_rate_hz",
+            "expected": 23040000,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.noise_chain_types",
+            "expected": [
+              "awgn"
+            ],
+            "actual": [],
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.topology_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "a.ue0.shape_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.device_count",
+            "expected": 1,
+            "actual": 0,
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.rx_model",
+            "expected": "rx_noise_gnb1",
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.sample_rate_hz",
+            "expected": 23040000,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.noise_chain_types",
+            "expected": [
+              "awgn"
+            ],
+            "actual": [],
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.topology_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.gnb1.shape_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.device_count",
+            "expected": 1,
+            "actual": 0,
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.rx_model",
+            "expected": "rx_noise_ue1",
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.sample_rate_hz",
+            "expected": 23040000,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.noise_chain_types",
+            "expected": [
+              "awgn"
+            ],
+            "actual": [],
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.topology_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "b.ue1.shape_noise_power",
+            "expected": null,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "gnb0.cell_cfg.pusch.min_k2",
+            "expected": 8,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "gnb0.cell_cfg.pucch.min_k1",
+            "expected": 7,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "gnb1.cell_cfg.pusch.min_k2",
+            "expected": 8,
+            "actual": null,
+            "status": "unverified"
+          },
+          {
+            "field": "gnb1.cell_cfg.pucch.min_k1",
+            "expected": 7,
+            "actual": null,
+            "status": "unverified"
+          }
+        ]
+      },
+      "steady_probe": {
+        "ue0": null,
+        "ue1": null
+      }
+    },
+    "corrected-ran-sr40": {
+      "timestamp": "20260930T080903Z",
+      "runner_exit": 0,
+      "failure_class": "none",
+      "failure_evidence": [],
+      "report_path": "results/robot-fight/r7-corrected/corrected-ran-sr40/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-corrected/corrected-ran-sr40/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 28,
+        "nonpassing": []
+      },
+      "steady_probe": {
+        "ue0": {
+          "resolved_requests": 13186,
+          "rtt_p50_ms": 19.58,
+          "rtt_p99_ms": 59.62,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 164
+        },
+        "ue1": {
+          "resolved_requests": 12981,
+          "rtt_p50_ms": 19.48,
+          "rtt_p99_ms": 59.79,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 166
+        }
+      }
+    },
+    "corrected-ran-retx1": {
+      "timestamp": "20260930T081205Z",
+      "runner_exit": 0,
+      "failure_class": "none",
+      "failure_evidence": [],
+      "report_path": "results/robot-fight/r7-corrected/corrected-ran-retx1/report/attach-summary.json",
+      "config_dir": "results/robot-fight/r7-corrected/corrected-ran-retx1/config",
+      "conditions": {
+        "status": "passed",
+        "checks": 30,
+        "nonpassing": []
+      },
+      "steady_probe": {
+        "ue0": {
+          "resolved_requests": 13168,
+          "rtt_p50_ms": 16.17,
+          "rtt_p99_ms": 62.8,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 163
+        },
+        "ue1": {
+          "resolved_requests": 12961,
+          "rtt_p50_ms": 16.04,
+          "rtt_p99_ms": 99.42,
+          "resolved_loss_pct": 0.0,
+          "unresolved_at_stop": 167
+        }
+      }
+    }
+  },
+  "sync_observability": {
+    "selected_variant": "local",
+    "binary": "/workspace/ocudu-spark/builds/srsran4g-zmq-local/srsue/src/srsue",
+    "build_manifest": "/workspace/ocudu-spark/builds/srsran4g-zmq-local/BUILD-MANIFEST.txt",
+    "source_pin": "eea87b1d893ae58e0b08bc381730c502024ae71f",
+    "patch": "srsue-ra-contention.patch",
+    "source": "/workspace/ocudu-spark/src/srsRAN_4G-local/srsue/src/stack/rrc_nr/rrc_nr.cc:237",
+    "finding": "The deployed local source has empty rrc_nr::in_sync() and rrc_nr::out_of_sync() callbacks. Absence of console sync messages cannot establish absence of PHY synchronization excursions; other PHY diagnostics were not exhaustively audited."
+  }
+}

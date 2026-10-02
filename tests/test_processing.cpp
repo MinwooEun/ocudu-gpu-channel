@@ -3,8 +3,10 @@
 #include "ocudu_gpu_channel/cpu_backend.h"
 #include "ocudu_gpu_channel/delay.h"
 #include "ocudu_gpu_channel/processing.h"
+#include "ocudu_gpu_channel/runtime_control.h"
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -1384,6 +1386,47 @@ int main()
       host_cfg.models.emplace(rx_noise.id, rx_noise);
       run_modes(host_cfg, "ue0", {ocg::link_key(host_cfg.links[0])}, {&phase}, &rx_noise, false,
                 "zero-copy parity: host-stage path must be bit-identical to copy");
+
+      // (i) runtime.cuda_stream_priority (R5a) only changes WHEN the GPU
+      // starts this processor's work relative to other streams; high, low and
+      // default must produce bit-identical output over stateful slots, and a
+      // prioritised stream must report the priority it was created with.
+      {
+        constexpr std::size_t batch = 256;
+        constexpr int slots = 4;
+        std::vector<std::vector<ocg::IqBuffer>> outs(3);
+        const ocg::CudaStreamPriority levels[] = {ocg::CudaStreamPriority::Default, ocg::CudaStreamPriority::High,
+                                                  ocg::CudaStreamPriority::Low};
+        for (int mode = 0; mode != 3; ++mode) {
+          auto cfg_p = device_cfg;
+          cfg_p.runtime.cuda_host_memory = ocg::CudaHostMemory::Copy;
+          cfg_p.runtime.cuda_stream_priority = levels[mode];
+          auto cuda = ocg::create_channel_processor(cfg_p);
+          for (int s = 0; s != slots; ++s) {
+            ocg::IqBuffer src(batch);
+            for (std::size_t n = 0; n != batch; ++n) {
+              const double t = static_cast<double>(s * batch + n);
+              src[n] = {static_cast<float>(std::cos(0.07 * t)), static_cast<float>(std::sin(0.11 * t))};
+            }
+            std::vector<ocg::SuperpositionInput> edges = {
+                {.link_key = ocg::link_key(device_cfg.links[0]), .model = &faded, .samples = src},
+                {.link_key = ocg::link_key(device_cfg.links[1]), .model = &weak, .samples = src}};
+            ocg::IqBuffer out(batch);
+            cuda->process_superposition("ue0", edges, &rx_noise, 23040000, out);
+            outs[static_cast<std::size_t>(mode)].push_back(std::move(out));
+          }
+        }
+        for (int mode = 1; mode != 3; ++mode) {
+          for (int s = 0; s != slots; ++s) {
+            for (std::size_t n = 0; n != batch; ++n) {
+              const auto& a = outs[0][static_cast<std::size_t>(s)][n];
+              const auto& b = outs[static_cast<std::size_t>(mode)][static_cast<std::size_t>(s)][n];
+              require(a.i == b.i && a.q == b.q,
+                      "cuda_stream_priority: high/low output must be bit-identical to default");
+            }
+          }
+        }
+      }
     }
   }
 #endif
@@ -3142,6 +3185,266 @@ int main()
             "Rician PDF: E[r^2] should be ~1.0 for unit-power Rician (within 0.05)");
     require(std::fabs(m4 - m4_expected) < 0.10,
             "Rician PDF: E[r^4] should match analytic moment 1 + (2K+1)/(K+1)^2 within 0.10");
+  }
+
+  // ---- Per-device tx_scale_db -------------------------------------------
+  //
+  // Device A puts IQ on the wire at an arbitrary software scale; tx_scale_db
+  // corrects it before any outgoing link's channel. Checked here: (1) -20 dB
+  // on A makes B's received power 0.01x (amplitude 0.1x) on CPU and CUDA,
+  // bit-comparably; (2) an absent key / 0 dB is bit-identical to today; (3) a
+  // profile_swap and a matrix_profile_swap, which replace the leading tdl's
+  // taps wholesale, leave the scale in place.
+  {
+    const auto make_cfg = [](ocg::Backend backend, double tx_scale_db, bool set_key) {
+      ocg::TopologyConfig cfg;
+      cfg.runtime.backend = backend;
+      cfg.runtime.batch_samples_auto = false;
+      cfg.runtime.batch_samples = 8;
+      cfg.runtime.queue_samples = 64;
+      ocg::DeviceConfig a;
+      a.id = "gnb0";
+      a.sample_rate_hz = 23040000;
+      a.tx_endpoint = "tcp://127.0.0.1:5200";
+      a.rx_endpoint = "tcp://127.0.0.1:5201";
+      if (set_key) a.tx_scale_db = tx_scale_db;
+      ocg::DeviceConfig b;
+      b.id = "ue0";
+      b.sample_rate_hz = 23040000;
+      b.tx_endpoint = "tcp://127.0.0.1:5202";
+      b.rx_endpoint = "tcp://127.0.0.1:5203";
+      cfg.devices = {a, b};
+      cfg.links = {{.from = "gnb0", .to = "ue0", .model = "unit"},
+                   {.from = "ue0", .to = "gnb0", .model = "unit"}};
+      ocg::ModelConfig unit;
+      unit.id = "unit";
+      unit.chain.push_back({.type = ocg::ModelStepType::Tdl,
+                            .params = {},
+                            .taps = {{.delay_samples = 0.0, .gain_db = 0.0, .phase_rad = 0.0}},
+                            .taps_declared = true});
+      cfg.models.emplace(unit.id, unit);
+      // What load_config_file does for a YAML topology.
+      ocg::fold_link_leading_delays(cfg);
+      ocg::fold_device_tx_scales(cfg);
+      ocg::expand_fixed_mimo_models(cfg);
+      require(ocg::validate_config(cfg).empty(), "tx_scale_db topology validates");
+      return cfg;
+    };
+    const ocg::IqBuffer input = {{1.0F, 0.0F}, {0.0F, 1.0F}, {1.0F, 1.0F}, {0.5F, -0.5F},
+                                 {-1.0F, 0.0F}, {0.0F, -1.0F}, {1.0F, -1.0F}, {-0.5F, 0.5F}};
+    const auto mean_power = [](const ocg::IqBuffer& s) {
+      double p = 0.0;
+      for (const auto& x : s) p += static_cast<double>(x.i) * x.i + static_cast<double>(x.q) * x.q;
+      return p / static_cast<double>(s.size());
+    };
+    const auto run = [&](ocg::ChannelProcessor& proc, const ocg::TopologyConfig& cfg) {
+      return shape_link_buf(proc, "ue0", ocg::link_key(cfg.links[0]),
+                            *ocg::find_model(cfg, cfg.links[0].model), input, 23040000);
+    };
+    // Replace the A->B link's leading tdl, the way the control plane does, with
+    // a single tap of `tap_gain_db` at delay 0 -- a swap whose own effect is
+    // measurable, so "the scale persisted" is distinguishable from "nothing
+    // happened".
+    const auto matrix_swap = [](ocg::ChannelProcessor& proc, const ocg::TopologyConfig& cfg,
+                                double tap_gain_db) {
+      auto controls = proc.collect_control_links();
+      auto it = controls.find(ocg::link_key(cfg.links[0]));
+      require(it != controls.end() && it->second != nullptr, "tx_scale link is on the control surface");
+      ocg::MatrixProfileShadow matrix{};
+      matrix.nt = 1;
+      matrix.nr = 1;
+      matrix.lane_count = 1;
+      matrix.lanes[0].n_taps = 1;
+      matrix.lanes[0].taps[0] = {.delay_samples = 0.0, .gain_db = tap_gain_db, .phase_rad = 0.0};
+      it->second->shadow_matrix_profile = matrix;
+      it->second->matrix_profile_pending = true;
+      it->second->profile_pending = false;
+      it->second->seqno.fetch_add(1, std::memory_order_release);
+    };
+    const auto scalar_swap = [](ocg::ChannelProcessor& proc, const ocg::TopologyConfig& cfg,
+                                double tap_gain_db) {
+      auto controls = proc.collect_control_links();
+      auto it = controls.find(ocg::link_key(cfg.links[0]));
+      require(it != controls.end() && it->second != nullptr, "tx_scale link is on the control surface");
+      ocg::ProfileShadow& sp = it->second->shadow_profile;
+      sp.n_taps = 1;
+      sp.taps[0] = {.delay_samples = 0.0, .gain_db = tap_gain_db, .phase_rad = 0.0};
+      sp.fading_enabled = false;
+      sp.force = false;
+      // As ControlServer::handle_profile_swap does: a scalar swap supersedes
+      // a pending matrix (the pending flags are sticky and are not cleared
+      // by the snap itself).
+      it->second->profile_pending = true;
+      it->second->matrix_profile_pending = false;
+      it->second->seqno.fetch_add(1, std::memory_order_release);
+    };
+    const double p_in = mean_power(input);
+
+    // The fold: a -20 dB device gets a per-link clone [tdl, gain(-20)]; the
+    // return link (ue0, 0 dB) and an absent key keep the original model.
+    const auto cfg_absent = make_cfg(ocg::Backend::Cpu, 0.0, /*set_key=*/false);
+    const auto cfg_zero = make_cfg(ocg::Backend::Cpu, 0.0, /*set_key=*/true);
+    const auto cfg_cpu = make_cfg(ocg::Backend::Cpu, -20.0, /*set_key=*/true);
+    require(cfg_absent.links[0].model == "unit" && cfg_zero.links[0].model == "unit",
+            "tx_scale_db absent or 0 leaves the link on its original model");
+    require(cfg_cpu.links[0].model != "unit" && cfg_cpu.links[1].model == "unit",
+            "only the scaled source's outgoing link is re-pointed");
+    {
+      const auto* m = ocg::find_model(cfg_cpu, cfg_cpu.links[0].model);
+      require(m != nullptr && m->chain.size() == 2 && m->chain[0].type == ocg::ModelStepType::Tdl &&
+                  m->chain[1].type == ocg::ModelStepType::Gain && m->chain[1].params.at("gain_db") == -20.0,
+              "tx_scale_db clone is [tdl, gain(-20 dB)]");
+    }
+
+    // CPU: 0 dB bit-identical to the key being absent; -20 dB is 0.01x power.
+    ocg::IqBuffer cpu_absent;
+    ocg::IqBuffer cpu_scaled;
+    {
+      auto proc_absent = ocg::create_channel_processor(cfg_absent);
+      auto proc_zero = ocg::create_channel_processor(cfg_zero);
+      auto proc_scaled = ocg::create_channel_processor(cfg_cpu);
+      cpu_absent = run(*proc_absent, cfg_absent);
+      const auto cpu_zero = run(*proc_zero, cfg_zero);
+      require_equal_buffer(cpu_zero, cpu_absent, "CPU: tx_scale_db = 0 is bit-identical to no key");
+      cpu_scaled = run(*proc_scaled, cfg_cpu);
+      const double ratio = mean_power(cpu_scaled) / mean_power(cpu_absent);
+      std::cout << "tx_scale_db CPU: P_in=" << p_in << " P_out(0 dB)=" << mean_power(cpu_absent)
+                << " P_out(-20 dB)=" << mean_power(cpu_scaled) << " ratio=" << ratio
+                << " (" << 10.0 * std::log10(ratio) << " dB)\n";
+      require(std::fabs(ratio - 0.01) < 1e-5, "CPU: -20 dB tx_scale_db is 0.01x in power");
+      for (std::size_t i = 0; i != input.size(); ++i) {
+        require(std::fabs(cpu_scaled[i].i - 0.1F * cpu_absent[i].i) < 1e-6F &&
+                    std::fabs(cpu_scaled[i].q - 0.1F * cpu_absent[i].q) < 1e-6F,
+                "CPU: -20 dB tx_scale_db is 0.1x in amplitude, sample by sample");
+      }
+
+      // Persistence across a matrix_profile_swap (tap -6 dB) and then a
+      // scalar profile_swap (tap -3 dB): the leading tdl is replaced, the
+      // gain step behind it is not. Expected: 0.01 * 10^(-0.6), then
+      // 0.01 * 10^(-0.3).
+      matrix_swap(*proc_scaled, cfg_cpu, -6.0);
+      const auto after_matrix = run(*proc_scaled, cfg_cpu);
+      const double ratio_matrix = mean_power(after_matrix) / mean_power(cpu_absent);
+      const double expect_matrix = 0.01 * std::pow(10.0, -0.6);
+      std::cout << "tx_scale_db CPU after matrix_profile_swap(-6 dB tap): ratio=" << ratio_matrix
+                << " expected=" << expect_matrix << " (" << 10.0 * std::log10(ratio_matrix) << " dB)\n";
+      require(std::fabs(ratio_matrix - expect_matrix) < 1e-5,
+              "CPU: tx_scale_db persists across a matrix_profile_swap (-26 dB total)");
+      scalar_swap(*proc_scaled, cfg_cpu, -3.0);
+      const auto after_scalar = run(*proc_scaled, cfg_cpu);
+      const double ratio_scalar = mean_power(after_scalar) / mean_power(cpu_absent);
+      const double expect_scalar = 0.01 * std::pow(10.0, -0.3);
+      std::cout << "tx_scale_db CPU after profile_swap(-3 dB tap): ratio=" << ratio_scalar
+                << " expected=" << expect_scalar << " (" << 10.0 * std::log10(ratio_scalar) << " dB)\n";
+      require(std::fabs(ratio_scalar - expect_scalar) < 1e-5,
+              "CPU: tx_scale_db persists across a profile_swap (-23 dB total)");
+    }
+
+#if OCUDU_GPU_CHANNEL_HAS_CUDA
+    if (ocg::cuda_compiled()) {
+      const auto cuda_absent_cfg = make_cfg(ocg::Backend::Cuda, 0.0, /*set_key=*/false);
+      const auto cuda_zero_cfg = make_cfg(ocg::Backend::Cuda, 0.0, /*set_key=*/true);
+      const auto cuda_cfg = make_cfg(ocg::Backend::Cuda, -20.0, /*set_key=*/true);
+      auto proc_absent = ocg::create_channel_processor(cuda_absent_cfg);
+      auto proc_zero = ocg::create_channel_processor(cuda_zero_cfg);
+      auto proc_scaled = ocg::create_channel_processor(cuda_cfg);
+      const auto cuda_absent = run(*proc_absent, cuda_absent_cfg);
+      const auto cuda_zero = run(*proc_zero, cuda_zero_cfg);
+      require_equal_buffer(cuda_zero, cuda_absent, "CUDA: tx_scale_db = 0 is bit-identical to no key");
+      const auto cuda_scaled = run(*proc_scaled, cuda_cfg);
+      const double ratio = mean_power(cuda_scaled) / mean_power(cuda_absent);
+      std::cout << "tx_scale_db CUDA: P_out(0 dB)=" << mean_power(cuda_absent)
+                << " P_out(-20 dB)=" << mean_power(cuda_scaled) << " ratio=" << ratio
+                << " (" << 10.0 * std::log10(ratio) << " dB)\n";
+      require(std::fabs(ratio - 0.01) < 1e-5, "CUDA: -20 dB tx_scale_db is 0.01x in power");
+      require_near_buffer(cuda_scaled, cpu_scaled, "CUDA/CPU parity with tx_scale_db = -20 dB");
+      require_near_buffer(cuda_absent, cpu_absent, "CUDA/CPU parity with tx_scale_db absent");
+
+      matrix_swap(*proc_scaled, cuda_cfg, -6.0);
+      const auto after_matrix = run(*proc_scaled, cuda_cfg);
+      const double ratio_matrix = mean_power(after_matrix) / mean_power(cuda_absent);
+      const double expect_matrix = 0.01 * std::pow(10.0, -0.6);
+      std::cout << "tx_scale_db CUDA after matrix_profile_swap(-6 dB tap): ratio=" << ratio_matrix
+                << " expected=" << expect_matrix << " (" << 10.0 * std::log10(ratio_matrix) << " dB)\n";
+      require(std::fabs(ratio_matrix - expect_matrix) < 1e-5,
+              "CUDA: tx_scale_db persists across a matrix_profile_swap (-26 dB total)");
+      scalar_swap(*proc_scaled, cuda_cfg, -3.0);
+      const auto after_scalar = run(*proc_scaled, cuda_cfg);
+      const double ratio_scalar = mean_power(after_scalar) / mean_power(cuda_absent);
+      const double expect_scalar = 0.01 * std::pow(10.0, -0.3);
+      std::cout << "tx_scale_db CUDA after profile_swap(-3 dB tap): ratio=" << ratio_scalar
+                << " expected=" << expect_scalar << " (" << 10.0 * std::log10(ratio_scalar) << " dB)\n";
+      require(std::fabs(ratio_scalar - expect_scalar) < 1e-5,
+              "CUDA: tx_scale_db persists across a profile_swap (-23 dB total)");
+    }
+#endif
+  }
+
+  // --- phase + cfo in one chain must apply the CFO exactly once. ---
+  // The `phase` step used to share the cfo code path and rotate with the
+  // link's live cfo_hz too, so [phase, cfo 125 Hz] delivered 250 Hz. Compare
+  // [phase 0.125, cfo f] against [cfo f] followed by a fixed 0.125 rotation,
+  // on a 1 ms batch at 23.04 MS/s, on both backends.
+  {
+    const std::uint64_t fs = 23040000;
+    const std::size_t n = 23040;
+    const double f_hz = 125.0;
+    ocg::IqBuffer input(n);
+    for (std::size_t i = 0; i != n; ++i) {
+      input[i] = {0.5F, 0.0F};
+    }
+    // One link per config: the CUDA processor expects every incoming lane of a
+    // destination in one call, so the two chains get their own topologies.
+    auto make_config = [&](ocg::Backend backend, const char* model_id, bool with_phase) {
+      ocg::TopologyConfig c;
+      c.runtime.backend = backend;
+      c.runtime.batch_samples_auto = false;
+      c.runtime.batch_samples = n;
+      c.runtime.queue_samples = 4 * n;
+      c.devices = {
+          {.id = "gnb0", .role = "gnb", .sample_rate_hz = fs, .tx_endpoint = "tx0", .rx_endpoint = "rx0"},
+          {.id = "ue0", .role = "ue", .sample_rate_hz = fs, .tx_endpoint = "tx1", .rx_endpoint = "rx1"}};
+      c.links = {{.from = "gnb0", .to = "ue0", .model = model_id}};
+      ocg::ModelConfig m;
+      m.id = model_id;
+      if (with_phase) {
+        m.chain.push_back({.type = ocg::ModelStepType::Phase, .params = {{"phase_rad", 0.125}}});
+      }
+      m.chain.push_back({.type = ocg::ModelStepType::Cfo, .params = {{"cfo_hz", f_hz}}});
+      c.models.emplace(m.id, m);
+      return c;
+    };
+    auto check = [&](ocg::Backend backend, const char* label) {
+      const auto cfg_both = make_config(backend, "both", true);
+      const auto cfg_cfo = make_config(backend, "cfo_only", false);
+      auto proc_both = ocg::create_channel_processor(cfg_both);
+      auto proc_cfo = ocg::create_channel_processor(cfg_cfo);
+      const auto out_both = shape_link_buf(*proc_both, "ue0", "gnb0>ue0:both", cfg_both.models.at("both"), input, fs);
+      const auto out_cfo =
+          shape_link_buf(*proc_cfo, "ue0", "gnb0>ue0:cfo_only", cfg_cfo.models.at("cfo_only"), input, fs);
+      // Measured frequency of the phase+cfo output over the batch: unwrap the
+      // phase of the last sample relative to the first.
+      const double ph0 = std::atan2(out_both.front().q, out_both.front().i);
+      const double ph1 = std::atan2(out_both.back().q, out_both.back().i);
+      double dphi = ph1 - ph0;
+      while (dphi > M_PI) dphi -= 2.0 * M_PI;
+      while (dphi < -M_PI) dphi += 2.0 * M_PI;
+      const double f_meas = dphi / (2.0 * M_PI) * static_cast<double>(fs) / static_cast<double>(n - 1);
+      std::cout << label << ": phase+cfo chain measured " << f_meas << " Hz (configured " << f_hz << ")\n";
+      require(std::fabs(f_meas - f_hz) < 2.0, "phase+cfo chain must apply the CFO once, not twice");
+      ocg::IqBuffer rotated(n);
+      const float cs = std::cos(0.125F), sn = std::sin(0.125F);
+      for (std::size_t k = 0; k != n; ++k) {
+        rotated[k] = {out_cfo[k].i * cs - out_cfo[k].q * sn, out_cfo[k].i * sn + out_cfo[k].q * cs};
+      }
+      require_near_buffer(out_both, rotated, "phase+cfo must equal cfo followed by the fixed rotation");
+    };
+    check(ocg::Backend::Cpu, "CPU");
+#if OCUDU_GPU_CHANNEL_HAS_CUDA
+    if (ocg::cuda_compiled()) {
+      check(ocg::Backend::Cuda, "CUDA");
+    }
+#endif
   }
 
   return 0;

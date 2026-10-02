@@ -19,6 +19,18 @@ This workspace starts as a new repository for a GPU-backed channel-emulation lay
 
 ## Reusable Preferences
 
+- Deliver robot-fighting videos as one arena-only final MP4 per milestone.
+  Keep only small controller/result labels; omit telemetry panels and title
+  cards unless requested. Retain existing milestone summary images and the
+  original timeline summary graphs for R7 (fight results, latency, SNR,
+  broker timing and Sionna on a shared time axis, as for R4b/R5b). Do not
+  replace these with report-figure collages. Only remove disposable render checks
+  and intermediate clips; preserve final figures alongside the final videos.
+
+- For UE or gNB software defects, preserve their source checkouts and deliver
+  fixes as separate local patch artifacts with reproducible application and
+  validation records. Do not directly edit those upstream source trees.
+
 - When the user requests consolidation into main in the current folder, perform normal merges there, preserve pending edits, and report conflicts. Resolve conflicts automatically when authorized. Do not continue editing a separate worktree after consolidation; local merge authorization does not imply a push or release publication.
 
 - Use the README contributor table as the canonical source for public contributor names, affiliations, profile links and roles. Use given-name/family-name order, consistent Name (Affiliation) bylines, and a separate affiliation column in the table; expand institutional abbreviations there. Propagate confirmed display-name corrections to current documentation while preserving original Git author metadata and historical evidence.

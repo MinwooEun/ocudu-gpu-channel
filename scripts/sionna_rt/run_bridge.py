@@ -24,7 +24,7 @@ import time
 import traceback
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -65,7 +65,10 @@ UPLINK_LINKS = tuple(
     for source in ("ue0", "ue1")
     for destination in ("gnb0", "gnb1")
 )
-CROSSTALK_LINKS = (("ue0", "ue1"), ("ue1", "ue0"))
+# No UE<->UE edge by default: the fixtures are FDD cells, where a UE never
+# hears another UE's uplink carrier. A scenario may still declare a
+# `crosstalk` link explicitly for a shared-carrier (TDD) study.
+CROSSTALK_LINKS: tuple[tuple[str, str], ...] = ()
 LINKS = DOWNLINK_LINKS + UPLINK_LINKS + CROSSTALK_LINKS
 ONE_GNB_ONE_UE_NODE_IDS = ("gnb0", "ue0")
 ONE_GNB_ONE_UE_DOWNLINK_LINKS = (("gnb0", "ue0"),)
@@ -85,6 +88,11 @@ DEFAULT_ROUTE_X_M = (-82.0, 82.0)
 DEFAULT_GNB_HEIGHT_M = 60.0
 CAR_SPEED_MPS = 50.0 / 3.6
 PEDESTRIAN_SPEED_MPS = 1.4
+# Live position feed (robot arena -> bridge). The message shape is owned by the
+# arena side and mirrored here; see ExternalPositionSource.
+POSITION_MESSAGE_EVENT = "positions"
+POSITION_MESSAGE_FRAME = "arena"
+DEFAULT_POSITION_TIMEOUT_S = 1.0
 
 
 @dataclass(frozen=True)
@@ -610,6 +618,9 @@ def scenario_environment(args: argparse.Namespace) -> dict[str, Any]:
         },
         "control_endpoint": None if args.dry_run else args.control_endpoint,
         "dry_run": args.dry_run,
+        "position_endpoint": getattr(args, "position_endpoint", None),
+        "position_frame_offset_m": list(getattr(args, "position_frame_offset", (0.0, 0.0, 0.0))),
+        "position_timeout_s": getattr(args, "position_timeout_s", DEFAULT_POSITION_TIMEOUT_S),
     }
 
 
@@ -664,6 +675,10 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--iterations", type=int, default=0,
                         help="optional update-count cap; 0 means no cap")
     parser.add_argument("--update-hz", type=float, default=500.0)
+    parser.add_argument(
+        "--profile-timing", action="store_true",
+        help="record host wall-time stages of channel generation; no extra GPU synchronization",
+    )
     parser.add_argument("--sample-rate-hz", type=float, default=23_040_000.0)
     parser.add_argument(
         "--downlink-frequency-hz",
@@ -745,9 +760,39 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
                         help="pedestrian ping-pong route bounds in meters: min,max")
     parser.add_argument("--status-jsonl", type=pathlib.Path,
                         help="append full per-update channel status as JSON Lines")
+    # Live positions. A robot arena (or anything else) publishes where the
+    # nodes are; the scripted Motion routes stay the fallback for every node
+    # the publisher does not mention and for the time before its first message.
+    parser.add_argument(
+        "--position-endpoint",
+        help=(
+            "ZMQ PUB endpoint to subscribe to for live node positions "
+            f"({POSITION_MESSAGE_EVENT!r} messages in the arena frame); "
+            "unset keeps the scripted routes"
+        ),
+    )
+    parser.add_argument(
+        "--position-frame-offset",
+        type=parse_vector,
+        default=(0.0, 0.0, 0.0),
+        metavar="X,Y,Z",
+        help="arena-frame origin expressed in scene metres, added to every live position",
+    )
+    parser.add_argument(
+        "--position-timeout-s",
+        type=float,
+        default=DEFAULT_POSITION_TIMEOUT_S,
+        help=(
+            "after this long without a live message the last known positions "
+            "are kept and the status record flags them stale; the update loop "
+            "never waits for a message"
+        ),
+    )
     parser.add_argument("--dry-run", action="store_true",
                         help="trace and print control JSON without connecting to ZMQ")
     args = parser.parse_args(argv)
+    if args.position_timeout_s <= 0.0:
+        parser.error("--position-timeout-s must be positive")
     if args.duration < 0.0:
         parser.error("--duration must be >= 0")
     if args.iterations < 0:
@@ -1420,6 +1465,232 @@ def siso_slice(array: Any, rx_index: int, tx_index: int, *, has_time: bool) -> A
     return antenna_slice(array, rx_index, tx_index, 0, 0, has_time=has_time)
 
 
+Vector3 = tuple[float, float, float]
+
+
+@dataclass(frozen=True)
+class PositionSample:
+    """One accepted live message: per node the arena-frame position/velocity."""
+
+    received_monotonic: float
+    t_unix_ms: int | None
+    nodes: dict[str, tuple[Vector3, Vector3 | None]]
+
+
+class ZmqSubscriberTransport:
+    """Non-blocking SUB socket; `recv_noblock` returns one frame or None."""
+
+    def __init__(self, endpoint: str) -> None:
+        try:
+            import zmq  # type: ignore
+        except ImportError as exc:  # pragma: no cover - live dependency path
+            raise RuntimeError(
+                "pyzmq is required for --position-endpoint; install requirements.txt"
+            ) from exc
+        self._zmq = zmq
+        self._socket = zmq.Context.instance().socket(zmq.SUB)
+        self._socket.setsockopt(zmq.LINGER, 0)
+        self._socket.setsockopt(zmq.RCVHWM, 16)
+        self._socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        self._socket.connect(endpoint)
+
+    def recv_noblock(self) -> bytes | None:
+        try:
+            return self._socket.recv(self._zmq.NOBLOCK)
+        except self._zmq.Again:
+            return None
+
+    def close(self) -> None:
+        self._socket.close(linger=0)
+
+
+class ExternalPositionSource:
+    """Latest-wins live positions for the scenario nodes.
+
+    The publisher (the robot arena in the R track) sends JSON frames::
+
+        {"event": "positions", "t_unix_ms": 1790000000000, "frame": "arena",
+         "nodes": {"ue0": {"position_m": [x, y, z], "velocity_mps": [vx, vy, vz]}}}
+
+    Every call to `poll` drains the socket and keeps only the newest valid
+    frame, so a slow trace never replays a backlog of stale positions. Nodes
+    the frame does not mention keep whatever they had (scripted route or the
+    previous live sample); node ids the scenario does not know are ignored
+    and reported once. After `timeout_s` without a frame the last sample is
+    still used and flagged stale — the update loop never blocks on this feed.
+    """
+
+    def __init__(
+        self,
+        endpoint: str,
+        *,
+        offset: Vector3 = (0.0, 0.0, 0.0),
+        timeout_s: float = DEFAULT_POSITION_TIMEOUT_S,
+        known_nodes: Sequence[str] = (),
+        transport: Any | None = None,
+        clock: Any = time.monotonic,
+        warn: Any = None,
+    ) -> None:
+        self.endpoint = endpoint
+        self.offset = tuple(float(value) for value in offset)  # type: ignore[assignment]
+        self.timeout_s = float(timeout_s)
+        self.known_nodes = tuple(known_nodes)
+        self._transport = transport if transport is not None else ZmqSubscriberTransport(endpoint)
+        self._clock = clock
+        self._warn = warn if warn is not None else (
+            lambda text: print(text, file=sys.stderr, flush=True)
+        )
+        self.messages_received = 0
+        self.messages_invalid = 0
+        # Valid frames superseded by a newer one inside the same poll.
+        self.messages_dropped = 0
+        self.ignored_nodes: list[str] = []
+        self.last_sample: PositionSample | None = None
+        self.last_error: str | None = None
+
+    def close(self) -> None:
+        close = getattr(self._transport, "close", None)
+        if close is not None:
+            close()
+
+    def _parse(self, frame: bytes, now: float) -> PositionSample | None:
+        try:
+            message = json.loads(frame)
+        except (ValueError, UnicodeDecodeError) as exc:
+            self.last_error = f"not JSON: {exc}"
+            return None
+        if not isinstance(message, dict) or message.get("event") != POSITION_MESSAGE_EVENT:
+            self.last_error = "not a positions event"
+            return None
+        frame_name = message.get("frame", POSITION_MESSAGE_FRAME)
+        if frame_name != POSITION_MESSAGE_FRAME:
+            self.last_error = f"unexpected frame {frame_name!r}"
+            return None
+        raw_nodes = message.get("nodes")
+        if not isinstance(raw_nodes, dict):
+            self.last_error = "nodes must be an object"
+            return None
+        nodes: dict[str, tuple[Vector3, Vector3 | None]] = {}
+        for node_id, item in raw_nodes.items():
+            if node_id not in self.known_nodes:
+                if node_id not in self.ignored_nodes:
+                    self.ignored_nodes.append(node_id)
+                    self._warn(
+                        f"position feed: ignoring unknown node {node_id!r} "
+                        f"(scenario nodes: {', '.join(self.known_nodes)})"
+                    )
+                continue
+            if not isinstance(item, dict):
+                self.last_error = f"node {node_id!r} must be an object"
+                return None
+            try:
+                position = _finite_vector(item.get("position_m"), where=f"nodes.{node_id}.position_m")
+                velocity_raw = item.get("velocity_mps")
+                velocity = (
+                    None
+                    if velocity_raw is None
+                    else _finite_vector(velocity_raw, where=f"nodes.{node_id}.velocity_mps")
+                )
+            except (ValueError, TypeError) as exc:
+                self.last_error = str(exc)
+                return None
+            nodes[node_id] = (position, velocity)
+        t_unix_ms = message.get("t_unix_ms")
+        if t_unix_ms is not None and not isinstance(t_unix_ms, (int, float)):
+            t_unix_ms = None
+        return PositionSample(
+            received_monotonic=now,
+            t_unix_ms=None if t_unix_ms is None else int(t_unix_ms),
+            nodes=nodes,
+        )
+
+    def poll(self) -> PositionSample | None:
+        """Drain the feed; return the newest valid frame received now, if any."""
+
+        now = self._clock()
+        newest: PositionSample | None = None
+        while True:
+            frame = self._transport.recv_noblock()
+            if frame is None:
+                break
+            self.messages_received += 1
+            sample = self._parse(frame, now)
+            if sample is None:
+                self.messages_invalid += 1
+                continue
+            if newest is not None:
+                self.messages_dropped += 1
+            newest = sample
+        if newest is not None:
+            self.last_sample = newest
+        return newest
+
+    def age_ms(self) -> float | None:
+        if self.last_sample is None:
+            return None
+        return (self._clock() - self.last_sample.received_monotonic) * 1000.0
+
+    def stale(self) -> bool:
+        age = self.age_ms()
+        return age is not None and age > self.timeout_s * 1000.0
+
+    def resolve(
+        self,
+        motion: Mapping[str, Motion],
+        elapsed_seconds: float,
+    ) -> tuple[dict[str, Vector3], dict[str, Vector3], dict[str, str]]:
+        """Positions/velocities for every node plus where each one came from.
+
+        Live nodes get the last sample (offset applied, stale or not); the
+        rest follow their scripted route exactly as without a feed.
+        """
+
+        positions: dict[str, Vector3] = {}
+        velocities: dict[str, Vector3] = {}
+        sources: dict[str, str] = {}
+        live = self.last_sample.nodes if self.last_sample is not None else {}
+        for node_id, item in motion.items():
+            if node_id in live:
+                position, velocity = live[node_id]
+                positions[node_id] = tuple(  # type: ignore[assignment]
+                    value + shift for value, shift in zip(position, self.offset)
+                )
+                velocities[node_id] = velocity if velocity is not None else (0.0, 0.0, 0.0)
+                sources[node_id] = "external"
+            else:
+                positions[node_id] = item.position_at(elapsed_seconds)
+                velocities[node_id] = item.velocity_at(elapsed_seconds)
+                sources[node_id] = "scripted"
+        return positions, velocities, sources
+
+    def status(self, sources: Mapping[str, str]) -> dict[str, Any]:
+        sample = self.last_sample
+        return {
+            "endpoint": self.endpoint,
+            "frame": POSITION_MESSAGE_FRAME,
+            "frame_offset_m": list(self.offset),
+            "timeout_s": self.timeout_s,
+            "messages_received": self.messages_received,
+            "messages_invalid": self.messages_invalid,
+            "messages_dropped": self.messages_dropped,
+            "last_sample_t_unix_ms": None if sample is None else sample.t_unix_ms,
+            # Since the frame was taken off the socket (this poll), and since
+            # the publisher stamped it — the latter is the feed latency the
+            # arena sees, and it depends on both clocks being wall-clock.
+            "last_sample_age_ms": self.age_ms(),
+            "last_sample_publish_age_ms": (
+                None
+                if sample is None or sample.t_unix_ms is None
+                else time.time_ns() // 1_000_000 - sample.t_unix_ms
+            ),
+            "stale": self.stale(),
+            "pending": sample is None,
+            "ignored_nodes": list(self.ignored_nodes),
+            "last_error": self.last_error,
+            "node_sources": dict(sources),
+        }
+
+
 class SionnaScenario:
     # `paths.vertices` builds a component tensor on first access. If that ever
     # fails the run must keep going without the UI extra, so the failure is
@@ -1473,6 +1744,13 @@ class SionnaScenario:
         self.current_positions = {
             node_id: motion.start for node_id, motion in self.motion.items()
         }
+        # Set by main() when --position-endpoint is given; None keeps the
+        # scripted routes and leaves update_positions exactly as it was.
+        self.position_source: ExternalPositionSource | None = None
+        self.position_sources: dict[str, str] = {
+            node_id: "scripted" for node_id in self.motion
+        }
+        self.position_status: dict[str, Any] | None = None
 
         # Each emulator node appears once as a Sionna transmitter and once as
         # a receiver. FDD runs one solve per direction so frequency-dependent
@@ -1512,9 +1790,19 @@ class SionnaScenario:
 
     def update_positions(self, elapsed_seconds: float) -> dict[str, tuple[float, float, float]]:
         positions: dict[str, tuple[float, float, float]] = {}
+        if self.position_source is not None:
+            self.position_source.poll()
+            resolved, velocities, self.position_sources = self.position_source.resolve(
+                self.motion, elapsed_seconds
+            )
+            self.position_status = self.position_source.status(self.position_sources)
         for node_id, motion in self.motion.items():
-            position = motion.position_at(elapsed_seconds)
-            velocity = motion.velocity_at(elapsed_seconds)
+            if self.position_source is not None:
+                position = resolved[node_id]
+                velocity = velocities[node_id]
+            else:
+                position = motion.position_at(elapsed_seconds)
+                velocity = motion.velocity_at(elapsed_seconds)
             positions[node_id] = position
             self.current_positions[node_id] = position
             self.current_velocities[node_id] = velocity
@@ -1546,17 +1834,25 @@ class SionnaScenario:
         *,
         direction: str,
         carrier_frequency_hz: float,
+        timing: dict[str, float] | None = None,
     ) -> tuple[dict[str, MatrixProfile], list[dict[str, Any]]]:
+        started = time.monotonic()
         coefficients, delays = paths.cir(
             sampling_frequency=self.args.update_hz,
             num_time_steps=1,
             normalize_delays=False,
             out_type="numpy",
         )
+        if timing is not None:
+            timing["cir_numpy"] = (time.monotonic() - started) * 1000.0
+        started = time.monotonic()
         coefficients = numpy_value(coefficients, self.np)
         delays = numpy_value(delays, self.np)
         dopplers = numpy_value(paths.doppler, self.np)
         valid = numpy_value(paths.valid, self.np)
+        if timing is not None:
+            timing["array_export"] = (time.monotonic() - started) * 1000.0
+        started = time.monotonic()
 
         # UI-only ray geometry. `paths.vertices` triggers a component build
         # inside Sionna, so it is read once per solve rather than per link,
@@ -1565,12 +1861,15 @@ class SionnaScenario:
         if (
             self.args.path_polylines > 0
             and self.path_polylines_error is None
-            and hasattr(paths, "vertices")
         ):
             try:
-                ray_vertices = numpy_value(paths.vertices, self.np)
-                ray_interactions = numpy_value(paths.interactions, self.np)
-            except Exception as exc:  # pragma: no cover - live Sionna path
+                # Property access can build GPU components and fail; keep it
+                # inside the optional-visualization error boundary.
+                vertices = getattr(paths, "vertices", None)
+                if vertices is not None:
+                    ray_vertices = numpy_value(vertices, self.np)
+                    ray_interactions = numpy_value(paths.interactions, self.np)
+            except Exception as exc:
                 self.path_polylines_error = f"{type(exc).__name__}: {exc}"
                 ray_vertices = ray_interactions = None
                 print(
@@ -1580,6 +1879,10 @@ class SionnaScenario:
                     flush=True,
                 )
 
+        if timing is not None:
+            timing["geometry_export"] = (time.monotonic() - started) * 1000.0
+        packing_started = time.monotonic()
+        visualization_ms = 0.0
         profiles: dict[str, MatrixProfile] = {}
         statuses: list[dict[str, Any]] = []
         for link in links:
@@ -1660,6 +1963,7 @@ class SionnaScenario:
             status["direction"] = link.direction
             status["carrier_frequency_hz"] = carrier_frequency_hz
             if ray_vertices is not None and ray_interactions is not None:
+                visualization_started = time.monotonic()
                 # Lane (0, 0) drives the drawing: with a synthetic array the
                 # ray geometry is shared by every antenna pair anyway.
                 first_lane_coefficients = antenna_slice(
@@ -1686,7 +1990,11 @@ class SionnaScenario:
                     gains_db=gains_db,
                     limit=self.args.path_polylines,
                 )
+                visualization_ms += (time.monotonic() - visualization_started) * 1000.0
             statuses.append(status)
+        if timing is not None:
+            timing["tap_and_status_pack"] = (time.monotonic() - packing_started) * 1000.0 - visualization_ms
+            timing["path_polylines"] = visualization_ms
         return profiles, statuses
 
     def trace_all_profiles(
@@ -1695,6 +2003,10 @@ class SionnaScenario:
         """Trace desired/inter-cell and UE-to-UE crosstalk profiles."""
 
         timings_ms: dict[str, float] = {}
+        # Host-observed stages: lazy GPU work may be charged to the first
+        # materialization (e.g. cir_numpy), not to path_solver. Do not force
+        # synchronization here, which would change the workload being measured.
+        self.generation_stages_ms: dict[str, dict[str, float]] = {}
         profiles: dict[str, MatrixProfile] = {}
         statuses: list[dict[str, Any]] = []
 
@@ -1713,17 +2025,27 @@ class SionnaScenario:
             groups.setdefault(key, []).append(link)
 
         for group_index, ((frequency_hz, tx_array, rx_array), links) in enumerate(groups.items()):
+            stages: dict[str, float] | None = {} if self.args.profile_timing else None
+            configure_started = time.monotonic()
             self.configure_arrays(tx_array, rx_array)
+            if stages is not None:
+                stages["configure_arrays"] = (time.monotonic() - configure_started) * 1000.0
             started = time.monotonic()
             paths = self.trace(frequency_hz)
+            if stages is not None:
+                stages["path_solver"] = (time.monotonic() - started) * 1000.0
             direction_profiles, direction_statuses = self.profiles(
                 paths,
                 links,
                 direction=links[0].direction if len({link.direction for link in links}) == 1 else "mixed",
                 carrier_frequency_hz=frequency_hz,
+                timing=stages,
             )
             label = f"group_{group_index}_{rx_array.antenna_count}x{tx_array.antenna_count}"
             timings_ms[label] = (time.monotonic() - started) * 1000.0
+            if stages is not None:
+                stages["total"] = (time.monotonic() - configure_started) * 1000.0
+                self.generation_stages_ms[label] = stages
             profiles.update(direction_profiles)
             statuses.extend(direction_statuses)
         return profiles, statuses, timings_ms
@@ -1795,6 +2117,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     iteration = 0
     try:
         scenario = SionnaScenario(args)
+        if args.position_endpoint:
+            scenario.position_source = ExternalPositionSource(
+                args.position_endpoint,
+                offset=args.position_frame_offset,
+                timeout_s=args.position_timeout_s,
+                known_nodes=scenario.node_ids,
+            )
         write_scene_mesh(scene_mesh_path(args.status_jsonl), scenario.scene_mesh)
         environment = scenario_environment(args)
         client = None if args.dry_run else ZmqControlClient(args.control_endpoint)
@@ -1894,9 +2223,19 @@ def main(argv: Sequence[str] | None = None) -> int:
                 },
                 "positions": positions,
                 "velocities_mps": scenario.current_velocities,
+                # "external" once any node follows the live feed; the per-node
+                # split and the feed counters live in position_status.
+                "position_source": (
+                    "external"
+                    if "external" in scenario.position_sources.values()
+                    else "scripted"
+                ),
+                "position_status": scenario.position_status,
                 "channels": statuses,
                 "control_reply": reply,
             }
+            if args.profile_timing:
+                record["timing_ms"]["generation_stages"] = scenario.generation_stages_ms
             print(json.dumps(record, separators=(",", ":")), flush=True)
             append_status(args.status_jsonl, record)
             iteration += 1
@@ -1918,6 +2257,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     finally:
         if client is not None:
             client.close()
+        if scenario is not None and scenario.position_source is not None:
+            scenario.position_source.close()
     return 0
 
 

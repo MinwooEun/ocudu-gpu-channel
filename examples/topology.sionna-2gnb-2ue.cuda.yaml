@@ -4,12 +4,20 @@
 # placeholder TDL below through --control-endpoint; the C++/CUDA broker keeps
 # the real-time IQ path, and OCUDU itself remains unchanged.
 #
-# Every gNB/UE pair has a directed DL and UL edge, plus UE<->UE leakage
-# (10 total). At each UE receiver, the CUDA backend superposes two gNB
-# downlinks and the other UE's crosstalk edge; at each gNB it superposes both
-# UE uplinks. Serving, inter-cell interference, and crosstalk are therefore
-# represented uniformly. The bridge uses the canonical
-# control key "from>to:sionna_rt" for each edge.
+# Every gNB/UE pair has a directed DL and UL edge (8 total). At each UE
+# receiver the CUDA backend superposes both gNB downlinks (serving + inter-cell
+# interference); at each gNB it superposes both UE uplinks. There is NO UE<->UE
+# edge: the cells are FDD (band 3), a UE's uplink carrier is never heard by
+# another UE's downlink receiver, and an edge that injected it anyway jammed
+# the victim UE by ~80 dB (UE uplink baseband is far hotter than gNB downlink
+# baseband on these ZMQ radios). The carrier labels below let the broker
+# reject such an edge at startup. The bridge uses the canonical control key
+# "from>to:sionna_rt" for each edge.
+#
+# UE ports carry tx_scale_db (srsUE's +44 dB uplink wire level brought to a
+# 23 dBm UE against the gNB's -19.8 dB = 30 dBm downlink; see
+# render-sionna-multi-ue-configs.py ue_tx_scale_db) and every port has an
+# absolute receiver noise floor sized for a 40 dB unit-gain SNR.
 runtime:
   backend: cuda
   gpu_device: 0
@@ -21,21 +29,35 @@ devices:
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3000
     rx_endpoint: tcp://*:3001
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+    rx_model: rx_noise_gnb0
   - id: gnb1
     role: gnb
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3002
     rx_endpoint: tcp://*:3003
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+    rx_model: rx_noise_gnb1
   - id: ue0
     role: ue
     sample_rate_hz: 23040000
+    tx_scale_db: -71.279
     tx_endpoint: tcp://127.0.0.1:3101
     rx_endpoint: tcp://*:3100
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
+    rx_model: rx_noise_ue0
   - id: ue1
     role: ue
     sample_rate_hz: 23040000
+    tx_scale_db: -71.279
     tx_endpoint: tcp://127.0.0.1:3103
     rx_endpoint: tcp://*:3102
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
+    rx_model: rx_noise_ue1
 links:
   - from: gnb0
     to: ue0
@@ -61,12 +83,6 @@ links:
   - from: ue1
     to: gnb1
     model: sionna_rt
-  - from: ue0
-    to: ue1
-    model: sionna_rt
-  - from: ue1
-    to: ue0
-    model: sionna_rt
 models:
   sionna_rt:
     chain:
@@ -78,3 +94,19 @@ models:
           - delay_samples: 0.0
             gain_db: -100.0
             phase_rad: 0.0
+  rx_noise_gnb0:
+    chain:
+      - type: awgn
+        noise_power: 2.234694e-07
+  rx_noise_gnb1:
+    chain:
+      - type: awgn
+        noise_power: 2.234694e-07
+  rx_noise_ue0:
+    chain:
+      - type: awgn
+        noise_power: 1.120000e-06
+  rx_noise_ue1:
+    chain:
+      - type: awgn
+        noise_power: 1.120000e-06

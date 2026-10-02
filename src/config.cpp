@@ -14,6 +14,11 @@
 namespace ocg {
 namespace {
 
+// Bound on |tx_scale_db| and on a `gain` step's |gain_db|. 200 dB is far
+// beyond any software-scale mismatch between radios (the measured srsUE vs
+// OCUDU gap is ~64 dB) while still far inside float range (1e10 in amplitude).
+constexpr double kMaxTxScaleDb = 200.0;
+
 std::string trim(std::string value)
 {
   auto is_space = [](unsigned char ch) { return std::isspace(ch) != 0; };
@@ -127,6 +132,8 @@ void apply_runtime(RuntimeConfig& runtime, const std::string& key, const std::st
     runtime.rx_ring_batches = parse_size(value, key);
   } else if (key == "cuda_host_memory") {
     runtime.cuda_host_memory = parse_cuda_host_memory(value);
+  } else if (key == "cuda_stream_priority") {
+    runtime.cuda_stream_priority = parse_cuda_stream_priority(value);
   } else {
     throw std::runtime_error("unknown runtime key: " + key);
   }
@@ -147,8 +154,18 @@ void apply_device(DeviceConfig& device, const std::string& key, const std::strin
     device.rx_endpoint = value;
   } else if (key == "rx_model") {
     device.rx_model = value;
+  } else if (key == "tx_carrier") {
+    device.tx_carrier = value;
+  } else if (key == "rx_carrier") {
+    device.rx_carrier = value;
+  } else if (key == "carrier") {
+    // Shorthand for a TDD port: one carrier in both directions.
+    device.tx_carrier = value;
+    device.rx_carrier = value;
   } else if (key == "tx_timing_offset_samples") {
     device.tx_timing_offset_samples = parse_double(value, key);
+  } else if (key == "tx_scale_db") {
+    device.tx_scale_db = parse_double(value, key);
   } else {
     throw std::runtime_error("unknown device key: " + key);
   }
@@ -189,6 +206,7 @@ void apply_link(LinkConfig& link, const std::string& key, const std::string& val
     link.to = value;
   } else if (key == "model") {
     link.model = value;
+    link.declared_model = value;
   } else if (key == "propagation_delay_samples") {
     link.propagation_delay_samples = parse_double(value, key);
   } else {
@@ -319,6 +337,8 @@ bool is_allowed_param(ModelStepType type, const std::string& key)
   switch (type) {
     case ModelStepType::PathLoss:
       return key == "path_loss_db";
+    case ModelStepType::Gain:
+      return key == "gain_db";
     case ModelStepType::Awgn:
       return key == "snr_db" || key == "noise_power";
     case ModelStepType::Phase:
@@ -718,8 +738,10 @@ TopologyConfig load_config_file(const std::string& path)
   }
 
   fold_link_leading_delays(config);
-  // After the delay fold, so a fixed_mimo model that also carries a composed
-  // leading delay expands from the already-delayed clone.
+  // After the delay fold (the scale step must sit behind the composed leading
+  // tdl) and before the fixed_mimo expansion, so a fixed_mimo model expands
+  // from the already-scaled clone.
+  fold_device_tx_scales(config);
   expand_fixed_mimo_models(config);
 
   auto errors = validate_config(config);
@@ -786,6 +808,14 @@ std::vector<std::string> validate_config(const TopologyConfig& config)
     }
     if (device.tx_timing_offset_samples < 0.0) {
       errors.emplace_back("device " + device.id + " tx_timing_offset_samples must be non-negative");
+    }
+    if (!std::isfinite(device.tx_scale_db)) {
+      errors.emplace_back("device " + device.id + " tx_scale_db must be a finite number of dB");
+    } else if (std::fabs(device.tx_scale_db) > kMaxTxScaleDb) {
+      std::ostringstream oss;
+      oss << "device " << device.id << " tx_scale_db must be within +/-" << kMaxTxScaleDb
+          << " dB, got " << device.tx_scale_db;
+      errors.emplace_back(oss.str());
     }
   }
 
@@ -871,6 +901,12 @@ std::vector<std::string> validate_config(const TopologyConfig& config)
                               " ports disagree on tx_timing_offset_samples: " + reference->id +
                               " and " + device->id);
         }
+        // The scale is folded per link from one of the node's ports, so the
+        // ports must agree or the folded value would depend on port order.
+        if (device->tx_scale_db != reference->tx_scale_db) {
+          errors.emplace_back("radio node " + node.id + " ports disagree on tx_scale_db: " +
+                              reference->id + " and " + device->id);
+        }
         // The receiver model is applied once per output row by a single
         // process_superposition call, so it is a node property. Ports that
         // disagree would leave which one wins up to port ordering.
@@ -944,6 +980,47 @@ std::vector<std::string> validate_config(const TopologyConfig& config)
     if (link.propagation_delay_samples < 0.0) {
       errors.emplace_back("link " + link.from + "->" + link.to +
                           " propagation_delay_samples must be non-negative");
+    }
+    // Carrier guard (opt-in). A port only hears its own carrier, so an edge
+    // whose source TX carrier differs from its destination RX carrier has no
+    // physical counterpart -- e.g. an FDD UE's UL TX summed into another UE's
+    // DL RX. Without radio_nodes the endpoints ARE the ports; with them a
+    // node link fans out to every (tx_port, rx_port) pair, so each resolved
+    // pair is checked. Unlabelled ports (empty string) are never checked.
+    if (source != nullptr && destination != nullptr) {
+      const auto check_pair = [&](const DeviceConfig& tx, const DeviceConfig& rx) {
+        if (tx.tx_carrier.empty() || rx.rx_carrier.empty() || tx.tx_carrier == rx.rx_carrier) {
+          return;
+        }
+        std::string where = "link " + link.from + "->" + link.to;
+        if (!config.radio_nodes.empty()) {
+          where += " (port " + tx.id + "->" + rx.id + ")";
+        }
+        errors.emplace_back(where + " connects tx carrier \"" + tx.tx_carrier +
+                            "\" to rx carrier \"" + rx.rx_carrier +
+                            "\": a port only hears its own carrier, so this edge has no "
+                            "physical counterpart (remove it, or label both ports with the "
+                            "same carrier if they really share one)");
+      };
+      if (config.radio_nodes.empty()) {
+        check_pair(*source, *destination);
+      } else {
+        const auto* from_node = find_radio_node(config, link.from);
+        const auto* to_node = find_radio_node(config, link.to);
+        if (from_node != nullptr && to_node != nullptr) {
+          for (const auto& tx_port : from_node->tx_ports) {
+            const auto* tx = find_device(config, tx_port);
+            if (tx == nullptr) {
+              continue;
+            }
+            for (const auto& rx_port : to_node->rx_ports) {
+              if (const auto* rx = find_device(config, rx_port)) {
+                check_pair(*tx, *rx);
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -1244,6 +1321,17 @@ std::vector<std::string> validate_config(const TopologyConfig& config)
       if (noise_it != step.params.end() && noise_it->second < 0.0) {
         errors.emplace_back("model " + model_id + " noise_power must be non-negative");
       }
+      if (step.type == ModelStepType::Gain) {
+        auto gain_it = step.params.find("gain_db");
+        if (gain_it == step.params.end()) {
+          errors.emplace_back("model " + model_id + " gain step requires gain_db");
+        } else if (!std::isfinite(gain_it->second) || std::fabs(gain_it->second) > kMaxTxScaleDb) {
+          std::ostringstream oss;
+          oss << "model " << model_id << " gain_db must be finite and within +/-" << kMaxTxScaleDb
+              << " dB";
+          errors.emplace_back(oss.str());
+        }
+      }
       // tdl-specific: tap array shape and per-tap sanity. The processor will
       // collapse a single-tap tdl into the equivalent gain/delay path, but the
       // tap data itself must round-trip cleanly through the schema.
@@ -1524,6 +1612,70 @@ void fold_link_leading_delays(TopologyConfig& config)
   }
 }
 
+void fold_device_tx_scales(TopologyConfig& config)
+{
+  // Mirrors fold_link_leading_delays: one synthesized clone per
+  // (tx_scale_db, base model) pair, shared by every link with that pair. The
+  // scale is carried as a constant `gain` step rather than being multiplied
+  // into the leading tdl's tap gains, because a profile_swap or
+  // matrix_profile_swap replaces that tdl's taps wholesale at runtime and the
+  // device's wire scale must persist across the swap. It is also deliberately
+  // not a `path_loss` step: path_loss_db is sourced from the link's live
+  // MutableParams, so a second path_loss step would double-apply every
+  // runtime path-loss update.
+  std::map<std::pair<double, std::string>, std::string> synthesized;
+  const auto source_device_id = [&config](const std::string& from) {
+    if (const auto* node = find_radio_node(config, from)) {
+      for (const auto* list : {&node->tx_ports, &node->rx_ports}) {
+        if (!list->empty()) {
+          return list->front();
+        }
+      }
+    }
+    return from;
+  };
+  for (auto& link : config.links) {
+    const DeviceConfig* src = find_device(config, source_device_id(link.from));
+    const double scale_db = src == nullptr ? 0.0 : src->tx_scale_db;
+    // 0 dB is unity: leave the link on its original model so the default is
+    // bit-identical to a topology without the key. An invalid value is left
+    // for validate_config to report rather than being folded.
+    if (scale_db == 0.0 || !std::isfinite(scale_db) || std::fabs(scale_db) > kMaxTxScaleDb) {
+      continue;
+    }
+    const std::string base = link.model;
+    const auto cache_key = std::make_pair(scale_db, base);
+    auto cached = synthesized.find(cache_key);
+    if (cached != synthesized.end()) {
+      link.model = cached->second;
+      continue;
+    }
+    auto base_it = config.models.find(base);
+    if (base_it == config.models.end()) {
+      continue; // validate_config will report the missing base model
+    }
+    std::ostringstream id_oss;
+    id_oss << "__ocg_tx_scale__" << base << "__db_" << scale_db;
+    const std::string effective_id = id_oss.str();
+
+    ModelConfig clone = base_it->second;
+    clone.id = effective_id;
+    ModelStep step;
+    step.type = ModelStepType::Gain;
+    step.params["gain_db"] = scale_db;
+    // Behind the chain-leading tdl when there is one (the CUDA backend runs
+    // the leading tdl host-side and requires it at index 0), otherwise at the
+    // head: the scale is a property of the transmitter, so it precedes every
+    // receiver-side step (CFO, AWGN) in the chain.
+    const bool leads_with_tdl =
+        !clone.chain.empty() && clone.chain.front().type == ModelStepType::Tdl;
+    clone.chain.insert(clone.chain.begin() + (leads_with_tdl ? 1 : 0), std::move(step));
+    config.models.emplace(effective_id, std::move(clone));
+    synthesized[cache_key] = effective_id;
+    link.model = effective_id;
+  }
+}
+
 std::string to_string(Backend backend)
 {
   return backend == Backend::Cuda ? "cuda" : "cpu";
@@ -1542,6 +1694,8 @@ std::string to_string(ModelStepType type)
       return "cfo";
     case ModelStepType::Tdl:
       return "tdl";
+    case ModelStepType::Gain:
+      return "gain";
   }
   return "unknown";
 }
@@ -1571,6 +1725,30 @@ CudaHostMemory parse_cuda_host_memory(const std::string& value)
   throw std::runtime_error("unsupported runtime.cuda_host_memory: " + value + " (copy, zero_copy, auto)");
 }
 
+CudaStreamPriority parse_cuda_stream_priority(const std::string& value)
+{
+  if (value == "default") {
+    return CudaStreamPriority::Default;
+  }
+  if (value == "high") {
+    return CudaStreamPriority::High;
+  }
+  if (value == "low") {
+    return CudaStreamPriority::Low;
+  }
+  throw std::runtime_error("unsupported runtime.cuda_stream_priority: " + value + " (default, high, low)");
+}
+
+std::string to_string(CudaStreamPriority priority)
+{
+  switch (priority) {
+  case CudaStreamPriority::Default: return "default";
+  case CudaStreamPriority::High: return "high";
+  case CudaStreamPriority::Low: return "low";
+  }
+  return "default";
+}
+
 ModelStepType parse_model_step_type(const std::string& value)
 {
   if (value == "path_loss") {
@@ -1587,6 +1765,9 @@ ModelStepType parse_model_step_type(const std::string& value)
   }
   if (value == "tdl") {
     return ModelStepType::Tdl;
+  }
+  if (value == "gain") {
+    return ModelStepType::Gain;
   }
   throw std::runtime_error("unsupported model step type: " + value);
 }
@@ -1814,7 +1995,10 @@ const ModelConfig* find_model(const TopologyConfig& config, const std::string& i
 
 std::string link_key(const LinkConfig& link)
 {
-  return link.from + ">" + link.to + ":" + link.model;
+  // Folds rename `model` to a synthesized clone; the identity keeps the
+  // declared id so control-plane link_ids survive tx_scale_db / lead delays.
+  const std::string& model = link.declared_model.empty() ? link.model : link.declared_model;
+  return link.from + ">" + link.to + ":" + model;
 }
 
 } // namespace ocg

@@ -1,6 +1,7 @@
 #include "ocudu_gpu_channel/config.h"
 #include "ocudu_gpu_channel/correlation.h"
 #include "ocudu_gpu_channel/processing.h"
+#include <algorithm>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -8,6 +9,8 @@
 #include <complex>
 #include <set>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace {
 
@@ -295,6 +298,138 @@ models:
           "ue0>gnb0 source has no offset; model must be unchanged");
   require(tx_offset_config.links[3].model == "serving",
           "ue1>gnb0 source has no offset; model must be unchanged");
+
+  // tx_scale_db on a source device folds into every outgoing link as a
+  // constant `gain` step right behind the chain-leading tdl; the tdl's own
+  // taps are untouched so a later profile swap cannot erase the scale.
+  const char* tx_scale_path = "test_tx_scale_topology.yaml";
+  {
+    std::ofstream f(tx_scale_path);
+    f << R"yaml(
+runtime:
+  backend: cpu
+devices:
+  - id: gnb0
+    role: gnb
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2000
+    rx_endpoint: tcp://127.0.0.1:2001
+    tx_scale_db: -71.2
+  - id: ue0
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2101
+    rx_endpoint: tcp://127.0.0.1:2100
+  - id: ue1
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2103
+    rx_endpoint: tcp://127.0.0.1:2102
+    tx_scale_db: 0
+links:
+  - from: gnb0
+    to: ue0
+    model: serving
+  - from: gnb0
+    to: ue1
+    model: serving
+  - from: ue0
+    to: gnb0
+    model: serving
+  - from: ue1
+    to: gnb0
+    model: serving
+models:
+  serving:
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: -3.0
+            phase_rad: 0.0
+      - type: awgn
+        snr_db: 30
+)yaml";
+  }
+  auto tx_scale_config = ocg::load_config_file(tx_scale_path);
+  require(ocg::find_device(tx_scale_config, "gnb0")->tx_scale_db == -71.2,
+          "tx_scale_db key parses onto the device");
+  require(ocg::find_device(tx_scale_config, "ue0")->tx_scale_db == 0.0,
+          "tx_scale_db defaults to 0 when absent");
+  require(ocg::find_device(tx_scale_config, "ue1")->tx_scale_db == 0.0,
+          "tx_scale_db: 0 parses as 0");
+  {
+    const auto* scaled = ocg::find_model(tx_scale_config, tx_scale_config.links[0].model);
+    require(scaled != nullptr && tx_scale_config.links[0].model != "serving",
+            "gnb0>ue0 runs a synthesized tx-scale clone");
+    require(scaled->chain.size() == 3, "tx-scale clone is tdl + gain + awgn");
+    require(scaled->chain[0].type == ocg::ModelStepType::Tdl &&
+                scaled->chain[0].taps.size() == 1 && scaled->chain[0].taps[0].gain_db == -3.0,
+            "tx-scale fold leaves the leading tdl's taps untouched");
+    require(scaled->chain[1].type == ocg::ModelStepType::Gain &&
+                scaled->chain[1].params.at("gain_db") == -71.2,
+            "tx-scale fold inserts a constant gain step right behind the leading tdl");
+    require(scaled->chain[2].type == ocg::ModelStepType::Awgn,
+            "tx-scale fold keeps receiver-side steps behind the gain");
+    require(tx_scale_config.links[1].model == tx_scale_config.links[0].model,
+            "two links from the same scaled source share one clone");
+    require(tx_scale_config.links[2].model == "serving" && tx_scale_config.links[3].model == "serving",
+            "links from 0 dB sources keep their original model");
+    require(ocg::validate_cuda_support(tx_scale_config).empty(),
+            "CUDA accepts the gain step behind a leading tdl");
+    require(ocg::validate_cpu_support(tx_scale_config).empty(),
+            "CPU accepts the gain step");
+  }
+  // Validation: non-finite and |x| > 200 are rejected, naming the key.
+  const char* tx_scale_bad_path = "test_tx_scale_bad_topology.yaml";
+  for (const char* bad_value : {"nan", "inf", "-inf", "200.5", "-250", "loud"}) {
+    {
+      std::ofstream f(tx_scale_bad_path);
+      f << R"yaml(
+runtime:
+  backend: cpu
+devices:
+  - id: gnb0
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2000
+    rx_endpoint: tcp://127.0.0.1:2001
+    tx_scale_db: )yaml" << bad_value << R"yaml(
+  - id: ue0
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2101
+    rx_endpoint: tcp://127.0.0.1:2100
+links:
+  - from: gnb0
+    to: ue0
+    model: clean
+models:
+  clean:
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+)yaml";
+    }
+    std::string what;
+    try {
+      (void)ocg::load_config_file(tx_scale_bad_path);
+    } catch (const std::runtime_error& e) {
+      what = e.what();
+    }
+    require(!what.empty(), "invalid tx_scale_db must be rejected");
+    require(what.find("tx_scale_db") != std::string::npos,
+            "tx_scale_db rejection names the key");
+  }
+  // The boundary itself is accepted.
+  {
+    ocg::TopologyConfig edge = tx_scale_config;
+    edge.devices[1].tx_scale_db = 200.0;
+    require(ocg::validate_config(edge).empty(), "tx_scale_db = 200 is accepted");
+    edge.devices[1].tx_scale_db = -200.0;
+    require(ocg::validate_config(edge).empty(), "tx_scale_db = -200 is accepted");
+    edge.devices[1].tx_scale_db = 200.0001;
+    require(!ocg::validate_config(edge).empty(), "tx_scale_db just above 200 is rejected");
+  }
 
   // Fractional offset: promotes the prepended step to FractionalDelay.
   const char* tx_frac_path = "test_tx_frac_offset_topology.yaml";
@@ -1565,6 +1700,29 @@ models:
   }
   require(rejected, "runtime.cuda_host_memory rejects an unknown mode");
 
+  // runtime.cuda_stream_priority (R5a): default keeps the plain stream, high
+  // and low take the device's priority range, anything else is refused.
+  require(rx_ring_default.runtime.cuda_stream_priority == ocg::CudaStreamPriority::Default,
+          "runtime.cuda_stream_priority defaults to default when omitted");
+  write_rx_ring_config("  cuda_stream_priority: high");
+  require(ocg::load_config_file(rx_ring_path).runtime.cuda_stream_priority == ocg::CudaStreamPriority::High,
+          "runtime.cuda_stream_priority parses high");
+  write_rx_ring_config("  cuda_stream_priority: low");
+  require(ocg::load_config_file(rx_ring_path).runtime.cuda_stream_priority == ocg::CudaStreamPriority::Low,
+          "runtime.cuda_stream_priority parses low");
+  write_rx_ring_config("  cuda_stream_priority: default");
+  require(ocg::load_config_file(rx_ring_path).runtime.cuda_stream_priority == ocg::CudaStreamPriority::Default,
+          "runtime.cuda_stream_priority parses default");
+  require(ocg::to_string(ocg::CudaStreamPriority::High) == "high", "cuda_stream_priority to_string");
+  write_rx_ring_config("  cuda_stream_priority: urgent");
+  rejected = false;
+  try {
+    (void)ocg::load_config_file(rx_ring_path);
+  } catch (const std::exception&) {
+    rejected = true;
+  }
+  require(rejected, "runtime.cuda_stream_priority rejects an unknown level");
+
   write_rx_ring_config("  rx_ring_batches: 1");
   rejected = false;
   try {
@@ -2800,6 +2958,331 @@ models:
             "perfect correlation is singular but valid, and must be accepted");
   }
 
+  // ---- carrier guard (opt-in) -------------------------------------------
+  // The broker has no notion of carrier frequency, so an author can wire an
+  // FDD UE's TX (UL carrier) into another UE's RX (DL receiver) and the broker
+  // sums it. Labelled ports make that edge a load-time error; unlabelled
+  // ports keep the historical behaviour.
+  const char* carrier_path = "test_carrier_topology.yaml";
+  const auto write_carrier_config = [&](const char* devices_block, const char* links_block) {
+    std::ofstream out_c(carrier_path);
+    out_c << R"yaml(
+runtime:
+  backend: cpu
+  batch_samples: auto
+  queue_samples: 614400
+devices:
+)yaml" << devices_block << R"yaml(links:
+)yaml" << links_block << R"yaml(models:
+  clean:
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: 0.0
+            phase_rad: 0.0
+)yaml";
+  };
+  const auto carrier_errors = [&](const char* devices_block,
+                                  const char* links_block) -> std::vector<std::string> {
+    write_carrier_config(devices_block, links_block);
+    try {
+      return ocg::validate_config(ocg::load_config_file(carrier_path));
+    } catch (const std::runtime_error& e) {
+      return {e.what()};
+    }
+  };
+  const auto mentions = [](const std::vector<std::string>& errors, const char* needle) {
+    return std::any_of(errors.begin(), errors.end(), [&](const std::string& e) {
+      return e.find(needle) != std::string::npos;
+    });
+  };
+
+  const char* fdd_devices = R"yaml(  - id: gnb0
+    role: gnb
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2000
+    rx_endpoint: tcp://127.0.0.1:2001
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+  - id: ue0
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2101
+    rx_endpoint: tcp://127.0.0.1:2100
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
+  - id: ue1
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2111
+    rx_endpoint: tcp://127.0.0.1:2110
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
+)yaml";
+  const char* star_links = R"yaml(  - from: gnb0
+    to: ue0
+    model: clean
+  - from: ue0
+    to: gnb0
+    model: clean
+  - from: gnb0
+    to: ue1
+    model: clean
+  - from: ue1
+    to: gnb0
+    model: clean
+)yaml";
+  const char* star_plus_ue_ue_links = R"yaml(  - from: gnb0
+    to: ue0
+    model: clean
+  - from: ue0
+    to: gnb0
+    model: clean
+  - from: gnb0
+    to: ue1
+    model: clean
+  - from: ue1
+    to: gnb0
+    model: clean
+  - from: ue1
+    to: ue0
+    model: clean
+)yaml";
+
+  {
+    // Labels parse, and `carrier:` sets both directions.
+    write_carrier_config(R"yaml(  - id: a
+    sample_rate_hz: 1000000
+    tx_endpoint: tcp://127.0.0.1:2000
+    rx_endpoint: tcp://127.0.0.1:2001
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+  - id: b
+    sample_rate_hz: 1000000
+    tx_endpoint: tcp://127.0.0.1:2002
+    rx_endpoint: tcp://127.0.0.1:2003
+    carrier: n78
+)yaml", R"yaml(  - from: a
+    to: b
+    model: clean
+  - from: b
+    to: a
+    model: clean
+)yaml");
+    bool threw = false;
+    try {
+      // a->b mixes n3-dl into n78, so load_config_file itself rejects it; the
+      // parse result is checked via the thrown message below instead.
+      (void)ocg::load_config_file(carrier_path);
+    } catch (const std::runtime_error& e) {
+      threw = true;
+      const std::string what = e.what();
+      require(what.find("\"n3-dl\"") != std::string::npos && what.find("\"n78\"") != std::string::npos,
+              "tx_carrier/rx_carrier and carrier shorthand all parse into the labels");
+    }
+    require(threw, "mismatched labelled pair is rejected at load");
+  }
+
+  // Same-carrier FDD pair (plus a second UE in the same star) is accepted.
+  require(carrier_errors(fdd_devices, star_links).empty(),
+          "FDD gnb<->ue links with matching carriers validate");
+
+  {
+    // UE -> UE: ue1 transmits n3-ul, ue0 only hears n3-dl. Rejected, naming
+    // both labels and the edge.
+    const auto errs = carrier_errors(fdd_devices, star_plus_ue_ue_links);
+    require(!errs.empty(), "FDD UE->UE link is rejected");
+    require(mentions(errs, "link ue1->ue0"), "carrier error names the offending edge");
+    require(mentions(errs, "tx carrier \"n3-ul\""), "carrier error names the tx carrier");
+    require(mentions(errs, "rx carrier \"n3-dl\""), "carrier error names the rx carrier");
+    require(mentions(errs, "a port only hears its own carrier"),
+            "carrier error explains the physical rule");
+    // Exactly one edge is at fault; the four physical ones stay silent.
+    std::size_t carrier_count = 0;
+    for (const auto& e : errs) {
+      carrier_count += e.find("connects tx carrier") != std::string::npos;
+    }
+    require(carrier_count == 1, "only the UE->UE edge trips the carrier guard");
+  }
+
+  // Unlabelled topology: the same UE->UE edge is still accepted (opt-in).
+  require(carrier_errors(R"yaml(  - id: gnb0
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2000
+    rx_endpoint: tcp://127.0.0.1:2001
+  - id: ue0
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2101
+    rx_endpoint: tcp://127.0.0.1:2100
+  - id: ue1
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2111
+    rx_endpoint: tcp://127.0.0.1:2110
+)yaml", star_plus_ue_ue_links).empty(),
+          "unlabelled ports are never checked, UE->UE stays accepted");
+
+  // Half-labelled: only one side carries a label -> no check either.
+  require(carrier_errors(R"yaml(  - id: gnb0
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2000
+    rx_endpoint: tcp://127.0.0.1:2001
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+  - id: ue0
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2101
+    rx_endpoint: tcp://127.0.0.1:2100
+  - id: ue1
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2111
+    rx_endpoint: tcp://127.0.0.1:2110
+    tx_carrier: n3-ul
+)yaml", star_plus_ue_ue_links).empty(),
+          "an edge with an unlabelled end is not checked");
+
+  // TDD shorthand: every port is on n78 in both directions, so UE->UE is a
+  // real (same-carrier) edge and must be accepted.
+  require(carrier_errors(R"yaml(  - id: gnb0
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2000
+    rx_endpoint: tcp://127.0.0.1:2001
+    carrier: n78
+  - id: ue0
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2101
+    rx_endpoint: tcp://127.0.0.1:2100
+    carrier: n78
+  - id: ue1
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:2111
+    rx_endpoint: tcp://127.0.0.1:2110
+    carrier: n78
+)yaml", star_plus_ue_ue_links).empty(),
+          "TDD `carrier:` shorthand accepts UE->UE");
+
+  {
+    // radio_nodes: links name nodes, so the guard runs per resolved
+    // (tx_port, rx_port) pair. Two FDD UEs with two ports each; the node
+    // link ue1->ue0 fans out to four UL->DL pairs, all rejected and each
+    // naming its ports.
+    const char* rn_carrier_base = R"yaml(
+runtime:
+  backend: cpu
+  batch_samples: auto
+  queue_samples: 614400
+devices:
+  - id: gnb_a
+    role: port
+    sample_rate_hz: 1000000
+    tx_endpoint: tcp://127.0.0.1:2000
+    rx_endpoint: tcp://127.0.0.1:2001
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+  - id: gnb_b
+    sample_rate_hz: 1000000
+    tx_endpoint: tcp://127.0.0.1:2002
+    rx_endpoint: tcp://127.0.0.1:2003
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+  - id: ue0_a
+    sample_rate_hz: 1000000
+    tx_endpoint: tcp://127.0.0.1:2101
+    rx_endpoint: tcp://127.0.0.1:2100
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
+  - id: ue0_b
+    sample_rate_hz: 1000000
+    tx_endpoint: tcp://127.0.0.1:2103
+    rx_endpoint: tcp://127.0.0.1:2102
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
+  - id: ue1_a
+    sample_rate_hz: 1000000
+    tx_endpoint: tcp://127.0.0.1:2111
+    rx_endpoint: tcp://127.0.0.1:2110
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
+  - id: ue1_b
+    sample_rate_hz: 1000000
+    tx_endpoint: tcp://127.0.0.1:2113
+    rx_endpoint: tcp://127.0.0.1:2112
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
+radio_nodes:
+  - id: gnb
+    tx_ports:
+      - gnb_a
+      - gnb_b
+    rx_ports:
+      - gnb_a
+      - gnb_b
+  - id: ue0
+    tx_ports:
+      - ue0_a
+      - ue0_b
+    rx_ports:
+      - ue0_a
+      - ue0_b
+  - id: ue1
+    tx_ports:
+      - ue1_a
+      - ue1_b
+    rx_ports:
+      - ue1_a
+      - ue1_b
+links:
+  - from: gnb
+    to: ue0
+    model: clean
+  - from: ue0
+    to: gnb
+    model: clean
+  - from: gnb
+    to: ue1
+    model: clean
+  - from: ue1
+    to: gnb
+    model: clean
+)yaml";
+    const char* rn_ue_ue_link = R"yaml(  - from: ue1
+    to: ue0
+    model: clean
+)yaml";
+    const char* rn_models = R"yaml(models:
+  clean:
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: 0.0
+            phase_rad: 0.0
+)yaml";
+    const auto rn_carrier_errors = [&](bool with_ue_ue) {
+      std::ofstream out_rn(carrier_path);
+      out_rn << rn_carrier_base << (with_ue_ue ? rn_ue_ue_link : "") << rn_models;
+      out_rn.close();
+      std::vector<std::string> errs;
+      try {
+        errs = ocg::validate_config(ocg::load_config_file(carrier_path));
+      } catch (const std::runtime_error& e) {
+        errs = {e.what()};
+      }
+      return errs;
+    };
+    // gNB<->UE node links resolve to n3-dl->n3-dl and n3-ul->n3-ul lanes only.
+    require(rn_carrier_errors(false).empty(),
+            "radio_nodes FDD gnb<->ue node links with port labels validate");
+    const auto errs = rn_carrier_errors(true);
+    require(!errs.empty(), "radio_nodes node-level UE->UE link is rejected");
+    require(mentions(errs, "link ue1->ue0 (port ue1_a->ue0_a) connects tx carrier \"n3-ul\" to rx carrier \"n3-dl\""),
+            "radio_nodes carrier guard names the resolved port pair");
+    require(mentions(errs, "(port ue1_b->ue0_b)"), "every resolved port pair of a node link is checked");
+    require(!mentions(errs, "link gnb->ue0") && !mentions(errs, "link ue0->gnb"),
+            "physical node links do not trip the carrier guard");
+  }
+  std::remove(carrier_path);
+
   std::remove(m3_path);
   std::remove(fm_path);
   std::remove(rn_path);
@@ -2810,6 +3293,8 @@ models:
   std::remove(bad_number_path);
   std::remove(mixed_rate_path);
   std::remove(tx_offset_path);
+  std::remove(tx_scale_path);
+  std::remove(tx_scale_bad_path);
   std::remove(tx_frac_path);
   std::remove(prop_path);
   std::remove(link_only_path);

@@ -26,16 +26,22 @@ devices:
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:2000
     rx_endpoint: tcp://*:2001
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
   - id: ue0
     role: ue
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:2101
     rx_endpoint: tcp://*:2100
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
   - id: ue1
     role: ue
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:2103
     rx_endpoint: tcp://*:2102
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
 links:
   - from: gnb0
     to: ue0
