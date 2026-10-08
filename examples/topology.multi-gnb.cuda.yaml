@@ -30,21 +30,29 @@ devices:
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3000
     rx_endpoint: tcp://*:3001
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
   - id: gnb1
     role: gnb
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3002
     rx_endpoint: tcp://*:3003
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
   - id: ue0
     role: ue
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3101
     rx_endpoint: tcp://*:3100
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
   - id: ue1
     role: ue
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3103
     rx_endpoint: tcp://*:3102
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
 links:
   - from: gnb0
     to: ue0

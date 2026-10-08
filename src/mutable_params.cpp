@@ -54,6 +54,9 @@ MutableParams populate_mutable_params_from_yaml(
       case ModelStepType::Tdl:
         // Tap params handled below from chain[0].taps[0].
         break;
+      case ModelStepType::Gain:
+        // A constant; not a runtime-mutable parameter.
+        break;
     }
   }
 

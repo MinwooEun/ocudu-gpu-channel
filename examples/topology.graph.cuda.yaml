@@ -9,6 +9,10 @@
 #         ue0->gnb0, ue1->gnb0   uplink (the two UE uplinks SUM at gnb0 RX -> interference)
 #         ue0->ue1,  ue1->ue0    device-to-device leakage (crosstalk)
 #
+# All three ports share ONE carrier (`carrier: shared`, i.e. a TDD-style cell),
+# which is the only reason the UE->UE edges are physical: on an FDD cell a UE
+# never hears another UE's uplink carrier, and the broker rejects such an edge
+# when the ports carry different carrier labels.
 # A node's received signal is the superposition of every edge arriving at it,
 # then its `rx_model` (a thermal-noise floor) applied once to the sum:
 #   gnb0 RX = noise_floor( channel(ue0->gnb0) + channel(ue1->gnb0) )   [uplink interference]
@@ -25,18 +29,21 @@ devices:
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:16000
     rx_endpoint: tcp://*:16001
+    carrier: shared
     rx_model: noise_floor
   - id: ue0
     role: ue
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:16002
     rx_endpoint: tcp://*:16003
+    carrier: shared
     rx_model: noise_floor
   - id: ue1
     role: ue
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:16004
     rx_endpoint: tcp://*:16005
+    carrier: shared
     rx_model: noise_floor
 links:
   - from: gnb0

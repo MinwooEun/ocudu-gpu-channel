@@ -600,6 +600,7 @@ public:
     check(cudaSetDevice(config.runtime.gpu_device), "cudaSetDevice");
     device_ = config.runtime.gpu_device;
     zc_parts_ = resolve_zero_copy_parts(resolve_zero_copy(config.runtime.cuda_host_memory, device_), device_);
+    stream_priority_ = config.runtime.cuda_stream_priority;
     {
       const char* multirow = std::getenv("OCG_ZC_MULTIROW_DIRECT");
       zc_multirow_direct_ = multirow == nullptr || std::string(multirow) != "0";
@@ -739,7 +740,25 @@ public:
         check(cudaMalloc(reinterpret_cast<void**>(&sp.device_step_meta), 2 * incoming * sizeof(int)),
               "cudaMalloc superpose step meta");
       }
-      check(cudaStreamCreateWithFlags(&sp.stream, cudaStreamNonBlocking), "cudaStreamCreateWithFlags superpose");
+      if (stream_priority_ == CudaStreamPriority::Default) {
+        check(cudaStreamCreateWithFlags(&sp.stream, cudaStreamNonBlocking), "cudaStreamCreateWithFlags superpose");
+      } else {
+        // High = the greatest (numerically lowest) priority the device offers,
+        // Low = the least. Within one context (MPS clients share one) pending
+        // work on a higher-priority stream is scheduled ahead of lower ones at
+        // block granularity; across contexts the GPU still time-slices.
+        int least = 0, greatest = 0;
+        check(cudaDeviceGetStreamPriorityRange(&least, &greatest), "cudaDeviceGetStreamPriorityRange");
+        const int priority = stream_priority_ == CudaStreamPriority::High ? greatest : least;
+        check(cudaStreamCreateWithPriority(&sp.stream, cudaStreamNonBlocking, priority),
+              "cudaStreamCreateWithPriority superpose");
+        int effective = 0;
+        check(cudaStreamGetPriority(sp.stream, &effective), "cudaStreamGetPriority superpose");
+        std::cout << "event=cuda_stream_priority node=" << node.id
+                  << " requested=" << to_string(stream_priority_)
+                  << " effective=" << effective << " range_least=" << least
+                  << " range_greatest=" << greatest << "\n";
+      }
       check(cudaEventCreate(&sp.h2d_start), "cudaEventCreate superpose h2d_start");
       check(cudaEventCreate(&sp.h2d_done), "cudaEventCreate superpose h2d_done");
       check(cudaEventCreate(&sp.kernel_done), "cudaEventCreate superpose kernel_done");
@@ -1577,12 +1596,26 @@ private:
           running_power *= static_cast<double>(factor) * factor;
           break;
         }
+        case ModelStepType::Gain: {
+          // Constant YAML scale (DeviceConfig::tx_scale_db after the fold).
+          // Same Scale GpuStep as path_loss, but read from the step itself,
+          // never from `live`, so no runtime update can move it. The factor
+          // is computed with the identical double->float expression as the
+          // CPU backend so the two stay bit-comparable.
+          const float factor = static_cast<float>(std::pow(10.0, param_or(step, "gain_db", 0.0) / 20.0));
+          gpu_step = make_step(Scale, factor, 0.0F);
+          running_power *= static_cast<double>(factor) * factor;
+          break;
+        }
         case ModelStepType::Phase:
         case ModelStepType::Cfo: {
           // Phase 3 C2a: cfo_hz sourced from per-link `live`. phase_rad stays
-          // on the step (not a v1 mutable param).
+          // on the step (not a v1 mutable param). Only a `cfo` step rotates
+          // with the link's cfo_hz; a `phase` step is a fixed rotation (the
+          // shared increment used to apply the CFO twice in phase+cfo chains).
           const double fixed_phase = param_or(step, "phase_rad", 0.0);
-          const double cfo_hz = static_cast<double>(ms.live.cfo_hz);
+          const double cfo_hz =
+              step.type == ModelStepType::Cfo ? static_cast<double>(ms.live.cfo_hz) : 0.0;
           const double phase_increment =
               sample_rate_hz == 0 ? 0.0 : 2.0 * kPi * cfo_hz / static_cast<double>(sample_rate_hz);
           gpu_step = make_step(Rotate, static_cast<float>(fixed_phase + ms.phase_rad[step_index]),
@@ -1626,6 +1659,7 @@ private:
   // runtime.cuda_host_memory resolved against this device at prepare().
   ZeroCopyParts zc_parts_;
   bool zc_multirow_direct_ = false;
+  CudaStreamPriority stream_priority_ = CudaStreamPriority::Default;
   mutable std::mutex timings_mutex_;
   ProcessorTimings last_timings_;
   std::unordered_map<std::string, CudaLinkSlot> link_slots_;

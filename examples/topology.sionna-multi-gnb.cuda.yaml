@@ -21,7 +21,7 @@
 #                                  interference, not a second serving link
 #         ue0->gnb0, ue1->gnb1     uplink
 #         ue0->gnb1, ue1->gnb0     uplink into the other cell
-#         ue0->ue1,  ue1->ue0      device-to-device leakage (crosstalk)
+#         (no UE<->UE edge: FDD cells, a UE never hears another UE's uplink carrier)
 #
 # Every receiver sums all of its incoming edges and then applies its rx_model
 # once to that sum:
@@ -60,60 +60,80 @@ devices:
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3000
     rx_endpoint: tcp://*:3001
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
     rx_model: noise_floor
   - id: gnb0_p1
     role: port
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3002
     rx_endpoint: tcp://*:3003
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
     rx_model: noise_floor
   - id: gnb0_p2
     role: port
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3004
     rx_endpoint: tcp://*:3005
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
     rx_model: noise_floor
   - id: gnb0_p3
     role: port
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3006
     rx_endpoint: tcp://*:3007
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
     rx_model: noise_floor
   - id: gnb1_p0
     role: port
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3010
     rx_endpoint: tcp://*:3011
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
     rx_model: noise_floor
   - id: gnb1_p1
     role: port
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3012
     rx_endpoint: tcp://*:3013
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
     rx_model: noise_floor
   - id: gnb1_p2
     role: port
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3014
     rx_endpoint: tcp://*:3015
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
     rx_model: noise_floor
   - id: gnb1_p3
     role: port
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3016
     rx_endpoint: tcp://*:3017
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
     rx_model: noise_floor
   - id: ue0_p0
     role: port
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3101
     rx_endpoint: tcp://*:3100
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
     rx_model: noise_floor
   - id: ue1_p0
     role: port
     sample_rate_hz: 23040000
     tx_endpoint: tcp://127.0.0.1:3103
     rx_endpoint: tcp://*:3102
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
     rx_model: noise_floor
 
 radio_nodes:
@@ -174,12 +194,6 @@ links:
   - from: ue1
     to: gnb0
     model: intercell
-  - from: ue0
-    to: ue1
-    model: crosstalk
-  - from: ue1
-    to: ue0
-    model: crosstalk
 models:
   serving:
     chain:
@@ -189,13 +203,6 @@ models:
             gain_db: -100.0
             phase_rad: 0.0
   intercell:
-    chain:
-      - type: tdl
-        taps:
-          - delay_samples: 0.0
-            gain_db: -100.0
-            phase_rad: 0.0
-  crosstalk:
     chain:
       - type: tdl
         taps:
