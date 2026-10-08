@@ -32,6 +32,12 @@
           "sha256": "149551c7740d8a237479ddf02c717cd73bb43ceeb94ed58555a4e92195629220",
           "files": ["radio/zmq/zmq_imported.cpp"],
           "reason": "S10: +3% slots/s at 100 MHz unpinned, no gain once the platform CPU split is applied (2,060 vs 2,077 slots/s); a measurement knob only, never built into the default module."
+        },
+        {
+          "path": "scripts/native/patches/oai-zmq-neon-convert.patch",
+          "sha256": "85559c9b5a5b8b7b2295e239106ecc048bf666c8bbcf36a7a5c60352216374a4",
+          "files": ["radio/zmq/zmq_simd.h"],
+          "reason": "Not built into the default module yet (S17, 2026-10-02). NEON paths for the cf32<->int16 conversion on aarch64 (without AVX2 the scalar cleanup loop converts every sample in the UE rx_poll_thread). Measured on GB10, 100 MHz 2x2, as a custom module: UE per-message ingest round trip 469 -> 236 us p50; the pipelined loop real-time factor unchanged (0.72-0.80), the stock sequential loop +5 % (0.65-0.67 -> 0.707). Applies after oai-zmq-rx-saturate.patch. Promote once a --probe pair exists; gates skip ue_rx_gain_db for a custom shlibpath."
         }
       ]
     },

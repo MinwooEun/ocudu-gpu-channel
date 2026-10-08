@@ -1,0 +1,61 @@
+OAI ZMQ radio (pin 2b69bde6): NEON paths for the cf32<->int16 sample conversion on
+aarch64. Without AVX2 the scalar cleanup loop converted every sample (122,880 floats
+per 100 MHz slot per antenna) in the UE's rx_poll_thread; that loop was most of the
+~470 us per-message ingest that bounded the pipelined lock-step loop at 0.8x (S17).
+Apply after oai-zmq-rx-saturate.patch, in the OAI source root: patch -p1 < oai-zmq-neon-convert.patch
+
+--- a/radio/zmq/zmq_simd.h	2026-10-02 10:01:40.374836231 +0000
++++ b/radio/zmq/zmq_simd.h	2026-10-02 10:01:40.425285146 +0000
+@@ -7,6 +7,9 @@
+ 
+ #include "simde/x86/avx512.h"
+ #include "simde/x86/avx2.h"
++#if defined(__ARM_NEON)
++#include <arm_neon.h>
++#endif
+ 
+ #include "common/platform_types.h"
+ #include <limits>
+@@ -54,6 +57,20 @@
+   }
+ #endif
+ 
++#if defined(__ARM_NEON)
++  // NEON (aarch64): int16 -> float, 8 elements per iteration.
++  {
++    const float32x4_t v_factor = vdupq_n_f32(r_factor);
++    for (; i + 8 <= total_elements; i += 8) {
++      int16x8_t   s  = vld1q_s16(&samples[i]);
++      float32x4_t lo = vcvtq_f32_s32(vmovl_s16(vget_low_s16(s)));
++      float32x4_t hi = vcvtq_f32_s32(vmovl_s16(vget_high_s16(s)));
++      vst1q_f32(&output_ptr[i], vmulq_f32(lo, v_factor));
++      vst1q_f32(&output_ptr[i + 4], vmulq_f32(hi, v_factor));
++    }
++  }
++#endif
++
+   // Cleanup loop for remaining elements
+   for (; i < total_elements; i++) {
+     output_ptr[i] = (float)samples[i] * r_factor;
+@@ -94,6 +111,21 @@
+     }
+   }
+ #endif
++
++#if defined(__ARM_NEON)
++  // NEON (aarch64): float -> int16 with round-to-nearest (vcvtnq, as lrintf in
++  // the default rounding mode) and saturation (vqmovn), 8 elements per
++  // iteration; the scalar loop below keeps the same semantics for the tail.
++  {
++    const float32x4_t v_factor = vdupq_n_f32(factor);
++    for (; i + 8 <= total_elements; i += 8) {
++      float32x4_t a  = vmulq_f32(vld1q_f32(&input_floats[i]), v_factor);
++      float32x4_t b  = vmulq_f32(vld1q_f32(&input_floats[i + 4]), v_factor);
++      int16x8_t   o  = vcombine_s16(vqmovn_s32(vcvtnq_s32_f32(a)), vqmovn_s32(vcvtnq_s32_f32(b)));
++      vst1q_s16(&output_ints[i], o);
++    }
++  }
++#endif
+ 
+   // Cleanup loop for remaining elements. Without AVX2 (aarch64) this loop
+   // converts every sample, so it must match the SIMD paths above: round to
