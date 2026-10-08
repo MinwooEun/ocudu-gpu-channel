@@ -403,10 +403,37 @@ PY
       mkdir -p "${log_dir}/wire-capture"
       broker_extra="${broker_extra//WIRECAP/${log_dir}/wire-capture}"
     fi
+    # Optional broker wire capture, the OAI 1x1 gate's knobs with the 2x2
+    # prefix: OCUDU_NATIVE_OAI2X2_WIRE_CAPTURE_SAMPLES (0 = off) / _SKIP_SECONDS
+    # (default 2, counted from each port's first sample), into
+    # <log_dir>/wire-capture (one <port>.{tx_in,rx_out}.cf32 per gNB/UE port);
+    # wire-capture-power.py gives the per-port levels. X7 measured the UE's
+    # port 0 at the 1x1 per-channel level and port 1 silent (1-layer UL), see
+    # docs/plans/x7-oai-levels-prach.md; a 2 s skip here lands in the
+    # connected-mode PUCCH / early DL-iperf phase, so the traffic-weighted
+    # level is not comparable with the 1x1 calibration window without a
+    # per-burst breakdown.
+    local wire_capture_samples="${OCUDU_NATIVE_OAI2X2_WIRE_CAPTURE_SAMPLES:-0}"
+    local wire_capture_skip_seconds="${OCUDU_NATIVE_OAI2X2_WIRE_CAPTURE_SKIP_SECONDS:-2}"
+    [[ "${wire_capture_samples}" =~ ^(0|[1-9][0-9]*)$ && "${wire_capture_skip_seconds}" =~ ^(0|[1-9][0-9]*)$ ]] || \
+      usage_error "OCUDU_NATIVE_OAI2X2_WIRE_CAPTURE_SAMPLES/_SKIP_SECONDS must be non-negative integers"
+    local -a wire_capture_args=()
+    if [[ "${wire_capture_samples}" -gt 0 ]]; then
+      [[ "${broker_extra}" == *--wire-capture* ]] && usage_error "wire capture requested twice (OAI2X2_BROKER_EXTRA and OCUDU_NATIVE_OAI2X2_WIRE_CAPTURE_SAMPLES)"
+      mkdir -p "${log_dir}/wire-capture"
+      wire_capture_args=(
+        --wire-capture-dir "${log_dir}/wire-capture"
+        --wire-capture-samples "${wire_capture_samples}"
+        --wire-capture-skip "$((wire_capture_skip_seconds * 23040000))"
+      )
+      printf 'event=wire_capture_requested samples=%s skip_seconds=%s dir="%s"\n' \
+        "${wire_capture_samples}" "${wire_capture_skip_seconds}" "${log_dir}/wire-capture"
+    fi
     # shellcheck disable=SC2086
     start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" ${OCUDU_NATIVE_BROKER_ENV:-} \
       "${broker_pin[@]}" ${OCUDU_NATIVE_BROKER_WRAPPER:-} \
-      "${broker}" --config "${config_dir}/topology.yaml" --duration "$((broker_seconds + startup_allowance))s" ${broker_extra}
+      "${broker}" --config "${config_dir}/topology.yaml" --duration "$((broker_seconds + startup_allowance))s" \
+      "${wire_capture_args[@]}" ${broker_extra}
     broker_pid="${started_pid}"
     broker_index=$((${#process_pids[@]} - 1))
     wait_log "${log_dir}/broker.log" 'event=radio_node_resolved id=ue0' "${broker_pid}" 15 || usage_error "broker did not become ready"

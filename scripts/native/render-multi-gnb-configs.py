@@ -40,12 +40,21 @@ replace_exact = multi_ue.replace_exact
 # One entry per cell. The ZMQ ports must agree with the port map below, which
 # rewrites examples/topology.multi-gnb.cuda.yaml onto the native loopback plan.
 CELLS = (
-    {"device_id": "gnb0", "tx_port": 2000, "rx_port": 2001, "pci": 1, "gnb_id": 411, "bind": "127.0.0.11"},
-    {"device_id": "gnb1", "tx_port": 2010, "rx_port": 2011, "pci": 2, "gnb_id": 412, "bind": "127.0.0.12"},
+    {"device_id": "gnb0", "tx_port": 2000, "rx_port": 2001, "pci": 1, "gnb_id": 411, "bind": "127.0.0.11",
+     "prach_root": 1},
+    {"device_id": "gnb1", "tx_port": 2010, "rx_port": 2011, "pci": 2, "gnb_id": 412, "bind": "127.0.0.12",
+     "prach_root": 200},
 )
+# Two co-channel cells must not share a PRACH root sequence: the srsRAN ZMQ
+# radios share the broker's lock-step time, so both UEs RACH on the same
+# occasion, and with one root each gNB also detects the OTHER cell's preamble
+# over the inter-cell path and admits a phantom UE (seen as crc=KO PUSCH for
+# an RNTI the real UE never follows). Real deployments plan distinct roots.
 # The UEs, IMSIs, netns and IPv4s are the multi-UE gate's: ue0 camps on gnb0,
 # ue1 on gnb1 (the topology's serving/intercell path losses decide that).
-UES = multi_ue.UES
+# This gate has two UEs; the multi-UE table grew to four with the 4-UE option,
+# so take the slice (the subscriber fixture is validated against it).
+UES = tuple(multi_ue.UES)[:2]
 # examples/topology.multi-gnb.cuda.yaml port -> native port.
 PORT_MAP = {3000: 2000, 3001: 2001, 3002: 2010, 3003: 2011,
             3100: 2100, 3101: 2101, 3102: 2102, 3103: 2103}
@@ -75,6 +84,10 @@ def render_gnb(source: str, cell: dict, log_dir: Path) -> str:
     rendered = replace_exact(rendered, "  tx_gain: 75\n", "  tx_gain: 0\n", 1, "native gNB TX gain")
     rendered = replace_exact(rendered, "  rx_gain: 75\n", "  rx_gain: 0\n", 1, "native gNB RX gain")
     rendered = replace_exact(rendered, "cell_cfg:\n", f"cell_cfg:\n  pci: {cell['pci']}\n", 1, "gNB PCI")
+    rendered = replace_exact(
+        rendered, "  prach:\n    prach_config_index: 1\n",
+        f"  prach:\n    prach_config_index: 1\n    prach_root_sequence_index: {cell['prach_root']}\n",
+        1, "gNB PRACH root sequence")
     for old, new in {
         "  filename: /tmp/gnb.log\n": f"  filename: {log_dir / f'{name}-internal.log'}\n",
         "  mac_filename: /tmp/gnb_mac.pcap\n": f"  mac_filename: {log_dir / f'{name}_mac.pcap'}\n",
@@ -94,8 +107,14 @@ def add_acceleration(text: str, stage: str) -> str:
     return text + "\nexpert_phy:\n" + phy + "\n"
 
 
-def render_topology(source: str) -> str:
-    """Move the 2-cell topology onto the native ports and loopback REP binds."""
+def render_topology(source: str, channel_mode: str = "legacy") -> str:
+    """Move the 2-cell topology onto the native ports and loopback REP binds.
+
+    legacy: the checked-in fixed-TDL serving/intercell topology. sionna: every
+    link is a `sionna_rt` placeholder the bridge replaces live, and the link
+    set (8 serving/intercell, or 10 with the UE<->UE crosstalk pair) is the
+    topology file's -- the scenario must name the same links.
+    """
     rendered = source
     for old, new in PORT_MAP.items():
         count = rendered.count(f":{old}\n")
@@ -106,12 +125,21 @@ def render_topology(source: str) -> str:
     if count != 4:
         fail(f"multi-gNB topology: expected 4 wildcard REP binds, found {count}")
     rendered = rendered.replace("tcp://*:", "tcp://127.0.0.1:")
-    for required in (
-        "  - from: gnb0\n    to: ue0\n    model: serving\n",
-        "  - from: gnb1\n    to: ue1\n    model: serving\n",
-        "  - from: gnb0\n    to: ue1\n    model: intercell\n",
-        "  - from: gnb1\n    to: ue0\n    model: intercell\n",
-    ):
+    if channel_mode == "sionna":
+        required_links = (
+            "  - from: gnb0\n    to: ue0\n    model: sionna_rt\n",
+            "  - from: gnb1\n    to: ue1\n    model: sionna_rt\n",
+            "  - from: gnb0\n    to: ue1\n    model: sionna_rt\n",
+            "  - from: gnb1\n    to: ue0\n    model: sionna_rt\n",
+        )
+    else:
+        required_links = (
+            "  - from: gnb0\n    to: ue0\n    model: serving\n",
+            "  - from: gnb1\n    to: ue1\n    model: serving\n",
+            "  - from: gnb0\n    to: ue1\n    model: intercell\n",
+            "  - from: gnb1\n    to: ue0\n    model: intercell\n",
+        )
+    for required in required_links:
         if source.count(required) != 1:
             fail(f"multi-gNB topology invariant is missing or ambiguous: {required!r}")
     host_memory = os.environ.get("OCUDU_NATIVE_CUDA_HOST_MEMORY")
@@ -130,6 +158,9 @@ def main() -> int:
     parser.add_argument("--native-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--log-dir", type=Path, required=True)
+    parser.add_argument("--topology", type=Path, default=Path("examples/topology.multi-gnb.cuda.yaml"),
+                        help="broker topology, relative to the repo root or absolute")
+    parser.add_argument("--channel-mode", choices=("legacy", "sionna"), default="legacy")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve(strict=True)
@@ -144,15 +175,18 @@ def main() -> int:
     for cell in CELLS:
         text = render_gnb(gnb_source, cell, log_dir)
         outputs[f"{cell['device_id']}.yaml"] = add_acceleration(text, stage) if stage else text
+    topology_path = args.topology if args.topology.is_absolute() else repo_root / args.topology
     outputs["topology.yaml"] = render_topology(
-        read(repo_root / "examples/topology.multi-gnb.cuda.yaml", "multi-gNB topology")
+        read(topology_path, "multi-gNB topology"), args.channel_mode
     )
     outputs["open5gs.yaml"] = multi_ue.render_open5gs(
         read(native_root / "src/ocudu/docker/open5gs/open5gs-5gc.yml", "pinned OCUDU Open5GS template"),
         native_root,
     )
+    # validate_subscriber compares against a UE slice since the 4-UE commit;
+    # this gate's two UEs are the multi-UE table's first two.
     outputs["subscriber.csv"] = multi_ue.validate_subscriber(
-        read(repo_root / "examples/native/open5gs/subscriber-multi-ue.csv", "subscriber fixture")
+        read(repo_root / "examples/native/open5gs/subscriber-multi-ue.csv", "subscriber fixture"), UES
     )
     srsue_source = read(repo_root / "examples/native/srsran/srsue_zmq_multi_ue.conf.in", "srsUE template")
     for ue in UES:

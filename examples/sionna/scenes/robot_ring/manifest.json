@@ -1,0 +1,84 @@
+{
+  "name": "robot_ring",
+  "units": "Sionna XYZ metres, z up; ring centre at the origin",
+  "ring": {
+    "inner_radius_m": 4.0,
+    "fence_height_m": 0.3,
+    "fence_material": "metal",
+    "segments": 48
+  },
+  "pillars": [
+    {
+      "centre_m": [
+        0.0,
+        -1.6
+      ],
+      "side_m": 0.8,
+      "height_m": 3.0,
+      "material": "concrete"
+    },
+    {
+      "centre_m": [
+        0.0,
+        0.0
+      ],
+      "side_m": 0.8,
+      "height_m": 3.0,
+      "material": "concrete"
+    },
+    {
+      "centre_m": [
+        0.0,
+        1.6
+      ],
+      "side_m": 0.8,
+      "height_m": 3.0,
+      "material": "concrete"
+    }
+  ],
+  "mast": {
+    "xy_m": [
+      15.0,
+      0.0
+    ],
+    "height_m": 7.5,
+    "material": "metal",
+    "gnb_antenna_m": [
+      15.0,
+      0.0,
+      8.0
+    ]
+  },
+  "ground": {
+    "half_extent_m": 30.0,
+    "material": "concrete"
+  },
+  "los_side": "+x (towards the mast)",
+  "nlos_side": "-x (behind the pillars)",
+  "shapes": [
+    {
+      "id": "ground",
+      "material": "concrete"
+    },
+    {
+      "id": "fence",
+      "material": "metal"
+    },
+    {
+      "id": "building_pillar_0",
+      "material": "concrete"
+    },
+    {
+      "id": "building_pillar_1",
+      "material": "concrete"
+    },
+    {
+      "id": "building_pillar_2",
+      "material": "concrete"
+    },
+    {
+      "id": "building_mast",
+      "material": "metal"
+    }
+  ]
+}

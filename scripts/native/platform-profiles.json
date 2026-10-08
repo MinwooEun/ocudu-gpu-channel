@@ -16,7 +16,12 @@
       "broker_env": {
         "OCG_BROKER_SPIN": "1"
       },
-      "broker_env_evidence": "SPARK_MILESTONES.md S15 (OAI 2x2, broker pinned to 15-17: spinning broker waits on top of the in-place relay raise 100 MHz idle 0.620/0.616 (fewer copies alone) -> 0.670-0.686 and 50 MHz idle 0.866 -> 0.996; costs the three broker cores at 100%)"
+      "broker_env_evidence": "SPARK_MILESTONES.md S15 (OAI 2x2, broker pinned to 15-17: spinning broker waits on top of the in-place relay raise 100 MHz idle 0.620/0.616 (fewer copies alone) -> 0.670-0.686 and 50 MHz idle 0.866 -> 0.996; costs the three broker cores at 100%)",
+      "gnb_env": {
+        "OCUDU_NATIVE_GNB_MAIN_POOL_THREADS": "5"
+      },
+      "gnb_env_evidence": "X6 (docs/plans/x6-gnb-realtime-traffic.md): OCUDU sizes its main worker pool min(5, pinned_cpus-3), so the 5-core gNB pin leaves 2 workers; in ZMQ mode every DU-high cell executor is a sync strand over that pool and two UEs in iperf UL exhaust it (gdb: phy_worker + both workers in sync waits, run 20261001T115125Z wedged at UL+32 s; Track D runs likewise). nof_threads 5 = the unpinned default; run 20261001T120308Z held 200 s at 20 Mbit/s UL with no stall. Exported only when the caller has not set it; the renderer writes expert_execution.threads.main_pool.nof_threads.",
+      "gnb_lower_phy_note": "X6: all ten big cores are allocated (gNB 5, broker 3, UE 2), so a non-sequential lower-PHY profile gets no extra big core -- moot on a1916edc, whose zmq driver forces the sequential profile. The gNB's 5 cores hold the sequential phy_worker plus radio/du_high/io threads; dual would add 2 and triple 3 RT threads, which still fit in 5-9. Taking cores from the broker (S11: 3 needed) or the UEs (S11: 1 core falls below real time) is not worth it; little cores 0-4,10-14 are left out on purpose (the why above). Override per run with OCUDU_NATIVE_GNB_CPUS."
     },
     "jetson-orin-30w": {
       "detect": {

@@ -26,6 +26,13 @@ web_server="${repo_root}/scripts/web_ui/server.py"
 web_index="${repo_root}/scripts/web_ui/index.html"
 sionna_update_hz="${OCUDU_NATIVE_SIONNA_UPDATE_HZ:-10}"
 sionna_ready_seconds="${OCUDU_NATIVE_SIONNA_READY_SECONDS:-120}"
+# Live node positions for the bridge (an external publisher). The bridge runs inside the
+# inner network namespace, so a tcp://127.0.0.1 publisher on the host is not
+# reachable from it: the endpoint has to be an ipc:// socket the publisher
+# binds on the shared filesystem, e.g. ipc://${native_root}/run/arena/positions.sock.
+sionna_position_endpoint="${OCUDU_NATIVE_SIONNA_POSITION_ENDPOINT:-}"
+sionna_position_offset="${OCUDU_NATIVE_SIONNA_POSITION_OFFSET:-}"
+sionna_position_timeout_s="${OCUDU_NATIVE_SIONNA_POSITION_TIMEOUT_S:-}"
 # The same switch that makes the renderer emit the gNB metrics block also
 # points the Web UI at the gNB's remote-control WebSocket, so one variable
 # turns the whole RAN KPI path on. Unset, neither side is touched.
@@ -109,6 +116,14 @@ else
   [[ "${duration_seconds}" =~ ^(0|[1-9][0-9]*)$ ]] || usage_error "invalid Sionna duration"
   [[ "${sionna_update_hz}" =~ ^[0-9]+([.][0-9]+)?$ ]] || usage_error "invalid Sionna update rate"
   [[ "${sionna_ready_seconds}" =~ ^[1-9][0-9]*$ ]] || usage_error "invalid Sionna ready timeout"
+  if [[ -n "${sionna_position_endpoint}" ]]; then
+    [[ "${sionna_position_endpoint}" == ipc:///* ]] || \
+      usage_error "OCUDU_NATIVE_SIONNA_POSITION_ENDPOINT must be an absolute ipc:// socket (the bridge runs in its own network namespace)"
+    [[ -z "${sionna_position_offset}" || "${sionna_position_offset}" =~ ^-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$ ]] || \
+      usage_error "OCUDU_NATIVE_SIONNA_POSITION_OFFSET must be x,y,z"
+    [[ -z "${sionna_position_timeout_s}" || "${sionna_position_timeout_s}" =~ ^[0-9]+([.][0-9]+)?$ ]] || \
+      usage_error "OCUDU_NATIVE_SIONNA_POSITION_TIMEOUT_S must be a number"
+  fi
   [[ "${web_port}" =~ ^[1-9][0-9]*$ && "${web_port}" -le 65535 ]] || usage_error "invalid Web UI port"
   [[ "${web_bind}" == "127.0.0.1" || "${web_bind}" == "localhost" ]] || \
     usage_error "rootless native Web UI bind is restricted to loopback"
@@ -484,6 +499,9 @@ unshare --user --map-root-user --net --mount --fork --kill-child=TERM --propagat
   --sionna-scenario-config "${sionna_scenario}" \
   --sionna-status-jsonl "${sionna_status_jsonl}" --sionna-update-hz "${sionna_update_hz}" \
   --sionna-ready-seconds "${sionna_ready_seconds}" --live-ready-path "${live_ready_path}" \
+  --sionna-position-endpoint "${sionna_position_endpoint}" \
+  --sionna-position-offset "${sionna_position_offset}" \
+  --sionna-position-timeout-s "${sionna_position_timeout_s}" \
   --live-ready-event "${sionna_event_family}_live_ready" \
   >"${log_dir}/native-runtime-console.log" 2>&1 9<&- &
 runtime_pid="$!"

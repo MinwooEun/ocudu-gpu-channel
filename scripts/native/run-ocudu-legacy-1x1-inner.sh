@@ -35,6 +35,9 @@ sionna_scenario_config=""
 sionna_status_jsonl=""
 sionna_update_hz="10"
 sionna_ready_seconds="120"
+sionna_position_endpoint=""
+sionna_position_offset=""
+sionna_position_timeout_s=""
 live_ready_path=""
 live_ready_event="native_sionna_1x1_live_ready"
 # Keepalive traffic for the unbounded live demo only; 0 leaves the run exactly
@@ -105,6 +108,9 @@ while [[ "$#" -gt 0 ]]; do
     --sionna-status-jsonl) sionna_status_jsonl="${2:-}"; shift 2 ;;
     --sionna-update-hz) sionna_update_hz="${2:-}"; shift 2 ;;
     --sionna-ready-seconds) sionna_ready_seconds="${2:-}"; shift 2 ;;
+    --sionna-position-endpoint) sionna_position_endpoint="${2:-}"; shift 2 ;;
+    --sionna-position-offset) sionna_position_offset="${2:-}"; shift 2 ;;
+    --sionna-position-timeout-s) sionna_position_timeout_s="${2:-}"; shift 2 ;;
     --live-ready-path) live_ready_path="${2:-}"; shift 2 ;;
     --live-ready-event) live_ready_event="${2:-}"; shift 2 ;;
     --ue-keepalive-seconds) ue_keepalive_seconds="${2:-}"; shift 2 ;;
@@ -162,6 +168,20 @@ if [[ "${mode}" == "run" && "${channel_mode}" == "sionna" ]]; then
   [[ "${sionna_update_hz}" =~ ^[0-9]+([.][0-9]+)?$ ]] || usage_error "invalid Sionna update rate"
   [[ "${sionna_ready_seconds}" =~ ^[1-9][0-9]*$ ]] || usage_error "invalid Sionna ready timeout"
   [[ "${live_ready_event}" =~ ^[a-z0-9_]+$ ]] || usage_error "invalid live-ready event"
+  # tcp://127.0.0.1 would be this namespace's own loopback; only a filesystem
+  # socket bound by the publisher outside reaches the bridge in here.
+  [[ -z "${sionna_position_endpoint}" || "${sionna_position_endpoint}" == ipc:///* ]] || \
+    usage_error "Sionna position endpoint must be ipc://"
+fi
+# Extra bridge arguments for the live position feed; empty without a feed so
+# the scripted-route runs keep their exact command line.
+sionna_position_args=()
+if [[ -n "${sionna_position_endpoint}" ]]; then
+  sionna_position_args+=(--position-endpoint "${sionna_position_endpoint}")
+  [[ -n "${sionna_position_offset}" ]] && \
+    sionna_position_args+=(--position-frame-offset "${sionna_position_offset}")
+  [[ -n "${sionna_position_timeout_s}" ]] && \
+    sionna_position_args+=(--position-timeout-s "${sionna_position_timeout_s}")
 fi
 
 mount_active=0
@@ -576,7 +596,8 @@ PY
       env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${sionna_python}" "${sionna_bridge}" \
       --scenario-config "${sionna_scenario_config}" \
       --control-endpoint "${control_endpoint}" --duration 0 \
-      --update-hz "${sionna_update_hz}" --status-jsonl "${sionna_status_jsonl}"
+      --update-hz "${sionna_update_hz}" --status-jsonl "${sionna_status_jsonl}" \
+      ${sionna_position_args[@]+"${sionna_position_args[@]}"}
     sionna_pid="${started_pid}"
     sionna_index=$((${#process_pids[@]} - 1))
     wait_log "${log_dir}/sionna-bridge.log" '"event":"sionna_rt_update"' \

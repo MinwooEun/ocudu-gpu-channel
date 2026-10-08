@@ -29,7 +29,13 @@ set -euo pipefail
 #   OAI2X2_GNB_PHY_LOG    info (default) | debug -- diagnosis only
 #   OAI2X2_ALLOW_UNHEALTHY  1 keeps exit 0 when the run summary fails its health
 #                         bound (NACK > 10%, PUSCH KO > 10%); for runs meant to fail
-#   OAI2X2_BROKER_EXTRA   extra broker arguments (e.g. wire capture)
+#   OAI2X2_BROKER_EXTRA   extra broker arguments (WIRECAP expands to the run's
+#                         wire-capture directory)
+#   OCUDU_NATIVE_OAI2X2_WIRE_CAPTURE_SAMPLES / _SKIP_SECONDS  broker wire capture per
+#                         port and direction into logs/<ts>/wire-capture (0 = off /
+#                         skip 2 s from each port's first sample), as the OAI 1x1
+#                         gate's OCUDU_NATIVE_OAI1X1_* knobs; wire-capture-power.py
+#                         prints the per-port levels (X7 measurement)
 #   OAI2X2_UE_EXTRA       extra nr-uesoftmodem arguments
 #   OCUDU_NATIVE_OAI_UE_CONT_FO_COMP  UE --cont-fo-comp mode, 1 (default) | 0 (off) | 2 | 3
 #   OCUDU_NATIVE_OAI_UE   local (default: builds/oai-zmq-local, pinned OAI + the
@@ -164,6 +170,8 @@ cp "${config_dir}"/* "${report_dir}/"
   printf 'oai_ue=%s\noai_ue_sha256=%s\n' "${OAI_UE_VARIANT}" "${OAI_UE_SHA256}"
   printf 'gnb_acceleration=%s\n' "${OCUDU_NATIVE_GNB_ACCELERATION:-none}"
   printf 'ue_rx_gain_db=%s\nue_cont_fo_comp=%s\n' "${OAI_GATE_UE_RX_GAIN_DB:-none}" "${OAI_GATE_UE_CONT_FO_COMP:-off}"
+  printf 'wire_capture_samples=%s\nwire_capture_skip_seconds=%s\n' \
+    "${OCUDU_NATIVE_OAI2X2_WIRE_CAPTURE_SAMPLES:-0}" "${OCUDU_NATIVE_OAI2X2_WIRE_CAPTURE_SKIP_SECONDS:-2}"
   printf 'oai_zmq_module=%s\noai_shlibpath=%s\noai_zmq_module_sha256=%s\n' \
     "${OAI_ZMQ_MODULE_VARIANT}" "${OCUDU_NATIVE_OAI_SHLIBPATH}" "${OAI_ZMQ_MODULE_SHA256}"
   printf 'gnb_binary=%s\ngnb_uses_cuda=%s\nmps=%s\nplatform=%s\ngnb_cpus=%s\nbroker_cpus=%s\nnrue_cpus=%s\n' \

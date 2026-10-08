@@ -24,6 +24,17 @@ gnb_start_timeout="15"
 parent_netns=""
 parent_mntns=""
 outer_uid=""
+# Sionna mode (ported from run-ocudu-multi-ue-inner.sh). Empty channel_mode
+# keeps the fixed-TDL behaviour this gate always had.
+channel_mode="legacy"
+control_endpoint=""
+telemetry_endpoint=""
+sionna_python=""
+sionna_bridge=""
+sionna_scenario_config=""
+sionna_status_jsonl=""
+sionna_update_hz="10"
+sionna_ready_seconds="180"
 
 usage_error()
 {
@@ -46,6 +57,15 @@ while [[ "$#" -gt 0 ]]; do
     --parent-netns) parent_netns="${2:-}"; shift 2 ;;
     --parent-mntns) parent_mntns="${2:-}"; shift 2 ;;
     --outer-uid) outer_uid="${2:-}"; shift 2 ;;
+    --channel-mode) channel_mode="${2:-}"; shift 2 ;;
+    --control-endpoint) control_endpoint="${2:-}"; shift 2 ;;
+    --telemetry-endpoint) telemetry_endpoint="${2:-}"; shift 2 ;;
+    --sionna-python) sionna_python="${2:-}"; shift 2 ;;
+    --sionna-bridge) sionna_bridge="${2:-}"; shift 2 ;;
+    --sionna-scenario-config) sionna_scenario_config="${2:-}"; shift 2 ;;
+    --sionna-status-jsonl) sionna_status_jsonl="${2:-}"; shift 2 ;;
+    --sionna-update-hz) sionna_update_hz="${2:-}"; shift 2 ;;
+    --sionna-ready-seconds) sionna_ready_seconds="${2:-}"; shift 2 ;;
     *) usage_error "unexpected argument: $1" ;;
   esac
 done
@@ -64,6 +84,21 @@ for command_name in ip mount umount nsenter ps; do
   command -v "${command_name}" >/dev/null 2>&1 || usage_error "missing command: ${command_name}"
 done
 [[ -x /usr/bin/python3 ]] || usage_error "missing /usr/bin/python3"
+[[ "${channel_mode}" == "legacy" || "${channel_mode}" == "sionna" ]] || \
+  usage_error "unsupported channel mode: ${channel_mode}"
+if [[ "${channel_mode}" == "sionna" ]]; then
+  for value in "${control_endpoint}" "${telemetry_endpoint}" "${sionna_python}" \
+               "${sionna_bridge}" "${sionna_scenario_config}" "${sionna_status_jsonl}"; do
+    [[ -n "${value}" ]] || usage_error "sionna mode requires the sionna arguments"
+  done
+  [[ "${control_endpoint}" == ipc://* && "${telemetry_endpoint}" == ipc://* ]] || \
+    usage_error "sionna control and telemetry endpoints must be ipc://"
+  [[ -x "${sionna_python}" ]] || usage_error "missing Sionna Python: ${sionna_python}"
+  [[ -f "${sionna_bridge}" ]] || usage_error "missing Sionna bridge: ${sionna_bridge}"
+  [[ -f "${sionna_scenario_config}" ]] || usage_error "missing Sionna scenario: ${sionna_scenario_config}"
+  [[ "${sionna_update_hz}" =~ ^[0-9]+(\.[0-9]+)?$ ]] || usage_error "invalid Sionna update rate: ${sionna_update_hz}"
+  [[ "${sionna_ready_seconds}" =~ ^[1-9][0-9]*$ ]] || usage_error "invalid Sionna ready window: ${sionna_ready_seconds}"
+fi
 
 # Must agree with scripts/native/render-multi-gnb-configs.py CELLS and UES.
 # UE i is expected to camp on cell i (the topology's serving vs intercell loss).
@@ -83,6 +118,10 @@ ue_gateway="10.45.1.1"
 # per-UE near/far channel asymmetry set the sync times, which is where the
 # separation has to come from.
 stagger_ues="${OCUDU_NATIVE_MUE_STAGGER:-0}"
+# Strict attach verdict (X0): a UE counts as attached only if it also stayed
+# attached -- no scheduling-request failure, no PRACH after RRC Connected, no
+# RLF, and every ping answered. 0 restores the old "ever pinged once" verdict.
+attach_strict="${OCUDU_NATIVE_ATTACH_STRICT:-1}"
 
 mount_active=0
 root_tun=""
@@ -170,7 +209,7 @@ cleanup()
   local index wanted cleanup_failed=0
   # Stop broker admission first while both radio requesters are still alive,
   # then the radio peers, then their core/database dependencies.
-  for wanted in sampler broker srsue gnb open5gs mongod; do
+  for wanted in sampler broker sionna srsue gnb open5gs mongod; do
     for ((index=0; index<${#process_pids[@]}; index++)); do
       if [[ "${process_names[index]}" == "${wanted}"* ]]; then
         if stop_group "${index}"; then process_pids[index]="0"; else cleanup_failed=1; fi
@@ -307,9 +346,30 @@ raise SystemExit(2)
 PY
 
 # --- broker, gNB, UEs -------------------------------------------------------
+broker_args=("${broker}" --config "${config_dir}/topology.yaml" --duration "$((240 + gnb_start_timeout))s")
+# Optional wire capture (per port, first N samples after the skip), as in the
+# multi-UE gate: OCUDU_NATIVE_MGNB_WIRE_CAPTURE_SAMPLES / _SKIP_SECONDS (60).
+wire_capture_samples="${OCUDU_NATIVE_MGNB_WIRE_CAPTURE_SAMPLES:-0}"
+wire_capture_skip_seconds="${OCUDU_NATIVE_MGNB_WIRE_CAPTURE_SKIP_SECONDS:-60}"
+[[ "${wire_capture_samples}" =~ ^[0-9]+$ && "${wire_capture_skip_seconds}" =~ ^[0-9]+$ ]] || \
+  usage_error "OCUDU_NATIVE_MGNB_WIRE_CAPTURE_SAMPLES/_SKIP_SECONDS must be integers"
+if [[ "${wire_capture_samples}" -gt 0 ]]; then
+  mkdir -p "${log_dir}/wire-capture"
+  broker_args+=(
+    --wire-capture-dir "${log_dir}/wire-capture"
+    --wire-capture-samples "${wire_capture_samples}"
+    --wire-capture-skip "$((wire_capture_skip_seconds * 23040000))"
+  )
+fi
+if [[ "${channel_mode}" == "sionna" ]]; then
+  broker_args+=(
+    --control-endpoint "${control_endpoint}"
+    --telemetry-endpoint "${telemetry_endpoint}"
+    --telemetry-rate-hz 500
+  )
+fi
 start_group broker "${log_dir}/broker.log" \
-  env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${broker}" --config "${config_dir}/topology.yaml" \
-  --duration "$((240 + gnb_start_timeout))s"
+  env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${broker_args[@]}"
 broker_pid="${started_pid}"
 broker_index=$((${#process_pids[@]} - 1))
 # The broker's clock starts now, so the gNB start window is added to the 240 s
@@ -323,8 +383,26 @@ broker_exit_deadline=$((SECONDS + 250 + gnb_start_timeout))
 # Both lines mean the same thing here: that node's transport is bound.
 for id in "${gnb_ids[@]}" "${ue_ids[@]}"; do
   wait_log "${log_dir}/broker.log" "event=socket_ready device=${id}" "${broker_pid}" 15 \
-    || usage_error "broker did not bind ${id}"
+    || { grep -m1 "event=fatal" "${log_dir}/broker.log" >&2 || true; usage_error "broker did not bind ${id}"; }
 done
+
+# Sionna has to be streaming before the gNBs are admitted: every sionna_rt link
+# starts as a quiet -100 dB TDL, so a UE that RACHes before the first
+# matrix_profile_swap lands is transmitting into a dead channel.
+sionna_pid=""
+if [[ "${channel_mode}" == "sionna" ]]; then
+  wait_log "${log_dir}/broker.log" 'event=control_start ' "${broker_pid}" 15 || \
+    usage_error "broker control server did not become ready"
+  start_group sionna "${log_dir}/sionna-bridge.log" \
+    env CUDA_VISIBLE_DEVICES="${physical_gpu}" "${sionna_python}" "${sionna_bridge}" \
+    --scenario-config "${sionna_scenario_config}" \
+    --control-endpoint "${control_endpoint}" --duration 0 \
+    --update-hz "${sionna_update_hz}" --status-jsonl "${sionna_status_jsonl}"
+  sionna_pid="${started_pid}"
+  wait_log "${log_dir}/sionna-bridge.log" '"event":"sionna_rt_update"' \
+    "${sionna_pid}" "${sionna_ready_seconds}" || \
+    usage_error "Sionna RT did not publish its first matrix profile update"
+fi
 
 # Both cells start together; each must reach its banner within the window.
 declare -a gnb_pids=()
@@ -441,11 +519,11 @@ for pid in "${srsue_pids[@]}"; do process_running "${pid}" || srsue_alive=0; don
 /usr/bin/python3 - \
   "${log_dir}" "${native_root}/results/reports/ocudu-multi-gnb/${timestamp}/attach-summary.json" \
   "${timestamp}" "${broker_status}" "${gnb_alive}" "${srsue_alive}" \
-  "${rrc[*]}" "${pdu[*]}" "${ping_ok[*]}" "${ue_ids[*]}" "${gnb_pcis[*]}" <<'PY'
+  "${rrc[*]}" "${pdu[*]}" "${ping_ok[*]}" "${ue_ids[*]}" "${gnb_pcis[*]}" "${channel_mode}" "${attach_strict}" <<'PY'
 import json, pathlib, re, sys
 
 (log_dir, out_path, timestamp, broker_status, gnb_alive, srsue_alive,
- rrc, pdu, ping_ok, ue_ids, gnb_pcis) = sys.argv[1:]
+ rrc, pdu, ping_ok, ue_ids, gnb_pcis, channel_mode, attach_strict) = sys.argv[1:]
 
 log_dir = pathlib.Path(log_dir)
 stop = ""
@@ -478,8 +556,53 @@ per_ue = {
     }
     for i, (ue, r, p, q) in enumerate(zip(ids, rrc.split(), pdu.split(), ping_ok.split()))
 }
+
+def attach_evidence(ue):
+    """Strict evidence from the srsUE console log and the ping log. A UE that
+    attached and then lost the link (Scheduling request failed -> RRC release
+    -> renewed PRACH) once pinged, so rrc/pdu/ping_ok alone call it attached.
+    "Received RRC Release" is deliberately not counted: the gate's own
+    teardown releases every UE once right before "Stopping ..".
+    """
+    text = ""
+    path = log_dir / f"srsue-{ue}.log"
+    if path.exists():
+        text = path.read_text(encoding="utf-8", errors="replace")
+    lines = text.splitlines()
+    first_connected = next((i for i, l in enumerate(lines) if "RRC Connected" in l), None)
+    reattach = 0
+    if first_connected is not None:
+        reattach = sum(1 for l in lines[first_connected + 1:] if "Random Access Transmission" in l)
+    sent = received = 0
+    ping_path = log_dir / f"ue-ping-{ue}.log"
+    if ping_path.exists():
+        m = re.search(r"(\d+) packets transmitted, (\d+) (?:packets )?received",
+                      ping_path.read_text(encoding="utf-8", errors="replace"))
+        if m:
+            sent, received = int(m.group(1)), int(m.group(2))
+    return {
+        "sr_failures": text.count("Scheduling request failed"),
+        "reattach_attempts": reattach,
+        "rlf_count": sum(1 for l in lines if re.search(r"RLF|Radio Link Failure", l, re.I)),
+        "ping_sent": sent,
+        "ping_received": received,
+    }
+
+
+for ue, v in per_ue.items():
+    v.update(attach_evidence(ue))
+    v["attach_clean"] = int(bool(v["rrc_connected"] and v["pdu_session_established"]
+                                 and v["ping_sent"] > 0 and v["ping_received"] == v["ping_sent"]
+                                 and v["sr_failures"] == 0 and v["reattach_attempts"] == 0
+                                 and v["rlf_count"] == 0))
+    print(f"event=ue_attach_evidence ue={ue} rrc={v['rrc_connected']} "
+          f"pdu={v['pdu_session_established']} ping={v['ping_received']}/{v['ping_sent']} "
+          f"sr_failures={v['sr_failures']} reattach_attempts={v['reattach_attempts']} "
+          f"rlf={v['rlf_count']} clean={v['attach_clean']}", flush=True)
 all_attached = all(v["rrc_connected"] and v["pdu_session_established"] and v["ping_ok"]
                    for v in per_ue.values())
+if int(attach_strict):
+    all_attached = all_attached and all(v["attach_clean"] for v in per_ue.values())
 # Each UE on its own cell is what makes this a two-cell test rather than two UEs
 # on one surviving cell.
 own_cells = all(v["camped_pci"] == v["expected_pci"] for v in per_ue.values())
@@ -492,6 +615,7 @@ summary = {
     "ue_count": len(ids),
     "cell_count": len(expected_pci),
     "each_ue_on_its_own_cell": int(own_cells),
+    "attach_strict": int(attach_strict),
     "per_ue": per_ue,
     "broker_status": int(broker_status),
     "gnb_alive_at_broker_stop": int(gnb_alive),
@@ -503,6 +627,16 @@ summary = {
 summary.update({k: counters.get(k, -1) for k in
                 ("tx_pulls", "rx_requests", "rx_starvations",
                  "tx_queue_overflows", "tx_sequence_gaps", "zmq_errors")})
+summary["channel_mode"] = channel_mode
+status_jsonl = log_dir / "sionna-status.jsonl"
+if channel_mode == "sionna" and status_jsonl.exists():
+    updates = 0
+    for line in status_jsonl.read_text(encoding="utf-8", errors="replace").splitlines():
+        if '"sionna_rt_update"' in line:
+            updates += 1
+    summary["sionna"] = {"updates": updates,
+                         "control_updates_applied": counters.get("control_updates_applied", -1),
+                         "control_updates_rejected": counters.get("control_updates_rejected", -1)}
 out = pathlib.Path(out_path)
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")

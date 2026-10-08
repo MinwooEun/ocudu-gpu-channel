@@ -450,7 +450,33 @@ PY
   [[ -n "${OCUDU_NATIVE_BROKER_CPUS:-}" ]] && broker_pin=(taskset -c "${OCUDU_NATIVE_BROKER_CPUS}")
   [[ -n "${OCUDU_NATIVE_GNB_CPUS:-}" ]] && gnb_pin=(taskset -c "${OCUDU_NATIVE_GNB_CPUS}")
   [[ -n "${OCUDU_NATIVE_NRUE_CPUS:-}" ]] && nrue_pin=(taskset -c "${OCUDU_NATIVE_NRUE_CPUS}")
-  start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" ${OCUDU_NATIVE_BROKER_ENV:-} "${broker_pin[@]}" ${OCUDU_NATIVE_BROKER_WRAPPER:-} "${broker}" --config "${config_dir}/topology.yaml" --duration "$((25 + startup_allowance))s"
+  # Optional broker wire capture (per port and direction, the first N samples
+  # after a per-port skip counted from that port's first sample) into
+  # <log_dir>/wire-capture, as in the multi-UE and multi-gNB gates:
+  # OCUDU_NATIVE_OAI1X1_WIRE_CAPTURE_SAMPLES (0 = off) / _SKIP_SECONDS
+  # (default 2). Measured on the Spark: a 2 s skip with a 3 s window
+  # (69120000 samples) covers the UE's RA, the attach signalling and the three
+  # pings (PUSCH + PUCCH); an 8 s skip sees only the connected-mode PUCCH.
+  # wire-capture-power.py turns the capture into per-port levels; that is how
+  # the OAI UE's uplink wire level behind render-oai-1x1-configs.py
+  # OAI_UE_TX_POWER was measured.
+  local wire_capture_samples="${OCUDU_NATIVE_OAI1X1_WIRE_CAPTURE_SAMPLES:-0}"
+  local wire_capture_skip_seconds="${OCUDU_NATIVE_OAI1X1_WIRE_CAPTURE_SKIP_SECONDS:-2}"
+  [[ "${wire_capture_samples}" =~ ^(0|[1-9][0-9]*)$ && "${wire_capture_skip_seconds}" =~ ^(0|[1-9][0-9]*)$ ]] || \
+    usage_error "OCUDU_NATIVE_OAI1X1_WIRE_CAPTURE_SAMPLES/_SKIP_SECONDS must be non-negative integers"
+  local broker_args=("${broker}" --config "${config_dir}/topology.yaml" --duration "$((25 + startup_allowance))s")
+  if [[ "${wire_capture_samples}" -gt 0 ]]; then
+    mkdir -p "${log_dir}/wire-capture"
+    broker_args+=(
+      --wire-capture-dir "${log_dir}/wire-capture"
+      --wire-capture-samples "${wire_capture_samples}"
+      --wire-capture-skip "$((wire_capture_skip_seconds * 23040000))"
+    )
+    printf 'event=wire_capture_requested samples=%s skip_seconds=%s dir="%s"\n' \
+      "${wire_capture_samples}" "${wire_capture_skip_seconds}" "${log_dir}/wire-capture"
+  fi
+  # shellcheck disable=SC2086
+  start_group broker "${log_dir}/broker.log" env CUDA_VISIBLE_DEVICES="${physical_gpu}" ${OCUDU_NATIVE_BROKER_ENV:-} "${broker_pin[@]}" ${OCUDU_NATIVE_BROKER_WRAPPER:-} "${broker_args[@]}"
   broker_pid="${started_pid}"
   broker_index=$((${#process_pids[@]} - 1))
   # Absolute bound: the fixed 25-second run plus ten seconds for grouped
