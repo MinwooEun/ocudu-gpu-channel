@@ -254,11 +254,34 @@ End-to-end-validated topologies:
 
 - Single-cell, single-UE: [`examples/topology.ocudu-docker.cuda.yaml`](examples/topology.ocudu-docker.cuda.yaml)
 - Multi-UE, one cell, realistic per-UE channel: [`examples/topology.ocudu-docker.multi-ue.cuda.yaml`](examples/topology.ocudu-docker.multi-ue.cuda.yaml)
-- 3-node interference + crosstalk graph: [`examples/topology.graph.cuda.yaml`](examples/topology.graph.cuda.yaml)
+- 3-node shared-carrier interference graph (UE->UE edges are physical only because all ports share one carrier): [`examples/topology.graph.cuda.yaml`](examples/topology.graph.cuda.yaml)
 - 2-cell / 4-node / 8-edge multi-gNB: [`examples/topology.multi-gnb.cuda.yaml`](examples/topology.multi-gnb.cuda.yaml)
 
 Synthetic-loop validation matches the analytic superposition to < 0.3 % on real
 GPU runs, with all broker data-integrity counters at zero.
+
+### Interference between UEs, TDD cells and real time under load
+
+A port is one carrier's baseband and the broker sums whatever the graph
+declares, so an edge must correspond to a physical path. Ports now carry a
+carrier label (`tx_carrier` / `rx_carrier`, or `carrier` for TDD) and an edge
+between different carriers is rejected before the run; the FDD example
+topologies no longer declare UE<->UE edges. Each radio's software transmit
+level is put on one scale with a per-device `tx_scale_db`. On a TDD n78 cell
+with two OAI nrUEs, and on two cells with different TDD patterns, the other
+UE's uplink lands in the victim's downlink slots through a real Sionna RT
+path, and the stack shows it as CQI collapse, DL NACKs and RTT spikes
+(`CROSSTALK_MILESTONES.md`, `docs/plans/x3-tdd-multi-ue.md`,
+`docs/plans/x5-tdd-cli.md`). The same work fixed a broker bug (a `phase` step
+applied the link CFO a second time) and added a relay wedge detector
+(`OCG_BROKER_WEDGE_TIMEOUT_MS`).
+
+Over ZMQ, OCUDU runs its lower PHY sequentially, which caps the lock-step loop.
+`scripts/native/build-ocudu-gnb-local.sh` builds the pinned gNB with local
+patches that keep a threaded lower PHY, give the radio worker real-time
+priority and drop the double copy; on the GB10 the 100 MHz 2x2 idle real-time
+factor goes from 0.65 to 0.82 and 20 MHz under load reaches 0.98
+(`scripts/native/README.md`, `SPARK_MILESTONES.md` S17).
 
 ## Deeper docs
 

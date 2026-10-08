@@ -43,6 +43,7 @@ WG1이 문서에 적은 검증은 **이 기종**에서 나왔다. 앞의 두 플
 | **S13** | **CUDA gNB PDSCH 결함(D10), 넓은 대역 2×2 실시간, 50 MHz rank 2 비율** | CPU·GPU 출력 비교로 위치를 좁히고, 수정은 D-계열 규약(패치·lock·음성 대조군)으로, 라이브는 CPU gNB와 짝지어 | **완료 2026-09-28** — **D10:** GPU TB 인코더가 CPU 세그멘터의 filler 0을 "값 없음"으로 보고 자기 값을 써서, filler 0인 다중 CB TB(예: 9,474 B = BG1 9 CB)가 틀린 K로 부호화됐다. 2포트 문제가 아니었다(1포트도 같음, 게이트가 ping만 봐서 숨음). 수정 후 CUDA gNB 2×2 rank 2 148.2 · rank 1 74.1 Mb/s, NACK 0 = CPU gNB, d8 대조 NACK 45%. **100 MHz 2×2는 코어 배치로 안 풀린다**(0.26 → 최대 0.32): lock-step 한 바퀴가 0.8–0.9 ms(중계 + 장치 턴어라운드, 리드 0–1)로 0.5 ms를 넘는 구조 한계. **50 MHz rank 2 21%**는 스케줄러가 아니라 부하 중 UE가 RI=1을 보고한 결과(원인 미확정) |
 | **S14** | **50 MHz 2×2 rank 2 비율 원인** — 부하 중 UE가 RI=1을 보고하는 이유를 UE 안에서 찾고 로컬 패치로 고친다 | 같은 조건 A/B(이전 UE ↔ 패치 UE) 2쌍, 20·100 MHz 회귀, 반복 점검(`check-oai-local-patches.sh`)에 결함 재현·수정 probe 추가 | **완료 2026-09-28** — 원인은 CSI 설정도 실시간 여부도 아니라 **OAI UE의 RI 추정이 초기화하지 않은 스택 배열에 누적**하는 것(`nr_csi_rs_ri_estimation`의 `csi_rs_estimated_A_MF`). 채널 추정값은 무부하·부하가 같은데 조건수 계산만 스택 잔여값 때문에 틀어진다. 로컬 패치 `oai-csi-ri-amf-init.patch`(memset 한 줄)로 **rank 2 비율 0.207 → 0.998**(2쌍), NACK 0, 50 MHz DL air 234 → 360 Mb/s. 20 MHz 0.999, 100 MHz 0.998 무회귀 |
 | **S15** | **브로커 코드만으로 lock-step 한 바퀴 줄이기** — OAI·OCUDU 드라이버, gNB·UE 설정, 호스트 idle 설정은 그대로 두고 브로커가 소유한 구간만 줄인다 | 홉 추적으로 한 바퀴를 브로커·장치 몫으로 나누고, 바꾼 것마다 같은 바이너리의 노브로 번갈아 A/B, 출력 bit 동일(테스트 + 음성 대조군), 라이브 y=Hx·NACK·1x1·srsUE 회귀 | **완료 2026-09-29** — 100 MHz 2×2 무부하 **0.563–0.571 → 0.673–0.680**, 50 MHz 2×2 무부하 **0.866 → 0.996(실시간)**. 브로커 몫(방향당 p50)은 310 → 약 120 µs. 부하(200M) 중에는 0.25–0.26 그대로다: 그때 한 바퀴는 UE(평균 1.8 ms)·gNB(1.05 ms) 몫이라 브로커로는 못 줄인다. 기본값: 제자리 relay·RX ring 직접 행·다중 행 direct 출력은 코드 기본(`=0`으로 끔), spin 대기는 GB10 프로파일(`broker_env`)로. 브랜치 `broker-round` |
+| **S17** | **lock-step 고리의 파이프라이닝 — gNB lower PHY를 ZMQ에서도 스레드 모드로 (로컬 패치)** | 원인·패치·노브별 A/B, 홉 추적과 schedstat 프로브로 메커니즘 확인, 부하·대역폭·1×1 회귀 | **완료 2026-10-02** — 100 MHz 2×2 무부하 0.65 → 0.82–0.85, 20 MHz 2×2 200M 0.89 → 0.98(late 0); 50/100 MHz 부하는 UE 턴어라운드(평균 1.2–1.3 ms)가 상한. 패치 `scripts/native/patches/ocudu-zmq-lower-phy-profile.patch` + 락·빌더 |
 
 ## 진행 기록
 
@@ -1070,3 +1071,79 @@ UE 노드 기준, 같은 대역폭의 S8 값과 비교(전체 표는 `compare-bw
 | `70a9a99` | 기본값: 제자리 relay·직접 행·다중 행 direct 켬, GB10 프로파일 `broker_env`(spin), 게이트가 브로커 env를 넘기고 기록 |
 
 **남은 것:** 부하 중 한 바퀴의 대부분은 OAI UE(2레이어 100 MHz 복호)와 gNB 몫이라, 브로커만으로는 무부하 약 0.83배·부하 약 0.25배가 바닥이다. 남은 브로커 몫 약 120 µs/방향 중 REP 깨어남 24 µs는 코어 3개에서 스레드가 경쟁해서 생긴다(워커 구조를 바꿔야 함). 송신 23 µs는 일관성 비용이다(`zmq_msg_init_data`로 복사를 없애도 커널 TCP 복사가 같은 비용을 낸다). 게이트 teardown의 open5gs 누수와 1회성 1x1 실패는 기록만 했다. 표 전체는 `~/ocudu-work/perf-platform/compare-s15.md`(git 밖), 원자료는 Spark `/workspace/gpuch/s15/`(홉 추적 `hop/`는 gzip).
+
+## S17 — lock-step 고리의 파이프라이닝: gNB lower PHY를 ZMQ에서도 스레드 모드로 (2026-10-02)
+
+**왜:** S15는 브로커 몫만 줄여 100 MHz 2×2 무부하 0.57 → 0.68×에서 멈췄고, 바닥은 0.83×였다. 한 바퀴의 나머지는 "장치 턴어라운드"였는데, 그 정체는 gNB가 UL 블록 하나를 받아야 DL 블록 하나를 만드는 직렬 구조였다. 사용자 결정: 드라이버·gNB 쪽 로컬 패치로 푼다.
+
+**원인 (코드 읽기):** OCUDU는 `device_driver == "zmq"`이면 lower PHY를 blocking/sequential로 강제한다(세 곳: `ru_sdr_config_cli11_schema.cpp` autoderive, `ru_sdr_config_translator.cpp` fill_sdr_worker_manager_config, `split_8_o_du_application_unit_impl.cpp` fill_worker_manager_config). TX·RX·상위 PHY가 `phy_worker` 하나에서 돌아 `ul_process()`의 receive가 끝나야 `dl_process()`가 돈다. 코드상 DL은 마지막 RX보다 1 ms(`rx_to_tx_max_delay = srate_kHz + tx_time_offset`)까지 앞설 수 있지만 단일 스레드라 그 여유를 쓰지 못한다. OAI nrUE는 이미 UL을 RX보다 3슬롯(`NR_UE_CAPABILITY_SLOT_RX_TO_TX`) 앞서 쓰고 요청도 받자마자 다음 것을 보내므로 UE 쪽은 손댈 것이 없다. 브로커 run-ahead는 1 batch(`rx_high_water`).
+
+**패치 `scripts/native/patches/ocudu-zmq-lower-phy-profile.patch`** (락 `ocudu-gnb-local-patches.lock.json`, 빌더 `build-ocudu-gnb-local.sh`, 모두 환경변수 미설정이면 stock 동작):
+
+| 변수 | 효과 | 왜 필요했나 |
+|---|---|---|
+| `OCUDU_ZMQ_LOWER_PHY_PROFILE=single\|dual\|triple` | 세 강제 지점을 건너뛰고 그 스레드 프로파일 유지 | 본 목적 |
+| `OCUDU_LPHY_DL_WAIT_MS` | `dl_process`가 UL 타임스탬프를 기다리는 wall-clock 상한(stock 2슬롯)을 교체 | 첫 dual 런: 고리가 실시간보다 느리니 2슬롯 탈출이 매 슬롯 터져 DL이 wall-clock으로 혼자 앞서감 → RF overflow 1,280만 건, RAR 창 놓침, attach 실패 |
+| `OCUDU_LPHY_RX_TO_TX_MAX_MS` | DL 선행 상한 1 ms를 조절 | 2 ms에서 "Downlink data late" 82 → 6 |
+| `OCUDU_ZMQ_RADIO_RT_PRIO=k` | `radio` 워커(모든 ZMQ 요청/응답)를 SCHED_FIFO max−k로 | **결정적.** 스레드 모드에서 lower_phy tx/rx가 FIFO 98/97로 10 µs 폴링하며 같은 5코어의 SCHED_OTHER `radio`를 밀어냄: 2 s당 런큐 대기 평균 373 ms, 최대 751 ms(`/proc/<tid>/schedstat`). 고리 전체(gNB·UE·브로커)가 100 ms 배수로 멈춤(런당 550여 회, 합 62 s/90 s) |
+| `OCUDU_ZMQ_IO_RT_PRIO=k` | libzmq I/O 스레드를 SCHED_FIFO max−k로(`zmq_ctx_set`) | 같은 기아(337 ms/2 s) |
+
+**측정 (Spark GB10, br15 트리/빌드, 게이트 기본값 + 홉 추적, 100 MHz n78 TDD 2×2 unitary, zero-copy, CPU gNB a1916edc):**
+
+| 런 | gNB | rt (무부하 1M) | 비고 |
+|---|---|---|---|
+| base-1/3, pr-base-1 | stock, sequential | 0.653 / 0.664 / 0.667 | S15 최종값 0.67–0.68과 같음 |
+| off-1 | 패치 바이너리, 변수 없음 | 0.668 | sequential 그대로 → 기본값 무해 |
+| dual-1 | dual, 탈출 2슬롯 | 실패 | RF overflow 폭주, attach 안 됨 |
+| dualw-1/2, triplew-1/2 | + DL_WAIT 5000 | 0.267 / 0.310 / 0.262 / — | 중앙값 한 바퀴 743 → 668 µs, lead 2–3이지만 수백 ms 멈춤 반복 |
+| dualw-rt2-1, triplew-rt2-1 | + RX_TO_TX 2 ms | 0.321 / 0.244 | late 82 → 6 |
+| pr-dual-c10 / c6 / c8 | 코어만 변경 | 0.479 / 0.342 / 0.226 | 코어를 늘리면 완화, 브로커를 small 코어로 보내면 악화 |
+| **rt-dual-1, rt-triple-1** | **+ RADIO_RT 2, IO_RT 3** | **0.799 / 0.794** | radio 런큐 대기 0.7 ms/2 s, lead p50 4, 한 바퀴 p50 634 µs, NACK·ping 정상 |
+| rt-dual-2, rt-triple-2, base-4 | 반복 | 0.793 / 0.779 / 0.663 | 재현됨 |
+| rt-dual-l1 / base-l1 | 부하 200M | 0.549 (health FAIL) / 0.252 (pass) | dual: DL late 1,702, NACK 16 %, ping 손실 81 %: 상위 PHY 풀 고갈 |
+| ue3-1/2, ue7-1 | UE 3코어 / 2 big + 5 small | 0.784 / 0.787 / 0.769 | UE 코어 수는 무관 |
+| ue5s-1/2, ue4-1 | UE 5 big, 브로커 small 코어 | 0.658 / 0.653 / 0.673 | 브로커를 small 코어로 보내면 손해 |
+| f50-rt-i / f50-base-i | 50 MHz 무부하 | 0.9998 / 0.991 | 둘 다 실시간 |
+| f50-rt-l / f50-base-l | 50 MHz 200M | 0.086 (FAIL) / 0.403 (pass) | dual: UL processor busy 1,020, DL processor 풀 고갈 1,075 |
+| f20-rt-l / f20-base-l | 20 MHz 200M | 0.947 (DL air 4.5 Mb/s!) / 0.894 (147.5 Mb/s) | dual: 풀 고갈로 트래픽이 안 흐름 → CPU 부족이 아니라 RT 폴링 스레드가 상위 PHY를 밀어냄 |
+| x1-rt-100 / x1-base-100 | 100 MHz 1×1 무부하 | 0.999 / 1.000 | 회귀 없음 |
+| hw1/hw2/hw3 (batch 7) | 브로커 응답 창 1/2/3 batch | 0.805·0.812 / 0.798·0.790 / 0.774 | 2슬롯 응답은 10 %만 발생, 효과 없음; 부하(hw2-l1) 0.712 FAIL |
+| neon-1/2, neon-hw2-1/2 (batch 8) | OAI 모듈 NEON 변환 (custom shlibpath) | 0.795 / 0.723 / 0.743 / 0.804 | UE 메시지 왕복 469 → 236 µs로 반감했지만 rt 불변 → UE 수신 경로는 병목 아님 |
+| neon-base | 순차 gNB + NEON | 0.707 | 순차 모드에는 +5 % |
+| **v45-100i, v4-100i, v45-100i-2** | v4(유휴 슬립, radio max−1) ± v5(단일 복사) | **0.820 / 0.848 / 0.822** | radio 워커 CPU 95 → 64 % |
+| **v45-20l, v4-20l** | 20 MHz 2×2 200M | **0.979 / 0.982**, DL air 148 Mb/s, late 0, 풀 고갈 0 | 기준 0.894 → 부하에서 처음으로 기준을 넘김 |
+| v45-100l | 100 MHz 2×2 200M | 0.316 (health pass, NACK 1 %, DL late 201) | 기준 0.252; 상위 PHY 연산 한계는 남음 |
+| v45-50l | 50 MHz 2×2 200M | 0.394 (pass, DL late 155) | 기준 0.403; 이득 없음 |
+
+**다음 벽 (0.80, 무부하):** 홉 추적의 "응답 송신 → 같은 포트의 다음 요청 도착"이 UE 469 µs, gNB 422 µs(p50). REQ/REP는 포트당 요청 하나만 걸 수 있어 메시지당 수신 비용(전송 491 KB + cf32→int16 변환 + ring push + 재요청)이 그대로 처리율 상한이 된다. UE 코어를 늘려도 안 변하므로 CPU가 아니라 경로 지연이다. 후보: NEON 변환(`oai-zmq-neon-convert.patch`, aarch64에서는 스칼라 cleanup 루프가 전부를 처리), ipc 전송, 2슬롯 응답.
+
+**부하 조건의 교훈:** 순차 모드는 "아무도 기다리지 않는 자"가 없어 느려질 뿐 깨지지 않는다. 스레드 모드는 클록이 수신 속도로 흐르고 상위 PHY 풀(`nof_dl_processors = 4 × max_proc_delay`, UL processor)이 못 따라오면 슬롯을 버린다. 20 MHz에서도 깨진 것은 radio 워커가 RT 우선순위로 100 % 폴링(채널 task가 스스로 재큐잉, 유휴 없음)하고 lower_phy_rx가 1 µs 슬립 폴링(70 %)하여 같은 우선순위(max−2)의 상위 PHY 풀을 밀어내기 때문 → v4: 유휴 슬립 노브 `OCUDU_ZMQ_RADIO_IDLE_US`, `OCUDU_ZMQ_RX_POP_SLEEP_US`, radio 우선순위 max−1.
+
+**결론 (CPU gNB a1916edc, GB10):**
+
+| 조건 | stock (sequential) | 패치 (dual + RT radio + 유휴 슬립 + 단일 복사) |
+|---|---|---|
+| 100 MHz 2×2 무부하 | 0.65–0.67 | **0.82–0.85** |
+| 100 MHz 2×2 200M | 0.25 (pass) | 0.32 (pass, NACK 1 %, DL late 201) |
+| 50 MHz 2×2 무부하 | 0.99 | 1.00 |
+| 50 MHz 2×2 200M | 0.40 (pass) | 0.39 (pass, DL late 155) |
+| 20 MHz 2×2 200M | 0.89 | **0.98**, DL air 148 Mb/s, late 0 |
+| 100 MHz 1×1 무부하 | 1.00 | 1.00 |
+
+- 무부하의 남은 0.15–0.2는 메시지당 수신 왕복(REQ/REP 포트당 요청 하나)과 두 장치의 슬롯 처리 지연이 직렬로 겹치는 구간이다. 브로커 응답 창 확대(hw2/hw3), UE 코어 증설, NEON 변환은 각각 측정상 효과가 없었다(측정 표 참조). 다음 후보는 ZMQ 전송의 ipc 전환과 드라이버의 선요청(DEALER)이다.
+- 부하의 50/100 MHz는 CPU gNB의 상위 PHY(PDSCH 인코딩·rank-2 PUSCH 디코딩) 연산이 슬롯을 넘기는 구간이라 lower PHY 파이프라이닝으로는 못 올린다. 순차 모드는 고리를 늦춰 이를 숨기고(0.25/0.40, pass), 스레드 모드는 실제 라디오처럼 늦은 슬롯을 버린다(DL late 수백). 상위 PHY를 GPU로 내린 CUDA gNB(D10)에 같은 패치를 적용한 결과는 아래 batch 9.
+- 20 MHz 부하 0.98과 무부하 0.82는 **드라이버·gNB 쪽 직렬 대기를 없애면 에뮬레이터 몫은 슬롯 안**임을 보인다: 100 MHz 2×2 한 바퀴 p50 612 µs 중 브로커 몫 약 120 µs/방향.
+
+**패치 적용법 (게이트):** `OCUDU_NATIVE_GNB_BINARY=$OCUDU_NATIVE_ROOT/builds/ocudu-zmq-local/apps/gnb/gnb` + 락의 `recommended` 환경변수 전체(게이트가 환경을 gNB 자식에 그대로 넘긴다). 빌더 `scripts/native/build-ocudu-gnb-local.sh`, 락 `scripts/native/ocudu-gnb-local-patches.lock.json`. Spark에는 수동 빌드 `builds/ocudu-lphy-release`(src/ocudu-lphy, 같은 패치)와 CUDA 변형 `builds/cuda-lphy-sm121`(src/ocudu-cuda-lphy, `ocudu-zmq-lower-phy-profile-cuda.patch` + D10 락 패치)이 있다.
+
+**batch 9 — CUDA gNB (D10 + 같은 패치 `ocudu-zmq-lower-phy-profile-cuda.patch`, 빌드 `builds/cuda-lphy-sm121`, MPS on, 100 MHz 2×2):**
+
+| 런 | 모드 | rt | 비고 |
+|---|---|---|---|
+| cu-base-i | sequential | 0.679 | CPU gNB 기준과 같음 |
+| cu-rt-i, cu-rt-i-2 | dual + 전체 노브 | 0.804 / 0.833 | |
+| cu-base-l | sequential, 200M | 0.293 (pass) | gNB 턴어라운드 p50 1,002 µs |
+| cu-rt-l, cu-rt-l-2 | dual, 200M (-2는 broker hw2) | 0.336 (pass, NACK 0.45 %) / 0.343 | gNB 턴어라운드 p50 607 µs, **UE 턴어라운드 평균 1.3 ms, p90 3.5 ms** |
+
+- 부하 중에는 CPU gNB(v45-100l: gNB 669 µs, UE 평균 1.2 ms)든 CUDA gNB든 **UE 턴어라운드(평균 1.2–1.3 ms, p90 3.2–3.5 ms)가 한 바퀴를 정한다.** 2코어의 OAI nrUE가 273 PRB rank-2 TB를 슬롯마다 복호하지 못한다(S15에서 1.7–1.8 ms로 본 것과 같은 항). 상위 PHY를 GPU로 내려도 gNB 몫만 1,002 → 607 µs로 줄고 전체는 0.29 → 0.34다.
+- 따라서 이 박스에서 100 MHz 2×2 부하를 실시간으로 만들려면 UE 쪽(코어 또는 UE PHY 가속)이 남은 조건이고, 에뮬레이터·gNB 쪽 직렬 대기는 이번 트랙으로 제거됐다.

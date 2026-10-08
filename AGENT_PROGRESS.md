@@ -4,13 +4,52 @@
 
 ## Repository State
 
-- Branch cleanup (2026-09-14): only `main` remains as a local branch and on the user-owned `origin` repository. Removed four local branches and three origin branches after verifying every tip is an ancestor of main. Contributor remotes `ehs0` and `fork` remain configured; their repositories and remote-tracking references were not deleted. Exact removed tips are recorded under `.git/branch-cleanup-20260914T081423Z.json`.
-- Publication (2026-09-14): user explicitly requested a push. Fetched `origin/main`, confirmed it had no new commits, and successfully pushed `f51c3fd..0113ddd` to `zhouyou-gu/ocudu-gpu-channel:main`. The integration, retained contributor history, cleanup record and README edit are now published. This documentation follow-up corrects the current guide/reference publication status; no tag or release was created. Runtime qualification limits are unchanged.
-- README cleanup (2026-09-14): focused prose edit on current-folder `main`; Status is now a 91-word capabilities/validation/limits summary. All 12 comparison rows, eight command blocks, section headings, contributor credits and copyright remain unchanged. Detailed channel/update limits and revision-specific validation results remain linked or summarized. Documentation-only change; remote runtime and source are unchanged.
-- Current checkout: `main` in `/Users/charles_gu/Documents/GitHub/ocudu-gpu-channel`. User explicitly authorized merging everything here and automatically resolving conflicts. Integration `0e0a6c3` was merged by `22a51ba`; retained local launcher tip `5f55bb7` was merged by `e59e095`. The contributor tip `066a702` remains an ancestor. The merge was initially local; the later user-authorized push is recorded above. `origin/main` was fetched at `f51c3fd` before the merge.
-- New merge source `e59e095` passes all 90 Python tests, both frontend regressions and shell syntax on the RTX 5090 host. Channel/OCUDU/UE source is unchanged from the integrated revisions. Moving two-UE traffic and strict zero-miss real-time qualification remain failed; see `docs/sionna-integration.md` and `docs/main-merge-validation.md`.
-- Existing edits were backed up under `.git/merge-backups/main-20260914T075710Z` and stash `5021c39660e39aab3b5dd9784a8c2f4e399300aa`. Latest pending workflow notes and the historical merge plan are carried into this checkout. The old English UI and hold/keepalive edits are represented by the newer integrated implementations; their exact original bytes remain in the backup and stash. The obsolete integration worktree was subsequently archived and removed during the authorized cleanup below; new channel work belongs in this folder. The separate UE repository remains intact.
-- Validation uses only `~/ocudu-gpu-channel-workspace/validation/main-merge-20260914`; existing runtime services were not changed, restarted or stopped by the merge. Earlier live-demo expiry and PID notes below are historical and must not be treated as a current service inventory.
+- [2026-10-08 PR branch] `x-track-s17` is PR #3 (`gb10-integration`, 5973316)
+  plus the integration work after it, with the robot-fight demo track removed
+  (its scene, the Sionna multi-UE gate, the live position feed, the CUDA
+  stream-priority knob and the heartbeat deltas stay, as the X track and the
+  OAI gates depend on them). Verified on the DGX Spark (GB10): ctest 12/12,
+  Python tests 166 passed / 5 skipped.
+- [2026-10-02 S17] Lock-step pipelining: local patches to the pinned CPU OCUDU
+  gNB (`scripts/native/patches/ocudu-zmq-lower-phy-profile.patch`, lock
+  `ocudu-gnb-local-patches.lock.json`, builder `build-ocudu-gnb-local.sh`,
+  output `builds/ocudu-zmq-local`) keep a threaded lower-PHY profile with the
+  ZMQ radio, give the radio worker and the libzmq I/O thread real-time
+  priority, and remove the busy polls and the double copy on the radio worker.
+  100 MHz 2x2 idle real-time factor 0.65-0.67 -> 0.82-0.85, under load
+  0.25 -> 0.32; 20 MHz under load 0.89 -> 0.98. The remaining bound is the
+  per-message REQ/REP round trip and the OAI UE's decode time, not the broker.
+  An optional aarch64 NEON conversion patch for the OAI ZMQ module is
+  recorded in `oai-local-patches.lock.json` (not built by default).
+  `SPARK_MILESTONES.md` S17.
+- [2026-10-01 X track] UE-to-UE interference done physically:
+  `CROSSTALK_MILESTONES.md`. The FDD example topologies lose their UE<->UE
+  edges (a UE's uplink carrier is never in another UE's downlink band); ports
+  carry carrier labels and edges between different carriers are rejected;
+  per-device `tx_scale_db` puts every radio's software transmit level on one
+  scale; the gates judge attach strictly (SR failures, re-RACH, RLF, every
+  ping). TDD n78 multi-UE OAI gate (X3/X4) and a two-cell two-pattern gate
+  (X5) show the real cross-link interference path and its CQI/NACK/RTT effect.
+  Broker: the `phase` step no longer applies the link CFO a second time
+  (phase+cfo chains delivered 2x CFO); a relay wedge detector fails the run
+  fast (`OCG_BROKER_WEDGE_TIMEOUT_MS`). gNB real time under two-UE uplink
+  load (X6): the OCUDU main worker pool starved itself on five pinned cores;
+  `OCUDU_NATIVE_GNB_MAIN_POOL_THREADS` and `OCUDU_NATIVE_GNB_LOWER_PHY_PROFILE`
+  knobs. OAI nrUE transmit levels and the PRACH timing-advance misdetection
+  root-caused to UL CFO (X7, `docs/plans/x7-oai-levels-prach.md`).
+- [2026-09-30 profiling] Opt-in `--profile-timing` generation stages in
+  `scripts/sionna_rt/run_bridge.py` (host wall times per frequency/array
+  group, no forced GPU synchronization). The optional `Paths.vertices`
+  evaluation runs inside its exception handler: a geometry-build failure
+  disables only visualization. Live profiling under radio load is unmeasured.
+- [2026-09-29 S16] Local srsUE patch for multi-UE RACH (fixed preamble 0 and
+  ConRes accepted on mismatch merged simultaneous UEs onto one C-RNTI), the
+  default in the multi-UE and multi-gNB gates; `OCUDU_NATIVE_MUE_UE_COUNT=4`.
+  The Sionna multi-UE gate accepts live node positions from an external
+  publisher (`OCUDU_NATIVE_SIONNA_POSITION_ENDPOINT`), carries an absolute
+  receiver noise floor, and the broker heartbeat prints per-second
+  starvation/gap/overflow deltas. `runtime.cuda_stream_priority` selects the
+  CUDA stream priority of the broker's work inside a shared (MPS) context.
 
 - Folder cleanup (2026-09-14): only the current channel worktree on `main` remains registered. Removed sibling `ocudu-sionna-history-fix` plus local `build/`, `build-release/`, `build-review/`, `build-review-main-20260914/`, `Testing/` and `.playwright-mcp/`. Verified full archives and a per-file SHA-256 manifest are stored in `.git/cleanup-backups/20260914T080717Z`; `.git/cleanup-backups/latest.txt` points there. All original commit history remains; obsolete branch names were subsequently removed as recorded above. Source, references, writing, the separate UE repository and remote runtime were not removed.
 

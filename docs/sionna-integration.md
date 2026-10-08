@@ -50,8 +50,11 @@ and achieved channel-generation rate are different measurements.
 A matrix has `nr` receive rows and `nt` transmit columns. Its prepared antenna
 dimensions are fixed; every `(rx_port, tx_port)` lane must be supplied.
 SISO, 2×1/1×2 and 4×1/1×4 configurations are covered by numerical regressions.
-The SUTD setup uses four antenna ports per gNB and one per UE, with ten
-directed serving, intercell and UE-crosstalk links.
+The SUTD setup uses four antenna ports per gNB and one per UE, with eight
+directed serving and intercell links. The scenes carry no UE-to-UE edge: the
+cells are FDD, so a UE's uplink carrier is never heard by another UE's downlink
+receiver, and the broker rejects such an edge when the ports carry carrier
+labels (`tx_carrier`/`rx_carrier`).
 
 | Incoming matrix profile | History and warmup |
 |---|---|
@@ -238,3 +241,19 @@ The root contributor explanation, handover and milestone notes were retired
 from the release checkout. Their original contents and authorship remain in
 Git. Historical design and measurement context is collected in the
 [rank-1 report supplement](rank1-feasibility-report.md#historical-design-and-measurement-context).
+
+## Channel-generation profiling
+
+`scripts/sionna_rt/run_bridge.py --profile-timing` adds
+`timing_ms.generation_stages` to each channel-update record. Existing timing
+fields retain their meaning. Each frequency/array group reports array setup,
+`path_solver`, `cir_numpy`, remaining array export, optional geometry export,
+tap/status packing, and path-polyline formatting in milliseconds. These are
+host wall times, without extra GPU synchronization: lazy GPU work can finish
+during a later materialization. They are not CUDA kernel timings.
+
+The optional UI geometry accessor now runs inside its exception handler. A
+component-build failure disables ray drawing and preserves channel generation;
+it is not a claimed performance optimization. Live profiling under radio
+load remains unmeasured.
+
