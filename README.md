@@ -292,6 +292,10 @@ factor goes from 0.65 to 0.82 and 20 MHz under load reaches 0.98
   topology and YAML model, broker per-slot loop, signal alignment, GPU compute,
   signal memory, multi-stream concurrency, profiling, performance, planned
   work. **Start here for design questions.**
+- [Platforms](docs/platforms.md) — RTX 5090, DGX Spark GB10 and Jetson AGX
+  Orin: what differs per host (host memory mode, CPU placement, CUDA gNB locks
+  and patches, local stack patches), measured envelopes, and how each host is
+  set up.
 - [OCUDU interop runbook](docs/ocudu-interop.md) — Docker gNB + srsUE attach
   procedure.
 - [Distributed IQ over network](docs/distributed.md) — bandwidth, jitter, and
