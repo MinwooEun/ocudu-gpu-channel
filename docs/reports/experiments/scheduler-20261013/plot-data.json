@@ -1,0 +1,192 @@
+{
+  "metric": "Arithmetic mean of per-second p99 one-way downlink UDP delay for the bulk-download UE",
+  "unit": "ms",
+  "per_policy_valid_seconds": {
+    "rr": 240,
+    "qos": 240
+  },
+  "values": {
+    "rr": 34.285921,
+    "qos": 27.865293
+  },
+  "runs": [
+    {
+      "timestamp": "20261013T094409Z",
+      "bulk_delay_ms": {
+        "rr": 23.676753123601276,
+        "qos": 36.31875827709834
+      },
+      "interactive_delay_ms": {
+        "rr": 11.088525287310283,
+        "qos": 10.142236232757568
+      },
+      "slots_per_s": {
+        "a": 914.1777908236132,
+        "b": 905.7659791541523
+      },
+      "brokers": {
+        "a": {
+          "control_batches_committed": 1322,
+          "rx_requests": 531587,
+          "rx_starvations": 22,
+          "tx_pulls": 477992,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "b": {
+          "control_batches_committed": 1323,
+          "rx_requests": 502920,
+          "rx_starvations": 27,
+          "tx_pulls": 475516,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        }
+      },
+      "valid_seconds": 120,
+      "downlink_flows": {
+        "ue0.dl_bulk": {
+          "duplicates": 0,
+          "received": 499971,
+          "scheduled": 500000,
+          "sender_done": true,
+          "sent": 500000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_control": {
+          "duplicates": 0,
+          "received": 11999,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_video": {
+          "duplicates": 0,
+          "received": 103144,
+          "scheduled": 103153,
+          "sender_done": true,
+          "sent": 103153,
+          "unknown_seq": 0
+        },
+        "ue2.dl_bulk": {
+          "duplicates": 0,
+          "received": 499972,
+          "scheduled": 500000,
+          "sender_done": true,
+          "sent": 500000,
+          "unknown_seq": 0
+        },
+        "ue3.dl_control": {
+          "duplicates": 0,
+          "received": 11999,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        },
+        "ue3.dl_video": {
+          "duplicates": 0,
+          "received": 103144,
+          "scheduled": 103153,
+          "sender_done": true,
+          "sent": 103153,
+          "unknown_seq": 0
+        }
+      }
+    },
+    {
+      "timestamp": "20261013T094837Z",
+      "bulk_delay_ms": {
+        "qos": 19.411828660964964,
+        "rr": 44.89508937994639
+      },
+      "interactive_delay_ms": {
+        "qos": 9.88446163336436,
+        "rr": 10.37294278939565
+      },
+      "slots_per_s": {
+        "a": 911.7859559075666,
+        "b": 900.5050848109545
+      },
+      "brokers": {
+        "a": {
+          "control_batches_committed": 1330,
+          "rx_requests": 425576,
+          "rx_starvations": 29,
+          "tx_pulls": 400207,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "b": {
+          "control_batches_committed": 1331,
+          "rx_requests": 414086,
+          "rx_starvations": 17,
+          "tx_pulls": 396629,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        }
+      },
+      "valid_seconds": 120,
+      "downlink_flows": {
+        "ue0.dl_bulk": {
+          "duplicates": 0,
+          "received": 500000,
+          "scheduled": 500000,
+          "sender_done": true,
+          "sent": 500000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_control": {
+          "duplicates": 0,
+          "received": 12000,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_video": {
+          "duplicates": 0,
+          "received": 103153,
+          "scheduled": 103153,
+          "sender_done": true,
+          "sent": 103153,
+          "unknown_seq": 0
+        },
+        "ue2.dl_bulk": {
+          "duplicates": 0,
+          "received": 500000,
+          "scheduled": 500000,
+          "sender_done": true,
+          "sent": 500000,
+          "unknown_seq": 0
+        },
+        "ue3.dl_control": {
+          "duplicates": 0,
+          "received": 12000,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        },
+        "ue3.dl_video": {
+          "duplicates": 0,
+          "received": 103153,
+          "scheduled": 103153,
+          "sender_done": true,
+          "sent": 103153,
+          "unknown_seq": 0
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "One seed and one swapped pair; not a general policy ranking or statistically established gain",
+    "Absolute delays include software radio and host scheduling; radios ran below real-time speed",
+    "Receive starvation events occurred; strict zero-miss real-time qualification not passed",
+    "Delay statistics describe received packets; missing packet counts are retained separately"
+  ]
+}

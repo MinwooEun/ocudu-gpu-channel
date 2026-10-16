@@ -1,0 +1,28 @@
+{
+  "metric": "Arithmetic mean of per-second p99 one-way bulk-download UDP delay",
+  "unit": "ms",
+  "values": {
+    "rr": 8.936967,
+    "qos": 8.733633
+  },
+  "per_policy_valid_seconds": {
+    "rr": 120,
+    "qos": 120
+  },
+  "runs": {
+    "rr": "20261013T103050Z",
+    "qos": "20261013T103414Z"
+  },
+  "iq_rate_samples_per_s": {
+    "rr": 23010424.80545575,
+    "qos": 23021315.980449673
+  },
+  "slots_per_s": {
+    "rr": 998.7782043840729,
+    "qos": 999.0591643991113
+  },
+  "limitations": [
+    "One seed and one run per policy; no general policy ranking",
+    "Near-nominal sample progress; strict zero-starvation real-time gate remains failed"
+  ]
+}

@@ -2,6 +2,7 @@
 
 #include "ocudu_gpu_channel/config.h"
 #include "ocudu_gpu_channel/iq.h"
+#include "ocudu_gpu_channel/sample_executor.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -111,7 +112,8 @@ inline void apply_tdl_step(const IqSample* in,
                            std::size_t count,
                            const std::vector<TapSpec>& taps,
                            const std::vector<std::array<float, kTdlFracFilterTaps>>& polyphase,
-                           std::vector<IqSample>& delay_line)
+                           std::vector<IqSample>& delay_line,
+                           SampleExecutor* executor = nullptr)
 {
   const auto count_pd = static_cast<std::ptrdiff_t>(count);
   const auto ring_size = static_cast<std::ptrdiff_t>(delay_line.size());
@@ -134,31 +136,35 @@ inline void apply_tdl_step(const IqSample* in,
     }
     return delay_line[static_cast<std::size_t>(ring_idx)];
   };
-  for (std::size_t n = 0; n != count; ++n) {
-    IqSample acc{0.0F, 0.0F};
-    for (std::size_t k = 0; k != taps.size(); ++k) {
-      const TapSpec& tap = taps[k];
-      const std::ptrdiff_t tau_int =
-          static_cast<std::ptrdiff_t>(std::floor(tap.delay_samples));
-      const auto& h = polyphase[k];
-      IqSample x{0.0F, 0.0F};
-      for (int i = 0; i < kTdlFracFilterTaps; ++i) {
-        const std::ptrdiff_t read_idx =
-            static_cast<std::ptrdiff_t>(n) - tau_int + 3 - i;
-        const IqSample s = read(read_idx);
-        x.i += h[static_cast<std::size_t>(i)] * s.i;
-        x.q += h[static_cast<std::size_t>(i)] * s.q;
+  const auto calculate = [&](std::size_t begin, std::size_t end) {
+    for (std::size_t n = begin; n != end; ++n) {
+      IqSample acc{0.0F, 0.0F};
+      for (std::size_t k = 0; k != taps.size(); ++k) {
+        const TapSpec& tap = taps[k];
+        const std::ptrdiff_t tau_int =
+            static_cast<std::ptrdiff_t>(std::floor(tap.delay_samples));
+        const auto& h = polyphase[k];
+        IqSample x{0.0F, 0.0F};
+        for (int i = 0; i < kTdlFracFilterTaps; ++i) {
+          const std::ptrdiff_t read_idx =
+              static_cast<std::ptrdiff_t>(n) - tau_int + 3 - i;
+          const IqSample s = read(read_idx);
+          x.i += h[static_cast<std::size_t>(i)] * s.i;
+          x.q += h[static_cast<std::size_t>(i)] * s.q;
+        }
+        const float gain = static_cast<float>(std::pow(10.0, tap.gain_db / 20.0));
+        const float cos_phi = static_cast<float>(std::cos(tap.phase_rad));
+        const float sin_phi = static_cast<float>(std::sin(tap.phase_rad));
+        const float rotated_i = x.i * cos_phi - x.q * sin_phi;
+        const float rotated_q = x.i * sin_phi + x.q * cos_phi;
+        acc.i += gain * rotated_i;
+        acc.q += gain * rotated_q;
       }
-      const float gain = static_cast<float>(std::pow(10.0, tap.gain_db / 20.0));
-      const float cos_phi = static_cast<float>(std::cos(tap.phase_rad));
-      const float sin_phi = static_cast<float>(std::sin(tap.phase_rad));
-      const float rotated_i = x.i * cos_phi - x.q * sin_phi;
-      const float rotated_q = x.i * sin_phi + x.q * cos_phi;
-      acc.i += gain * rotated_i;
-      acc.q += gain * rotated_q;
+      out[n] = acc;
     }
-    out[n] = acc;
-  }
+  };
+  if (executor) executor->for_each_range(count, calculate);
+  else calculate(0, count);
   // Roll the ring forward: the new tail is the last `delay_line.size()` samples
   // of the current slot's input. If the slot is shorter than the ring, shift
   // the existing tail left and append all of the current slot at the end.
@@ -374,10 +380,11 @@ inline void apply_tdl_step_fading(const IqSample* in,
                                   std::uint64_t sample_rate_hz,
                                   std::uint64_t slot_start_samples,
                                   const FadingGrid& grid,
-                                  std::complex<float> los_coefficient = {1.0F, 0.0F})
+                                  std::complex<float> los_coefficient = {1.0F, 0.0F},
+                                  SampleExecutor* executor = nullptr)
 {
   if (!fading.enabled) {
-    apply_tdl_step(in, out, count, taps, polyphase, delay_line);
+    apply_tdl_step(in, out, count, taps, polyphase, delay_line, executor);
     return;
   }
   using complex_f = std::complex<float>;
@@ -441,56 +448,72 @@ inline void apply_tdl_step_fading(const IqSample* in,
   };
 
   const float grid_stride_f = static_cast<float>(grid_stride);
-  for (std::size_t n = 0; n != count; ++n) {
-    // Linear interpolation index for sample n into the coarse grid.
-    const std::size_t g_floor = n / grid_stride;
-    const std::size_t g_ceil_idx = std::min(g_floor + 1, grid_count - 1);
-    const float frac =
-        static_cast<float>(n - g_floor * grid_stride) / grid_stride_f;
+  const bool has_los = std::any_of(taps.begin(), taps.end(), [](const auto& tap) { return tap.is_los; });
+  const auto calculate = [&](std::size_t begin, std::size_t end) {
+    // Reproduce the serial recurrence exactly at each range boundary. This
+    // avoids changing the LOS realization when the worker count changes.
+    auto range_los = los_current;
+    if (has_los) {
+      for (std::size_t n = 0; n != begin; ++n) {
+        for (std::size_t k = 0; k != n_taps; ++k) {
+          if (taps[k].is_los) range_los[k] *= los_step[k];
+        }
+      }
+    }
+    for (std::size_t n = begin; n != end; ++n) {
+      // Linear interpolation index for sample n into the coarse grid.
+      const std::size_t g_floor = n / grid_stride;
+      const std::size_t g_ceil_idx = std::min(g_floor + 1, grid_count - 1);
+      const float frac =
+          static_cast<float>(n - g_floor * grid_stride) / grid_stride_f;
 
-    IqSample acc{0.0F, 0.0F};
-    for (std::size_t k = 0; k != n_taps; ++k) {
-      // g_k(t_n) -- Rayleigh component interpolated from the grid.
-      const complex_f* row = grid.tap(k);
-      const complex_f g_rayleigh = row[g_floor] * (1.0F - frac) + row[g_ceil_idx] * frac;
-      complex_f g_k = g_rayleigh;
-      if (taps[k].is_los) {
-        g_k = los_factor[k] * (los_coefficient * los_current[k]) +
-              rayleigh_factor[k] * g_rayleigh;
+      IqSample acc{0.0F, 0.0F};
+      for (std::size_t k = 0; k != n_taps; ++k) {
+        // g_k(t_n) -- Rayleigh component interpolated from the grid.
+        const complex_f* row = grid.tap(k);
+        const complex_f g_rayleigh = row[g_floor] * (1.0F - frac) + row[g_ceil_idx] * frac;
+        complex_f g_k = g_rayleigh;
+        if (taps[k].is_los) {
+          g_k = los_factor[k] * (los_coefficient * range_los[k]) +
+                rayleigh_factor[k] * g_rayleigh;
+        }
+        // Polyphase convolution against the tap-modulated input. Read the 8 tap
+        // samples around (n - tau_int) then apply static phase + gain, then
+        // multiply by the time-varying complex g_k(t_n).
+        const TapSpec& tap = taps[k];
+        const std::ptrdiff_t tau_int =
+            static_cast<std::ptrdiff_t>(std::floor(tap.delay_samples));
+        const auto& h = polyphase[k];
+        IqSample x{0.0F, 0.0F};
+        for (int i = 0; i < kTdlFracFilterTaps; ++i) {
+          const std::ptrdiff_t read_idx =
+              static_cast<std::ptrdiff_t>(n) - tau_int + 3 - i;
+          const IqSample s = read(read_idx);
+          x.i += h[static_cast<std::size_t>(i)] * s.i;
+          x.q += h[static_cast<std::size_t>(i)] * s.q;
+        }
+        const float gain = static_cast<float>(std::pow(10.0, tap.gain_db / 20.0));
+        const float cos_phi_s = static_cast<float>(std::cos(tap.phase_rad));
+        const float sin_phi_s = static_cast<float>(std::sin(tap.phase_rad));
+        const float static_i = x.i * cos_phi_s - x.q * sin_phi_s;
+        const float static_q = x.i * sin_phi_s + x.q * cos_phi_s;
+        const float xi = static_i * g_k.real() - static_q * g_k.imag();
+        const float xq = static_i * g_k.imag() + static_q * g_k.real();
+        acc.i += gain * xi;
+        acc.q += gain * xq;
       }
-      // Polyphase convolution against the tap-modulated input. Read the 8 tap
-      // samples around (n - tau_int) then apply static phase + gain, then
-      // multiply by the time-varying complex g_k(t_n).
-      const TapSpec& tap = taps[k];
-      const std::ptrdiff_t tau_int =
-          static_cast<std::ptrdiff_t>(std::floor(tap.delay_samples));
-      const auto& h = polyphase[k];
-      IqSample x{0.0F, 0.0F};
-      for (int i = 0; i < kTdlFracFilterTaps; ++i) {
-        const std::ptrdiff_t read_idx =
-            static_cast<std::ptrdiff_t>(n) - tau_int + 3 - i;
-        const IqSample s = read(read_idx);
-        x.i += h[static_cast<std::size_t>(i)] * s.i;
-        x.q += h[static_cast<std::size_t>(i)] * s.q;
+      out[n] = acc;
+      // Advance per-sample LOS phase accumulators after consuming sample n.
+      for (std::size_t k = 0; k != n_taps; ++k) {
+        if (taps[k].is_los) {
+          range_los[k] *= los_step[k];
+        }
       }
-      const float gain = static_cast<float>(std::pow(10.0, tap.gain_db / 20.0));
-      const float cos_phi_s = static_cast<float>(std::cos(tap.phase_rad));
-      const float sin_phi_s = static_cast<float>(std::sin(tap.phase_rad));
-      const float static_i = x.i * cos_phi_s - x.q * sin_phi_s;
-      const float static_q = x.i * sin_phi_s + x.q * cos_phi_s;
-      const float xi = static_i * g_k.real() - static_q * g_k.imag();
-      const float xq = static_i * g_k.imag() + static_q * g_k.real();
-      acc.i += gain * xi;
-      acc.q += gain * xq;
     }
-    out[n] = acc;
-    // Advance per-sample LOS phase accumulators after consuming sample n.
-    for (std::size_t k = 0; k != n_taps; ++k) {
-      if (taps[k].is_los) {
-        los_current[k] *= los_step[k];
-      }
-    }
-  }
+
+  };
+  if (executor) executor->for_each_range(count, calculate);
+  else calculate(0, count);
 
   // Roll the cross-slot ring forward (same as the static apply_tdl_step). The
   // tap-modulated samples are written to `out`; the ring stores raw input so

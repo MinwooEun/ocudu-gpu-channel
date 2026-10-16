@@ -101,6 +101,8 @@ def load_benchmark(path: pathlib.Path) -> dict[str, Any]:
 
 def cell_index_of(benchmark: dict[str, Any], ue: str) -> tuple[int, int, dict[str, Any]]:
     for cell_index, cell in enumerate(bench.CELLS):
+        if cell["name"] not in benchmark["cells"]:
+            continue
         meta = benchmark["cells"][cell["name"]]
         for ue_meta in meta["ues"]:
             if ue_meta["device_id"] == ue:
@@ -225,6 +227,8 @@ def dl_targets(benchmark: dict[str, Any]) -> list[dict[str, Any]]:
                 continue
             destinations = []
             for cell_index, cell in enumerate(bench.CELLS):
+                if cell["name"] not in benchmark["cells"]:
+                    continue
                 ue_meta = benchmark["cells"][cell["name"]]["ues"][ue_index]
                 port = bench.DL_BASE_PORT + 10 * ue_index + flow_index
                 destinations.append((bench.flow_id(cell_index, ue_index, flow_index), (ue_meta["ipv4"], port)))

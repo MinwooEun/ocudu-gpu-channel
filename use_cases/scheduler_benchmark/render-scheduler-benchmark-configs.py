@@ -298,7 +298,7 @@ def main() -> int:
             rx_noise = sionna.rx_noise_powers(shape, args.awgn_snr_db, args.tx_power_dl, args.tx_power_ul)
         except ValueError as error:
             fail(str(error))
-        gnb_record = {key: cell["gnb"][key] for key in ("device_id", "tx_port", "rx_port", "pci", "gnb_id", "bind")}
+        gnb_record = {key: cell["gnb"][key] for key in ("device_id", "tx_port", "rx_port", "pci", "gnb_id", "bind", "prach_root")}
         gnb_text = multi_gnb.render_gnb(gnb_source, gnb_record, log_dir)
         gnb_text = insert_scheduler_policy(gnb_text, schedulers[name])
         gnb_text = add_config_dump(gnb_text)

@@ -172,6 +172,7 @@ int main(int argc, char** argv)
     const bool refresh = env_on("OCG_BENCH_REFRESH");
     const bool threaded = env_on("OCG_BENCH_THREADS");
     std::cout << "bench_knobs,pace=" << pace << ",refresh=" << refresh << ",threads=" << threaded << "\n";
+    std::cout << "cpu_sample_workers," << config.runtime.cpu_threads << "\n";
     // Refresh writes a private copy of each lane's input per destination, so
     // concurrent node threads never write a buffer another thread reads.
     std::unordered_map<std::string, std::vector<ocg::IqBuffer>> fresh_inputs;

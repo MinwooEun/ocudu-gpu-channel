@@ -94,6 +94,9 @@ struct TapSpec {
 
 struct RuntimeConfig {
   Backend backend = Backend::Cuda;
+  // CPU TDL sample workers, shared across receiving nodes. One keeps the
+  // serial reference; CUDA processing does not use this pool.
+  std::size_t cpu_threads = 1;
   int gpu_device = 0;
   bool batch_samples_auto = true;
   std::size_t batch_samples = 0;

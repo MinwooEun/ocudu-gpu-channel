@@ -19,10 +19,12 @@ class RemoteSyncTest(unittest.TestCase):
             "scripts/native/build-helper.sh", "use_cases/configs/build_profile.yaml",
             "use_cases/results/expected.csv", "apps/dashboard/vendor/library.js",
             "docs/report.md", "tests/fixture.json", ".config.example",
+            "docs/reports/fixture/run.log",
         ]
         excluded = [
             ".git/config", ".config", ".agents/skill.md", ".claude/settings.json",
             ".playwright-mcp/screenshot.png", "references/paper.pdf", "writing/main.tex",
+            "slides/deck.pptx",
             "build/app", "build-cuda/app", "out/app", "cmake-build-debug/app",
             "Testing/Temporary/result.xml", ".build/docs/index.html", ".venv-docs/bin/python",
             "ocudu/source.cpp", "srsRAN_4G/source.cpp", "srsran_4g/source.cpp",

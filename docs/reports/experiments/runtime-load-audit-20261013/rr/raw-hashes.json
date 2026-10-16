@@ -1,0 +1,58 @@
+{
+  "gnb-1592.wire": {
+    "bytes": 192000064,
+    "sha256": "b032a0f9be9f7e066b5dbc00d187d475ede40bf7af76af10915d5fec604755b4"
+  },
+  "gnb-1593.wire": {
+    "bytes": 192000064,
+    "sha256": "cd7b5bb959c07ebed85213a03b660e1c45b77b94258456ebc79a5f103bcd5728"
+  },
+  "gnb-2094.wire": {
+    "bytes": 192000064,
+    "sha256": "80d489e92a8b12c512516a81c27787792759dcb5a4e922006ecd3b3bc9a9d9b5"
+  },
+  "gpu-gnb0.bin": {
+    "bytes": 10375040,
+    "sha256": "c9d8fecb0030312bfbf4bb9309aea5572ce77630c530335a3d698caf574372fa"
+  },
+  "gpu-ue0.bin": {
+    "bytes": 9003968,
+    "sha256": "c8c1c644faaf1981d348c76f06e28a164aaad5cc6e0a3f8a300da1ecbc551540"
+  },
+  "gpu-ue1.bin": {
+    "bytes": 9004736,
+    "sha256": "8296dedb1c58a76d3459a86a0e95f2ce0f59a0c8fab0a7087e1037252bd18497"
+  },
+  "ocudu-gpu-channel-2029.wire": {
+    "bytes": 192000064,
+    "sha256": "118eb7ed3ac17b41b8aefe66a1433b729fc63106e97dd782eeb6fcd409b625c2"
+  },
+  "processes.jsonl": {
+    "bytes": 8177,
+    "sha256": "bce09cc379308a9fd8ba5cd2ed0d7d5115d62bb00b1d3d82d98fb6101bd1d806"
+  },
+  "producer-gnb0.bin": {
+    "bytes": 16859440,
+    "sha256": "d06516822f860ab3275fadfd95ace9b841148176b52d17eb8506f65bef4b02df"
+  },
+  "producer-ue0.bin": {
+    "bytes": 14631448,
+    "sha256": "62a8674aa3537248ea56e0cc71eac0f8c42916acb7b6e020395461789cd7165b"
+  },
+  "producer-ue1.bin": {
+    "bytes": 14632696,
+    "sha256": "e2b70011befb28c241afc877f29c98c780f2ec5626fe53fb24fe7dbea5b45023"
+  },
+  "runtime-samples.jsonl": {
+    "bytes": 12680543,
+    "sha256": "3d42daeacd509a0cc2b591d849bc6af71b576512ae6be7330100aaf4cded4ae7"
+  },
+  "srsue-2151.wire": {
+    "bytes": 192000064,
+    "sha256": "f769c8f30c71b18214603a71c0e183cd777c2124607a673e385f247db3523b9a"
+  },
+  "srsue-2154.wire": {
+    "bytes": 192000064,
+    "sha256": "29f588a63f3dd2a1aec310bc59971ff29a7bed8c0c98f73dcca9265d0e2ecf7a"
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "20261013T101825Z": {
+    "gnb0": {
+      "data_us": {
+        "median": 754.917,
+        "max": 1305.3,
+        "heartbeat_snapshots": 101
+      },
+      "process_us": {
+        "median": 88.096,
+        "max": 591.089,
+        "heartbeat_snapshots": 101
+      },
+      "throttle_us": {
+        "median": 0.26,
+        "max": 1.043,
+        "heartbeat_snapshots": 101
+      }
+    },
+    "ue0": {
+      "data_us": {
+        "median": 763.536,
+        "max": 1229.9,
+        "heartbeat_snapshots": 101
+      },
+      "process_us": {
+        "median": 72.822,
+        "max": 294.464,
+        "heartbeat_snapshots": 101
+      },
+      "throttle_us": {
+        "median": 0.248,
+        "max": 0.934,
+        "heartbeat_snapshots": 101
+      }
+    },
+    "ue1": {
+      "data_us": {
+        "median": 716.967,
+        "max": 1370.59,
+        "heartbeat_snapshots": 101
+      },
+      "process_us": {
+        "median": 72.682,
+        "max": 350.341,
+        "heartbeat_snapshots": 101
+      },
+      "throttle_us": {
+        "median": 0.231,
+        "max": 0.689,
+        "heartbeat_snapshots": 101
+      }
+    }
+  },
+  "20261013T102138Z": {
+    "gnb0": {
+      "data_us": {
+        "median": 798.671,
+        "max": 1157.78,
+        "heartbeat_snapshots": 101
+      },
+      "process_us": {
+        "median": 88.299,
+        "max": 302.555,
+        "heartbeat_snapshots": 101
+      },
+      "throttle_us": {
+        "median": 0.332,
+        "max": 523.862,
+        "heartbeat_snapshots": 101
+      }
+    },
+    "ue0": {
+      "data_us": {
+        "median": 761.936,
+        "max": 1791.91,
+        "heartbeat_snapshots": 101
+      },
+      "process_us": {
+        "median": 73.596,
+        "max": 320.269,
+        "heartbeat_snapshots": 101
+      },
+      "throttle_us": {
+        "median": 0.247,
+        "max": 675.817,
+        "heartbeat_snapshots": 101
+      }
+    },
+    "ue1": {
+      "data_us": {
+        "median": 739.536,
+        "max": 1661.02,
+        "heartbeat_snapshots": 101
+      },
+      "process_us": {
+        "median": 73.682,
+        "max": 256.916,
+        "heartbeat_snapshots": 101
+      },
+      "throttle_us": {
+        "median": 0.243,
+        "max": 353.817,
+        "heartbeat_snapshots": 101
+      }
+    }
+  }
+}

@@ -56,6 +56,10 @@ web_ui="${OCUDU_NATIVE_SB_WEB_UI:-1}"
 web_port="${OCUDU_NATIVE_SB_WEB_PORT:-8090}"
 skip_ctest="${OCUDU_NATIVE_SB_SKIP_CTEST:-0}"
 gnb_metrics_enabled="${OCUDU_NATIVE_GNB_METRICS:-1}"
+single_cell="${OCUDU_NATIVE_SB_SINGLE_CELL:-0}"
+ue_rx_sleep="${OCUDU_NATIVE_SB_UE_RX_SLEEP:-true}"
+export OCUDU_NATIVE_SB_SINGLE_CELL="${single_cell}"
+export OCUDU_NATIVE_SB_UE_RX_SLEEP="${ue_rx_sleep}"
 audited_ocudu="a1916edcdbcd70ba6e0af47ee87be061dad5a4e4"
 audited_srsran="eea87b1d893ae58e0b08bc381730c502024ae71f"
 audited_open5gs="d9d3abdd480be96fac3bc8a997e83446648763ca"
@@ -67,6 +71,8 @@ usage_error()
 }
 
 [[ "$#" -eq 0 ]] || usage_error "usage: $0 (configure with OCUDU_NATIVE_SB_* variables)"
+[[ "${single_cell}" =~ ^[01]$ ]] || usage_error "OCUDU_NATIVE_SB_SINGLE_CELL must be 0 or 1"
+[[ "${ue_rx_sleep}" =~ ^(true|false)$ ]] || usage_error "OCUDU_NATIVE_SB_UE_RX_SLEEP must be true or false"
 [[ -x "${sionna_python}" ]] || usage_error "OCUDU_NATIVE_SIONNA_PYTHON must point at the Sionna interpreter"
 [[ "${seed}" =~ ^(0|[1-9][0-9]{0,8})$ ]] || usage_error "OCUDU_NATIVE_SB_SEED must be a non-negative integer"
 for value in "${sched_a}" "${sched_b}"; do
@@ -212,6 +218,21 @@ fi
 "/usr/bin/python3" "${renderer}" "${renderer_args[@]}" >"${log_dir}/render.log" 2>&1 || {
   cat "${log_dir}/render.log" >&2; usage_error "config rendering failed"
 }
+if [[ "${single_cell}" == "1" ]]; then
+  /usr/bin/python3 - "${config_dir}/benchmark.json" <<'PY'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text())
+data["cells"] = {"a": data["cells"]["a"]}
+data["execution_mode"] = "single_cell"
+path.write_text(json.dumps(data, indent=2) + "\n")
+PY
+fi
+if [[ "${ue_rx_sleep}" == "false" ]]; then
+  for ue_config in "${config_dir}"/srsue-*.conf; do
+    sed -i '/^device_args *=/ s/$/,rx_sleep=false/' "${ue_config}"
+  done
+fi
 # Optional gNB ZMQ receive gain (dB, <= 0). The OCUDU ZMQ radio scales its
 # float input by this gain and then converts it to int16 with saturation at
 # +-1.0; srsUE (tx_gain 50) puts ~+42 dB on the wire, so at 0 dB nearly every
@@ -255,22 +276,24 @@ parent_mntns="$(readlink /proc/self/ns/mnt)"
   "${scenario}" "${scenario_override}" "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" \
   "${cpus_gnb_a}" "${cpus_gnb_b}" "${cpus_broker_a}" "${cpus_broker_b}" \
   "${cpus_ue0}" "${cpus_ue1}" "${cpus_ue2}" "${cpus_ue3}" "${cpus_aux}" "${gnb_metrics_enabled}" "${timestamp}"
-import json, sys
+import json, os, sys
 (out, seed, sched_a, sched_b, profile, overrides, measure, drain, attach_timeout, hz, awgn, tx_dl, tx_ul,
  scenario, scenario_override, platform, gnb_a, gnb_b, broker_a, broker_b, ue0, ue1, ue2, ue3, aux,
  metrics, timestamp) = sys.argv[1:]
 json.dump({
-    "timestamp": timestamp, "seed": int(seed), "schedulers": {"a": sched_a, "b": sched_b},
+    "timestamp": timestamp, "seed": int(seed), "schedulers": {"a": sched_a, **({"b": sched_b} if os.environ.get("OCUDU_NATIVE_SB_SINGLE_CELL") != "1" else {})},
+    "active_cells": ["a"] if os.environ.get("OCUDU_NATIVE_SB_SINGLE_CELL") == "1" else ["a", "b"],
+    "ue_rx_sleep": os.environ.get("OCUDU_NATIVE_SB_UE_RX_SLEEP", "true") == "true",
     "traffic_profile": profile, "traffic_overrides": overrides or None,
     "measure_seconds": int(measure), "drain_seconds": int(drain), "attach_timeout_seconds": int(attach_timeout),
     "sionna": {"update_hz": float(hz), "awgn_snr_db": None if awgn == "off" else float(awgn),
                "tx_power_dl": float(tx_dl) if tx_dl else None, "tx_power_ul": float(tx_ul) if tx_ul else None,
-               "timeline": "grid", "fanout": True},
+               "timeline": "grid", "fanout": os.environ.get("OCUDU_NATIVE_SB_SINGLE_CELL") != "1"},
     "scenario": scenario, "scenario_override": scenario_override or None,
     "platform_profile": platform,
     "cpus": {"gnb": {"a": gnb_a, "b": gnb_b}, "broker": {"a": broker_a, "b": broker_b},
              "ue": {"ue0": ue0, "ue1": ue1, "ue2": ue2, "ue3": ue3}, "aux": aux},
-    "brokers": "both plain: own CUDA context, default stream, no realtime class",
+    "brokers": "active brokers: own CUDA context, default stream, no realtime class",
     "gnb_metrics": int(metrics),
 }, open(out, "w"), indent=2, sort_keys=True)
 PY

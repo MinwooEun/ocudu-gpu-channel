@@ -38,6 +38,7 @@ tmp
 .playwright-mcp
 .config
 writing
+slides
 **/.DS_Store
 
 # The Docker files themselves

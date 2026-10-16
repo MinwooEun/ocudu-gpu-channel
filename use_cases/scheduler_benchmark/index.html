@@ -172,7 +172,7 @@ section { margin-bottom: 36px; }
 .ue-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
 /* --- lanes + evaluation ---------------------------------------------------------------- */
-.board { display: grid; grid-template-columns: minmax(150px, 0.62fr) minmax(0, 1fr) minmax(0, 1fr); column-gap: 16px; }
+.board { display: grid; grid-template-columns: minmax(150px, 0.62fr) repeat(var(--cell-count, 2), minmax(0, 1fr)); column-gap: 16px; }
 .board > .gutter { grid-column: 1; }
 .lane-head { padding: 18px; border-top: 4px solid var(--lane-color); display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .lane-a { --lane-color: var(--lane-a); }
@@ -180,6 +180,7 @@ section { margin-bottom: 36px; }
 .lane-head .cell { font: 500 var(--step--1) var(--font-mono); color: var(--lane-color); }
 .lane-head h3 { font-size: var(--step-2); line-height: 1.15; }
 .lane-head p { margin: 0; max-width: 62ch; }
+.lane-head .mono { overflow-wrap: anywhere; }
 .lane-head ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: var(--step--1); display: flex; flex-direction: column; gap: 3px; }
 .verify { font-size: var(--step--1); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .ok { color: var(--good); } .bad { color: var(--bad); } .warn { color: var(--warn); }
@@ -208,7 +209,7 @@ section { margin-bottom: 36px; }
 .excluded { grid-column: 1 / -1; font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 12px; }
 
 @media (max-width: 860px) {
-  .board { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .board { grid-template-columns: repeat(var(--cell-count, 2), minmax(0, 1fr)); }
   .board > .gutter, .board-gutter-head { grid-column: 1 / -1; }
   .metric-label { grid-column: 1 / -1; padding-bottom: 0 !important; }
   .metric-row > .cellv { border-top: 0; padding-top: 8px; }
@@ -235,7 +236,7 @@ footer { color: var(--faint); font-size: 0.75rem; }
 <header class="top">
   <div class="brand">
     <h1>Scheduler Benchmark</h1>
-    <span class="sub">Two OCUDU cells, one Sionna channel, two MAC scheduling policies</span>
+    <span class="sub">OCUDU MAC scheduling with a Sionna channel</span>
   </div>
   <div class="run-controls">
     <label class="label" for="run">Run</label>
@@ -253,7 +254,7 @@ footer { color: var(--faint); font-size: 0.75rem; }
   <section aria-labelledby="h-scene">
     <div class="section-head">
       <h2 id="h-scene">Scene and host</h2>
-      <p>The Sionna RT scene both cells share, with the UEs where the seeded routes put them, and the hardware the run is using.</p>
+      <p>The Sionna RT scene, seeded UE routes, and hardware used by the active cells.</p>
     </div>
     <div class="strip">
       <div class="panel scene" id="sceneHost">
@@ -271,7 +272,7 @@ footer { color: var(--faint); font-size: 0.75rem; }
   <section aria-labelledby="h-radio">
     <div class="section-head">
       <h2 id="h-radio">Radio setup</h2>
-      <p>Both cells are configured identically except for the scheduler. Each UE in cell a has a twin in cell b with the same channel and the same packets.</p>
+      <p>Two-cell runs use matched channels and traffic. Single-cell runs show one policy on the same resources for comparison across separate runs.</p>
     </div>
     <div class="sheet" id="sheet"><div class="panel empty-state">Waiting for the run’s configuration.</div></div>
   </section>
@@ -279,7 +280,7 @@ footer { color: var(--faint); font-size: 0.75rem; }
   <section aria-labelledby="h-eval">
     <div class="section-head">
       <h2 id="h-eval">Schedulers and evaluation</h2>
-      <p id="evalNote">Metrics cover valid seconds only: every UE of both cells in service. Values are means over those seconds unless stated.</p>
+      <p id="evalNote">Metrics cover valid seconds only: every UE of the active cells in service. Values are means over those seconds unless stated.</p>
     </div>
     <div class="board" id="board"><div class="panel empty-state" style="grid-column:1/-1">Waiting for the run’s configuration.</div></div>
   </section>
@@ -287,7 +288,7 @@ footer { color: var(--faint); font-size: 0.75rem; }
   <section aria-labelledby="h-chart">
     <div class="section-head">
       <h2 id="h-chart">Second by second</h2>
-      <p>Each point is one second of scenario time, the same channel in both cells. Shaded seconds are invalid and excluded from the metrics above.</p>
+      <p>Each point is one second of scenario time; two-cell runs share the same channel. Shaded seconds are invalid and excluded from the metrics above.</p>
     </div>
     <div class="panel chart-panel">
       <div class="seg-control" role="group" aria-label="Metric" id="chartPick"></div>
@@ -331,6 +332,7 @@ async function get(path) {
   if (!response.ok) throw new Error(body.error || response.statusText);
   return body;
 }
+function activeCells() { return Object.keys(state.run?.benchmark?.cells || {}); }
 const q = () => state.runId ? `?id=${encodeURIComponent(state.runId)}` : '';
 
 // ---------------------------------------------------------------- runs + header
@@ -340,7 +342,7 @@ async function loadRuns() {
   const select = $('run');
   const current = select.value;
   select.innerHTML = data.runs.map((r) => {
-    const sched = r.schedulers ? `${r.schedulers.a} vs ${r.schedulers.b}` : '?';
+    const sched = r.schedulers ? Object.values(r.schedulers).join(' vs ') : '?';
     return `<option value="${esc(r.id)}">${esc(r.id)} · seed ${esc(r.seed ?? '–')} · ${esc(sched)} · ${esc(r.state)}</option>`;
   }).join('') || '<option value="">No benchmark runs yet</option>';
   const wanted = state.runId || current || (data.runs[0] && data.runs[0].id) || '';
@@ -485,9 +487,9 @@ function renderSheet() {
   const solver = env.solver || sc.solver || {};
   const prop = Object.entries(solver.propagation || {}).filter(([, v]) => v).map(([k]) => k.replace('_', ' ')).join(', ');
   const pattern = (g.array && g.array.pattern) || 'iso';
-  const cells = ['a', 'b'].map((c) => b.cells[c]);
+  const cells = activeCells().map((c) => b.cells[c]);
   const gnbCard = `<div class="panel card gnb">
-    <div class="card-head"><h3>gNB</h3><span class="tag">gnb0 · PCI ${cells[0].gnb.pci}</span><span class="tag">gnb1 · PCI ${cells[1].gnb.pci}</span></div>
+    <div class="card-head"><h3>gNB</h3>${cells.map(c => `<span class="tag">${esc(c.gnb.device_id)} · PCI ${c.gnb.pci}</span>`).join('')}</div>
     <div class="gnb-body">
       <dl class="kv">
         <dt>Software</dt><dd>${esc(run.software.ocudu_gnb)}</dd>
@@ -506,7 +508,7 @@ function renderSheet() {
         <figure>${polarSvg(pattern, 'el')}<figcaption>elevation cut</figcaption></figure></div>
     </div></div>`;
   const ueCards = [0, 1].map((i) => {
-    const ua = cells[0].ues[i], ub = cells[1].ues[i];
+    const ua = cells[0].ues[i];
     const node = (sc.nodes || {})[`ue${i}`] || {};
     const route = (sc.benchmark?.routes || {})[`ue${i}`] || {};
     const flows = ua.flows.map((f) => {
@@ -514,13 +516,13 @@ function renderSheet() {
       return `<li><span class="mono">${esc(f.name)}</span><span>${esc(f.direction.toUpperCase())} · ${esc(f.pattern)} · ${esc(rate)}</span></li>`;
     }).join('');
     return `<div class="panel card">
-      <div class="card-head"><span class="ue-dot" style="background:${ROLE_COLOR[i]}"></span><h3>${esc(ua.device_id)} · ${esc(ub.device_id)}</h3><span class="tag">${esc(ua.role)}</span></div>
+      <div class="card-head"><span class="ue-dot" style="background:${ROLE_COLOR[i]}"></span><h3>${cells.map(c => esc(c.ues[i].device_id)).join(' · ')}</h3><span class="tag">${esc(ua.role)}</span></div>
       <dl class="kv">
         <dt>UE</dt><dd>${esc(run.software.srsue)}</dd>
         <dt>Radio</dt><dd>ZMQ · 1 TX / 1 RX · ${esc(arrayText(node.array))}</dd>
         <dt>5QI</dt><dd>${ua.five_qi} · ${esc(ua.qos.type)} · priority ${ua.qos.priority} · PDB ${ua.qos.pdb_ms} ms · RLC ${esc(ua.qos.rlc)}</dd>
         <dt>Mobility</dt><dd>random waypoint · ${fmt(node.speed_mps ?? route.speed_mps, 2)} m/s · ${route.waypoints ?? '–'} waypoints</dd>
-        <dt>Addresses</dt><dd>${esc(ua.ipv4)} (cell a) · ${esc(ub.ipv4)} (cell b)</dd>
+        <dt>Addresses</dt><dd>${activeCells().map(c => `${esc(b.cells[c].ues[i].ipv4)} (cell ${esc(c)})`).join(' · ')}</dd>
       </dl>
       <ul class="flows">${flows}</ul>
       <div class="live-ue" id="ueLive${i}"></div>
@@ -605,21 +607,22 @@ function renderBoard() {
   };
   const profile = run.benchmark.traffic_profile || {};
   let html = `<div class="board-gutter-head gutter"><span class="label">Traffic profile</span><strong>${esc(profile.title || profile.name)}</strong><span>${esc(profile.description || '')}</span></div>`;
-  html += laneHead('a') + laneHead('b');
+  html += activeCells().map(laneHead).join('');
+  $('board').style.setProperty('--cell-count', activeCells().length);
   const report = state.report;
   for (const row of metricRows()) {
     html += `<div class="metric-row"><div class="metric-label gutter"><h4>${esc(row.title)}</h4><p>${esc(row.def)}</p><span class="tag layer">${esc(row.layer)}</span></div>`;
     const values = {};
-    for (const cell of ['a', 'b']) {
+    for (const cell of activeCells()) {
       const m = laneOf(cell)?.metrics;
       values[cell] = m && m.segments ? row.value(m, cell) : null;
     }
-    const mains = ['a', 'b'].map((c) => values[c]?.main).filter(fin);
+    const mains = activeCells().map((c) => values[c]?.main).filter(fin);
     const maxMain = Math.max(...mains.map(Math.abs), 1e-9);
     const dir = BETTER[row.better];
     let best = null;
     if (dir && mains.length === 2 && values.a.main !== values.b.main) best = (values.a.main - values.b.main) * dir > 0 ? 'a' : 'b';
-    for (const cell of ['a', 'b']) {
+    for (const cell of activeCells()) {
       const v = values[cell];
       if (!v) { html += `<div class="cellv lane-${cell}"><span class="muted">${report ? 'no valid seconds yet' : 'waiting for measurements'}</span></div>`; continue; }
       const main = fin(v.main) ? `<span class="big">${fmt(v.main, v.digits ?? 2)}</span><span class="unit">${esc(v.unit)}</span>` : '';
@@ -643,7 +646,7 @@ function renderBoard() {
 // ---------------------------------------------------------------- resource grids
 function drawGrids() {
   const grid = state.live?.grid; if (!grid || !state.run) return;
-  for (const cell of ['a', 'b']) {
+  for (const cell of activeCells()) {
     const canvas = $(`grid-${cell}`); if (!canvas) continue;
     const data = grid[cell]; if (!data) continue;
     const dpr = window.devicePixelRatio || 1, w = canvas.clientWidth, h = canvas.clientHeight;
@@ -698,7 +701,7 @@ function drawChart() {
   const pad = { l: 52, r: 14, t: 12, b: 26 };
   ctx.font = `11px ${css('--font-mono')}`;
   if (!segs.length) { ctx.fillStyle = css('--muted'); ctx.fillText('No measured seconds yet.', pad.l, pad.t + 14); return; }
-  const series = ['a', 'b'].map((cell) => segs.map((s) => { const v = extract(s.cells[cell], cell); return fin(v) ? v : null; }));
+  const series = activeCells().map((cell) => segs.map((s) => { const v = extract(s.cells[cell], cell); return fin(v) ? v : null; }));
   const all = series.flat().filter(fin);
   let ymax = all.length ? Math.max(...all) : 1; let ymin = Math.min(0, ...all);
   if (ymax === ymin) ymax = ymin + 1;
@@ -717,7 +720,7 @@ function drawChart() {
   const tickStep = total > 200 ? 60 : total > 60 ? 20 : 10;
   for (let k = 0; k <= total; k += tickStep) ctx.fillText(`${k}s`, x(k) - 8, h - 8);
   ctx.fillText(unit, 6, pad.t - 1 + 10 > 12 ? 10 : 10);
-  ['a', 'b'].forEach((cell, i) => {
+  activeCells().forEach((cell, i) => {
     ctx.strokeStyle = css(cell === 'a' ? '--lane-a' : '--lane-b'); ctx.lineWidth = 1.8; ctx.beginPath();
     let pen = false;
     series[i].forEach((v, k) => { if (!fin(v)) { pen = false; return; } const px = x(segs[k].k), py = y(v); if (pen) ctx.lineTo(px, py); else ctx.moveTo(px, py); pen = true; });
@@ -727,7 +730,7 @@ function drawChart() {
   });
   const run = state.run;
   ctx.font = `600 11px ${css('--font-body')}`;
-  ['a', 'b'].forEach((cell, i) => {
+  activeCells().forEach((cell, i) => {
     ctx.fillStyle = css(cell === 'a' ? '--lane-a' : '--lane-b');
     ctx.fillText(`cell ${cell} · ${run?.benchmark.cells[cell].scheduler_info.short || cell}`, pad.l + 8 + i * 150, pad.t + 12);
   });
@@ -750,8 +753,8 @@ function renderIntegrity() {
       ${row('Skipped grid points', s.skipped_grid_points ?? '–', s.skipped_grid_points > 0 ? 'warn' : '')}
       ${row('Solve time p50 / p99', `${fmt(s.generation_ms?.p50, 0)} / ${fmt(s.generation_ms?.p99, 0)} ms`)}
       ${row('Lag behind grid p99', `${fmt(s.lag_ms?.p99, 1)} ms`)}
-      ${row('Fan-out ack skew p99', `${fmt(s.fanout_ack_skew_ms?.p99, 1)} ms`)}
-      ${row('Both brokers accepted every batch', c.fanout_all_ok ? 'yes' : 'no', c.fanout_all_ok ? 'ok' : 'bad')}
+      ${activeCells().length === 2 ? row('Fan-out ack skew p99', `${fmt(s.fanout_ack_skew_ms?.p99, 1)} ms`) +
+        row('Both brokers accepted every batch', c.fanout_all_ok ? 'yes' : 'no', c.fanout_all_ok ? 'ok' : 'bad') : ''}
       ${row('Channel digests recorded', c.sionna_digests ?? '–')}</div>
     <div class="panel card"><h3>Traffic</h3>
       ${row('Packets sent (all flows)', sent.toLocaleString())}
@@ -761,12 +764,13 @@ function renderIntegrity() {
       ${row('Senders finished', Object.keys(c.senders || {}).length ? 'yes' : 'no')}</div>
     <div class="panel card"><h3>Radio stack</h3>
       ${row('Scheduler policies loaded as requested', policyOk === undefined ? '–' : policyOk ? 'yes' : 'no', policyOk ? 'ok' : 'bad')}
-      ${(() => { const sa = r.lanes?.a?.metrics.resource_utilization.slots_per_s, sb = r.lanes?.b?.metrics.resource_utilization.slots_per_s;
-        const slow = fin(sa) && fin(sb) && Math.min(sa, sb) < 950; const uneven = fin(sa) && fin(sb) && Math.abs(sa - sb) > 0.03 * Math.max(sa, sb);
-        return row('Radio speed a / b (real time = 1000 slots/s)', `${fmt(sa, 0)} / ${fmt(sb, 0)}`, uneven ? 'bad' : slow ? 'warn' : 'ok'); })()}
-      ${row('SCHED lines parsed a / b', `${c.sched_lines?.a ?? 0} / ${c.sched_lines?.b ?? 0}`)}
+      ${(() => { const speeds = activeCells().map(cell => r.lanes?.[cell]?.metrics.resource_utilization.slots_per_s);
+        const measured = speeds.filter(fin), slow = measured.some(v => v < 950);
+        const uneven = measured.length === 2 && Math.abs(measured[0] - measured[1]) > 0.03 * Math.max(...measured);
+        return row(`Radio speed ${activeCells().join(' / ')} (real time = 1000 slots/s)`, speeds.map(v => fmt(v, 0)).join(' / '), uneven ? 'bad' : slow ? 'warn' : measured.length === speeds.length ? 'ok' : ''); })()}
+      ${row(`SCHED lines parsed ${activeCells().join(' / ')}`, activeCells().map(cell => c.sched_lines?.[cell] ?? 0).join(' / '))}
       ${row('C-RNTIs mapped', Object.values(c.rnti_map || {}).map((m) => Object.keys(m).length).join(' / '))}
-      ${['a', 'b'].map((cell) => row(`Broker ${cell} gaps / overflows / ZMQ errors`, brokers[cell] ? `${brokers[cell].tx_sequence_gaps} / ${brokers[cell].tx_queue_overflows} / ${brokers[cell].zmq_errors}` : '–')).join('')}
+      ${activeCells().map((cell) => row(`Broker ${cell} gaps / overflows / ZMQ errors`, brokers[cell] ? `${brokers[cell].tx_sequence_gaps} / ${brokers[cell].tx_queue_overflows} / ${brokers[cell].zmq_errors}` : '–')).join('')}
       ${row('Gate verdict', gate?.status || 'running', gate?.status === 'passed' ? 'ok' : gate?.status ? 'bad' : '')}
       ${row('Host load (1 min) mean / max', c.host_load?.samples ? `${fmt(c.host_load.load1_mean, 1)} / ${fmt(c.host_load.load1_max, 1)}` : '–')}
       ${row('Other busy processes', Object.keys(c.host_load?.other_busy_processes || {}).join(', ') || 'none seen', Object.keys(c.host_load?.other_busy_processes || {}).length ? 'warn' : '')}</div>`;
@@ -844,9 +848,9 @@ function updateMarkers() {
   $('sceneOverlay').innerHTML = `
     <span class="chip">scenario time <b>${last ? fmt(last.scenario_time_s, 1) : '0.0'} s</b>${last ? '' : ' (held)'}<br>grid point <b>${last?.grid_index ?? '–'}</b></span>
     <span class="chip">channel SHA-256<br><b>${last?.digest ? last.digest.slice(0, 12) + '…' : '–'}</b></span>
-    <span class="chip">same channel in both cells<br><b>${esc(cells.a.ues.map((u, i) => `${u.device_id}=${cells.b.ues[i].device_id}`).join(' · '))}</b></span>`;
+    <span class="chip">${activeCells().length === 2 ? 'same channel in both cells' : 'single-cell channel'}<br><b>${esc(cells.a.ues.map((u, i) => activeCells().map(c => cells[c].ues[i].device_id).join('=')).join(' · '))}</b></span>`;
   $('sceneLegend').innerHTML = `<span class="chip"><span class="swatch" style="background:var(--accent)"></span>gNB</span>
-    ${cells.a.ues.map((u, i) => `<span class="chip"><span class="swatch" style="background:${ROLE_COLOR[i]}"></span>${esc(u.device_id)} / ${esc(cells.b.ues[i].device_id)} · ${esc(u.role)}</span>`).join('')}
+    ${cells.a.ues.map((u, i) => `<span class="chip"><span class="swatch" style="background:${ROLE_COLOR[i]}"></span>${activeCells().map(c => esc(cells[c].ues[i].device_id)).join(' / ')} · ${esc(u.role)}</span>`).join('')}
     <span class="chip">line opacity = DL tap gain</span>`;
 }
 

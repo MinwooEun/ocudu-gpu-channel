@@ -154,6 +154,11 @@ void CpuChannelProcessor::refresh_lane_grids(LinkState& state, const ModelConfig
 
 void CpuChannelProcessor::prepare(const TopologyConfig& config)
 {
+  if (config.runtime.cpu_threads == 0) {
+    throw std::invalid_argument("runtime.cpu_threads must be greater than zero");
+  }
+  sample_executor_ = config.runtime.cpu_threads > 1
+      ? std::make_unique<SampleExecutor>(config.runtime.cpu_threads) : nullptr;
   // State is keyed by the SAME resolved lane table the broker drives serves
   // from, so a key can never be missing at serve time -- process_superposition
   // must never insert into the map concurrently.
@@ -421,11 +426,11 @@ ocg::PhysicalLinkRuntime* CpuChannelProcessor::apply_chain_to_link(const std::st
                                 state.link->clock.slot_start_samples,
                                 state.link->fading.lane_grids[static_cast<std::size_t>(state.lane_index)]
                                                         [step_index],
-                                state.los_coefficient);
+                                state.los_coefficient, sample_executor_.get());
         } else {
           apply_tdl_step(current.data(), next.data(), current.size(),
                          effective_taps, effective_polyphase,
-                         step_state.delay_line);
+                         step_state.delay_line, sample_executor_.get());
         }
         break;
       }

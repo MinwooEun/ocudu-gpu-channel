@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-13",
+  "image": "ocudu-gpu-channel:full-validation-netns",
+  "native_root": "/work/ocudu-native-workspace",
+  "provisioning_changes": [
+    "Private lock uses image glibc package 2.39-0ubuntu8.4 instead of 2.39-0ubuntu8.8",
+    "Pinned srsRAN commit fetched from user fork https://github.com/zhouyou-gu/srsRAN_4G.git",
+    "Copied host curl/git, LLVM18 and matching NVIDIA580.173.02 OptiX libraries with hashes in host-tools/*provenance.json",
+    "Read-only existing Sionna venv; source scene generation and actual ray-path solve passed",
+    "Copied host libpcap runtime dependencies, click Python package and ping executable; created container /run/netns",
+    "Scheduler renderer now supplies explicit PRACH root 1 for both independent cells; no inter-cell RF edge"
+  ],
+  "benchmark_configuration": {
+    "seed": 1,
+    "measure_seconds": 120,
+    "profile": "mixed",
+    "policy_assignments": [
+      [
+        "rr",
+        "qos"
+      ],
+      [
+        "qos",
+        "rr"
+      ]
+    ],
+    "sample_rate_hz": 23040000,
+    "bandwidth_hz": 20000000,
+    "gnb_rx_gain_db": -55,
+    "gain_reason": "Existing launcher documents saturation with default 0 dB for srsUE tx_gain 50; calibrated -55 dB used identically in both cells and runs",
+    "cpu_sets": {
+      "gnbs": "0-7",
+      "ues": "8-19",
+      "brokers": [
+        "20",
+        "21"
+      ],
+      "aux": "22-23"
+    }
+  },
+  "source_hashes": {
+    "use_cases/scheduler_benchmark/definitions.py": "719a67a614d37f7e31439d81b1b426d68c5484cd7b69d501e98170f041cfea06",
+    "use_cases/scheduler_benchmark/render-scheduler-benchmark-configs.py": "f27a56b6d66a638e2bb1ef2fce2c47ae685ee2612553e80fd7699d4924b94f8d",
+    "use_cases/scheduler_benchmark/run-ocudu-scheduler-benchmark.sh": "070f29b1c5d8880d95f902ac75de09626956e7a2f36d8e80da443733398e5c7a",
+    "use_cases/scheduler_benchmark/run-ocudu-scheduler-benchmark-inner.sh": "daf1bbecbc9108c4edf8f78f1e36a2838db887fa97d2bae3445efe0b59c05f86",
+    "use_cases/scheduler_benchmark/analyze.py": "a8bb68163302842128c15421525dd943945ab7a27aec10151f27488812022c1e",
+    "apps/sionna_bridge/run_bridge.py": "99999d088404ffb1ac94f93edd4aa854775d74ed76cc3aa1070ea6078a534698"
+  },
+  "gpu": "NVIDIA GeForce RTX 5090, 580.173.02, 00000000:02:00.0",
+  "cpu": "Intel Core Ultra 9 285K; 24 physical cores"
+}

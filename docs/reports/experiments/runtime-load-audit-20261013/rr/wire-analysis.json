@@ -1,0 +1,2502 @@
+{
+  "run": "20261013T112417Z",
+  "policy": "rr",
+  "start_ns": 265029420369728,
+  "end_ns": 265149420369728,
+  "processes": {
+    "gnb": {
+      "pid": 2094,
+      "trace_records": 605420,
+      "trace_dropped": 0,
+      "nonblocking_poll_gaps": {
+        "count": 0
+      },
+      "slow_nonblocking_calls": {
+        "count": 0
+      },
+      "poll_gap_events": [],
+      "transport_errors": [],
+      "slow_fwrite": {
+        "count": 19,
+        "median_ms": 2.148258,
+        "p99_ms": 2.8592942999999997,
+        "max_ms": 2.85999,
+        "gt_1ms": 16,
+        "gt_5ms": 0
+      },
+      "slow_fwrite_events": [
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265030845705388,
+          "end_ns": 265030847332312,
+          "ms": 1.626924,
+          "bytes": 109
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265035845455454,
+          "end_ns": 265035847298055,
+          "ms": 1.842601,
+          "bytes": 316
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265040844565267,
+          "end_ns": 265040846973141,
+          "ms": 2.407874,
+          "bytes": 122
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265045845097523,
+          "end_ns": 265045847052385,
+          "ms": 1.954862,
+          "bytes": 149
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265058839167483,
+          "end_ns": 265058841315741,
+          "ms": 2.148258,
+          "bytes": 127
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265063848164724,
+          "end_ns": 265063851020849,
+          "ms": 2.856125,
+          "bytes": 159
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265067536671464,
+          "end_ns": 265067537146084,
+          "ms": 0.47462,
+          "bytes": 124
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265087218157894,
+          "end_ns": 265087220703528,
+          "ms": 2.545634,
+          "bytes": 127
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265101310363846,
+          "end_ns": 265101313096458,
+          "ms": 2.732612,
+          "bytes": 110
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265106311322869,
+          "end_ns": 265106313458871,
+          "ms": 2.136002,
+          "bytes": 128
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265111311176518,
+          "end_ns": 265111313322107,
+          "ms": 2.145589,
+          "bytes": 128
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265113233133612,
+          "end_ns": 265113233427307,
+          "ms": 0.293695,
+          "bytes": 128
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265121202837583,
+          "end_ns": 265121205027601,
+          "ms": 2.190018,
+          "bytes": 126
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265126203109084,
+          "end_ns": 265126205620277,
+          "ms": 2.511193,
+          "bytes": 124
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265131202671673,
+          "end_ns": 265131204926253,
+          "ms": 2.25458,
+          "bytes": 149
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265133306443738,
+          "end_ns": 265133306681793,
+          "ms": 0.238055,
+          "bytes": 111
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265137688006410,
+          "end_ns": 265137690866400,
+          "ms": 2.85999,
+          "bytes": 110
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265142688475207,
+          "end_ns": 265142689987086,
+          "ms": 1.511879,
+          "bytes": 109
+        },
+        {
+          "tid": 2100,
+          "fd": 3,
+          "start_ns": 265147687946444,
+          "end_ns": 265147690125964,
+          "ms": 2.17952,
+          "bytes": 110
+        }
+      ],
+      "threads": [
+        {
+          "tid": 2127,
+          "comm": "radio",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.9725843856330864,
+          "cpu_core_fraction_p99": 1.001569344113998,
+          "cpu_core_fraction_max": 1.0204360419253595,
+          "samples_over_90pct": 2302,
+          "wait_core_fraction_mean": 0.009558003784748333,
+          "observed_cpus": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "observed_states": {
+            "R": 2357,
+            "S": 39
+          }
+        },
+        {
+          "tid": 2126,
+          "comm": "phy_worker",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.2240083951597623,
+          "cpu_core_fraction_p99": 0.24550361239139493,
+          "cpu_core_fraction_max": 0.2570779707470123,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.06451157847959056,
+          "observed_cpus": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "observed_states": {
+            "S": 1711,
+            "R": 685
+          }
+        },
+        {
+          "tid": 2135,
+          "comm": "ZMQbg/IO/0",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.044327341535470376,
+          "cpu_core_fraction_p99": 0.052769506166995904,
+          "cpu_core_fraction_max": 0.05828460810341371,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.03413492483980382,
+          "observed_cpus": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "observed_states": {
+            "S": 2198,
+            "R": 198
+          }
+        },
+        {
+          "tid": 2125,
+          "comm": "main_pool#4",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.027968752465893164,
+          "cpu_core_fraction_p99": 0.06298631038648707,
+          "cpu_core_fraction_max": 0.06968877422901747,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.05322779763170673,
+          "observed_cpus": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "observed_states": {
+            "R": 159,
+            "S": 2237
+          }
+        },
+        {
+          "tid": 2100,
+          "comm": "gnb",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.027310019461053055,
+          "cpu_core_fraction_p99": 0.03284331788506085,
+          "cpu_core_fraction_max": 0.1004978550113558,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.04957160531429103,
+          "observed_cpus": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "observed_states": {
+            "S": 2239,
+            "R": 156,
+            "D": 1
+          }
+        },
+        {
+          "tid": 2121,
+          "comm": "main_pool#0",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.026298857553560318,
+          "cpu_core_fraction_p99": 0.06115603656701839,
+          "cpu_core_fraction_max": 0.06816847748656159,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.05300926195343247,
+          "observed_cpus": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "observed_states": {
+            "S": 2197,
+            "R": 198,
+            "D": 1
+          }
+        },
+        {
+          "tid": 2123,
+          "comm": "main_pool#2",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.025213615243039677,
+          "cpu_core_fraction_p99": 0.06202236688614641,
+          "cpu_core_fraction_max": 0.06483583012836762,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0552116707807748,
+          "observed_cpus": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "observed_states": {
+            "S": 2201,
+            "R": 195
+          }
+        },
+        {
+          "tid": 2122,
+          "comm": "main_pool#1",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.02489111372686608,
+          "cpu_core_fraction_p99": 0.046420985699858336,
+          "cpu_core_fraction_max": 0.06467608592644032,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.06018764299080659,
+          "observed_cpus": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "observed_states": {
+            "S": 2227,
+            "R": 169
+          }
+        },
+        {
+          "tid": 2124,
+          "comm": "main_pool#3",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.02446933529863974,
+          "cpu_core_fraction_p99": 0.058709579829876915,
+          "cpu_core_fraction_max": 0.06812431539310432,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.05853016316152934,
+          "observed_cpus": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "observed_states": {
+            "S": 2224,
+            "R": 171,
+            "D": 1
+          }
+        },
+        {
+          "tid": 2128,
+          "comm": "io_broker_epoll",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.005665835800468867,
+          "cpu_core_fraction_p99": 0.00655325635332012,
+          "cpu_core_fraction_max": 0.008064583302330789,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.012236946358600636,
+          "observed_cpus": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "observed_states": {
+            "S": 2366,
+            "R": 30
+          }
+        },
+        {
+          "tid": 2140,
+          "comm": "ws_server",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 3.395471579841946e-05,
+          "cpu_core_fraction_p99": 0.000594188236399212,
+          "cpu_core_fraction_max": 0.0007274530991020254,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 1.8259687319929916e-05,
+          "observed_cpus": [
+            0,
+            1,
+            2,
+            4,
+            6,
+            7
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2094,
+          "comm": "gnb",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 1.5849187297301648e-05,
+          "cpu_core_fraction_p99": 0.0001193492520213647,
+          "cpu_core_fraction_max": 0.00018187973323480216,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 6.730874493553174e-05,
+          "observed_cpus": [
+            0,
+            4,
+            5
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2134,
+          "comm": "ZMQbg/Reaper",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            3
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        }
+      ],
+      "cpu_cores_mean": 1.4027874557809357,
+      "poll_gap_events_note": "Published subset: gaps above 5 ms and all gNB RX-port gaps; full data retained remotely."
+    },
+    "broker": {
+      "pid": 2029,
+      "trace_records": 1731728,
+      "trace_dropped": 0,
+      "nonblocking_poll_gaps": {
+        "count": 0
+      },
+      "slow_nonblocking_calls": {
+        "count": 0
+      },
+      "poll_gap_events": [],
+      "transport_errors": [],
+      "slow_fwrite": {
+        "count": 3,
+        "median_ms": 2.570829,
+        "p99_ms": 2.6781292000000003,
+        "max_ms": 2.680319,
+        "gt_1ms": 2,
+        "gt_5ms": 0
+      },
+      "slow_fwrite_events": [
+        {
+          "tid": 2038,
+          "fd": 1,
+          "start_ns": 265032649530447,
+          "end_ns": 265032649753121,
+          "ms": 0.222674,
+          "bytes": 38
+        },
+        {
+          "tid": 2052,
+          "fd": 1,
+          "start_ns": 265068848488468,
+          "end_ns": 265068851059297,
+          "ms": 2.570829,
+          "bytes": 32
+        },
+        {
+          "tid": 2053,
+          "fd": 1,
+          "start_ns": 265068848615454,
+          "end_ns": 265068851295773,
+          "ms": 2.680319,
+          "bytes": 32
+        }
+      ],
+      "threads": [
+        {
+          "tid": 2045,
+          "comm": "ZMQbg/IO/0",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.16198014972913272,
+          "cpu_core_fraction_p99": 0.17439313733322254,
+          "cpu_core_fraction_max": 0.190069776642873,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.2550072072223674,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "R": 1009,
+            "S": 1387
+          }
+        },
+        {
+          "tid": 2051,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.11574238413928863,
+          "cpu_core_fraction_p99": 0.16495203413057447,
+          "cpu_core_fraction_max": 0.18367811429633096,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.11563002360296129,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "R": 538,
+            "S": 1857,
+            "D": 1
+          }
+        },
+        {
+          "tid": 2052,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.09061437922175326,
+          "cpu_core_fraction_p99": 0.10818802914923042,
+          "cpu_core_fraction_max": 0.11542934709786784,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.12899871672959437,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 1847,
+            "R": 549
+          }
+        },
+        {
+          "tid": 2053,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.08964028962976345,
+          "cpu_core_fraction_p99": 0.10737537434563403,
+          "cpu_core_fraction_max": 0.13474912881747914,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.11925693868377228,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 1877,
+            "R": 519
+          }
+        },
+        {
+          "tid": 2056,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.021412427990299708,
+          "cpu_core_fraction_p99": 0.025103937131674147,
+          "cpu_core_fraction_max": 0.02768624884244841,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.1508386519019199,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "R": 415,
+            "S": 1981
+          }
+        },
+        {
+          "tid": 2054,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.02122694325080195,
+          "cpu_core_fraction_p99": 0.025952240922500768,
+          "cpu_core_fraction_max": 0.02869466865584132,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.16201938058490367,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "R": 421,
+            "S": 1975
+          }
+        },
+        {
+          "tid": 2055,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.02111298569380656,
+          "cpu_core_fraction_p99": 0.024863156347712596,
+          "cpu_core_fraction_max": 0.02788174924339726,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.15019548095096738,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 1982,
+            "R": 414
+          }
+        },
+        {
+          "tid": 2048,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.017679522347945686,
+          "cpu_core_fraction_p99": 0.02046175173811793,
+          "cpu_core_fraction_max": 0.02436887954643208,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.026251978482865625,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2286,
+            "R": 110
+          }
+        },
+        {
+          "tid": 2049,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.017487300690488487,
+          "cpu_core_fraction_p99": 0.020128545554884667,
+          "cpu_core_fraction_max": 0.021994720584715886,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.02781014734358832,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2276,
+            "R": 120
+          }
+        },
+        {
+          "tid": 2050,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.017471454812966268,
+          "cpu_core_fraction_p99": 0.020019466338887692,
+          "cpu_core_fraction_max": 0.022144153472609063,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.020443335491728734,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2296,
+            "R": 100
+          }
+        },
+        {
+          "tid": 2039,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.012642637537495649,
+          "cpu_core_fraction_p99": 0.015039238992451761,
+          "cpu_core_fraction_max": 0.017019587288796822,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.018313241406619333,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2318,
+            "R": 78
+          }
+        },
+        {
+          "tid": 2037,
+          "comm": "cuda-EvtHandlr",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.004417692146193606,
+          "cpu_core_fraction_p99": 0.012185365835369924,
+          "cpu_core_fraction_max": 0.014652823031581084,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.027644999571281206,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2313,
+            "R": 83
+          }
+        },
+        {
+          "tid": 2038,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0009620402182385285,
+          "cpu_core_fraction_p99": 0.002174938168166956,
+          "cpu_core_fraction_max": 0.0024988320619780983,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0012704695128342583,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2393,
+            "R": 3
+          }
+        },
+        {
+          "tid": 2041,
+          "comm": "ZMQbg/IO/0",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.000491509745109743,
+          "cpu_core_fraction_p99": 0.0010851087446704499,
+          "cpu_core_fraction_max": 0.0011498802198948914,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0017663092857866367,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2392,
+            "R": 4
+          }
+        },
+        {
+          "tid": 2029,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0001781583981166491,
+          "cpu_core_fraction_p99": 0.0009505208024862162,
+          "cpu_core_fraction_max": 0.0012535013564931529,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0012145038006319483,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2390,
+            "R": 6
+          }
+        },
+        {
+          "tid": 2036,
+          "comm": "ocudu-gpu-chann",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 9.999322408088485e-06,
+          "cpu_core_fraction_p99": 0.00011013017174509391,
+          "cpu_core_fraction_max": 0.0001819090010359445,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 2.889276912926542e-05,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2035,
+          "comm": "cuda00001400006",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2040,
+          "comm": "ZMQbg/Reaper",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2042,
+          "comm": "ZMQbg/Reaper",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2043,
+          "comm": "ZMQbg/IO/0",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2044,
+          "comm": "ZMQbg/Reaper",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            20
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        }
+      ],
+      "cpu_cores_mean": 0.593069874873809,
+      "poll_gap_events_note": "Published subset: gaps above 5 ms and all gNB RX-port gaps; full data retained remotely."
+    },
+    "ue0": {
+      "pid": 2151,
+      "trace_records": 563160,
+      "trace_dropped": 0,
+      "nonblocking_poll_gaps": {
+        "count": 0
+      },
+      "slow_nonblocking_calls": {
+        "count": 0
+      },
+      "poll_gap_events": [],
+      "transport_errors": [],
+      "slow_fwrite": {
+        "count": 18,
+        "median_ms": 2.3681915,
+        "p99_ms": 2.98108546,
+        "max_ms": 2.994611,
+        "gt_1ms": 15,
+        "gt_5ms": 0
+      },
+      "slow_fwrite_events": [
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265030844474427,
+          "end_ns": 265030847332270,
+          "ms": 2.857843,
+          "bytes": 192
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265035845585544,
+          "end_ns": 265035847099193,
+          "ms": 1.513649,
+          "bytes": 69
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265040845275500,
+          "end_ns": 265040846974313,
+          "ms": 1.698813,
+          "bytes": 212
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265058838536204,
+          "end_ns": 265058841315884,
+          "ms": 2.77968,
+          "bytes": 148
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265063848544474,
+          "end_ns": 265063851022273,
+          "ms": 2.477799,
+          "bytes": 194
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265068848575226,
+          "end_ns": 265068851054892,
+          "ms": 2.479666,
+          "bytes": 69
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265077668114141,
+          "end_ns": 265077670929093,
+          "ms": 2.814952,
+          "bytes": 148
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265081938228035,
+          "end_ns": 265081938518125,
+          "ms": 0.29009,
+          "bytes": 112
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265087218076889,
+          "end_ns": 265087220703378,
+          "ms": 2.626489,
+          "bytes": 92
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265101310848864,
+          "end_ns": 265101313107448,
+          "ms": 2.258584,
+          "bytes": 148
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265106311626059,
+          "end_ns": 265106313460352,
+          "ms": 1.834293,
+          "bytes": 69
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265113277006864,
+          "end_ns": 265113277447487,
+          "ms": 0.440623,
+          "bytes": 211
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265113313161570,
+          "end_ns": 265113313827836,
+          "ms": 0.666266,
+          "bytes": 131
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265121203019336,
+          "end_ns": 265121205089695,
+          "ms": 2.070359,
+          "bytes": 147
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265126202685861,
+          "end_ns": 265126205600910,
+          "ms": 2.915049,
+          "bytes": 131
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265131203003872,
+          "end_ns": 265131205060497,
+          "ms": 2.056625,
+          "bytes": 147
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265137688100789,
+          "end_ns": 265137690849713,
+          "ms": 2.748924,
+          "bytes": 185
+        },
+        {
+          "tid": 2160,
+          "fd": 3,
+          "start_ns": 265142687098071,
+          "end_ns": 265142690092682,
+          "ms": 2.994611,
+          "bytes": 349
+        }
+      ],
+      "threads": [
+        {
+          "tid": 2183,
+          "comm": "WORKER0",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.3013445454530848,
+          "cpu_core_fraction_p99": 0.3380262018614829,
+          "cpu_core_fraction_max": 0.35431797555541344,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.00028062015583314964,
+          "observed_cpus": [
+            12,
+            14
+          ],
+          "observed_states": {
+            "S": 1668,
+            "R": 728
+          }
+        },
+        {
+          "tid": 2187,
+          "comm": "WORKER1",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.2995836719684864,
+          "cpu_core_fraction_p99": 0.3565733516912543,
+          "cpu_core_fraction_max": 0.3926313839072,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0005243164524981659,
+          "observed_cpus": [
+            17
+          ],
+          "observed_states": {
+            "R": 728,
+            "S": 1668
+          }
+        },
+        {
+          "tid": 2160,
+          "comm": "srsue",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.06304765571447857,
+          "cpu_core_fraction_p99": 0.06899728687047076,
+          "cpu_core_fraction_max": 0.07413396351146524,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.022397084193477346,
+          "observed_cpus": [
+            8,
+            12,
+            16,
+            19
+          ],
+          "observed_states": {
+            "S": 2195,
+            "R": 199,
+            "D": 2
+          }
+        },
+        {
+          "tid": 2169,
+          "comm": "ZMQbg/IO/0",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.050573413372212675,
+          "cpu_core_fraction_p99": 0.05453474195141955,
+          "cpu_core_fraction_max": 0.05709618927411424,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.021822733079030723,
+          "observed_cpus": [
+            8,
+            17,
+            19
+          ],
+          "observed_states": {
+            "S": 2225,
+            "R": 171
+          }
+        },
+        {
+          "tid": 2191,
+          "comm": "WORKER2",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.033039979277511206,
+          "cpu_core_fraction_p99": 0.11030876043302237,
+          "cpu_core_fraction_max": 0.14413874530006193,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0005507013708651314,
+          "observed_cpus": [
+            13,
+            14,
+            17,
+            19
+          ],
+          "observed_states": {
+            "S": 2315,
+            "R": 81
+          }
+        },
+        {
+          "tid": 2195,
+          "comm": "STACK",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.02560130538061524,
+          "cpu_core_fraction_p99": 0.030446068841582383,
+          "cpu_core_fraction_max": 0.03434606942130403,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.010385221657213152,
+          "observed_cpus": [
+            14,
+            16
+          ],
+          "observed_states": {
+            "S": 2316,
+            "R": 80
+          }
+        },
+        {
+          "tid": 2178,
+          "comm": "SYNC",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.025200183058597662,
+          "cpu_core_fraction_p99": 0.030544231358033223,
+          "cpu_core_fraction_max": 0.032730728093149676,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.005413102225465679,
+          "observed_cpus": [
+            8,
+            13,
+            14,
+            17,
+            19
+          ],
+          "observed_states": {
+            "S": 2333,
+            "R": 63
+          }
+        },
+        {
+          "tid": 2174,
+          "comm": "srsue",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.019555656248736394,
+          "cpu_core_fraction_p99": 0.02270773034872596,
+          "cpu_core_fraction_max": 0.026869925302303588,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0045926456815936646,
+          "observed_cpus": [
+            8,
+            19
+          ],
+          "observed_states": {
+            "S": 2330,
+            "R": 66
+          }
+        },
+        {
+          "tid": 2207,
+          "comm": "GW",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0009291185357665386,
+          "cpu_core_fraction_p99": 0.001460999843748524,
+          "cpu_core_fraction_max": 0.0020290742961516822,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0008555110720860787,
+          "observed_cpus": [
+            8,
+            18
+          ],
+          "observed_states": {
+            "S": 2395,
+            "R": 1
+          }
+        },
+        {
+          "tid": 2196,
+          "comm": "METRICS_HUB",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.00016070203572799807,
+          "cpu_core_fraction_p99": 0.0036407859325659864,
+          "cpu_core_fraction_max": 0.004474136410153481,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 3.129113053093266e-06,
+          "observed_cpus": [
+            10
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2151,
+          "comm": "srsue",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 6.427624896919492e-06,
+          "cpu_core_fraction_p99": 0.00016752283127849336,
+          "cpu_core_fraction_max": 0.00023707316044171837,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 1.847471431981104e-08,
+          "observed_cpus": [
+            11
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2162,
+          "comm": "TASKWORKER0",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            13
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2163,
+          "comm": "TASKWORKER1",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            14
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2166,
+          "comm": "PHY_CMD",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            17
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2167,
+          "comm": "PHY_CMD",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            9
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2168,
+          "comm": "ZMQbg/Reaper",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            10
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        }
+      ],
+      "cpu_cores_mean": 0.8190426586701144,
+      "poll_gap_events_note": "Published subset: gaps above 5 ms and all gNB RX-port gaps; full data retained remotely."
+    },
+    "ue1": {
+      "pid": 2154,
+      "trace_records": 563205,
+      "trace_dropped": 0,
+      "nonblocking_poll_gaps": {
+        "count": 0
+      },
+      "slow_nonblocking_calls": {
+        "count": 0
+      },
+      "poll_gap_events": [],
+      "transport_errors": [],
+      "slow_fwrite": {
+        "count": 17,
+        "median_ms": 2.144189,
+        "p99_ms": 3.1583202399999997,
+        "max_ms": 3.194442,
+        "gt_1ms": 15,
+        "gt_5ms": 0
+      },
+      "slow_fwrite_events": [
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265030844930350,
+          "end_ns": 265030847330305,
+          "ms": 2.399955,
+          "bytes": 131
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265035844604877,
+          "end_ns": 265035847099236,
+          "ms": 2.494359,
+          "bytes": 212
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265040844882123,
+          "end_ns": 265040846975184,
+          "ms": 2.093061,
+          "bytes": 131
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265045844617564,
+          "end_ns": 265045847052320,
+          "ms": 2.434756,
+          "bytes": 148
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265058839174020,
+          "end_ns": 265058841316441,
+          "ms": 2.142421,
+          "bytes": 148
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265063848878951,
+          "end_ns": 265063851023140,
+          "ms": 2.144189,
+          "bytes": 185
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265077669168598,
+          "end_ns": 265077670956750,
+          "ms": 1.788152,
+          "bytes": 131
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265087217872039,
+          "end_ns": 265087220840720,
+          "ms": 2.968681,
+          "bytes": 130
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265101311012626,
+          "end_ns": 265101313097141,
+          "ms": 2.084515,
+          "bytes": 130
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265106310707165,
+          "end_ns": 265106313551240,
+          "ms": 2.844075,
+          "bytes": 132
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265113270329167,
+          "end_ns": 265113270576168,
+          "ms": 0.247001,
+          "bytes": 147
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265121202389510,
+          "end_ns": 265121205029991,
+          "ms": 2.640481,
+          "bytes": 147
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265126203533425,
+          "end_ns": 265126205576944,
+          "ms": 2.043519,
+          "bytes": 147
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265131202041936,
+          "end_ns": 265131204945738,
+          "ms": 2.903802,
+          "bytes": 185
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265134331088417,
+          "end_ns": 265134331293932,
+          "ms": 0.205515,
+          "bytes": 119
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265137687798239,
+          "end_ns": 265137690992681,
+          "ms": 3.194442,
+          "bytes": 148
+        },
+        {
+          "tid": 2161,
+          "fd": 3,
+          "start_ns": 265142687886350,
+          "end_ns": 265142689990739,
+          "ms": 2.104389,
+          "bytes": 131
+        }
+      ],
+      "threads": [
+        {
+          "tid": 2189,
+          "comm": "WORKER1",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.14477139528274052,
+          "cpu_core_fraction_p99": 0.2376368901110126,
+          "cpu_core_fraction_max": 0.2616778813609107,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.003133579498693309,
+          "observed_cpus": [
+            13,
+            18,
+            19
+          ],
+          "observed_states": {
+            "S": 2056,
+            "R": 340
+          }
+        },
+        {
+          "tid": 2185,
+          "comm": "WORKER0",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.14079352289030733,
+          "cpu_core_fraction_p99": 0.2333556815223189,
+          "cpu_core_fraction_max": 0.25749824231580626,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.00025176075123759716,
+          "observed_cpus": [
+            15,
+            18
+          ],
+          "observed_states": {
+            "S": 2041,
+            "R": 355
+          }
+        },
+        {
+          "tid": 2173,
+          "comm": "ZMQbg/IO/0",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.04931136263496119,
+          "cpu_core_fraction_p99": 0.05504576656593142,
+          "cpu_core_fraction_max": 0.056553240051035805,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.014559004213830568,
+          "observed_cpus": [
+            8,
+            12,
+            13,
+            15,
+            16,
+            18,
+            19
+          ],
+          "observed_states": {
+            "S": 2248,
+            "R": 148
+          }
+        },
+        {
+          "tid": 2161,
+          "comm": "srsue",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.03664443815965325,
+          "cpu_core_fraction_p99": 0.042466205784648305,
+          "cpu_core_fraction_max": 0.044001935018905924,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.03318042871613382,
+          "observed_cpus": [
+            8,
+            16,
+            19
+          ],
+          "observed_states": {
+            "S": 2233,
+            "R": 161,
+            "D": 2
+          }
+        },
+        {
+          "tid": 2181,
+          "comm": "SYNC",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.027852095924877127,
+          "cpu_core_fraction_p99": 0.03055255347402444,
+          "cpu_core_fraction_max": 0.03194214550445176,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0011515169800091248,
+          "observed_cpus": [
+            12,
+            13,
+            16
+          ],
+          "observed_states": {
+            "S": 2334,
+            "R": 62
+          }
+        },
+        {
+          "tid": 2175,
+          "comm": "srsue",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.020419882333780663,
+          "cpu_core_fraction_p99": 0.02441498301937931,
+          "cpu_core_fraction_max": 0.028773722205492052,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0011314487382095807,
+          "observed_cpus": [
+            15,
+            16
+          ],
+          "observed_states": {
+            "S": 2349,
+            "R": 47
+          }
+        },
+        {
+          "tid": 2199,
+          "comm": "STACK",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.014836267374010796,
+          "cpu_core_fraction_p99": 0.018892589430005425,
+          "cpu_core_fraction_max": 0.021070150350873063,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.04386662295310377,
+          "observed_cpus": [
+            8,
+            9,
+            12,
+            15,
+            19
+          ],
+          "observed_states": {
+            "S": 2245,
+            "R": 151
+          }
+        },
+        {
+          "tid": 2193,
+          "comm": "WORKER2",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0008999957664483495,
+          "cpu_core_fraction_p99": 0.0182699257960459,
+          "cpu_core_fraction_max": 0.06335312521099284,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 7.163382895795451e-05,
+          "observed_cpus": [
+            8
+          ],
+          "observed_states": {
+            "S": 2392,
+            "R": 4
+          }
+        },
+        {
+          "tid": 2208,
+          "comm": "GW",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0005155628227183434,
+          "cpu_core_fraction_p99": 0.0010370990295007888,
+          "cpu_core_fraction_max": 0.0012632851886837868,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.00022931466530711725,
+          "observed_cpus": [
+            9
+          ],
+          "observed_states": {
+            "S": 2394,
+            "R": 2
+          }
+        },
+        {
+          "tid": 2200,
+          "comm": "METRICS_HUB",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.00012136640931856461,
+          "cpu_core_fraction_p99": 0.0025585137075408936,
+          "cpu_core_fraction_max": 0.002881238892576494,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 1.9869488555237208e-06,
+          "observed_cpus": [
+            16
+          ],
+          "observed_states": {
+            "S": 2395,
+            "R": 1
+          }
+        },
+        {
+          "tid": 2154,
+          "comm": "srsue",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 4.002443479021734e-06,
+          "cpu_core_fraction_p99": 8.60676837230243e-05,
+          "cpu_core_fraction_max": 0.00012818300658086002,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 3.037091301414922e-05,
+          "observed_cpus": [
+            18
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2164,
+          "comm": "TASKWORKER0",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            15
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2165,
+          "comm": "TASKWORKER1",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            16
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2170,
+          "comm": "PHY_CMD",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            12
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2171,
+          "comm": "PHY_CMD",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            8
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        },
+        {
+          "tid": 2172,
+          "comm": "ZMQbg/Reaper",
+          "samples": 2396,
+          "cpu_core_fraction_mean": 0.0,
+          "cpu_core_fraction_p99": 0.0,
+          "cpu_core_fraction_max": 0.0,
+          "samples_over_90pct": 0,
+          "wait_core_fraction_mean": 0.0,
+          "observed_cpus": [
+            14
+          ],
+          "observed_states": {
+            "S": 2396
+          }
+        }
+      ],
+      "cpu_cores_mean": 0.43616989204229517,
+      "poll_gap_events_note": "Published subset: gaps above 5 ms and all gNB RX-port gaps; full data retained remotely."
+    }
+  },
+  "ports": {
+    "2000": {
+      "peer": "gnb",
+      "direction": "stack_tx_to_broker",
+      "requester": "broker",
+      "responder": "gnb",
+      "matched_full_run_transactions": 140589,
+      "matched_full_run_iq_samples": 3241382700,
+      "measurement_transactions": 119761,
+      "stages": {
+        "responder_pre_reply": {
+          "count": 119761,
+          "median_ms": 0.896126,
+          "p99_ms": 1.4729095999999968,
+          "max_ms": 9.711696,
+          "gt_1ms": 28306,
+          "gt_5ms": 14
+        },
+        "request_delivery": {
+          "count": 119761,
+          "median_ms": 0.010994,
+          "p99_ms": 0.23202959999999975,
+          "max_ms": 3.289296,
+          "gt_1ms": 27,
+          "gt_5ms": 0
+        },
+        "reply_delivery": {
+          "count": 119761,
+          "median_ms": 0.037991,
+          "p99_ms": 0.30121019999999943,
+          "max_ms": 3.666898,
+          "gt_1ms": 24,
+          "gt_5ms": 0
+        },
+        "round_trip": {
+          "count": 119761,
+          "median_ms": 0.981356,
+          "p99_ms": 1.6497539999999982,
+          "max_ms": 9.827543,
+          "gt_1ms": 53244,
+          "gt_5ms": 16
+        },
+        "requester_next_request_gap": {
+          "count": 119761,
+          "median_ms": 0.011158,
+          "p99_ms": 0.18716379999999874,
+          "max_ms": 2.543692,
+          "gt_1ms": 1,
+          "gt_5ms": 0
+        }
+      },
+      "identical_message_lengths": true
+    },
+    "2001": {
+      "peer": "gnb",
+      "direction": "broker_to_stack_rx",
+      "requester": "gnb",
+      "responder": "broker",
+      "matched_full_run_transactions": 162109,
+      "matched_full_run_iq_samples": 3241359373,
+      "measurement_transactions": 134887,
+      "stages": {
+        "responder_pre_reply": {
+          "count": 134887,
+          "median_ms": 0.792963,
+          "p99_ms": 1.2325293199999987,
+          "max_ms": 4.319073,
+          "gt_1ms": 9384,
+          "gt_5ms": 0
+        },
+        "request_delivery": {
+          "count": 134887,
+          "median_ms": 0.02398,
+          "p99_ms": 0.32171689999999875,
+          "max_ms": 3.664892,
+          "gt_1ms": 46,
+          "gt_5ms": 0
+        },
+        "reply_delivery": {
+          "count": 134887,
+          "median_ms": 0.038291,
+          "p99_ms": 0.25926647999999874,
+          "max_ms": 9.23244,
+          "gt_1ms": 94,
+          "gt_5ms": 6
+        },
+        "round_trip": {
+          "count": 134887,
+          "median_ms": 0.931344,
+          "p99_ms": 1.4019691799999978,
+          "max_ms": 9.402778,
+          "gt_1ms": 36921,
+          "gt_5ms": 7
+        },
+        "requester_next_request_gap": {
+          "count": 134887,
+          "median_ms": 0.040247,
+          "p99_ms": 0.05250941999999995,
+          "max_ms": 3.121161,
+          "gt_1ms": 7,
+          "gt_5ms": 0
+        }
+      },
+      "identical_message_lengths": true
+    },
+    "2100": {
+      "peer": "ue0",
+      "direction": "broker_to_stack_rx",
+      "requester": "ue0",
+      "responder": "broker",
+      "matched_full_run_transactions": 140686,
+      "matched_full_run_iq_samples": 3241336620,
+      "measurement_transactions": 119831,
+      "stages": {
+        "responder_pre_reply": {
+          "count": 119831,
+          "median_ms": 0.838781,
+          "p99_ms": 1.163576,
+          "max_ms": 9.513271,
+          "gt_1ms": 10427,
+          "gt_5ms": 7
+        },
+        "request_delivery": {
+          "count": 119831,
+          "median_ms": 0.033926,
+          "p99_ms": 0.33758879999999986,
+          "max_ms": 2.277494,
+          "gt_1ms": 5,
+          "gt_5ms": 0
+        },
+        "reply_delivery": {
+          "count": 119831,
+          "median_ms": 0.047008,
+          "p99_ms": 0.3659968999999999,
+          "max_ms": 4.179635,
+          "gt_1ms": 16,
+          "gt_5ms": 0
+        },
+        "round_trip": {
+          "count": 119831,
+          "median_ms": 0.988745,
+          "p99_ms": 1.3923347,
+          "max_ms": 9.651951,
+          "gt_1ms": 53831,
+          "gt_5ms": 8
+        },
+        "requester_next_request_gap": {
+          "count": 119831,
+          "median_ms": 0.011404,
+          "p99_ms": 0.035157599999999976,
+          "max_ms": 2.263816,
+          "gt_1ms": 5,
+          "gt_5ms": 0
+        }
+      },
+      "identical_message_lengths": true
+    },
+    "2101": {
+      "peer": "ue0",
+      "direction": "stack_tx_to_broker",
+      "requester": "broker",
+      "responder": "ue0",
+      "matched_full_run_transactions": 140882,
+      "matched_full_run_iq_samples": 3241405453,
+      "measurement_transactions": 120023,
+      "stages": {
+        "responder_pre_reply": {
+          "count": 120023,
+          "median_ms": 7.1e-05,
+          "p99_ms": 0.007150779999999999,
+          "max_ms": 0.682642,
+          "gt_1ms": 0,
+          "gt_5ms": 0
+        },
+        "request_delivery": {
+          "count": 120023,
+          "median_ms": 0.911705,
+          "p99_ms": 1.5897509399999996,
+          "max_ms": 9.514214,
+          "gt_1ms": 44566,
+          "gt_5ms": 7
+        },
+        "reply_delivery": {
+          "count": 120023,
+          "median_ms": 0.037474,
+          "p99_ms": 0.31463433999999996,
+          "max_ms": 3.824161,
+          "gt_1ms": 9,
+          "gt_5ms": 0
+        },
+        "round_trip": {
+          "count": 120023,
+          "median_ms": 0.979545,
+          "p99_ms": 1.7140552799999997,
+          "max_ms": 9.577266,
+          "gt_1ms": 56069,
+          "gt_5ms": 8
+        },
+        "requester_next_request_gap": {
+          "count": 120023,
+          "median_ms": 0.011021,
+          "p99_ms": 0.16876021999999988,
+          "max_ms": 0.661672,
+          "gt_1ms": 0,
+          "gt_5ms": 0
+        }
+      },
+      "identical_message_lengths": true
+    },
+    "2102": {
+      "peer": "ue1",
+      "direction": "broker_to_stack_rx",
+      "requester": "ue1",
+      "responder": "broker",
+      "matched_full_run_transactions": 140698,
+      "matched_full_run_iq_samples": 3241359660,
+      "measurement_transactions": 119831,
+      "stages": {
+        "responder_pre_reply": {
+          "count": 119831,
+          "median_ms": 0.840462,
+          "p99_ms": 1.1522347,
+          "max_ms": 9.704748,
+          "gt_1ms": 9667,
+          "gt_5ms": 7
+        },
+        "request_delivery": {
+          "count": 119831,
+          "median_ms": 0.037579,
+          "p99_ms": 0.33347449999999995,
+          "max_ms": 2.479192,
+          "gt_1ms": 4,
+          "gt_5ms": 0
+        },
+        "reply_delivery": {
+          "count": 119831,
+          "median_ms": 0.043373,
+          "p99_ms": 0.3482208999999997,
+          "max_ms": 3.485076,
+          "gt_1ms": 20,
+          "gt_5ms": 0
+        },
+        "round_trip": {
+          "count": 119831,
+          "median_ms": 0.987546,
+          "p99_ms": 1.3836313999999998,
+          "max_ms": 10.058379,
+          "gt_1ms": 53450,
+          "gt_5ms": 7
+        },
+        "requester_next_request_gap": {
+          "count": 119831,
+          "median_ms": 0.011391,
+          "p99_ms": 0.016514699999999997,
+          "max_ms": 0.071248,
+          "gt_1ms": 0,
+          "gt_5ms": 0
+        }
+      },
+      "identical_message_lengths": true
+    },
+    "2103": {
+      "peer": "ue1",
+      "direction": "stack_tx_to_broker",
+      "requester": "broker",
+      "responder": "ue1",
+      "matched_full_run_transactions": 140893,
+      "matched_full_run_iq_samples": 3241428495,
+      "measurement_transactions": 120025,
+      "stages": {
+        "responder_pre_reply": {
+          "count": 120025,
+          "median_ms": 6.1e-05,
+          "p99_ms": 0.006984,
+          "max_ms": 1.201283,
+          "gt_1ms": 1,
+          "gt_5ms": 0
+        },
+        "request_delivery": {
+          "count": 120025,
+          "median_ms": 0.898262,
+          "p99_ms": 1.568013119999999,
+          "max_ms": 10.328468,
+          "gt_1ms": 43665,
+          "gt_5ms": 7
+        },
+        "reply_delivery": {
+          "count": 120025,
+          "median_ms": 0.036528,
+          "p99_ms": 0.28231407999999975,
+          "max_ms": 3.589764,
+          "gt_1ms": 7,
+          "gt_5ms": 0
+        },
+        "round_trip": {
+          "count": 120025,
+          "median_ms": 0.969333,
+          "p99_ms": 1.6870214399999999,
+          "max_ms": 10.391663,
+          "gt_1ms": 54415,
+          "gt_5ms": 8
+        },
+        "requester_next_request_gap": {
+          "count": 120025,
+          "median_ms": 0.011001,
+          "p99_ms": 0.1158030799999997,
+          "max_ms": 2.108045,
+          "gt_1ms": 1,
+          "gt_5ms": 0
+        }
+      },
+      "identical_message_lengths": true
+    }
+  },
+  "events": [
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265031320263170,
+      "end_ns": 265031325350156,
+      "ms": 5.086986,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265031362117933,
+      "end_ns": 265031367167207,
+      "ms": 5.049274,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265046098481664,
+      "end_ns": 265046104579933,
+      "ms": 6.098269,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265048752003658,
+      "end_ns": 265048757084647,
+      "ms": 5.080989,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265066807874605,
+      "end_ns": 265066813005492,
+      "ms": 5.130887,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265069136973819,
+      "end_ns": 265069143714765,
+      "ms": 6.740946,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265080947424407,
+      "end_ns": 265080953447026,
+      "ms": 6.022619,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265102800398081,
+      "end_ns": 265102808023491,
+      "ms": 7.62541,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265108304647760,
+      "end_ns": 265108310398552,
+      "ms": 5.750792,
+      "samples": 92160,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265109944333231,
+      "end_ns": 265109954044927,
+      "ms": 9.711696,
+      "samples": 46080,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265109958644191,
+      "end_ns": 265109965021772,
+      "ms": 6.377581,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265115217668761,
+      "end_ns": 265115224836656,
+      "ms": 7.167895,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265123560659221,
+      "end_ns": 265123566315245,
+      "ms": 5.656024,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2000,
+      "peer": "gnb",
+      "stage": "responder_pre_reply",
+      "start_ns": 265138257277928,
+      "end_ns": 265138264443870,
+      "ms": 7.165942,
+      "samples": 23040,
+      "owner": "gnb"
+    },
+    {
+      "port": 2100,
+      "peer": "ue0",
+      "stage": "responder_pre_reply",
+      "start_ns": 265046099735741,
+      "end_ns": 265046104993191,
+      "ms": 5.25745,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2100,
+      "peer": "ue0",
+      "stage": "responder_pre_reply",
+      "start_ns": 265069138375971,
+      "end_ns": 265069144091926,
+      "ms": 5.715955,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2100,
+      "peer": "ue0",
+      "stage": "responder_pre_reply",
+      "start_ns": 265102800941979,
+      "end_ns": 265102808214586,
+      "ms": 7.272607,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2100,
+      "peer": "ue0",
+      "stage": "responder_pre_reply",
+      "start_ns": 265109944917524,
+      "end_ns": 265109954430795,
+      "ms": 9.513271,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2100,
+      "peer": "ue0",
+      "stage": "responder_pre_reply",
+      "start_ns": 265109959421953,
+      "end_ns": 265109965442430,
+      "ms": 6.020477,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2100,
+      "peer": "ue0",
+      "stage": "responder_pre_reply",
+      "start_ns": 265115218943915,
+      "end_ns": 265115225391850,
+      "ms": 6.447935,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2100,
+      "peer": "ue0",
+      "stage": "responder_pre_reply",
+      "start_ns": 265138258172304,
+      "end_ns": 265138264785186,
+      "ms": 6.612882,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2102,
+      "peer": "ue1",
+      "stage": "responder_pre_reply",
+      "start_ns": 265046099547552,
+      "end_ns": 265046104887246,
+      "ms": 5.339694,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2102,
+      "peer": "ue1",
+      "stage": "responder_pre_reply",
+      "start_ns": 265069138471128,
+      "end_ns": 265069144199632,
+      "ms": 5.728504,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2102,
+      "peer": "ue1",
+      "stage": "responder_pre_reply",
+      "start_ns": 265102801492382,
+      "end_ns": 265102808392395,
+      "ms": 6.900013,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2102,
+      "peer": "ue1",
+      "stage": "responder_pre_reply",
+      "start_ns": 265109944780815,
+      "end_ns": 265109954485563,
+      "ms": 9.704748,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2102,
+      "peer": "ue1",
+      "stage": "responder_pre_reply",
+      "start_ns": 265109958867339,
+      "end_ns": 265109965402846,
+      "ms": 6.535507,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2102,
+      "peer": "ue1",
+      "stage": "responder_pre_reply",
+      "start_ns": 265115219024830,
+      "end_ns": 265115225327308,
+      "ms": 6.302478,
+      "samples": 23040,
+      "owner": "broker"
+    },
+    {
+      "port": 2102,
+      "peer": "ue1",
+      "stage": "responder_pre_reply",
+      "start_ns": 265138258573089,
+      "end_ns": 265138264822751,
+      "ms": 6.249662,
+      "samples": 23040,
+      "owner": "broker"
+    }
+  ],
+  "ue_delay_correlations": {
+    "ue0": [
+      {
+        "start_ns": 265046100299094,
+        "end_ns": 265046105880515,
+        "tx_request_acceptance_delay_ms": 5.581421,
+        "overlap_with_pending_downlink_reply_fraction": 0.9932475976995823,
+        "ue_called_request_recv_after_broker_request_ms": 5.58095
+      },
+      {
+        "start_ns": 265069139200530,
+        "end_ns": 265069144703906,
+        "tx_request_acceptance_delay_ms": 5.503376,
+        "overlap_with_pending_downlink_reply_fraction": 0.9975471419724911,
+        "ue_called_request_recv_after_broker_request_ms": 5.502898
+      },
+      {
+        "start_ns": 265102801591237,
+        "end_ns": 265102809320055,
+        "tx_request_acceptance_delay_ms": 7.728818,
+        "overlap_with_pending_downlink_reply_fraction": 0.9981826457810237,
+        "ue_called_request_recv_after_broker_request_ms": 7.728059
+      },
+      {
+        "start_ns": 265109945638047,
+        "end_ns": 265109955152261,
+        "tx_request_acceptance_delay_ms": 9.514214,
+        "overlap_with_pending_downlink_reply_fraction": 0.9966115960813999,
+        "ue_called_request_recv_after_broker_request_ms": 9.512922
+      },
+      {
+        "start_ns": 265109960288456,
+        "end_ns": 265109966103076,
+        "tx_request_acceptance_delay_ms": 5.81462,
+        "overlap_with_pending_downlink_reply_fraction": 0.9964461994076999,
+        "ue_called_request_recv_after_broker_request_ms": 5.814054
+      },
+      {
+        "start_ns": 265115219490408,
+        "end_ns": 265115226028589,
+        "tx_request_acceptance_delay_ms": 6.538181,
+        "overlap_with_pending_downlink_reply_fraction": 0.9915091062789483,
+        "ue_called_request_recv_after_broker_request_ms": 6.537242
+      },
+      {
+        "start_ns": 265138258830534,
+        "end_ns": 265138265948346,
+        "tx_request_acceptance_delay_ms": 7.117812,
+        "overlap_with_pending_downlink_reply_fraction": 0.9945546468493408,
+        "ue_called_request_recv_after_broker_request_ms": 7.117278
+      }
+    ],
+    "ue1": [
+      {
+        "start_ns": 265046099749323,
+        "end_ns": 265046105218927,
+        "tx_request_acceptance_delay_ms": 5.469604,
+        "overlap_with_pending_downlink_reply_fraction": 0.9974826331120132,
+        "ue_called_request_recv_after_broker_request_ms": 5.469078
+      },
+      {
+        "start_ns": 265069138698929,
+        "end_ns": 265069144610575,
+        "tx_request_acceptance_delay_ms": 5.911646,
+        "overlap_with_pending_downlink_reply_fraction": 0.9976277334603594,
+        "ue_called_request_recv_after_broker_request_ms": 5.91135
+      },
+      {
+        "start_ns": 265102801893193,
+        "end_ns": 265102808630093,
+        "tx_request_acceptance_delay_ms": 6.7369,
+        "overlap_with_pending_downlink_reply_fraction": 0.9979668690347192,
+        "ue_called_request_recv_after_broker_request_ms": 6.736494
+      },
+      {
+        "start_ns": 265109944859875,
+        "end_ns": 265109955188343,
+        "tx_request_acceptance_delay_ms": 10.328468,
+        "overlap_with_pending_downlink_reply_fraction": 0.9965890391488844,
+        "ue_called_request_recv_after_broker_request_ms": 10.327041
+      },
+      {
+        "start_ns": 265109959294511,
+        "end_ns": 265109966053653,
+        "tx_request_acceptance_delay_ms": 6.759142,
+        "overlap_with_pending_downlink_reply_fraction": 0.997924736601184,
+        "ue_called_request_recv_after_broker_request_ms": 6.758368
+      },
+      {
+        "start_ns": 265115219425545,
+        "end_ns": 265115225627547,
+        "tx_request_acceptance_delay_ms": 6.202002,
+        "overlap_with_pending_downlink_reply_fraction": 0.9969703331279158,
+        "ue_called_request_recv_after_broker_request_ms": 6.201678
+      },
+      {
+        "start_ns": 265138259025012,
+        "end_ns": 265138265096398,
+        "tx_request_acceptance_delay_ms": 6.071386,
+        "overlap_with_pending_downlink_reply_fraction": 0.9978566673243968,
+        "ue_called_request_recv_after_broker_request_ms": 6.071087
+      }
+    ]
+  },
+  "observer": {
+    "sample_count_in_measurement": 2397,
+    "read_cost_ms": {
+      "count": 4595,
+      "median_ms": 2.649156,
+      "p99_ms": 3.7006321600000165,
+      "max_ms": 8.707061,
+      "gt_1ms": 3061,
+      "gt_5ms": 3
+    },
+    "scheduler_wait_statistics_enabled": false,
+    "note": "Wait counters unavailable when kernel sched_schedstats is disabled; zero is not proof of no scheduler delay."
+  }
+}

@@ -37,6 +37,7 @@ add_library(ocudu_gpu_channel_lib
   src/mutable_params.cpp
   src/processing.cpp
   src/ring.cpp
+  src/sample_executor.cpp
 )
 
 # The GPU backend is the primary target; it is compiled in whenever the build
@@ -150,6 +151,11 @@ if(OCUDU_GPU_CHANNEL_BUILD_TESTS)
   add_executable(test_processing tests/core/test_processing.cpp)
   target_link_libraries(test_processing PRIVATE ocudu_gpu_channel_lib)
   add_test(NAME processing COMMAND test_processing)
+
+  add_executable(test_cpu_parallel tests/core/test_cpu_parallel.cpp)
+  target_link_libraries(test_cpu_parallel PRIVATE ocudu_gpu_channel_lib)
+  add_test(NAME cpu_parallel COMMAND test_cpu_parallel)
+  set_tests_properties(cpu_parallel PROPERTIES TIMEOUT 60)
 
   add_executable(test_ring tests/core/test_ring.cpp)
   target_link_libraries(test_ring PRIVATE ocudu_gpu_channel_lib)

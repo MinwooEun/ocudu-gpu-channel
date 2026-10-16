@@ -4,9 +4,11 @@
 
 ## Current Objective
 
-None; the project logo, documentation GitHub links and local docs preview are published to `origin/main`. Strict real-time qualification remains failed.
+Project review and corrections are complete; [validation and remaining limits](docs/reports/validation/project-review-20261016.md) are recorded. Git records the commit and publication state.
 
 ## Repository State
+
+- Local presentation artifacts remain in ignored `slides/`; the directory is also excluded from uploads and Docker builds. Vocabulary review is complete, with 80 definitions and six unresolved wording or protected-name records.
 
 - README contributor credits include Quanlong Zhao; Markdown rendering and whitespace checks passed on RTX.
 
@@ -45,6 +47,7 @@ The latest row covers combined-tree checks on RTX 5090; other rows are historica
 
 | Scope / revision | Recorded result | Limit |
 |---|---|---|
+| Project review, 2026-10-16 | CPU/CUDA 13/13 each; GPU 9/9; 221 Python tests; frontend, six browser views, 99 shell scripts and strict documentation checks passed | Three Python skips; no new live-radio, hardware or Docker qualification; [report](docs/reports/validation/project-review-20261016.md) |
 | Full validation, 2026-10-09 | CPU/CUDA 12/12 each; GPU 9/9; 222 Python tests; frontend, Docker, packaging, documentation and five live connectivity configurations passed | Live runs recorded 2–11 starvations; OAI/CMX/GB10/Orin untested; [report](docs/reports/validation/full-validation-20261009.md) |
 | Text cleanup, 2026-10-09 | Strict build; 114 fragment routes, 71 evidence files, 22 diagrams, 18 browser views; 23 tests and 19 subtests passed | Exactly 26 evidence path fields normalized; measurements preserved; existing commits unchanged |
 | Whole-project cleanup, 2026-10-09 | Strict documentation and browser checks; 71 evidence hashes, 8 pixel-identical diagram views, 98 shell scripts, transfer/Docker checks, 4 tests and 19 subtests passed | Organization and upload filtering only; runtime and live-radio tests unnecessary and not repeated |
@@ -61,6 +64,56 @@ The latest row covers combined-tree checks on RTX 5090; other rows are historica
 Reports: [integration guide](docs/history/milestones/sionna-integration-20260914.md), [merge validation](docs/reports/validation/main-merge-validation.md), [channel fix validation](docs/reports/validation/sionna-merge-fixes-validation.md), [metrics recovery](docs/reports/validation/metrics-recovery-validation.md), and [rank-1 results](docs/history/translations/ko/rank1-feasibility-report.md).
 
 ## Completed Changes
+
+### Project review — 2026-10-16
+
+- Fixed the scheduler dashboard's single-cell crash by rendering the configured cells throughout setup, metrics, charts and scene labels. The regression fails on the original dashboard and passes for both execution modes.
+
+- Restored report navigation and downloadable evidence logs; replaced the obsolete publication count with inventory and file-hash checks. All 287 hashes in the new artifact manifests match; CPU/CUDA parity wording now distinguishes numerical tolerance from bit-exact output.
+
+- Validated CPU and CUDA CTest, 13/13 each, nine GPU stages, 221 Python tests and 99 shell scripts on RTX. Three environment-dependent Python skips remain; live-radio timing qualification was not repeated.
+
+- Fixed tablet-width overflow in scheduler source labels. Chromium checks pass for single- and two-cell dashboards at 1440, 700 and 390 pixels; strict documentation and publication checks pass with the report logs included.
+
+### Scheduler brief-burst comparison — 2026-10-14
+
+- Four matched sequential runs delivered every packet without full RLC queues; QoS lowered control/video delay by 24%, increasing download delay. [Evidence](docs/reports/experiments/scheduler-bursty-load-20261014/README.md) retains timing misses and worst delays; the dedicated container was stopped.
+
+### Scheduler contention on RTX — 2026-10-14
+
+- Raised video bursts to 40 Mb/s in four sequential runs: QoS lost 68%/44% fewer control/video packets, with about 12% lower delay. [Evidence](docs/reports/experiments/scheduler-priority-load-20261014/README.md) records matched resources, download tradeoff and remaining starvations; experiment container stopped.
+
+### Scheduler benchmark on RTX — 2026-10-13
+
+- Repeated 70 Mb/s bulk-load tests sequentially: QoS control/video delay averaged 9%/12% lower; bulk delivery remained about 71% for both. Earlier settings and values matched; [evidence](docs/reports/experiments/scheduler-high-load-20261013/README.md) records OCUDU queue drops and remaining timing misses.
+
+- Audited sequential RR/QoS runtimes: no channel overflow/gaps, but 15/9 starvations and OCUDU TX pauses up to 9.7 ms; QoS lost one control packet. Restored sources passed 13/13 RTX tests; [evidence](docs/reports/experiments/runtime-load-audit-20261013/README.md) records counter limitations.
+
+- Traced two 120-second single-cell runs: pacing adjustments explain 123–132 ms of lag, predominantly following IQ input/output waits. Rare processing tails remain; [evidence](docs/reports/experiments/scheduler-pacing-trace-20261013/README.md) distinguishes measured stages from unresolved initiating causes.
+
+- Fixed the broker summary's constant 5.005 ms maximum using existing exact timing data. The regression rejects the original implementation; RTX CTest passes 13/13, the source mirror is restored, and the dedicated container is stopped.
+
+- Extracted the optional srsUE receive-sleep switch and verified corrected runs at 998.8/999.1 slots/s, with 8.9/8.7 ms RR/QoS delay and complete packet delivery. Timing waits remain; tests and [evidence](docs/reports/experiments/scheduler-broker-paced-20261013/README.md) are retained.
+
+- Added opt-in single-cell execution, traffic filtering and analysis. RTX tests ran 28 cases with one skip; RR/QoS each completed 120 valid seconds, with delays 10.8/13.5 ms and IQ progress below nominal ([baseline](docs/reports/experiments/scheduler-single-cell-20261013/README.md)).
+
+- Audited saved RTX IQ counters: 20.76–21.04 MS/s versus 23.04 nominal confirms slowdown. Concurrent cells shared CPU sets; real-time priority requests failed; contention remains an unproven cause ([audit](docs/reports/experiments/scheduler-20261013/radio-speed-audit.md)).
+
+- Fixed the scheduler renderer's missing PRACH-root input for both independent cells. RTX CPU/CUDA tests passed 13/13; scheduler tests passed with one skip, and both live policy assignments completed with all four UEs attached.
+
+- Measured two 120-second swapped scheduler runs: mean per-second bulk-DL p99 was 34.286 ms for RR and 27.865 ms for QoS. Radio speed was 90–91% of real time; receive starvations remain ([evidence](docs/reports/experiments/scheduler-20261013/README.md)).
+
+### CPU sample workers — 2026-10-13
+
+- Added opt-in `runtime.cpu_threads: 24`; defaults remain serial. RTX tests pass 13/13 with bit-exact prior-revision fingerprints and broker loopback; matched TDL-A p99 improves 56.85→9.79 ms, versus CUDA 0.231 ms ([evidence](docs/reports/performance/2026-10-13-cpu-24/README.md)).
+
+### Vocabulary and slide review — 2026-10-13
+
+- Replaced page 4's unexplained producer caption and reconciled page 7's TX/RX labels, channel-response sentence and equation definitions. The 25-page PDF is synchronized; package checks passed and both changed pages were visually inspected.
+
+- Created `AGENT_VOCABULARY.md` with 82 entries, seven unmerged records and one harness preference. RTX checks passed for the exact template header, entry format, preference scope, whitespace and progress brevity; mission and control files remain unchanged.
+
+- Reviewed vocabulary against the broker, configuration and IQ code; clarified topology, sample timing, taps, IQ power, memory and superposition. Removed two generic definitions and narrowed unresolved records to six; template and dependency-order checks passed on RTX.
 
 ### Project logo and docs preview — 2026-10-09
 
@@ -236,4 +289,4 @@ Historical ledgers:
 
 ## Next Resume Point
 
-No queued work remains. Contributor credits are current; strict timing and hardware qualification limits remain documented.
+No further review fixes are queued. Strict zero-starvation qualification remains failed; the existing scheduler reports retain the unresolved IQ handoff pauses and separately confirmed full-RLC-queue packet drops.

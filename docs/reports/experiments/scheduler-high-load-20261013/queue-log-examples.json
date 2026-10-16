@@ -1,0 +1,22 @@
+{
+  "20261013T154902Z": [
+    "2026-10-13T15:49:23.122852 [PDCP    ] [I] ue=1 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full",
+    "2026-10-13T15:49:23.137699 [PDCP    ] [I] ue=1 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full",
+    "2026-10-13T15:49:23.146740 [PDCP    ] [I] ue=1 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full"
+  ],
+  "20261013T155148Z": [
+    "2026-10-13T15:52:09.784703 [PDCP    ] [I] ue=0 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full",
+    "2026-10-13T15:52:09.799207 [PDCP    ] [I] ue=0 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full",
+    "2026-10-13T15:52:09.814410 [PDCP    ] [I] ue=0 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full"
+  ],
+  "20261013T155436Z": [
+    "2026-10-13T15:54:57.336086 [PDCP    ] [I] ue=1 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full",
+    "2026-10-13T15:54:57.350359 [PDCP    ] [I] ue=1 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full",
+    "2026-10-13T15:54:57.367373 [PDCP    ] [I] ue=1 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full"
+  ],
+  "20261013T155722Z": [
+    "2026-10-13T15:57:43.566456 [PDCP    ] [I] ue=0 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full",
+    "2026-10-13T15:57:43.578946 [PDCP    ] [I] ue=0 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full",
+    "2026-10-13T15:57:43.596228 [PDCP    ] [I] ue=0 DRB1 DL: Dropping SDU. Cause: RLC SDU queue is full"
+  ]
+}

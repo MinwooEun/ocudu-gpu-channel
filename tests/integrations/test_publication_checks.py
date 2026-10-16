@@ -1,5 +1,6 @@
 """Public copies must redact only declared metadata and reject text disclosures."""
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -29,7 +30,11 @@ class PublicationChecksTest(unittest.TestCase):
         inventory = json.loads((ROOT / 'docs/_compat/inventory.json').read_text())
         expected, errors = checks.evidence_hashes(ROOT, inventory)
         self.assertEqual(errors, [])
-        self.assertEqual(len(expected), 71)
+        evidence = {r['destination'] for r in inventory['files'] if r['kind'] == 'evidence'}
+        self.assertTrue(evidence)
+        self.assertEqual(set(expected), evidence)
+        for name, digest in expected.items():
+            self.assertEqual(hashlib.sha256((ROOT / name).read_bytes()).hexdigest(), digest, name)
 
     def test_measurements_and_undeclared_fields_cannot_change(self):
         fields = [{'pointer': '/runs/0/path'}]

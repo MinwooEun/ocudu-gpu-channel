@@ -41,6 +41,8 @@ Reusable workflow and preferences. File ownership and update rules are defined i
 ## Validation and Evidence
 
 - Pair data-path changes with timing, throughput, buffering and IQ-continuity checks. Strict real-time gates fail on any starvation, queue overflow, sequence gap or ZMQ error.
+- Verify radio speed using cumulative IQ sample progress against monotonic elapsed time. Distinguish configured pacing, achieved sample rate and OS thread priority; record shared resources before attributing slowdown or delay differences to a scheduler.
+- Inspect every pacing layer in a software-radio path. A per-block relative sleep adds processing and wake-up overhead to radio time; when the broker supplies the clock, test removal of redundant peer pacing without disabling the broker's rate limit.
 - Prove live connectivity with real gNB, UE and core processes, antenna mappings, registration, PDU sessions and traffic. Synthetic peers prove broker behavior only. Check both UEs, actual serving PCIs and both scheduler feeds in multi-gNB cases.
 - Exercise capabilities through the shipping top-level path and add regression coverage or mark them unproven. Inspect actual stack construction and event dispatch; component or alternate-stack tests alone are insufficient.
 - Assert nonzero work and expected parsed-record counts before evaluating thresholds. Recheck log parsers after producer renames.
@@ -58,6 +60,7 @@ Reusable workflow and preferences. File ownership and update rules are defined i
 ## Metrics and UI
 
 - On shared metric buses, update only the reporting producer's fields and maintain per-group timestamps. An absent field does not mean zero.
+- Before accepting zero runtime-fault counters, verify that the active backend emits them; corroborate uninstrumented waits with boundary timing.
 - Read producer serialization before formatting values. Map sentinels to “not reported,” identify clamp bounds, and explain ambiguous defaults.
 - Keep transport liveness, metric freshness and UE connectivity separate; cached or advancing telemetry alone does not prove working traffic.
 
@@ -77,6 +80,10 @@ Reusable workflow and preferences. File ownership and update rules are defined i
 - Use the README contributor table for public names, affiliations, profiles and roles. Use given-name/family-name order, Name (Affiliation) bylines and an expanded affiliation column. Propagate confirmed corrections to current docs; preserve Git authorship and historical evidence.
 - Keep rules short and general; record outcomes, evidence and unresolved limits concisely. Avoid repeating historical examples or superseded intermediate states; follow `AGENT.md` for ledger retention and updates.
 - Leave touched artifacts consistent, progress current and reusable lessons in this harness before handoff.
+
+## Reusable Preferences
+
+- Use `AGENT_VOCABULARY.md` as the wording authority for all documents and code; add missing words there before first use and apply its merge rule.
 
 ## Progress Entries
 

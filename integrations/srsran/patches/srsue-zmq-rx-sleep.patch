@@ -1,0 +1,40 @@
+diff --git a/lib/src/phy/rf/rf_zmq_imp.c b/lib/src/phy/rf/rf_zmq_imp.c
+index 976159890..6a4d9c05d 100644
+--- a/lib/src/phy/rf/rf_zmq_imp.c
++++ b/lib/src/phy/rf/rf_zmq_imp.c
+@@ -47,6 +47,7 @@ typedef struct {
+   uint32_t tx_freq_mhz[SRSRAN_MAX_CHANNELS];
+   uint32_t rx_freq_mhz[SRSRAN_MAX_CHANNELS];
+   bool     tx_off;
++  bool     rx_sleep; // sleep for the duration of every receive (lock-step pacing between ZMQ peers)
+   char     id[RF_PARAM_LEN];
+ 
+   // Server
+@@ -238,8 +239,16 @@ int rf_zmq_open_multi(char* args, void** h, uint32_t nof_channels)
+       perror("Mutex init");
+     }
+ 
++    handler->rx_sleep = true;
++
+     // parse args
+     if (args && strlen(args)) {
++      // rx_sleep=false when the far end is paced by a real radio, so the receive must not add its own delay
++      char rx_sleep[RF_PARAM_LEN] = {0};
++      if (parse_string(args, "rx_sleep", -1, rx_sleep) == SRSRAN_SUCCESS && strcmp(rx_sleep, "false") == 0) {
++        handler->rx_sleep = false;
++      }
++
+       // base_srate
+       parse_uint32(args, "base_srate", -1, &handler->base_srate);
+ 
+@@ -711,7 +728,9 @@ int rf_zmq_recv_with_time_multi(void* h, void** data, uint32_t nsamples, bool bl
+     rf_zmq_info(handler->id, " - next tx time: %d + %.3f\n", ts_tx.full_secs, ts_tx.frac_secs);
+ 
+     // Leave time for the Tx to transmit
+-    usleep((1000000UL * nsamples_baserate) / handler->base_srate);
++    if (handler->rx_sleep) {
++      usleep((1000000UL * nsamples_baserate) / handler->base_srate);
++    }
+ 
+     // check for tx gap if we're also transmitting on this radio
+     for (int i = 0; i < handler->nof_channels; i++) {

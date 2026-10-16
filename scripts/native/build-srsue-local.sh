@@ -15,6 +15,8 @@ set -euo pipefail
 # Patches (srsue-local-patches.lock.json):
 #   srsue-ra-contention.patch   multi-UE RACH: preamble 0 hard-coded, a UE that
 #                               lost contention still completed RA (S16)
+#   srsue-zmq-rx-sleep.patch    opt-in removal of the receive sleep when the
+#                               channel broker already paces IQ samples
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

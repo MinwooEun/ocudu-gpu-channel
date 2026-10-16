@@ -1,0 +1,7 @@
+event=worker_summary dev=gnb0_p0 puller[pulls=140422 idle=56 room_stall=0 acquired=3236336940] producer[slots=163326 stall=580357] rep[replies=163325 idle=23 row_spin=1060883]
+event=worker_summary dev=ue0_p0 puller[pulls=140662 idle=57 room_stall=0 acquired=3236336653] producer[slots=140466 stall=300046] rep[replies=140465 idle=55 row_spin=1038003]
+event=worker_summary dev=ue1_p0 puller[pulls=140671 idle=57 room_stall=0 acquired=3236336655] producer[slots=140471 stall=279049] rep[replies=140470 idle=55 row_spin=1051957]
+event=process_latency_summary node=gnb0 n=163326 p50_us=90 p95_us=190 p99_us=315 p999_us=530 max_us=5005
+event=process_latency_summary node=ue0 n=140466 p50_us=75 p95_us=190 p99_us=320 p999_us=515 max_us=5005
+event=process_latency_summary node=ue1 n=140471 p50_us=75 p95_us=190 p99_us=325 p999_us=545 max_us=5005
+event=stop tx_pulls=421755 rx_requests=444260 rx_starvations=8 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0 control_msgs_received=7914 control_updates_applied=5276 control_updates_rejected=0 control_batches_committed=1319 control_batches_aborted=0 telemetry_frames=282728 telemetry_drops=0 force_inert_warnings=0

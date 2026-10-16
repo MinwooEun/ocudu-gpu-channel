@@ -7,6 +7,7 @@
 #include "ocudu_gpu_channel/mutable_params.h"
 #include "ocudu_gpu_channel/processing.h"
 #include "ocudu_gpu_channel/runtime_control.h"
+#include "ocudu_gpu_channel/sample_executor.h"
 #include <array>
 #include <complex>
 #include <set>
@@ -44,6 +45,7 @@ public:
   std::unordered_map<std::string, BrokerLinkControl*> collect_control_links() override;
 
 private:
+  std::unique_ptr<SampleExecutor> sample_executor_;
   // Per-model-step running state (CFO phase, delay history, AWGN RNG).
   // Fat-struct pattern: one struct serves every step type; the field set used
   // depends on `step.type` at runtime. `delay_line` is shared by IntegerDelay /

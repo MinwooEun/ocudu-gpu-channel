@@ -1,0 +1,61 @@
+{
+  "brokers": {
+    "a": {
+      "control_batches_committed": 1320,
+      "rx_requests": 441343,
+      "rx_starvations": 16,
+      "tx_pulls": 421852,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    }
+  },
+  "each_ue_on_its_own_cell": 1,
+  "gnb_alive_at_stop": 1,
+  "measure_status": "completed",
+  "per_ue": {
+    "ue0": {
+      "camped_pci": 1,
+      "cell": "a",
+      "crashed": 0,
+      "expected_pci": 1,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 0
+    },
+    "ue1": {
+      "camped_pci": 1,
+      "cell": "a",
+      "crashed": 0,
+      "expected_pci": 1,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 0
+    }
+  },
+  "policy_check": {
+    "gnbs": {
+      "gnb0": {
+        "found_in_config_dump": [
+          "rr"
+        ],
+        "ok": true,
+        "policy_block": "      rr_sched: ~\n",
+        "requested": "rr"
+      }
+    },
+    "ok": true
+  },
+  "schedulers": {
+    "a": "rr"
+  },
+  "srsue_alive_at_stop": 1,
+  "status": "passed",
+  "timestamp": "20261013T164031Z"
+}

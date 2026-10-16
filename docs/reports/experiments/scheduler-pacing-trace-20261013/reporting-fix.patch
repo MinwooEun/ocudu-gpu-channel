@@ -1,0 +1,23 @@
+diff --git a/src/broker.cpp b/src/broker.cpp
+index 7acf99e..31e53e1 100644
+--- a/src/broker.cpp
++++ b/src/broker.cpp
+@@ -1800,7 +1800,8 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
+   // sampled once a second -- these percentiles cover EVERY slot the run
+   // processed, so they can be quoted as percentiles. `n` is the slot count they
+   // were computed from; quote it alongside any figure taken from this line.
+-  // Values are bucket upper edges at 5 us resolution.
++  // Percentiles are bucket upper edges at 5 us resolution; the maximum is
++  // the exact elapsed time already recorded by the receiver accumulator.
+   for (std::size_t n = 0; n != nodes.size(); ++n) {
+     const WorkerDiag& diag = producer_diag[n];
+     const std::uint64_t samples = process_sample_count(diag);
+@@ -1810,7 +1811,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
+               << " p95_us=" << process_percentile_us(diag, 0.95)
+               << " p99_us=" << process_percentile_us(diag, 0.99)
+               << " p999_us=" << process_percentile_us(diag, 0.999)
+-              << " max_us=" << process_percentile_us(diag, 1.0) << '\n';
++              << " max_us=" << slot_timing[n].calls.max_us << '\n';
+   }
+   std::cout.flush();
+ 

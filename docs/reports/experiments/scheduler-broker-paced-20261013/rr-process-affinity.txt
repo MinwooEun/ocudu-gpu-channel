@@ -1,0 +1,20 @@
+pid=12356
+Name:	gnb
+Threads:	13
+CapEff:	000001ffffffffff
+Cpus_allowed_list:	0-7
+pid=12413
+Name:	srsue
+Threads:	16
+CapEff:	000001ffffffffff
+Cpus_allowed_list:	8-19
+pid=12416
+Name:	srsue
+Threads:	16
+CapEff:	000001ffffffffff
+Cpus_allowed_list:	8-19
+pid=12291
+Name:	ocudu-gpu-chann
+Threads:	21
+CapEff:	000001ffffffffff
+Cpus_allowed_list:	20

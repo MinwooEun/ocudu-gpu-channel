@@ -1,0 +1,103 @@
+{
+  "brokers": {
+    "a": {
+      "control_batches_committed": 1322,
+      "rx_requests": 531587,
+      "rx_starvations": 22,
+      "tx_pulls": 477992,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    },
+    "b": {
+      "control_batches_committed": 1323,
+      "rx_requests": 502920,
+      "rx_starvations": 27,
+      "tx_pulls": 475516,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    }
+  },
+  "each_ue_on_its_own_cell": 1,
+  "gnb_alive_at_stop": 1,
+  "measure_status": "completed",
+  "per_ue": {
+    "ue0": {
+      "camped_pci": 1,
+      "cell": "a",
+      "crashed": 0,
+      "expected_pci": 1,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 0
+    },
+    "ue1": {
+      "camped_pci": 1,
+      "cell": "a",
+      "crashed": 0,
+      "expected_pci": 1,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 0
+    },
+    "ue2": {
+      "camped_pci": 2,
+      "cell": "b",
+      "crashed": 0,
+      "expected_pci": 2,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 0
+    },
+    "ue3": {
+      "camped_pci": 2,
+      "cell": "b",
+      "crashed": 0,
+      "expected_pci": 2,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 0
+    }
+  },
+  "policy_check": {
+    "gnbs": {
+      "gnb0": {
+        "found_in_config_dump": [
+          "rr"
+        ],
+        "ok": true,
+        "policy_block": "      rr_sched: ~\n",
+        "requested": "rr"
+      },
+      "gnb1": {
+        "found_in_config_dump": [
+          "qos"
+        ],
+        "ok": true,
+        "policy_block": "      qos_sched:\n        combine_function: gbr_prioritized\n        pf_fairness_coeff: 2.0\n        prio_enabled: true\n        pdb_enabled: true\n        gbr_enabled: true\n",
+        "requested": "qos"
+      }
+    },
+    "ok": true
+  },
+  "schedulers": {
+    "a": "rr",
+    "b": "qos"
+  },
+  "srsue_alive_at_stop": 1,
+  "status": "passed",
+  "timestamp": "20261013T094409Z"
+}

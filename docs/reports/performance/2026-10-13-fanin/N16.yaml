@@ -1,0 +1,202 @@
+# Set 1 (1-to-N): 1 gNB + 16 UEs, no UE-UE crosstalk. gNB has 16 incoming UL edges (fan-in choke point); each UE has 1 incoming DL edge.
+runtime:
+  backend: cuda
+  gpu_device: 0
+  batch_samples: 23040
+  queue_samples: 2457600
+devices:
+  - id: gnb0
+    role: gnb
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5000
+    rx_endpoint: tcp://*:5001
+  - id: ue0
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5100
+    rx_endpoint: tcp://*:5101
+  - id: ue1
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5102
+    rx_endpoint: tcp://*:5103
+  - id: ue2
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5104
+    rx_endpoint: tcp://*:5105
+  - id: ue3
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5106
+    rx_endpoint: tcp://*:5107
+  - id: ue4
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5108
+    rx_endpoint: tcp://*:5109
+  - id: ue5
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5110
+    rx_endpoint: tcp://*:5111
+  - id: ue6
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5112
+    rx_endpoint: tcp://*:5113
+  - id: ue7
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5114
+    rx_endpoint: tcp://*:5115
+  - id: ue8
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5116
+    rx_endpoint: tcp://*:5117
+  - id: ue9
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5118
+    rx_endpoint: tcp://*:5119
+  - id: ue10
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5120
+    rx_endpoint: tcp://*:5121
+  - id: ue11
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5122
+    rx_endpoint: tcp://*:5123
+  - id: ue12
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5124
+    rx_endpoint: tcp://*:5125
+  - id: ue13
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5126
+    rx_endpoint: tcp://*:5127
+  - id: ue14
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5128
+    rx_endpoint: tcp://*:5129
+  - id: ue15
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5130
+    rx_endpoint: tcp://*:5131
+links:
+  - from: gnb0
+    to: ue0
+    model: cuda_mvp
+  - from: ue0
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue1
+    model: cuda_mvp
+  - from: ue1
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue2
+    model: cuda_mvp
+  - from: ue2
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue3
+    model: cuda_mvp
+  - from: ue3
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue4
+    model: cuda_mvp
+  - from: ue4
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue5
+    model: cuda_mvp
+  - from: ue5
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue6
+    model: cuda_mvp
+  - from: ue6
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue7
+    model: cuda_mvp
+  - from: ue7
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue8
+    model: cuda_mvp
+  - from: ue8
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue9
+    model: cuda_mvp
+  - from: ue9
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue10
+    model: cuda_mvp
+  - from: ue10
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue11
+    model: cuda_mvp
+  - from: ue11
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue12
+    model: cuda_mvp
+  - from: ue12
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue13
+    model: cuda_mvp
+  - from: ue13
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue14
+    model: cuda_mvp
+  - from: ue14
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue15
+    model: cuda_mvp
+  - from: ue15
+    to: gnb0
+    model: cuda_mvp
+models:
+  cuda_mvp:
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: -3.0
+            phase_rad: 0.0
+      - type: phase
+        phase_rad: 0.125
+      - type: cfo
+        cfo_hz: 250
+        phase_rad: 0

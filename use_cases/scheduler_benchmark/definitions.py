@@ -22,13 +22,13 @@ CELLS = (
     {
         "name": "a",
         "gnb": {"device_id": "gnb0", "tx_port": 2000, "rx_port": 2001, "pci": 1,
-                "gnb_id": 411, "bind": "127.0.0.11", "metrics_port": 8001},
+                "gnb_id": 411, "bind": "127.0.0.11", "metrics_port": 8001, "prach_root": 1},
         "ues": ("ue0", "ue1"),
     },
     {
         "name": "b",
         "gnb": {"device_id": "gnb1", "tx_port": 2010, "rx_port": 2011, "pci": 2,
-                "gnb_id": 412, "bind": "127.0.0.12", "metrics_port": 8002},
+                "gnb_id": 412, "bind": "127.0.0.12", "metrics_port": 8002, "prach_root": 1},
         "ues": ("ue2", "ue3"),
     },
 )

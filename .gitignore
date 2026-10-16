@@ -13,6 +13,7 @@
 /datasets/
 /tmp/
 *.log
+!/docs/reports/**/*.log
 *.pcap
 *.pcapng
 

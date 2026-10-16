@@ -1,0 +1,4 @@
+wall_seconds=30.04
+user_seconds=255.88
+system_seconds=1.15
+cpu_percent=855%

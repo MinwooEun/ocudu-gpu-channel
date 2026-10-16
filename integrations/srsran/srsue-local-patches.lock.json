@@ -16,6 +16,14 @@
         "srsue/hdr/stack/mac_nr/demux_nr.h"
       ],
       "why": "Multi-UE RACH (SPARK_MILESTONES.md S16). proc_ra_nr hard-coded preamble 0, so UEs on one lock-step broker collided on the same PRACH occasion and preamble every time; ra_contention_resolution() completed RA for an RRC-started procedure even when the UE Contention Resolution Identity did not match; and demux passed Msg4's RRCSetup to RLC before the identity was checked. The loser adopted the winner's C-RNTI and failed NAS integrity. The patch picks a random contention-based preamble per attempt (SRSUE_PRACH_PREAMBLE_INDEX pins it), requires the identity to match for initial access and otherwise retries RA with backoff, and drops Msg4 SDUs that are not ours."
+    },
+    {
+      "path": "integrations/srsran/patches/srsue-zmq-rx-sleep.patch",
+      "sha256": "682d94af5a9d26967180a71be973a71302ad71179b389aa12281afdde7c256bf",
+      "files": [
+        "lib/src/phy/rf/rf_zmq_imp.c"
+      ],
+      "why": "Extracts only the rx_sleep switch from the existing CMX integration patch. Default true preserves the pinned per-receive sleep; rx_sleep=false allows a broker that already paces IQ to own the clock, avoiding an additional full-block relative sleep in srsUE. No CMX PHY or TX changes are included."
     }
   ]
 }

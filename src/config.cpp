@@ -118,6 +118,8 @@ void apply_runtime(RuntimeConfig& runtime, const std::string& key, const std::st
 {
   if (key == "backend") {
     runtime.backend = parse_backend(value);
+  } else if (key == "cpu_threads") {
+    runtime.cpu_threads = parse_size(value, key);
   } else if (key == "gpu_device") {
     runtime.gpu_device = static_cast<int>(parse_u64(value, key));
   } else if (key == "batch_samples") {
@@ -778,6 +780,9 @@ std::vector<std::string> validate_config(const TopologyConfig& config)
   }
   if (!config.runtime.batch_samples_auto && config.runtime.batch_samples == 0) {
     errors.emplace_back("runtime.batch_samples must be greater than zero or auto");
+  }
+  if (config.runtime.cpu_threads == 0) {
+    errors.emplace_back("runtime.cpu_threads must be greater than zero");
   }
 
   std::set<std::string> device_ids;

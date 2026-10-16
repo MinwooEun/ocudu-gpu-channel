@@ -6,5 +6,8 @@ Measured envelopes, methods and datasets. Results do not transfer to other hardw
 :maxdepth: 1
 
 2026-05-sweeps/README
+2026-10-13-tdl-a/README
+2026-10-13-fanin/README
+2026-10-13-cpu-24/README
 measured-boundaries
 ```

@@ -1,0 +1,190 @@
+{
+  "name": "scheduler-benchmark-seed1",
+  "description": "Seeded scheduler-benchmark scenario (generator v1, seed 1): random-waypoint UE routes kept in line of sight of gnb0; PathSolver seed = scenario seed.",
+  "scene": "robot_ring",
+  "simple_road": false,
+  "solver": {
+    "max_depth": 3,
+    "samples_per_source": 200000,
+    "seed": 1,
+    "path_polylines": 6,
+    "propagation": {
+      "los": true,
+      "specular_reflection": true,
+      "diffuse_reflection": false,
+      "refraction": true,
+      "diffraction": false
+    }
+  },
+  "nodes": {
+    "gnb0": {
+      "start_m": [
+        15.0,
+        0.0,
+        8.0
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue0": {
+      "mobility": "robot",
+      "route_m": [
+        [
+          4.286,
+          15.311,
+          0.4
+        ],
+        [
+          5.504,
+          -18.414,
+          0.4
+        ],
+        [
+          1.049,
+          18.93,
+          0.4
+        ],
+        [
+          7.334,
+          -11.815,
+          0.4
+        ],
+        [
+          10.003,
+          -4.379,
+          0.4
+        ],
+        [
+          15.352,
+          -7.992,
+          0.4
+        ],
+        [
+          1.548,
+          1.935,
+          0.4
+        ]
+      ],
+      "route_mode": "pingpong",
+      "speed_mps": 0.704,
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue1": {
+      "mobility": "robot",
+      "route_m": [
+        [
+          1.694,
+          8.813,
+          0.4
+        ],
+        [
+          -7.268,
+          15.515,
+          0.4
+        ],
+        [
+          3.845,
+          4.787,
+          0.4
+        ],
+        [
+          -1.008,
+          20.18,
+          0.4
+        ],
+        [
+          -17.469,
+          6.264,
+          0.4
+        ],
+        [
+          -10.923,
+          23.611,
+          0.4
+        ],
+        [
+          -7.995,
+          17.844,
+          0.4
+        ],
+        [
+          16.898,
+          23.982,
+          0.4
+        ]
+      ],
+      "route_mode": "pingpong",
+      "speed_mps": 0.52,
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    }
+  },
+  "links": [
+    {
+      "from": "gnb0",
+      "to": "ue0",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "gnb0",
+      "to": "ue1",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue0",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue1",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    }
+  ],
+  "benchmark": {
+    "seed": 1,
+    "generator_version": 1,
+    "duration_s": 180.0,
+    "speed_range_mps": [
+      0.5,
+      1.5
+    ],
+    "gnb_distance_range_m": [
+      6.0,
+      40.0
+    ],
+    "start_max_gnb_distance_m": 20.0,
+    "obstacle_margin_m": 1.0,
+    "line_of_sight": "every leg sampled every 0.25 m clears every inflated obstacle box",
+    "routes": {
+      "ue0": {
+        "speed_mps": 0.704,
+        "waypoints": 7,
+        "start_gnb_distance_m": 18.687
+      },
+      "ue1": {
+        "speed_mps": 0.52,
+        "waypoints": 8,
+        "start_gnb_distance_m": 15.96
+      }
+    }
+  }
+}

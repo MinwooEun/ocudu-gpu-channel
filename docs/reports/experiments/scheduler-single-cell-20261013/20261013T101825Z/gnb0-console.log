@@ -1,0 +1,21 @@
+
+--== OCUDU gNB (commit a1916ed) ==--
+
+Warning: Scheduling priority of thread "main_pool#0" not changed. Cause: Not enough privileges.
+Warning: Scheduling priority of thread "main_pool#1" not changed. Cause: Not enough privileges.
+Warning: Scheduling priority of thread "main_pool#2" not changed. Cause: Not enough privileges.
+Warning: Scheduling priority of thread "main_pool#3" not changed. Cause: Not enough privileges.
+Warning: Scheduling priority of thread "main_pool#4" not changed. Cause: Not enough privileges.
+Lower PHY in executor sequential baseband mode.
+Warning: Scheduling priority of thread "io_broker_epoll" not changed. Cause: Not enough privileges.
+Available radio types: zmq and realtime_loopback.
+Cell pci=1, bw=20 MHz, 1T1R, dl_arfcn=368500 (n3), dl_freq=1842.5 MHz, dl_ssb_arfcn=368410, ul_freq=1747.5 MHz
+
+N2: Connection to AMF on 127.0.0.2:38412 completed
+Remote control server listening on 127.0.0.1:8001
+==== gNB started ===
+Type <h> to view help
+Stopping...
+Logfile stored in /work/ocudu-native-workspace/results/logs/ocudu-scheduler-benchmark/20261013T101825Z/gnb0-internal.log
+MAC PCAP stored in /work/ocudu-native-workspace/results/logs/ocudu-scheduler-benchmark/20261013T101825Z/gnb0_mac.pcap
+NGAP PCAP stored in /work/ocudu-native-workspace/results/logs/ocudu-scheduler-benchmark/20261013T101825Z/gnb0_ngap.pcap

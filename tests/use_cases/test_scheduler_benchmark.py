@@ -12,6 +12,7 @@ import array
 import json
 import math
 import pathlib
+import shutil
 import socket
 import struct
 import subprocess
@@ -328,6 +329,51 @@ class SyntheticRun:
 
 
 class AnalyzerOnSyntheticRun(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("node"), "Node.js is required for dashboard rendering")
+    def test_dashboard_renders_active_cells(self) -> None:
+        for single_cell in (False, True):
+            with self.subTest(single_cell=single_cell), tempfile.TemporaryDirectory() as root:
+                run = SyntheticRun(pathlib.Path(root))
+                for cell in bench.CELLS:
+                    run.benchmark["cells"][cell["name"]]["gnb"] = cell["gnb"]
+                if single_cell:
+                    del run.benchmark["cells"]["b"]
+                    (run.config / "benchmark.json").write_text(json.dumps(run.benchmark))
+                analyzer = analyze.RunAnalyzer(run.log, run.config)
+                analyzer.poll()
+                fixture = pathlib.Path(root) / "dashboard.json"
+                fixture.write_text(json.dumps({"benchmark": run.benchmark, "report": analyzer.report(live=False)}))
+                result = subprocess.run([
+                    "node", str(PROJECT_ROOT / "tests/dashboard/test_scheduler_web_ui.mjs"), str(fixture)
+                ], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_single_cell_preserves_traffic_and_metrics_without_second_cell(self) -> None:
+        with tempfile.TemporaryDirectory() as root:
+            run = SyntheticRun(pathlib.Path(root))
+            original_targets = traffic.dl_targets(run.benchmark)
+            del run.benchmark["cells"]["b"]
+            (run.config / "benchmark.json").write_text(json.dumps(run.benchmark))
+            for path in run.log.iterdir():
+                if any(name in path.name for name in ("gnb1", "ue2", "ue3")):
+                    path.unlink()
+            targets = traffic.dl_targets(run.benchmark)
+            self.assertEqual(len(targets), len(original_targets))
+            for target, original in zip(targets, original_targets):
+                self.assertEqual(target["flow"], original["flow"])
+                self.assertEqual(target["destinations"], original["destinations"][:1])
+            with self.assertRaises(ValueError):
+                traffic.cell_index_of(run.benchmark, "ue2")
+            analyzer = analyze.RunAnalyzer(run.log, run.config)
+            analyzer.poll()
+            report = analyzer.report(live=False)
+            self.assertEqual(list(report["lanes"]), ["a"])
+            self.assertEqual(report["comparison"]["order"], ["a"])
+            self.assertEqual(len(report["segments"]), run.MEASURE)
+            self.assertTrue(all(s["valid"] for s in report["segments"]))
+            for segment in report["segments"]:
+                self.assertEqual(segment["cells"]["a"]["ues"]["ue0"]["flows"]["dl_bulk"]["delay_ms"]["p99"], 10.0)
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.tmp = tempfile.TemporaryDirectory()

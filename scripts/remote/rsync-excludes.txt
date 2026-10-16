@@ -7,6 +7,7 @@
 /.playwright-mcp/
 /references/
 /writing/
+/slides/
 
 # Root-local builds, environments, external checkouts and run artifacts.
 /build/
@@ -32,6 +33,8 @@ __pycache__/
 .ruff_cache/
 *.egg-info/
 *.py[cod]
+# Deliberately published report logs are source evidence.
++ /docs/reports/**/*.log
 *.log
 *.pcap
 *.pcapng

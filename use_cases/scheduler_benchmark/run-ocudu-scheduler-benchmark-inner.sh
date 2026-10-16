@@ -123,6 +123,16 @@ gnb_cpu_sets=("${cpus_gnb_a}" "${cpus_gnb_b}")
 broker_cpu_sets=("${cpus_broker_a}" "${cpus_broker_b}")
 IFS='|' read -r -a ue_cpu_sets <<<"${cpus_ues}|"
 metrics_ports=(8001 8002)
+if [[ "${OCUDU_NATIVE_SB_SINGLE_CELL:-0}" == "1" ]]; then
+  cells=(a)
+  gnb_ids=(gnb0)
+  gnb_pcis=(1)
+  scheds=("${sched_a}")
+  ue_ids=(ue0 ue1)
+  ue_cells=(a a)
+  ue_netns=(ue1 ue2)
+  ue_ipv4=(10.45.1.2 10.45.1.3)
+fi
 bench_dir="${repo_root}/use_cases/scheduler_benchmark"
 run_dir="${netns_dir%/netns}"
 hold_file="${run_dir}/measure.start"
@@ -360,11 +370,13 @@ done
 fanout_spec="${control_endpoint_b}=$(/usr/bin/python3 -c 'import json,sys
 sys.path.insert(0, sys.argv[1]); import definitions as d
 print(",".join(f"{k}:{v}" for k, v in d.FANOUT_RENAME.items()))' "${bench_dir}")"
+fanout_args=()
+[[ "${#cells[@]}" -eq 1 ]] || fanout_args=(--fanout-control-endpoint "${fanout_spec}")
 start_group sionna "${log_dir}/sionna-bridge.log" "${aux_pin[@]}" \
   env -u CUDA_MPS_PIPE_DIRECTORY "CUDA_VISIBLE_DEVICES=${physical_gpu}" \
   "${sionna_python}" "${repo_root}/apps/sionna_bridge/run_bridge.py" \
   --scenario-config "${config_dir}/scenario.json" \
-  --control-endpoint "${control_endpoint_a}" --fanout-control-endpoint "${fanout_spec}" \
+  --control-endpoint "${control_endpoint_a}" "${fanout_args[@]}" \
   --timeline grid --hold-until-file "${hold_file}" --profile-digest \
   --duration 0 --update-hz "${sionna_update_hz}" --status-jsonl "${log_dir}/sionna-status.jsonl"
 sionna_pid="${started_pid}"
@@ -386,12 +398,14 @@ for index in "${!gnb_ids[@]}"; do
 done
 /usr/bin/python3 - "${log_dir}" "${sched_a}" "${sched_b}" "${bench_dir}" >"${log_dir}/policy-check.json" <<'PY' \
   || { cat "${log_dir}/policy-check.json" >&2; usage_error "a gNB did not load the requested scheduler policy"; }
-import json, pathlib, re, sys, time
+import json, os, pathlib, re, sys, time
 log_dir, sched_a, sched_b, bench_dir = sys.argv[1:]
 sys.path.insert(0, bench_dir)
 import definitions as d
 result, ok = {}, True
 for gnb, sched in (("gnb0", sched_a), ("gnb1", sched_b)):
+    if gnb == "gnb1" and os.environ.get("OCUDU_NATIVE_SB_SINGLE_CELL") == "1":
+        continue
     # The gNB logs asynchronously: give the start-up dump a few seconds to land.
     deadline = time.monotonic() + 15
     while True:
@@ -410,7 +424,7 @@ for gnb, sched in (("gnb0", sched_a), ("gnb1", sched_b)):
 print(json.dumps({"ok": ok, "gnbs": result}, indent=2))
 raise SystemExit(0 if ok else 1)
 PY
-printf 'event=scheduler_policy_verified gnb0=%s gnb1=%s\n' "${sched_a}" "${sched_b}"
+printf 'event=scheduler_policy_verified cells=%s policies=%s\n' "${cells[*]}" "${scheds[*]}"
 
 if [[ "${gnb_metrics}" == "1" ]]; then
   for index in "${!gnb_ids[@]}"; do
@@ -569,12 +583,12 @@ for i, ue in enumerate(ids):
                   "ping_ok": int(ping_ok.split()[i]), "camped_pci": camped_pci(ue),
                   "expected_pci": expected_pci[cells[i]], **ue_events(ue)}
 policy = json.loads((log_dir / "policy-check.json").read_text()) if (log_dir / "policy-check.json").exists() else None
-brokers = {cell: broker(cell) for cell in ("a", "b")}
+brokers = {cell: broker(cell) for cell in sorted(set(cells))}
 attached = all(v["rrc_connected"] and v["pdu_session"] and v["ping_ok"] for v in per_ue.values())
 own_cells = all(v["camped_pci"] == v["expected_pci"] for v in per_ue.values())
 clean = all(b[k] == 0 for b in brokers.values() for k in ("tx_queue_overflows", "tx_sequence_gaps", "zmq_errors"))
 summary = {
-    "timestamp": timestamp, "schedulers": {"a": sched_a, "b": sched_b},
+    "timestamp": timestamp, "schedulers": {cell: {"a": sched_a, "b": sched_b}[cell] for cell in brokers},
     "policy_check": policy, "per_ue": per_ue, "brokers": brokers,
     "measure_status": measure_status, "gnb_alive_at_stop": int(gnb_alive), "srsue_alive_at_stop": int(srsue_alive),
     "each_ue_on_its_own_cell": int(own_cells),

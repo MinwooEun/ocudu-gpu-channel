@@ -19,6 +19,7 @@
 #include "ocudu_gpu_channel/pacing.h"
 #include "ocudu_gpu_channel/runtime_control.h"
 #include "ocudu_gpu_channel/timing_metrics.h"
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -144,10 +145,11 @@ void run_sink(void* context, std::string endpoint, std::atomic<bool>& stop, std:
   zmq_close(socket);
 }
 
-void scenario_loopback()
+void scenario_loopback(std::size_t cpu_threads = 1)
 {
   ocg::TopologyConfig config;
   config.runtime.backend = ocg::Backend::Cpu;
+  config.runtime.cpu_threads = cpu_threads;
   config.runtime.batch_samples_auto = false;
   // Use OCUDU's real 1 ms slot unit so the test exercises a representative
   // batch size rather than a tiny one whose sub-slot timing is dominated by
@@ -187,7 +189,25 @@ void scenario_loopback()
   peers.emplace_back(run_sink, context, config.devices[1].rx_endpoint, std::ref(stop), std::ref(ue_received));
 
   ocg::Broker broker(config);
+  // Capture the actual summary, including writes from broker workers.
+  std::cout.flush();
+  std::FILE* summary_file = std::tmpfile();
+  require(summary_file != nullptr, "could not create broker summary capture");
+  const int saved_stdout = dup(STDOUT_FILENO);
+  require(saved_stdout >= 0 && dup2(fileno(summary_file), STDOUT_FILENO) >= 0,
+          "could not redirect broker summary");
   const auto stats = broker.run(std::chrono::milliseconds(800));
+  std::cout.flush();
+  require(dup2(saved_stdout, STDOUT_FILENO) >= 0, "could not restore stdout");
+  close(saved_stdout);
+  std::rewind(summary_file);
+  std::string summary;
+  char summary_line[4096];
+  while (std::fgets(summary_line, sizeof(summary_line), summary_file)) {
+    summary += summary_line;
+  }
+  std::fclose(summary_file);
+  std::cout << summary;
   const auto control_links = broker.collect_control_links();
 
   stop.store(true);
@@ -197,7 +217,7 @@ void scenario_loopback()
   zmq_ctx_shutdown(context);
   zmq_ctx_destroy(context);
 
-  std::cout << "loopback: tx_pulls=" << stats.tx_pulls << " rx_requests=" << stats.rx_requests
+  std::cout << "loopback: cpu_threads=" << cpu_threads << " tx_pulls=" << stats.tx_pulls << " rx_requests=" << stats.rx_requests
             << " tx_queue_overflows=" << stats.tx_queue_overflows << " tx_sequence_gaps=" << stats.tx_sequence_gaps
             << " rx_starvations=" << stats.rx_starvations << " zmq_errors=" << stats.zmq_errors
             << " gnb_received=" << gnb_received.load() << " ue_received=" << ue_received.load() << "\n";
@@ -223,6 +243,18 @@ void scenario_loopback()
             "slot timing cumulative deadline misses exceed processed slots");
     require(telemetry.slot_process_max_us >= telemetry.channel_process_us,
             "slot timing cumulative maximum is below the latest sample");
+    const auto link = std::find_if(config.links.begin(), config.links.end(),
+        [&](const auto& item) { return ocg::link_key(item) == link_id; });
+    require(link != config.links.end(), "unknown link in receiver telemetry");
+    const std::string prefix = "event=process_latency_summary node=" + link->to + " ";
+    const auto line_start = summary.find(prefix);
+    require(line_start != std::string::npos, "missing receiver latency summary");
+    const auto max_start = summary.find(" max_us=", line_start);
+    require(max_start < summary.find('\n', line_start), "missing receiver maximum");
+    const double reported_max = std::stod(summary.substr(max_start + 8));
+    require(std::abs(reported_max - telemetry.slot_process_max_us) <=
+                std::max(0.001, telemetry.slot_process_max_us * 0.00001),
+            "summary maximum disagrees with the measured receiver maximum");
     require(telemetry.slot_process_p95_us > 0.0, "slot timing reports no cumulative p95");
     require(telemetry.slot_process_p99_us >= telemetry.slot_process_p95_us,
             "slot timing cumulative p99 is below p95");
@@ -779,6 +811,7 @@ int main()
   scenario_relay_knobs_bit_identical();
   scenario_pacer_drops_unrecoverable_debt();
   scenario_loopback();
+  scenario_loopback(24);
   scenario_multi_ue_lockstep();
   scenario_multi_ue_lockstep_wedge_fails_fast();
   std::cout << "test_broker OK\n";

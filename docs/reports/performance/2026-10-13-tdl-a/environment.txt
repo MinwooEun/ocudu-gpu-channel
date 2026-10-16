@@ -1,0 +1,21 @@
+utc_started=2026-10-13T07:38:07Z
+source_commit=f95dabd0d13db3b24e9a4b04c919ad3620468f11
+mode=Release; CUDA sm_120
+workload=3 runs x 30 seconds per backend; 5 second separate warmup per backend
+CPU(s):                                  24
+Model name:                              Intel(R) Core(TM) Ultra 9 285K
+Thread(s) per core:                      1
+Core(s) per socket:                      1
+NUMA node0 CPU(s):                       0-23
+name, driver_version, pcie.link.gen.max, pcie.link.width.max, power.limit [W]
+NVIDIA GeForce RTX 5090, 580.173.02, 5, 16, 575.00 W
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2025 NVIDIA Corporation
+Built on Fri_Feb_21_20:23:50_PST_2025
+Cuda compilation tools, release 12.8, V12.8.93
+Build cuda_12.8.r12.8/compiler.35583870_0
+c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+2e27cf99f7716418017cfa19f955ae3e7aba016d00b696287deb6a112a571673  ocudu-gpu-channel-bench
+c6dfb950bfd9782c99d3bec843c0629f48acefaa8c457a312b6f4d842ddf0711  tdl-a_E16.cuda.yaml
+85af68e10ea4b7416d346617628382af363f98ff8ddfcd32d23365250c481ede  tdl-a_E16.cpu.yaml
+utc_completed=2026-10-13T07:41:24Z

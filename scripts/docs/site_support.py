@@ -91,7 +91,7 @@ def finish_site(app, exception):
         relative = path.relative_to(docs)
         if not path.is_file() or relative.parts[0] in {'_compat', '__pycache__'}:
             continue
-        if path.suffix in {'.json', '.csv', '.png', '.svg', '.patch', '.txt', '.html'} and path.name not in {'requirements.txt', 'index.html'}:
+        if path.suffix in {'.json', '.csv', '.png', '.svg', '.patch', '.txt', '.log', '.html'} and path.name not in {'requirements.txt', 'index.html'}:
             destination = out / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(path, destination)

@@ -1,0 +1,806 @@
+{
+  "sample_rate_hz": 23040000,
+  "samples_per_radio_slot": 23040,
+  "method": "IQ acquired counter counts cf32 samples successfully copied from each radio TX into its broker ring. Compare samples at monotonic heartbeat t=60 and t=130; per-port counts, not message or producer-call counts. Independently unwrap gNB SFN.slot and divide endpoint slot progress by wall time inside each 120-second measurement. Heartbeat comparison uses an interior window rather than exactly the same 120-second endpoints.",
+  "heartbeat_timing_bound": "Integer seconds imply conservative 69\u201371 s elapsed for the selected nominal 70 s window; both bounds remain below nominal rate.",
+  "runs": [
+    {
+      "scheduler": "rr",
+      "segments_valid": 120,
+      "run": "20261013T101825Z",
+      "measurement_anchor_unix_ms": 1791886723007,
+      "measurement_seconds": 120,
+      "cells": {
+        "a": {
+          "iq_sample_progress": {
+            "gnb0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1155387180,
+              "to_samples": 2649899820,
+              "sample_delta": 1494512640,
+              "samples_per_s": 21350180.57142857,
+              "fraction_of_realtime": 0.9266571428571428,
+              "conservative_fraction_bounds": [
+                0.9136056338028169,
+                0.9400869565217392
+              ],
+              "input_waits_over_5_ms_in_window": 1
+            },
+            "ue0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1155409934,
+              "to_samples": 2649899533,
+              "sample_delta": 1494489599,
+              "samples_per_s": 21349851.414285716,
+              "fraction_of_realtime": 0.9266428565228175,
+              "conservative_fraction_bounds": [
+                0.9135915486844679,
+                0.9400724631390901
+              ],
+              "input_waits_over_5_ms_in_window": 1
+            },
+            "ue1_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1155363853,
+              "to_samples": 2649899534,
+              "sample_delta": 1494535681,
+              "samples_per_s": 21350509.72857143,
+              "fraction_of_realtime": 0.9266714291914683,
+              "conservative_fraction_bounds": [
+                0.9136197189211659,
+                0.940101449904388
+              ],
+              "input_waits_over_5_ms_in_window": 1
+            }
+          },
+          "heartbeat_excerpts": [
+            "event=heartbeat t=60 dev=gnb0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=50120 idle=57 room_stall=0 last=23040 acquired=1155387180] producer[state=wait_data slots=58472 stall=492056 last=23040] rep[state=wait_row replies=58472 idle=24 row_spin=423699 last=23040] starvations=0 starvations_total=0 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue0_p0 ring=69121/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=50216 idle=58 room_stall=0 last=23040 acquired=1155409934] producer[state=process slots=50149 stall=481414 last=23040] rep[state=wait_row replies=50149 idle=57 row_spin=415567 last=23040] starvations=0 starvations_total=3 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue1_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=50231 idle=58 room_stall=0 last=23040 acquired=1155363853] producer[state=wait_data slots=50149 stall=481831 last=23040] rep[state=wait_row replies=50149 idle=57 row_spin=404188 last=23040] starvations=0 starvations_total=3 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=gnb0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=114967 idle=57 room_stall=0 last=23040 acquired=2649899820] producer[state=wait_data slots=131919 stall=1045840 last=23040] rep[state=wait_row replies=131919 idle=24 row_spin=930298 last=23040] starvations=0 starvations_total=1 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=115195 idle=58 room_stall=0 last=23040 acquired=2649899533] producer[state=wait_data slots=115016 stall=1021687 last=23040] rep[state=wait_row replies=115016 idle=57 row_spin=929098 last=23040] starvations=0 starvations_total=4 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue1_p0 ring=23041/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=115137 idle=58 room_stall=0 last=23040 acquired=2649899534] producer[state=wait_data slots=115016 stall=1022699 last=23040] rep[state=wait_row replies=115016 idle=57 row_spin=915142 last=23040] starvations=0 starvations_total=4 gaps=0 gaps_total=0 overflows=0 overflows_total=0"
+          ],
+          "independent_slot_progress": {
+            "first": {
+              "wall_unix_s": 1791886723.007477,
+              "absolute_slot": 8341,
+              "line": "2026-10-13T10:18:43.007477 [SCHED   ] [I] [   834.1] Slot decisions pci=1 t=8us (1 PDSCH, 0 PUSCHs, 1 PUCCH): DL: ue=0 c-rnti=0x4601 h_id=3 ss_id=2 rb=[0..95) k1=4 cw[0]: newtx=true rv=0 tbs=7941 ri=1"
+            },
+            "last": {
+              "wall_unix_s": 1791886843.005584,
+              "absolute_slot": 119523,
+              "line": "2026-10-13T10:20:43.005584 [SCHED   ] [I] [   688.3] Slot decisions pci=1 t=8us (2 PDSCHs, 0 PUSCHs, 2 PUCCHs): DL: ue=1 c-rnti=0x4602 h_id=0 ss_id=2 rb=[0..13) k1=4 cw[0]: newtx=true rv=0 tbs=1089 ri"
+            },
+            "elapsed_wall_seconds": 119.99810695648193,
+            "slot_delta": 111182,
+            "slots_per_s": 926.5312830336636,
+            "logged_decisions": 111175,
+            "wrapped_late_lines": 0
+          },
+          "reported_slots_per_s": 926.5269379158798,
+          "priority_warnings": [
+            "Warning: Scheduling priority of thread \"main_pool#0\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#1\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#2\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#3\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#4\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"io_broker_epoll\" not changed. Cause: Not enough privileges."
+          ],
+          "log_sha256": {
+            "broker": "e1dae96820c0260ce7376abf48fb2911e7452d0b4066b23373c3cdb5943248b8"
+          }
+        }
+      },
+      "bulk_delay_per_second_p99_ms": [
+        8.059762001037598,
+        8.52229118347168,
+        9.701438903808594,
+        9.741586685180664,
+        10.272847175598145,
+        21.412824630737305,
+        19.07324981689453,
+        15.911747932434082,
+        15.185029029846191,
+        12.330344200134277,
+        10.822251319885254,
+        10.583091735839844,
+        11.018280029296875,
+        10.933917045593262,
+        9.031476020812988,
+        8.263225555419922,
+        8.845247268676758,
+        11.289164543151855,
+        10.799519538879395,
+        10.58224868774414,
+        10.900237083435059,
+        9.58779239654541,
+        12.307756423950195,
+        11.323152542114258,
+        9.965513229370117,
+        12.030118942260742,
+        9.973857879638672,
+        16.51901626586914,
+        9.648240089416504,
+        9.814141273498535,
+        9.867122650146484,
+        9.234257698059082,
+        11.368795394897461,
+        10.000823974609375,
+        11.645895957946777,
+        9.889312744140625,
+        9.843721389770508,
+        14.594755172729492,
+        10.366902351379395,
+        10.301608085632324,
+        14.713422775268555,
+        9.313511848449707,
+        10.165331840515137,
+        10.42549991607666,
+        9.874174118041992,
+        8.060769081115723,
+        8.827071189880371,
+        11.915453910827637,
+        9.24335765838623,
+        10.255655288696289,
+        9.515056610107422,
+        8.316887855529785,
+        10.21522331237793,
+        9.594929695129395,
+        9.825965881347656,
+        9.450251579284668,
+        9.897724151611328,
+        10.697970390319824,
+        9.584733009338379,
+        8.297835350036621,
+        10.732601165771484,
+        9.174768447875977,
+        16.42759895324707,
+        18.944873809814453,
+        10.60947036743164,
+        9.82416820526123,
+        9.817437171936035,
+        10.952876091003418,
+        9.399843215942383,
+        8.538204193115234,
+        9.255694389343262,
+        11.001214027404785,
+        9.717326164245605,
+        10.004880905151367,
+        11.812724113464355,
+        11.244561195373535,
+        9.82605266571045,
+        17.82239532470703,
+        9.881378173828125,
+        8.667326927185059,
+        8.630782127380371,
+        10.225495338439941,
+        12.431720733642578,
+        8.772114753723145,
+        8.713211059570312,
+        17.584318161010742,
+        11.469653129577637,
+        12.39277172088623,
+        9.145764350891113,
+        9.647528648376465,
+        9.692442893981934,
+        9.412870407104492,
+        9.311982154846191,
+        11.309231758117676,
+        12.251190185546875,
+        9.813414573669434,
+        13.661416053771973,
+        13.716383934020996,
+        11.226481437683105,
+        9.75352668762207,
+        9.903946876525879,
+        9.654518127441406,
+        11.160794258117676,
+        9.250004768371582,
+        10.382366180419922,
+        8.60680866241455,
+        8.386770248413086,
+        13.779595375061035,
+        9.849285125732422,
+        10.009260177612305,
+        9.969322204589844,
+        9.972094535827637,
+        9.911273002624512,
+        10.312573432922363,
+        9.80742073059082,
+        9.341291427612305,
+        9.856649398803711,
+        10.106088638305664,
+        10.090004920959473,
+        8.424283027648926
+      ],
+      "mean_bulk_delay_p99_ms": 10.761211975415547,
+      "gate": {
+        "brokers": {
+          "a": {
+            "control_batches_committed": 1328,
+            "rx_requests": 417125,
+            "rx_starvations": 9,
+            "tx_pulls": 393877,
+            "tx_queue_overflows": 0,
+            "tx_sequence_gaps": 0,
+            "zmq_errors": 0
+          }
+        },
+        "each_ue_on_its_own_cell": 1,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "cell": "a",
+            "crashed": 0,
+            "expected_pci": 1,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue1": {
+            "camped_pci": 1,
+            "cell": "a",
+            "crashed": 0,
+            "expected_pci": 1,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "schedulers": {
+          "a": "rr"
+        },
+        "srsue_alive_at_stop": 1,
+        "status": "passed",
+        "timestamp": "20261013T101825Z"
+      },
+      "traffic_checks": {
+        "ue0.dl_bulk": {
+          "duplicates": 0,
+          "received": 500000,
+          "scheduled": 500000,
+          "sender_done": true,
+          "sent": 500000,
+          "unknown_seq": 0
+        },
+        "ue0.ul_bulk": {
+          "duplicates": 0,
+          "received": 25000,
+          "scheduled": 25000,
+          "sender_done": true,
+          "sent": 25000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_control": {
+          "duplicates": 0,
+          "received": 12000,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_video": {
+          "duplicates": 0,
+          "received": 103153,
+          "scheduled": 103153,
+          "sender_done": true,
+          "sent": 103153,
+          "unknown_seq": 0
+        },
+        "ue1.ul_control": {
+          "duplicates": 0,
+          "received": 12000,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        }
+      },
+      "sionna": {
+        "fanout_ack_skew_ms": {
+          "count": 0,
+          "max": null,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "generation_ms": {
+          "count": 1327,
+          "max": 28.733722981996834,
+          "mean": 24.493121660359943,
+          "p50": 24.26925700274296,
+          "p95": 25.843344017630443,
+          "p99": 26.862628990784287
+        },
+        "lag_ms": {
+          "count": 1327,
+          "max": 1.6109650023281574,
+          "mean": 0.0989011363579015,
+          "p50": 0.09678996866568923,
+          "p95": 0.10441898484714329,
+          "p99": 0.1307319907937199
+        },
+        "last": {
+          "channels": {
+            "gnb0>ue0:sionna_rt": {
+              "path_power_db": -59.24401060996334,
+              "rays": 5,
+              "tap_gain_db": 0.319983322,
+              "taps": 4
+            },
+            "gnb0>ue1:sionna_rt": {
+              "path_power_db": -68.05402567446728,
+              "rays": 2,
+              "tap_gain_db": -9.303495412,
+              "taps": 1
+            },
+            "ue0>gnb0:sionna_rt": {
+              "path_power_db": -58.843702002973345,
+              "rays": 5,
+              "tap_gain_db": 0.779788158,
+              "taps": 4
+            },
+            "ue1>gnb0:sionna_rt": {
+              "path_power_db": -67.59286133168943,
+              "rays": 2,
+              "tap_gain_db": -9.33747322,
+              "taps": 1
+            }
+          },
+          "digest": "683bb4d5a34a889478c35b8a9aac7db2ad886746f7df8128ff465bfd56afa5d0",
+          "fanout_ack_ms": [],
+          "fanout_ok": null,
+          "generation_ms": 25.278618006268516,
+          "grid_index": 1326,
+          "lag_ms": 0.0992929853964597,
+          "positions": {
+            "gnb0": [
+              15.0,
+              0.0,
+              8.0
+            ],
+            "ue0": [
+              5.454116048316388,
+              -2.6189726182159703,
+              0.4
+            ],
+            "ue1": [
+              -15.837903345680823,
+              10.586431051401586,
+              0.4
+            ]
+          },
+          "scenario_time_s": 132.6,
+          "skipped": 0
+        },
+        "skipped_grid_points": 0,
+        "updates": 1327
+      }
+    },
+    {
+      "scheduler": "qos",
+      "segments_valid": 120,
+      "run": "20261013T102138Z",
+      "measurement_anchor_unix_ms": 1791886915811,
+      "measurement_seconds": 120,
+      "cells": {
+        "a": {
+          "iq_sample_progress": {
+            "gnb0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1158082860,
+              "to_samples": 2636905260,
+              "sample_delta": 1478822400,
+              "samples_per_s": 21126034.285714287,
+              "fraction_of_realtime": 0.9169285714285715,
+              "conservative_fraction_bounds": [
+                0.9040140845070423,
+                0.9302173913043479
+              ],
+              "input_waits_over_5_ms_in_window": 2
+            },
+            "ue0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1158059534,
+              "to_samples": 2636904973,
+              "sample_delta": 1478845439,
+              "samples_per_s": 21126363.414285716,
+              "fraction_of_realtime": 0.9169428565228175,
+              "conservative_fraction_bounds": [
+                0.9040281684027778,
+                0.9302318834289452
+              ],
+              "input_waits_over_5_ms_in_window": 4
+            },
+            "ue1_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1158059533,
+              "to_samples": 2636928014,
+              "sample_delta": 1478868481,
+              "samples_per_s": 21126692.585714284,
+              "fraction_of_realtime": 0.9169571434771825,
+              "conservative_fraction_bounds": [
+                0.9040422541324336,
+                0.9302463774406199
+              ],
+              "input_waits_over_5_ms_in_window": 3
+            }
+          },
+          "heartbeat_excerpts": [
+            "event=heartbeat t=60 dev=gnb0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=50243 idle=55 room_stall=0 last=23040 acquired=1158082860] producer[state=wait_data slots=57429 stall=494124 last=23039] rep[state=wait_row replies=57429 idle=22 row_spin=443357 last=23039] starvations=0 starvations_total=1 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=50334 idle=56 room_stall=0 last=23040 acquired=1158059534] producer[state=process slots=50266 stall=484849 last=23040] rep[state=wait_row replies=50266 idle=55 row_spin=389663 last=23040] starvations=0 starvations_total=3 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue1_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=50345 idle=56 room_stall=0 last=23040 acquired=1158059533] producer[state=wait_room slots=50268 stall=484624 last=23040] rep[state=wait_req replies=50268 idle=55 row_spin=416839 last=23040] starvations=0 starvations_total=3 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=gnb0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=114418 idle=55 room_stall=0 last=23040 acquired=2636905260] producer[state=wait_data slots=134776 stall=1049274 last=23040] rep[state=wait_row replies=134776 idle=22 row_spin=934268 last=23040] starvations=0 starvations_total=3 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=114624 idle=56 room_stall=0 last=23040 acquired=2636904973] producer[state=wait_data slots=114452 stall=1034107 last=23040] rep[state=wait_row replies=114452 idle=55 row_spin=899254 last=23040] starvations=0 starvations_total=7 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue1_p0 ring=23041/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=114579 idle=56 room_stall=0 last=23040 acquired=2636928014] producer[state=wait_data slots=114453 stall=1033455 last=23040] rep[state=wait_row replies=114453 idle=55 row_spin=929529 last=23040] starvations=0 starvations_total=6 gaps=0 gaps_total=0 overflows=0 overflows_total=0"
+          ],
+          "independent_slot_progress": {
+            "first": {
+              "wall_unix_s": 1791886915.81188,
+              "absolute_slot": 8372,
+              "line": "2026-10-13T10:21:55.811880 [SCHED   ] [I] [   837.2] Slot decisions pci=1 t=13us (2 PDSCHs, 0 PUSCHs, 1 PUCCH): DL: ue=1 c-rnti=0x4602 h_id=1 ss_id=2 rb=[0..3) k1=4 cw[0]: newtx=true rv=0 tbs=233 ri=1"
+            },
+            "last": {
+              "wall_unix_s": 1791887035.810049,
+              "absolute_slot": 118777,
+              "line": "2026-10-13T10:23:55.810049 [SCHED   ] [I] [   613.7] Slot decisions pci=1 t=9us (1 PDSCH, 1 PUSCH, 1 PUCCH): DL: ue=0 c-rnti=0x4601 h_id=2 ss_id=2 rb=[0..2) k1=4 cw[0]: newtx=true rv=0 tbs=169 ri=1 dl"
+            },
+            "elapsed_wall_seconds": 119.9981689453125,
+            "slot_delta": 110405,
+            "slots_per_s": 920.0557056026042,
+            "logged_decisions": 110362,
+            "wrapped_late_lines": 0
+          },
+          "reported_slots_per_s": 920.066102839481,
+          "priority_warnings": [
+            "Warning: Scheduling priority of thread \"main_pool#0\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#1\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#2\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#3\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#4\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"io_broker_epoll\" not changed. Cause: Not enough privileges."
+          ],
+          "log_sha256": {
+            "broker": "742d2828b1892953c2af9d5055873c0a859c3cd5fa589c3408e18588032dc063"
+          }
+        }
+      },
+      "bulk_delay_per_second_p99_ms": [
+        10.747276306152344,
+        10.560446739196777,
+        10.132758140563965,
+        10.633395195007324,
+        12.37414836883545,
+        12.205702781677246,
+        12.233244895935059,
+        10.504744529724121,
+        34.855628967285156,
+        11.874324798583984,
+        14.275079727172852,
+        16.94460105895996,
+        10.345498085021973,
+        10.56395435333252,
+        10.261598587036133,
+        10.359437942504883,
+        10.289355278015137,
+        10.335457801818848,
+        11.58441162109375,
+        10.58454418182373,
+        15.37471866607666,
+        22.026390075683594,
+        8.911491394042969,
+        24.91956329345703,
+        15.865569114685059,
+        12.846273422241211,
+        10.103565216064453,
+        10.29115104675293,
+        10.289814949035645,
+        10.585077285766602,
+        10.103973388671875,
+        8.422689437866211,
+        9.08540153503418,
+        8.829319953918457,
+        9.226935386657715,
+        11.501612663269043,
+        9.546680450439453,
+        9.380703926086426,
+        9.374563217163086,
+        10.16688060760498,
+        9.362021446228027,
+        10.312747955322266,
+        9.309368133544922,
+        9.391637802124023,
+        12.501030921936035,
+        12.444595336914062,
+        12.472188949584961,
+        9.402623176574707,
+        9.485438346862793,
+        9.37576675415039,
+        9.190271377563477,
+        53.208526611328125,
+        49.45451736450195,
+        47.35404968261719,
+        56.79179763793945,
+        35.361114501953125,
+        49.76878356933594,
+        41.26042938232422,
+        9.4080171585083,
+        15.173638343811035,
+        12.050689697265625,
+        14.4445219039917,
+        18.538494110107422,
+        19.76934242248535,
+        12.069808959960938,
+        15.044731140136719,
+        17.904890060424805,
+        7.791859149932861,
+        8.633541107177734,
+        9.643268585205078,
+        18.421152114868164,
+        14.59609317779541,
+        7.87823486328125,
+        9.01347827911377,
+        8.807822227478027,
+        18.675737380981445,
+        9.329326629638672,
+        8.917059898376465,
+        9.98398208618164,
+        9.324463844299316,
+        9.519705772399902,
+        10.115654945373535,
+        9.408162117004395,
+        9.961301803588867,
+        9.462029457092285,
+        9.57335090637207,
+        14.972675323486328,
+        8.996294975280762,
+        9.264665603637695,
+        8.247882843017578,
+        8.24513053894043,
+        12.338436126708984,
+        9.322876930236816,
+        9.36521053314209,
+        9.3612699508667,
+        9.90777587890625,
+        10.228988647460938,
+        12.230218887329102,
+        9.528430938720703,
+        9.430781364440918,
+        10.101574897766113,
+        10.761163711547852,
+        10.299285888671875,
+        9.578125,
+        9.572037696838379,
+        16.783445358276367,
+        10.471809387207031,
+        9.484822273254395,
+        9.32663345336914,
+        9.680068969726562,
+        9.932409286499023,
+        9.572766304016113,
+        11.14215087890625,
+        9.353541374206543,
+        9.322834014892578,
+        9.238500595092773,
+        16.644567489624023,
+        10.650053024291992,
+        15.045088768005371,
+        8.7235746383667
+      ],
+      "mean_bulk_delay_p99_ms": 13.546252858638763,
+      "gate": {
+        "brokers": {
+          "a": {
+            "control_batches_committed": 1318,
+            "rx_requests": 410751,
+            "rx_starvations": 16,
+            "tx_pulls": 388641,
+            "tx_queue_overflows": 0,
+            "tx_sequence_gaps": 0,
+            "zmq_errors": 0
+          }
+        },
+        "each_ue_on_its_own_cell": 1,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "cell": "a",
+            "crashed": 0,
+            "expected_pci": 1,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue1": {
+            "camped_pci": 1,
+            "cell": "a",
+            "crashed": 0,
+            "expected_pci": 1,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "qos"
+              ],
+              "ok": true,
+              "policy_block": "      qos_sched:\n        combine_function: gbr_prioritized\n        pf_fairness_coeff: 2.0\n        prio_enabled: true\n        pdb_enabled: true\n        gbr_enabled: true\n",
+              "requested": "qos"
+            }
+          },
+          "ok": true
+        },
+        "schedulers": {
+          "a": "qos"
+        },
+        "srsue_alive_at_stop": 1,
+        "status": "passed",
+        "timestamp": "20261013T102138Z"
+      },
+      "traffic_checks": {
+        "ue0.dl_bulk": {
+          "duplicates": 0,
+          "received": 500000,
+          "scheduled": 500000,
+          "sender_done": true,
+          "sent": 500000,
+          "unknown_seq": 0
+        },
+        "ue0.ul_bulk": {
+          "duplicates": 0,
+          "received": 25000,
+          "scheduled": 25000,
+          "sender_done": true,
+          "sent": 25000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_control": {
+          "duplicates": 0,
+          "received": 12000,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_video": {
+          "duplicates": 0,
+          "received": 103153,
+          "scheduled": 103153,
+          "sender_done": true,
+          "sent": 103153,
+          "unknown_seq": 0
+        },
+        "ue1.ul_control": {
+          "duplicates": 0,
+          "received": 12000,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        }
+      },
+      "sionna": {
+        "fanout_ack_skew_ms": {
+          "count": 0,
+          "max": null,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "generation_ms": {
+          "count": 1317,
+          "max": 34.18548699119128,
+          "mean": 25.577004965929167,
+          "p50": 25.552182021783665,
+          "p95": 28.04578799987212,
+          "p99": 31.396453006891534
+        },
+        "lag_ms": {
+          "count": 1317,
+          "max": 1.9372039823792875,
+          "mean": 0.10079266403567672,
+          "p50": 0.09770100587047637,
+          "p95": 0.10629498865455389,
+          "p99": 0.12786401202902198
+        },
+        "last": {
+          "channels": {
+            "gnb0>ue0:sionna_rt": {
+              "path_power_db": -59.23008665910919,
+              "rays": 4,
+              "tap_gain_db": 0.331858683,
+              "taps": 4
+            },
+            "gnb0>ue1:sionna_rt": {
+              "path_power_db": -68.05857838004111,
+              "rays": 2,
+              "tap_gain_db": -9.317372201,
+              "taps": 1
+            },
+            "ue0>gnb0:sionna_rt": {
+              "path_power_db": -58.82958808396096,
+              "rays": 4,
+              "tap_gain_db": 0.791664109,
+              "taps": 4
+            },
+            "ue1>gnb0:sionna_rt": {
+              "path_power_db": -67.59740267766547,
+              "rays": 2,
+              "tap_gain_db": -9.350566087,
+              "taps": 1
+            }
+          },
+          "digest": "94c221f66c1f170cef118a3ab93ebf20baf15ab3ac7ff9107be2e709c365e596",
+          "fanout_ack_ms": [],
+          "fanout_ok": null,
+          "generation_ms": 21.47187400260009,
+          "grid_index": 1316,
+          "lag_ms": 0.10410897084511817,
+          "positions": {
+            "gnb0": [
+              15.0,
+              0.0,
+              8.0
+            ],
+            "ue0": [
+              5.313117848379651,
+              -1.9292367937044297,
+              0.4
+            ],
+            "ue1": [
+              -16.021492190529464,
+              10.09991780795683,
+              0.4
+            ]
+          },
+          "scenario_time_s": 131.6,
+          "skipped": 0
+        },
+        "skipped_grid_points": 0,
+        "updates": 1317
+      }
+    }
+  ]
+}

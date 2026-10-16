@@ -288,15 +288,15 @@ class RunAnalyzer:
         self.benchmark = json.loads((config_dir / "benchmark.json").read_text(encoding="utf-8"))
         self.seed = int(self.benchmark["seed"])
         self.measure_seconds = int(self.benchmark["measure_seconds"])
-        self.cells = {cell["name"]: cell for cell in bench.CELLS}
+        self.cells = {cell["name"]: cell for cell in bench.CELLS if cell["name"] in self.benchmark["cells"]}
         self.ue_cell: dict[str, str] = {}
         self.ue_meta: dict[str, dict[str, Any]] = {}
         for name, meta in self.benchmark["cells"].items():
             for ue in meta["ues"]:
                 self.ue_cell[ue["device_id"]] = name
                 self.ue_meta[ue["device_id"]] = ue
-        self.gnb_cell = {cell["gnb"]["device_id"]: cell["name"] for cell in bench.CELLS}
-        self.pci_cell = {cell["gnb"]["pci"]: cell["name"] for cell in bench.CELLS}
+        self.gnb_cell = {cell["gnb"]["device_id"]: cell["name"] for cell in self.cells.values()}
+        self.pci_cell = {cell["gnb"]["pci"]: cell["name"] for cell in self.cells.values()}
         self.anchor_ms: int | None = None
         self.traffic_start_ms: int | None = None
         self.flows: dict[int, FlowState] = {}
@@ -329,6 +329,8 @@ class RunAnalyzer:
             return
         duration = float(self.benchmark.get("traffic_duration_s", self.measure_seconds))
         for cell_index, cell in enumerate(bench.CELLS):
+            if cell["name"] not in self.cells:
+                continue
             for ue in self.benchmark["cells"][cell["name"]]["ues"]:
                 for flow_index, flow in enumerate(ue["flows"]):
                     fid = bench.flow_id(cell_index, ue["cell_index"], flow_index)
@@ -909,6 +911,8 @@ class RunAnalyzer:
     def compare(self, valid: list[dict[str, Any]], lanes: dict[str, Any]) -> dict[str, Any]:
         """Paired per-segment comparison of the two cells (same seconds, same channel)."""
 
+        if len(lanes) == 1:
+            return {"order": list(lanes), "note": "Single-cell run; compare separate runs with matched resources and traffic."}
         out = self._pairs(valid, "a", "b")
         a, b = lanes["a"]["scheduler"], lanes["b"]["scheduler"]
         out["order"] = ["a", "b"]

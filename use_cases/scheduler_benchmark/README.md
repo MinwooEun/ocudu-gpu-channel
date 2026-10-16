@@ -4,6 +4,20 @@ Native gate: `bash use_cases/scheduler_benchmark/run-ocudu-scheduler-benchmark.s
 (from the repo root). It sources `scripts/native/env.sh` and reuses the
 native renderers there; results land under `$OCUDU_NATIVE_ROOT`.
 
+For sequential comparisons on the same resources, set `OCUDU_NATIVE_SB_SINGLE_CELL=1`
+and choose `OCUDU_NATIVE_SB_SCHED_A=rr` or `qos` in separate invocations. Only cell A,
+its broker and its two UEs run; the CPU sets and per-cell seeded traffic stay the
+same. The report contains one cell and no within-run policy comparison. Compare
+separate reports only after checking connectivity, IQ progress, traffic delivery
+and channel settings. The default remains the simultaneous two-cell benchmark.
+
+The patched srsUE also accepts `OCUDU_NATIVE_SB_UE_RX_SLEEP=false`. This passes
+`rx_sleep=false` to its ZMQ radio, removing the full-block relative sleep in each
+receive call while the channel broker retains nominal-rate pacing. The default
+is `true`, preserving prior behavior. Rebuild with `scripts/native/build-srsue-local.sh`
+after updating the patch lock. Use the same setting for both scheduler policies,
+and verify actual IQ progress and timing misses rather than assuming real time.
+
 ## Run the scheduler benchmark (two cells × two UEs, one channel)
 
 `run-ocudu-scheduler-benchmark.sh` compares two OCUDU MAC scheduling
