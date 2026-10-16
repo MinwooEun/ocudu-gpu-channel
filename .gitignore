@@ -42,6 +42,9 @@ __pycache__/
 # User's local LaTeX work, intentionally untracked.
 /writing/
 
+# Local slide files.
+/slides/
+
 # Python package build outputs
 *.egg-info/
 dist/
