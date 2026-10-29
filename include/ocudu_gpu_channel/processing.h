@@ -122,6 +122,14 @@ public:
   virtual ProcessorTimings last_timings() const = 0;
   virtual const char* backend_name() const = 0;
 
+  // Restart destination `dst_key`'s receiver-model AWGN counters at zero, so
+  // the noise drawn for the next sample is the draw for counter 0. Called only
+  // from that destination's producer thread, between two process calls.
+  // Returns false when the backend's noise is not counter-indexed (the CPU
+  // reference draws from a stateful generator), so a caller cannot mistake a
+  // no-op for a reset.
+  virtual bool reset_receiver_noise(const std::string& /*dst_key*/) { return false; }
+
   // Phase 3 C3: return a non-owning map from link_id (e.g. "ue0-gnb0") to
   // the BrokerLinkControl the backend allocated for that link. The broker
   // hands this to the ControlServer so REQs can find the right shadow.

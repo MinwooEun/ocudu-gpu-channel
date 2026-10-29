@@ -1034,6 +1034,20 @@ public:
     }
   }
 
+  bool reset_receiver_noise(const std::string& dst_key) override
+  {
+    auto sp_it = superpose_states_.find(dst_key);
+    if (sp_it == superpose_states_.end()) {
+      return false;
+    }
+    // The AWGN draw is Philox(seed, counter + idx): zeroing the counter makes
+    // the next sample's noise the draw for index 0, whatever the call sizes.
+    for (auto& rx : sp_it->second.rx_models) {
+      std::fill(rx.noise_counter.begin(), rx.noise_counter.end(), 0ULL);
+    }
+    return true;
+  }
+
   void process_superposition(const std::string& dst_key,
                              const std::vector<SuperpositionInput>& inputs,
                              const ModelConfig* rx_model,

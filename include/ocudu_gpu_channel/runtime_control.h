@@ -31,6 +31,8 @@
 
 #include <atomic>
 #include <cstdint>
+#include <string>
+#include <unistd.h>
 
 namespace ocg {
 
@@ -240,6 +242,30 @@ struct BrokerLinkControl {
   // updates apply now.
   std::atomic<std::uint64_t> current_slot{0};
 
+  // Sample-indexed control (opt-in; all zero unless a batch_commit names
+  // take_effect_at_sample). A slot index counts serve calls, whose sizes
+  // vary with how the radios request, so "slot k" is not the same instant of
+  // the IQ stream in two runs. The link clock (samples since the broker
+  // started) is: a gated update applies to the first sample >= this target,
+  // and the broker producer splits a call at the target so it lands exactly.
+  // Written by the control thread before the seqno release-store.
+  std::atomic<std::uint64_t> take_effect_at_sample{0};
+  // Receiver-noise epoch: at this sample of the destination node's stream
+  // the node's receiver AWGN counters restart at 0, so the noise realisation
+  // is indexed by samples since the epoch rather than since broker start.
+  // Cleared by the producer once handled. 0 = none.
+  std::atomic<std::uint64_t> noise_epoch_at_sample{0};
+  // Caller's label for the pending update and the digest of the profile the
+  // control thread decoded, both logged when the update takes effect. The
+  // tag is written before the seqno bump and read after observing it.
+  static constexpr std::size_t kTagCapacity = 96;
+  char pending_tag[kTagCapacity] = {};
+  std::uint64_t pending_digest = 0;
+  // Start sample of the slot the link is processing, and the seqno of the
+  // last update that took effect: what `link_clock` reports.
+  std::atomic<std::uint64_t> current_sample{0};
+  std::atomic<std::uint32_t> applied_seqno{0};
+
   std::atomic<std::uint32_t> seqno{0};        // bumped after every shadow write
 
   // v3.0 telemetry snapshot — written by the backend snap path each
@@ -402,7 +428,68 @@ inline void init_broker_link_control(BrokerLinkControl& ctl,
   ctl.matrix_profile_pending = false;
   ctl.take_effect_at_slot = 0;
   ctl.current_slot.store(0, std::memory_order_relaxed);
+  ctl.take_effect_at_sample.store(0, std::memory_order_relaxed);
+  ctl.noise_epoch_at_sample.store(0, std::memory_order_relaxed);
+  ctl.pending_tag[0] = '\0';
+  ctl.pending_digest = 0;
+  ctl.current_sample.store(0, std::memory_order_relaxed);
+  ctl.applied_seqno.store(0, std::memory_order_relaxed);
   ctl.seqno.store(0, std::memory_order_relaxed);
+}
+
+// Evidence lines (sample-indexed control) are written with one write(2) of
+// the complete line, never through std::cout: several producer threads print
+// concurrently, and stream insertions from different threads interleave
+// inside one line, which a log parser then silently misses.
+inline void emit_evidence_line(std::string line)
+{
+  line.push_back('\n');
+  const char* data = line.data();
+  std::size_t left = line.size();
+  while (left > 0) {
+    const ssize_t n = ::write(STDOUT_FILENO, data, left);
+    if (n <= 0) return;
+    data += n;
+    left -= static_cast<std::size_t>(n);
+  }
+}
+
+// FNV-1a over the named fields of a decoded matrix profile (never padding
+// bytes). Two runs that decoded the same request bytes produce the same
+// value; it is the broker-side half of the identical-channel evidence.
+inline std::uint64_t matrix_profile_digest(const MatrixProfileShadow& profile)
+{
+  std::uint64_t hash = 1469598103934665603ULL;
+  const auto mix = [&hash](const void* data, std::size_t size) {
+    const auto* bytes = static_cast<const unsigned char*>(data);
+    for (std::size_t i = 0; i != size; ++i) {
+      hash ^= bytes[i];
+      hash *= 1099511628211ULL;
+    }
+  };
+  const auto mix_value = [&mix](auto value) { mix(&value, sizeof(value)); };
+  mix_value(profile.nt);
+  mix_value(profile.nr);
+  mix_value(profile.lane_count);
+  for (int lane = 0; lane < profile.lane_count; ++lane) {
+    const ProfileShadow& p = profile.lanes[lane];
+    mix_value(p.n_taps);
+    mix_value(p.fading_enabled);
+    mix_value(p.fading_f_d_max_hz);
+    mix_value(p.fading_spectrum);
+    mix_value(p.fading_grid_us);
+    mix_value(p.force);
+    for (int tap = 0; tap < p.n_taps; ++tap) {
+      const TapSpec& t = p.taps[tap];
+      mix_value(t.delay_samples);
+      mix_value(t.gain_db);
+      mix_value(t.phase_rad);
+      mix_value(t.is_los);
+      mix_value(t.los_k_db);
+      mix_value(t.los_angle_rad);
+    }
+  }
+  return hash;
 }
 
 }  // namespace ocg

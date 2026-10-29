@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <chrono>
 #include <complex>
+#include <cstdio>
 #include <iostream>
 #include <cstdint>
 #include <stdexcept>
@@ -211,9 +212,43 @@ inline LinkSnapOutcome snap_physical_link(PhysicalLinkRuntime& link,
   // return). The slot counter is the link's, so take_effect_at_slot names the
   // same slot for every lane.
   const std::uint64_t snap_idx = link.next_slot;
-  const bool values_changed =
-      snap_mutable_params(link.live, link.live_seqno, link.control, snap_idx);
+  const std::uint64_t snap_sample = link.clock.slot_start_samples;
+  link.control.current_sample.store(snap_sample, std::memory_order_relaxed);
+  // Opt-in sample gate: an update committed with take_effect_at_sample waits
+  // for the first slot that starts at or after that sample. The seqno is read
+  // first (acquire), so a target written before the bump is visible here.
+  const bool update_pending =
+      link.control.seqno.load(std::memory_order_acquire) != link.live_seqno;
+  const std::uint64_t sample_gate =
+      link.control.take_effect_at_sample.load(std::memory_order_acquire);
+  bool values_changed = false;
+  if (update_pending && sample_gate > snap_sample) {
+    link.control.current_slot.store(snap_idx, std::memory_order_relaxed);
+  } else {
+    values_changed =
+        snap_mutable_params(link.live, link.live_seqno, link.control, snap_idx);
+  }
   link.next_slot = snap_idx + 1;
+  if (values_changed) {
+    // Logged only for tagged (sample-indexed) updates, so untagged callers see
+    // the broker output they always saw. The line is formatted before
+    // applied_seqno is published: a caller that waits for it may commit the
+    // next update at once, which rewrites the tag and digest read here.
+    if (link.control.pending_tag[0] != '\0') {
+      char line[384];
+      std::snprintf(line, sizeof(line),
+                    "event=control_sample_applied link_id=%s tag=%s seqno=%u slot=%llu sample=%llu "
+                    "target_sample=%llu count=%zu digest=%016llx unix_ns=%lld",
+                    link_id.c_str(), link.control.pending_tag, static_cast<unsigned>(link.live_seqno),
+                    static_cast<unsigned long long>(snap_idx), static_cast<unsigned long long>(snap_sample),
+                    static_cast<unsigned long long>(sample_gate), count,
+                    static_cast<unsigned long long>(link.control.pending_digest),
+                    static_cast<long long>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+                        std::chrono::system_clock::now().time_since_epoch()).count()));
+      emit_evidence_line(line);
+    }
+    link.control.applied_seqno.store(link.live_seqno, std::memory_order_release);
+  }
 
   bool profile_activated = false;
   bool matrix_profile_activated = false;

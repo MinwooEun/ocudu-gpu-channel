@@ -1143,6 +1143,10 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
       // One batch is the whole run-ahead the RX ring grants (`rx_high_water`),
       // so it is also the most lateness this producer may ever spend at once.
       RealTimePacer pacer(rate, batch_duration);
+      // Samples this node has produced since the broker started: the same
+      // count every incoming link's clock holds, since each call advances all
+      // of them together. Used only by the opt-in sample-indexed control.
+      std::uint64_t node_sample = 0;
 
       while (!stop_requested.load()) {
         // (A) Output room. Every RX row must be able to take at least one
@@ -1270,6 +1274,20 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         if (count == 0) {
           break; // stop requested while waiting for lane data
         }
+        // Opt-in sample-indexed control: a call never straddles a pending
+        // take_effect_at_sample or noise epoch of an incoming link, so the
+        // update starts exactly at its target sample instead of at whichever
+        // call boundary follows it. Inert (no target set) for every caller
+        // that does not name one.
+        for (BrokerLinkControl* ctl : node_controls[n]) {
+          for (const std::uint64_t target :
+               {ctl->take_effect_at_sample.load(std::memory_order_acquire),
+                ctl->noise_epoch_at_sample.load(std::memory_order_acquire)}) {
+            if (target > node_sample && target < node_sample + count) {
+              count = static_cast<std::size_t>(target - node_sample);
+            }
+          }
+        }
         trace.add(HopEvent::ProduceDataReady, count);
         const auto t_read_start = std::chrono::steady_clock::now();
         const double data_us =
@@ -1316,6 +1334,28 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           }
           row_in_ring[r] = !tail.empty();
           rows[r] = row_in_ring[r] ? tail : std::span<IqSample>(row_storage[r].data(), count);
+        }
+        // Receiver-noise epoch (opt-in): restart this node's receiver AWGN
+        // counters at the requested sample, so the noise added at sample k
+        // after the epoch is the same draw in every run.
+        {
+          bool reset = false;
+          std::uint64_t missed = 0;
+          for (BrokerLinkControl* ctl : node_controls[n]) {
+            std::uint64_t epoch = ctl->noise_epoch_at_sample.load(std::memory_order_acquire);
+            if (epoch == 0 || epoch > node_sample) continue;
+            if (epoch == node_sample) reset = true; else missed = epoch;
+            ctl->noise_epoch_at_sample.compare_exchange_strong(epoch, 0, std::memory_order_acq_rel);
+          }
+          if (reset) {
+            const bool supported = processor_->reset_receiver_noise(node.id);
+            emit_evidence_line("event=noise_epoch node=" + node.id + " sample=" + std::to_string(node_sample) +
+                               " applied=" + (supported ? "1" : "0"));
+          }
+          if (missed != 0) {
+            emit_evidence_line("event=noise_epoch_missed node=" + node.id + " target_sample=" +
+                               std::to_string(missed) + " sample=" + std::to_string(node_sample));
+          }
         }
         diag.state.store("process");
         const auto t_process_start = std::chrono::steady_clock::now();
@@ -1368,6 +1408,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         for (std::size_t k = 0; k != incoming.size(); ++k) {
           links[incoming[k]].cursor.fetch_add(count);
         }
+        node_sample += count;
 
         // (G) Throttle: cap the production cadence at the node sample rate so
         // the lock-step radio runs at real time, not faster. The pacer refuses

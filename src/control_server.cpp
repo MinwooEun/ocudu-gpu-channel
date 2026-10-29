@@ -5,8 +5,10 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <iostream>
 #include <optional>
@@ -1185,6 +1187,39 @@ std::string handle_batch_commit(
   }
   const std::uint64_t apply_at = static_cast<std::uint64_t>(tea);
 
+  // Opt-in sample-indexed timing (single-cell scheduler benchmark): the
+  // update takes effect at this sample of each link's stream, the label is
+  // logged when it does, and noise_epoch restarts the destination's
+  // receiver-noise counters at the same sample. Omitted, all three are inert.
+  double tas_value = 0.0;
+  bool noise_epoch = false;
+  std::string tag;
+  try {
+    tas_value = get_number(fields, "take_effect_at_sample", 0.0);
+    noise_epoch = get_bool(fields, "noise_epoch", false);
+    tag = get_string(fields, "tag", "");
+  } catch (const std::exception& e) {
+    return emit_rejection(ctx, e.what());
+  }
+  if (!std::isfinite(tas_value) || tas_value < 0.0 || tas_value > 9.0e15 ||
+      tas_value != std::floor(tas_value)) {
+    return emit_rejection(ctx, "batch_commit: take_effect_at_sample must be a non-negative integer");
+  }
+  const std::uint64_t apply_at_sample = static_cast<std::uint64_t>(tas_value);
+  if (tag.size() >= BrokerLinkControl::kTagCapacity) {
+    return emit_rejection(ctx, "batch_commit: tag is too long");
+  }
+  for (const char c : tag) {
+    if (!(std::isalnum(static_cast<unsigned char>(c)) || c == ':' || c == '=' || c == ';' ||
+          c == '.' || c == '_' || c == '-')) {
+      return emit_rejection(ctx, "batch_commit: tag may contain only [A-Za-z0-9:=;._-]");
+    }
+  }
+  if (noise_epoch && apply_at_sample == 0) {
+    return emit_rejection(ctx, "batch_commit: noise_epoch needs take_effect_at_sample > 0");
+  }
+  std::uint64_t late_links = 0;
+
   // Apply staged ops in order. Per-link single-writer invariant holds:
   // each ctl is written serially within this control thread, then its
   // seqno bumped. The plan's "same per-link slot index" guarantee falls
@@ -1204,6 +1239,20 @@ std::string handle_batch_commit(
     }
     BrokerLinkControl& ctl = *it_ctl->second;
     ctl.take_effect_at_slot = apply_at;
+    // Everything the snap reads after observing the seqno bump is written
+    // before it: the sample gate, the label, the decoded-profile digest.
+    ctl.take_effect_at_sample.store(apply_at_sample, std::memory_order_release);
+    std::snprintf(ctl.pending_tag, BrokerLinkControl::kTagCapacity, "%s", tag.c_str());
+    ctl.pending_digest = op.kind == ControlServer::StagedOp::Kind::MatrixProfileSwap
+                             ? matrix_profile_digest(op.matrix_profile)
+                             : 0;
+    if (noise_epoch) {
+      ctl.noise_epoch_at_sample.store(apply_at_sample, std::memory_order_release);
+    }
+    if (apply_at_sample != 0 &&
+        apply_at_sample <= ctl.current_sample.load(std::memory_order_relaxed)) {
+      ++late_links;
+    }
     if (op.kind == ControlServer::StagedOp::Kind::Scalar) {
       const ParamSpec* spec = find_param_spec(op.param);
       if (spec == nullptr) continue;   // shouldn't happen — validated at stage time
@@ -1242,6 +1291,10 @@ std::string handle_batch_commit(
     o << "event=control_batch_commit id=" << bid
       << " link_count=" << applied_count
       << " apply_at_slot=" << apply_at;
+    if (apply_at_sample != 0 || !tag.empty() || noise_epoch) {
+      o << " apply_at_sample=" << apply_at_sample << " tag=" << (tag.empty() ? "-" : tag)
+        << " noise_epoch=" << (noise_epoch ? 1 : 0) << " late_links=" << late_links;
+    }
     ctx.logger(o.str());
   }
 
@@ -1251,7 +1304,11 @@ std::string handle_batch_commit(
       << "\",\"backend\":\""
       << json_escape(ctx.backend_name.empty() ? "unknown" : ctx.backend_name)
       << "\",\"link_count\":" << applied_count
-      << ",\"apply_at_slot\":" << apply_at << ",\"links\":[";
+      << ",\"apply_at_slot\":" << apply_at;
+  if (apply_at_sample != 0) {
+    rep << ",\"apply_at_sample\":" << apply_at_sample << ",\"late_links\":" << late_links;
+  }
+  rep << ",\"links\":[";
   bool first = true;
   for (const auto& [link_id, seqno] : committed_seqnos) {
     if (!first) rep << ',';
@@ -1295,6 +1352,32 @@ std::string handle_batch_abort(
   return std::string("{\"ok\":true,\"dropped_ops\":") + std::to_string(dropped) + "}";
 }
 
+// Sample-indexed control: where every link is in its IQ stream, and which
+// update it has taken. Read-only; a sender pacing traffic on radio time and a
+// replayer waiting for an update to land both poll it.
+std::string handle_link_clock(HandlerContext& ctx)
+{
+  std::vector<std::string> ids;
+  ids.reserve(ctx.link_map.size());
+  for (const auto& [link_id, ctl] : ctx.link_map) {
+    if (ctl != nullptr) ids.push_back(link_id);
+  }
+  std::sort(ids.begin(), ids.end());
+  std::ostringstream rep;
+  rep << "{\"ok\":true,\"links\":[";
+  for (std::size_t i = 0; i != ids.size(); ++i) {
+    const BrokerLinkControl& ctl = *ctx.link_map.at(ids[i]);
+    if (i != 0) rep << ',';
+    rep << "{\"link_id\":\"" << json_escape(ids[i]) << "\""
+        << ",\"sample\":" << ctl.current_sample.load(std::memory_order_relaxed)
+        << ",\"slot\":" << ctl.current_slot.load(std::memory_order_relaxed)
+        << ",\"seqno\":" << ctl.seqno.load(std::memory_order_acquire)
+        << ",\"applied_seqno\":" << ctl.applied_seqno.load(std::memory_order_relaxed) << '}';
+  }
+  rep << "]}";
+  return rep.str();
+}
+
 }  // namespace
 
 std::string ControlServer::handle_message(const std::string& request_body)
@@ -1331,6 +1414,7 @@ std::string ControlServer::handle_message(const std::string& request_body)
   if (type_str == "batch_begin")  return handle_batch_begin  (ctx, fields);
   if (type_str == "batch_commit") return handle_batch_commit (ctx, fields);
   if (type_str == "batch_abort")  return handle_batch_abort  (ctx, fields);
+  if (type_str == "link_clock")   return handle_link_clock   (ctx);
   return emit_rejection(ctx, std::string("unknown message type: ") + type_str);
 }
 
