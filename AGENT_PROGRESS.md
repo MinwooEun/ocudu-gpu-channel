@@ -2,6 +2,8 @@
 
 ## Workspace checkpoint — 2026-10-29
 
+- Verified all seven authenticated draft-release assets against GitHub SHA-256 digests, totaling 5.85 GiB. `CHECKPOINT-VERIFIED.json` records the receipt; `RESTORE.txt` explains separate-workspace restoration, and original source branches remain unchanged.
+
 - Saved pre-redesign profiling, local patches, explanatory HTML and expanded UE GPU receiver work under `local-work/`. Large/raw evidence is indexed by `CHECKPOINT.json` for authenticated draft-release backup; production relay changes have not started.
 
 > **Entry rules:** One bullet per meaningful change; at most two sentences and 40 words. Record outcomes, decisive checks and blockers; link details and omit repeated context. Apply the [harness rules](AGENT_HARNESS.md#progress-entries) before finishing.

@@ -57,5 +57,5 @@
     "Git metadata and build/cache directories",
     "credential/config files"
   ],
-  "restore": "Clone the checkpoint branch for code and reports. Download draft assets using gh release download with the draft-release name, verify SHA256, and extract workspace-supplement.tar.gz into the workspace root. Large assets have original workspace paths in this manifest."
+  "restore": "See RESTORE.txt. Original asset paths are relative to the original workspace root, equivalent to the branch local-work/ layout. Extract the supplement to a separate workspace and place other assets at original_path."
 }

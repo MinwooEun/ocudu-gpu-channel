@@ -1,0 +1,54 @@
+{
+  "source_snapshot_commit": "82cb707d4f5da2327a26ea75a5124adcb18a330f",
+  "repository": "MinwooEun/ocudu-gpu-channel",
+  "branch": "checkpoint/spark-scaling-ue-gpu-20261029",
+  "draft_release_id": 427766255,
+  "draft_release_tag": "checkpoint-20261029-before-relay-redesign",
+  "all_assets_uploaded": true,
+  "all_github_sha256_match": true,
+  "total_bytes": 6283273783,
+  "assets": [
+    {
+      "digest": "sha256:bbb9c26e909a6d22fea8cc064709785cb7ef4b3e6737183b3b6bf5b5fe9302bd",
+      "name": "profiling-20261028--boundary-evidence.tgz",
+      "size": 194071487,
+      "state": "uploaded"
+    },
+    {
+      "digest": "sha256:4a8339893e9c004e3a30e579017ae574e7df56e382729d7a8b4f707c5914d53a",
+      "name": "profiling-20261028--live-fixes-evidence.tar.gz",
+      "size": 755584314,
+      "state": "uploaded"
+    },
+    {
+      "digest": "sha256:c3cc54e4ac69a3b7d81c02258eb8992e403df05bf50eb78377017618c77efebb",
+      "name": "profiling-20261028--raw-evidence.tar.gz",
+      "size": 1309540315,
+      "state": "uploaded"
+    },
+    {
+      "digest": "sha256:7a52ae619f2a51f9fa5c12c509c7bca5baf088861d4d9652a9c921a5e90f34c9",
+      "name": "profiling-20261029-causal--pr10-raw-evidence.tar.gz",
+      "size": 1254809884,
+      "state": "uploaded"
+    },
+    {
+      "digest": "sha256:31427f0e61c2ab32cc3cea3dfb6b5c6529ec2f722832dd08f9981c0a60dac10c",
+      "name": "profiling-20261029-deep--raw-function-evidence.tar.gz",
+      "size": 1869514985,
+      "state": "uploaded"
+    },
+    {
+      "digest": "sha256:68cb6027e6bfdc3a530821e81d0706200c25a59b7a01007ec6c09f81479856d0",
+      "name": "u16-c1-bw20-a1x1-r0-trace1--timeline.nsys-rep",
+      "size": 102013128,
+      "state": "uploaded"
+    },
+    {
+      "digest": "sha256:bf60032bd3573a00286f1031edf199f37eccf0d318e50a50ac135c7e1e6a80cd",
+      "name": "workspace-supplement.tar.gz",
+      "size": 797739670,
+      "state": "uploaded"
+    }
+  ]
+}

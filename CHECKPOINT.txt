@@ -10,7 +10,8 @@ UE 구현: local-work/ue-gpu-phy/
 
 대용량 원시 기록과 다른 dirty checkout의 원본 변경은 checkpoint-20261029-before-relay-redesign 초안 릴리스 첨부에 보존한다.
 CHECKPOINT.json의 원본 경로·크기·SHA256으로 확인하고 복원할 수 있다. 초안 첨부는 저장소 소유자의 인증이 필요하다.
-로컬 원본 작업 폴더와 기존 브랜치는 그대로 유지했다.
+기존 소스·실험자료와 기존 브랜치는 유지했다. 체크포인트 경로와 완료 상태는 진행 기록에 남겼다.
+대용량 첨부 7개는 모두 업로드했으며 GitHub의 SHA-256과 로컬 해시가 일치한다. CHECKPOINT-VERIFIED.json을 참고한다.
 
 전체 UE PHY가 GPU에 상주한다는 의미는 아니다. 최신 구현은 GPU FFT/PDSCH 경로와 CPU 제어·결과 처리, 조건부 CPU 복귀를 포함한다.
 최근 UE GPU live 비교는 CPU gNB 조건이며, PR CUDA gNB 경계 분석과 별도다.

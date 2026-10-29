@@ -1,0 +1,29 @@
+체크포인트 복원
+
+1. 코드와 HTML만 확인
+   git clone --branch checkpoint/spark-scaling-ue-gpu-20261029 https://github.com/MinwooEun/ocudu-gpu-channel.git checkpoint-repo
+   checkpoint-repo/local-work/ 안의 소스·패치·보고서를 확인한다.
+
+2. 원시 기록까지 다운로드 (MinwooEun 계정 또는 저장소 쓰기 권한으로 gh 인증 필요)
+   gh release download checkpoint-20261029-before-relay-redesign --repo MinwooEun/ocudu-gpu-channel --dir checkpoint-assets
+   CHECKPOINT.json의 assets 항목에 있는 size와 sha256을 다운로드 파일에 대조한다.
+
+3. 별도의 빈 디렉터리로 전체 작업 파일 복원
+   mkdir restored-workspace
+   tar -xzf checkpoint-assets/workspace-supplement.tar.gz -C restored-workspace
+   CHECKPOINT.json에서 workspace-supplement.tar.gz 외 각 첨부의 original_path를 확인한다.
+   checkpoint-assets/<asset 이름>을 restored-workspace/<original_path> 위치에 복사한다.
+   이 original_path는 원래 ocudu-work 루트 기준이며, Git 브랜치의 local-work/ 기준과 동일한 상대 경로다.
+
+4. HTML 근거 링크
+   Git clone에서는 local-work/ocudu-upstream-main 심볼릭 링크가 저장소 루트를 가리킨다.
+   복원한 별도 workspace에서는 ocudu-upstream-main 위치에 checkpoint-repo를 연결하거나 복사하면 기준 저장소의 문서 링크도 열린다.
+   대용량 raw 링크는 원래 경로에 첨부파일을 복원한 뒤 사용할 수 있다.
+
+5. 다른 dirty checkout의 변경
+   restored-workspace/checkpoint-backup-20261029/repositories.json에 기준 commit과 원격이 있다.
+   같은 디렉터리의 각 저장소별 working-tree.patch와 untracked/를 해당 기준 checkout에 적용할 수 있다.
+   기존 작업 폴더에 바로 덮어쓰지 말고 별도 디렉터리에서 먼저 확인한다.
+
+기존 소스·실험자료와 기존 브랜치는 유지했으며 진행 기록에 체크포인트 완료 상태를 남겼다.
+Git metadata, 빌드/cache 디렉터리와 credential/config 파일은 백업 대상에서 제외했다.
