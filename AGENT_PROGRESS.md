@@ -345,4 +345,4 @@ The candidate batch and diagnostics have finished; no runtime is left running. N
 - Eight-UE frozen-input control completed at 0.920779; combined candidate completed at 0.861514, both 30/30 valid. The tested execution redesign does not improve either UE-count point, so no candidate is qualified for default use or scaling-boundary expansion.
 
 - Saved a standalone implementation/results HTML and machine-readable evidence, including failed/incomplete trials and per-case hashes. Three browser widths and twelve links pass; no external load requests or browser errors occur.
-- Source and compact evidence are prepared on the checkpoint branch; original PR10 source and binaries are untouched. All new execution and receiver-fusion modes remain opt-in after failed performance comparisons.
+- Source and compact evidence were pushed to the checkpoint branch and its remote head verified; original PR10 worktree remains clean at `9a33e0c`. All new execution and receiver-fusion modes remain opt-in after failed performance comparisons.
