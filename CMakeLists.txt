@@ -161,9 +161,15 @@ if(OCUDU_GPU_CHANNEL_BUILD_TESTS)
   target_link_libraries(test_ring PRIVATE ocudu_gpu_channel_lib)
   add_test(NAME ring COMMAND test_ring)
 
+  add_executable(test_ready_queue tests/core/test_ready_queue.cpp)
+  target_link_libraries(test_ready_queue PRIVATE ocudu_gpu_channel_lib)
+  add_test(NAME ready_queue COMMAND test_ready_queue)
+
   add_executable(test_broker tests/core/test_broker.cpp)
   target_link_libraries(test_broker PRIVATE ocudu_gpu_channel_lib)
   add_test(NAME broker COMMAND test_broker)
+  add_test(NAME broker_ready_queue COMMAND test_broker)
+  set_tests_properties(broker_ready_queue PROPERTIES ENVIRONMENT "OCG_BROKER_READY_WORKERS=2")
 
   # The Sionna adapter conversion tests use only the Python standard library;
   # Sionna RT and pyzmq remain optional live-integration dependencies.

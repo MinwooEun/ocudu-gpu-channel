@@ -571,7 +571,11 @@ void scenario_relay_knobs_bit_identical()
   for (const char* k : knobs) {
     ::setenv(k, "0", 1); // baseline: the pre-S15 relay path
   }
+  const char* ready_env = std::getenv("OCG_BROKER_READY_WORKERS");
+  const std::string ready_workers = ready_env ? ready_env : "0";
+  ::setenv("OCG_BROKER_READY_WORKERS", "0", 1);
   const auto base = run_parity_relay(config);
+  ::setenv("OCG_BROKER_READY_WORKERS", ready_workers.c_str(), 1);
   for (const char* k : knobs) {
     ::setenv(k, "1", 1);
   }

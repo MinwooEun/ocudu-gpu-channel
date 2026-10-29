@@ -4,13 +4,13 @@
 
 - Verified all seven authenticated draft-release assets against GitHub SHA-256 digests, totaling 5.85 GiB. `CHECKPOINT-VERIFIED.json` records the receipt; `RESTORE.txt` explains separate-workspace restoration, and original source branches remain unchanged.
 
-- Saved pre-redesign profiling, local patches, explanatory HTML and expanded UE GPU receiver work under `local-work/`. Large/raw evidence is indexed by `CHECKPOINT.json` for authenticated draft-release backup; production relay changes have not started.
+- Saved pre-redesign profiling, local patches, explanatory HTML and expanded UE GPU receiver work under `local-work/`. Large/raw evidence is indexed by `CHECKPOINT.json` for authenticated draft-release backup; the pre-patch snapshot is preserved in commit `0eb3cf4`.
 
 > **Entry rules:** One bullet per meaningful change; at most two sentences and 40 words. Record outcomes, decisive checks and blockers; link details and omit repeated context. Apply the [harness rules](AGENT_HARNESS.md#progress-entries) before finishing.
 
 ## Current Objective
 
-Project review and corrections are complete; [validation and remaining limits](docs/reports/validation/project-review-20261016.md) are recorded. Git records the commit and publication state.
+- Implement and measure the emulator relay bottleneck patch on Spark against frozen PR10 inputs, retaining CUDA gNB, CPU srsUE, ZMQ compatibility and sample continuity.
 
 ## Repository State
 
@@ -296,3 +296,10 @@ Historical ledgers:
 ## Next Resume Point
 
 No further review fixes are queued. Strict zero-starvation qualification remains failed; the existing scheduler reports retain the unresolved IQ handoff pauses and separately confirmed full-RLC-queue packet drops.
+
+## Active relay patch — 2026-10-29
+
+- Implementing a bounded, readiness-driven producer queue in checkpoint branch `checkpoint/spark-scaling-ue-gpu-20261029`. Existing ZMQ framing, common-node sample windows and bounded pacing remain; legacy mode provides an explicit comparison control.
+- Added persistent producer frames, per-node generation notifications and timer suspension; validation pending on Spark with PR10 frozen inputs, CUDA gNB and original CPU srsUE. Transport threads remain separate in this first isolated experiment.
+
+- Restored the archived PR10 sample-indexed control patch as commit `c66de51`; initial runs without it rejected `link_clock` before measurement and are excluded. Readiness queue, legacy broker and queue broker tests pass on Spark.

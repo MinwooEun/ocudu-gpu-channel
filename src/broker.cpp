@@ -1,6 +1,7 @@
 #include "ocudu_gpu_channel/broker.h"
 #include "ocudu_gpu_channel/timing_metrics.h"
 #include "ocudu_gpu_channel/pacing.h"
+#include "ocudu_gpu_channel/ready_queue.h"
 #include "ocudu_gpu_channel/ring.h"
 #include "ocudu_gpu_channel/runtime_control.h"
 #include <algorithm>
@@ -185,6 +186,7 @@ struct BrokerDiagKnobs {
   bool tight_slack = false;
   std::string trace_dir;
   int io_threads = 0;
+  int ready_workers = 0; // 0: legacy per-node threads; positive: bounded producer pool
   bool spin = false;         // in-process waits spin
   bool spin_sockets = false; // socket receives spin too (OCG_BROKER_SPIN=1)
   std::chrono::microseconds spin_budget{0};
@@ -219,6 +221,14 @@ BrokerDiagKnobs read_diag_knobs()
   }
   if (const char* budget = std::getenv("OCG_BROKER_SPIN_US"); budget != nullptr && *budget != '\0') {
     knobs.spin_budget = std::chrono::microseconds(std::strtol(budget, nullptr, 10));
+  }
+  if (const char* workers = std::getenv("OCG_BROKER_READY_WORKERS")) {
+    char* end = nullptr;
+    const long value = std::strtol(workers, &end, 10);
+    if (end == workers || *end != '\0' || value < 0 || value > 128) {
+      throw std::runtime_error("OCG_BROKER_READY_WORKERS must be an integer in [0,128]");
+    }
+    knobs.ready_workers = static_cast<int>(value);
   }
   knobs.fewer_copies = env_default_on("OCG_BROKER_FEWER_COPIES");
   knobs.direct_rows = env_default_on("OCG_BROKER_DIRECT_ROWS");
@@ -956,6 +966,17 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
     std::cerr << "event=error role=" << role << " detail=\"" << e.what() << "\"\n";
   };
 
+  std::unique_ptr<ProducerReadyQueue> ready_queue;
+  if (knobs.ready_workers > 0) ready_queue = std::make_unique<ProducerReadyQueue>(nodes.size());
+  // Immutable source -> destination-node map; notify only consumers of this IQ.
+  std::vector<std::vector<std::size_t>> consumers(ports.size());
+  for (std::size_t n = 0; n < nodes.size(); ++n) {
+    for (const auto k : nodes[n].incoming) {
+      auto& list = consumers[links[k].src_index];
+      if (std::find(list.begin(), list.end(), n) == list.end()) list.push_back(n);
+    }
+  }
+
   // Puller thread: ZMQ REQ source. Drains port p's TX flat-out (bounded only
   // by ring room), exactly as srsRAN's RX channel drains a peer TX. Unchanged
   // by the node overlay -- pulling is a per-port transport concern.
@@ -1014,6 +1035,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           }
           if (pushed) {
             trace.add(HopEvent::PullRingPushed, pending);
+            if (ready_queue) for (const auto n : consumers[d]) ready_queue->notify(n);
             // Wire capture, in ring order: this is what the peer's TX actually
             // put on the wire, before anything of ours reads it.
             append_capture(dev.tx_capture, dev.capture_limit, dev.capture_skip,
@@ -1105,7 +1127,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   // source cursor by that same count in one loop. A state where sibling RX
   // ports consumed different windows is not reachable, because no second
   // thread exists that could choose a window.
-  const auto run_producer = [&](std::size_t n) {
+  const auto run_producer = [&](std::size_t n) -> ProducerTask {
     WorkerDiag& diag = producer_diag[n];
     HopTrace& trace = producer_trace[n];
     apply_thread_slack(knobs);
@@ -1160,6 +1182,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         bool room_stall_reported = false;
         auto next_room_report = t_room_start + kStallReportInterval;
         while (!stop_requested.load()) {
+          const auto observed = ready_queue ? ready_queue->generation(n) : 0;
           room = node.batch;
           for (const std::size_t r : node.rx_ports) {
             room = std::min(room, rx_headroom(*ports[r]));
@@ -1174,7 +1197,8 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             room_stall_reported = true;
             next_room_report = now + kStallReportInterval;
           }
-          wait_tick(knobs, t_room_start);
+          if (ready_queue) co_await ready_queue->wait(n, observed, next_room_report);
+          else wait_tick(knobs, t_room_start);
         }
         // Only a genuine resume clears; a stop request is a shutdown, not
         // recovery, and must not be logged as one.
@@ -1226,6 +1250,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           bool data_stall_reported = false;
           auto next_data_report = wait_start + kStallReportInterval;
           while (!stop_requested.load()) {
+            const auto observed = ready_queue ? ready_queue->generation(n) : 0;
             std::size_t common = node.batch;
             for (std::size_t k = 0; k != incoming.size(); ++k) {
               auto& link = links[incoming[k]];
@@ -1264,7 +1289,12 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               data_stall_reported = true;
               next_data_report = now + kStallReportInterval;
             }
-            wait_tick(knobs, wait_start);
+            if (ready_queue) {
+              const auto deadline = diag.progress.load() > 0 && !starvation_counted
+                  ? std::min(next_data_report, wait_start + starvation_deadline + std::chrono::nanoseconds(1))
+                  : next_data_report;
+              co_await ready_queue->wait(n, observed, deadline);
+            } else wait_tick(knobs, wait_start);
           }
           if (data_stall_reported && !stop_requested.load()) {
             report_node_stall_cleared(node, "input_data",
@@ -1420,7 +1450,8 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         const auto due = pacer.charge(std::chrono::steady_clock::now(), count);
         if (config_.runtime.pacing && due > std::chrono::steady_clock::now()) {
           diag.state.store("throttle");
-          std::this_thread::sleep_until(due);
+          if (ready_queue) co_await ready_queue->until(n, due);
+          else std::this_thread::sleep_until(due);
         }
         const auto t_push_start = std::chrono::steady_clock::now();
         const double throttle_us =
@@ -1459,6 +1490,9 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         store_us(diag.stage_us_bits[kProducerStagePush], push_us);
         diag.last_samples.store(count);
         diag.progress.fetch_add(1);
+        // A busy node goes to the tail; a single ready radio cannot monopolize
+        // a worker through an unbounded sequence of partial windows.
+        if (ready_queue) co_await ready_queue->until(n, ProducerReadyQueue::Clock::now());
       }
     } catch (const std::exception& e) {
       report_thread_error("producer", e);
@@ -1547,6 +1581,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         if (take == 0) {
           break; // stop requested while waiting for a row
         }
+        if (ready_queue && in_ring.empty()) ready_queue->notify(port.node_index);
         trace.add(HopEvent::RepRowPopped, take);
         const auto t_send_start = std::chrono::steady_clock::now();
         const double pop_us =
@@ -1570,6 +1605,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           port.rx_ring.discard_before(port.rx_cursor);
           port.rx_slots.pop_front();
         }
+        if (ready_queue && !in_ring.empty()) ready_queue->notify(port.node_index);
         const double send_us =
             std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t_send_start).count();
         trace.add(HopEvent::RepReplySent, take);
@@ -1598,8 +1634,26 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
       workers.emplace_back(run_puller, p);
     }
   }
+  // Frames outlive all workers, including transport threads that notify them.
+  std::vector<ProducerTask> producer_tasks;
+  producer_tasks.reserve(nodes.size());
   for (std::size_t n = 0; n != nodes.size(); ++n) {
-    workers.emplace_back(run_producer, n);
+    producer_tasks.push_back(run_producer(n));
+    if (ready_queue) ready_queue->attach(n, producer_tasks.back().handle());
+    else workers.emplace_back([&, n] { producer_tasks[n].handle().resume(); });
+  }
+  if (ready_queue) {
+    std::cout << "event=producer_ready_queue workers=" << knobs.ready_workers
+              << " nodes=" << nodes.size() << "\n" << std::flush;
+    for (int i = 0; i < knobs.ready_workers; ++i) {
+      workers.emplace_back([&] {
+        apply_thread_slack(knobs);
+        ready_queue->run([&](std::exception_ptr error) {
+          try { std::rethrow_exception(error); }
+          catch (const std::exception& e) { report_thread_error("producer_queue", e); }
+        });
+      });
+    }
   }
   for (std::size_t p = 0; p != ports.size(); ++p) {
     if (ports[p]->rx_port >= 0) {
@@ -1795,6 +1849,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
   }
   stop_requested.store(true);
+  if (ready_queue) ready_queue->stop();
   for (auto& worker : workers) {
     worker.join();
   }
