@@ -13,6 +13,8 @@ cases={
  'ready2':{'OCUDU_NATIVE_CHANNEL_BUILD':BUILD,'OCG_BROKER_READY_WORKERS':'2'},
  'legacy-clean':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-mux','OCG_BROKER_READY_WORKERS':'0'},
  'mux2':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-mux','OCG_BROKER_READY_WORKERS':'2','OCG_BROKER_MULTIPLEX':'1'},
+ 'async2':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-async','OCG_BROKER_READY_WORKERS':'2','OCG_BROKER_MULTIPLEX':'1','OCG_BROKER_ASYNC_CUDA':'1'},
+ 'async1':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-async','OCG_BROKER_READY_WORKERS':'1','OCG_BROKER_MULTIPLEX':'1','OCG_BROKER_ASYNC_CUDA':'1'},
  'mux2-v2':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-v2','OCG_BROKER_READY_WORKERS':'2','OCG_BROKER_MULTIPLEX':'1'},
  'mux4-v2':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-v2','OCG_BROKER_READY_WORKERS':'4','OCG_BROKER_MULTIPLEX':'1'},
  'legacy-v2':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-v2','OCG_BROKER_READY_WORKERS':'0'},
@@ -28,7 +30,7 @@ for name in a.cases:
  if sp.check_output(['nvidia-smi','--query-compute-apps=pid','--format=csv,noheader'],text=True).strip():raise RuntimeError('GPU occupied before '+name)
  d.mkdir(exist_ok=True)
  env=dict(os.environ,**template);env.update(LD_LIBRARY_PATH='/usr/local/cuda/lib64',PATH='/usr/local/cuda/bin:'+os.environ['PATH'],OCUDU_NATIVE_ROOT='/workspace/ocudu-spark-ranb',OCUDU_NATIVE_SIONNA_PYTHON='/workspace/sionna-venv/bin/python');env.update(cases[name])
- for key in ('OCG_PROFILE_DIR','OCG_HOP_TRACE_DIR','OCG_BROKER_POLL_US','CUDA_MPS_PIPE_DIRECTORY','CUDA_MPS_LOG_DIRECTORY','OCG_BROKER_MULTIPLEX','OCG_BROKER_READY_WORKERS'):
+ for key in ('OCG_PROFILE_DIR','OCG_HOP_TRACE_DIR','OCG_BROKER_POLL_US','CUDA_MPS_PIPE_DIRECTORY','CUDA_MPS_LOG_DIRECTORY','OCG_BROKER_MULTIPLEX','OCG_BROKER_READY_WORKERS','OCG_BROKER_ASYNC_CUDA'):
   if key not in cases[name]:env.pop(key,None)
  cmd=['python3','scripts/cuda/with-cuda-mps.py','--','bash','use_cases/ran_benchmark/run-single-cell-policy.sh',
       '--run-root',str(d/'runtime'),'--scenario',str(FROZEN/'scenario.json'),'--channel-bundle',str(FROZEN/'channel'),'--traffic-bundle',str(FROZEN/'traffic'),

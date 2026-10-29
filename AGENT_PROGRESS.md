@@ -315,3 +315,10 @@ Continue the active relay patch below: finish Spark multiplex correctness tests,
 
 - Clean legacy measured 0.454120 (10/30 valid); first multiplex measured 0.378296 (30/30 valid), with zero sequence gaps/overflows/ZMQ errors but 637 starvations. Scheduler contention fell; end-to-end speed regressed, so multiplex remains experimental.
 - Reduced unnecessary wakeups using input/room-specific generations and per-port transport readiness; all five targeted tests pass again. Two-worker revised multiplex measured 0.396374 (0/30 valid); four-worker trial is running.
+
+- Implemented opt-in CUDA completion notification: submit GPU work, suspend the producer, resume after a CUDA host callback, then finalize host output/timings. Pending-call destruction drains the stream before producer buffers are released; Spark build/testing is pending.
+
+- Revised four-worker multiplex measured 0.382895 (30/30 valid), so increasing pool workers did not recover baseline speed. Async completion CUDA parity passes; expanded tests pass 14/15, with `cpu_parallel` also failing in the pre-async build.
+- Async completion trials now run with frozen PR10 inputs and unchanged gNB/CPU-UE hashes. Existing `cpu_parallel` failure is recorded separately; no test failure has been relabeled a pass.
+
+- Async two-worker live trial measured 0.392354 with 2/30 valid segments, below the 0.454120 control. CUDA completion suspension is functional but has not produced an end-to-end gain; one-worker comparison is still running.

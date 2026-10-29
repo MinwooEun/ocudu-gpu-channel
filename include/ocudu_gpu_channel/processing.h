@@ -3,6 +3,7 @@
 #include "ocudu_gpu_channel/config.h"
 #include "ocudu_gpu_channel/iq.h"
 #include <memory>
+#include <functional>
 #include <span>
 #include <string>
 #include <unordered_map>
@@ -69,6 +70,14 @@ struct SuperpositionInput {
   int tx_port = 0;
 };
 
+// Owns one submitted channel call. Inputs, output spans and the processor
+// must remain alive until finish() or destruction has drained the call.
+class ChannelCompletion {
+public:
+  virtual ~ChannelCompletion() = default;
+  virtual void finish() = 0;
+};
+
 class ChannelProcessor {
 public:
   virtual ~ChannelProcessor() = default;
@@ -76,8 +85,8 @@ public:
   // prepare() must be called once for the whole topology before
   // process_superposition(). It preallocates all per-link and per-node state,
   // so process_superposition() can then be called concurrently from different
-  // threads as long as each thread uses a distinct dst_key (one server thread
-  // per destination device, in the broker).
+  // threads as long as concurrent calls use distinct dst_key values. The
+  // broker retains one logical owner per node even when a pool runs the calls.
   virtual void prepare(const TopologyConfig& config) = 0;
 
   // Processes every incoming lane of destination node `dst_key` through its
@@ -117,6 +126,20 @@ public:
     std::span<IqSample> rows[1] = {output};
     process_superposition(dst_key, inputs, rx_model, sample_rate_hz,
                           std::span<std::span<IqSample>>(rows));
+  }
+
+  // Returns a pending call, or null when completed synchronously. An async
+  // implementation invokes on_ready after GPU writes are visible; finish()
+  // performs the remaining host copy/timing work. Only one call per dst_key
+  // may be outstanding. The synchronous interface above remains unchanged.
+  virtual std::unique_ptr<ChannelCompletion> submit_superposition(
+      const std::string& dst_key, const std::vector<SuperpositionInput>& inputs,
+      const ModelConfig* rx_model, std::uint64_t sample_rate_hz,
+      std::span<std::span<IqSample>> outputs, std::function<void()> on_ready)
+  {
+    (void)on_ready;
+    process_superposition(dst_key, inputs, rx_model, sample_rate_hz, outputs);
+    return {};
   }
 
   virtual ProcessorTimings last_timings() const = 0;

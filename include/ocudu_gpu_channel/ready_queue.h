@@ -43,7 +43,7 @@ private:
 class ProducerReadyQueue {
 public:
   using Clock = std::chrono::steady_clock;
-  enum class Event : std::size_t { Input = 0, Room = 1 };
+  enum class Event : std::size_t { Input = 0, Room = 1, Gpu = 2 };
   explicit ProducerReadyQueue(std::size_t nodes) : entries_(nodes) {}
 
   void attach(std::size_t node, ProducerTask::Handle handle)
@@ -154,7 +154,7 @@ private:
     ProducerTask::Handle handle{};
     Metrics metrics;
     Clock::time_point queued_at{};
-    std::uint64_t generation[2] = {};
+    std::uint64_t generation[3] = {};
     Event event = Event::Input;
     std::uint64_t observed = 0;
     Clock::time_point deadline = Clock::time_point::max();

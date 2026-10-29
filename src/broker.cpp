@@ -227,6 +227,7 @@ struct BrokerDiagKnobs {
   bool tight_slack = false;
   std::string trace_dir;
   int io_threads = 0;
+  bool async_cuda = false;
   bool multiplex = false;
   int ready_workers = 0; // 0: legacy per-node threads; positive: bounded producer pool
   bool spin = false;         // in-process waits spin
@@ -279,6 +280,13 @@ BrokerDiagKnobs read_diag_knobs()
   }
   if (knobs.multiplex && knobs.ready_workers == 0)
     throw std::runtime_error("OCG_BROKER_MULTIPLEX requires OCG_BROKER_READY_WORKERS > 0");
+  if (const char* async = std::getenv("OCG_BROKER_ASYNC_CUDA")) {
+    if (std::strcmp(async, "0") != 0 && std::strcmp(async, "1") != 0)
+      throw std::runtime_error("OCG_BROKER_ASYNC_CUDA must be 0 or 1");
+    knobs.async_cuda = std::strcmp(async, "1") == 0;
+  }
+  if (knobs.async_cuda && knobs.ready_workers == 0)
+    throw std::runtime_error("OCG_BROKER_ASYNC_CUDA requires OCG_BROKER_READY_WORKERS > 0");
   knobs.fewer_copies = env_default_on("OCG_BROKER_FEWER_COPIES");
   knobs.direct_rows = env_default_on("OCG_BROKER_DIRECT_ROWS");
   if (const char* wedge = std::getenv("OCG_BROKER_WEDGE_TIMEOUT_MS"); wedge != nullptr && *wedge != '\0') {
@@ -1015,6 +1023,8 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
     std::cerr << "event=error role=" << role << " detail=\"" << e.what() << "\"\n";
   };
 
+  if (knobs.async_cuda && std::strcmp(processor_->backend_name(), "cuda") != 0)
+    throw std::runtime_error("OCG_BROKER_ASYNC_CUDA requires the CUDA backend");
   RelayWakeup transport_wakeup(knobs.multiplex);
   std::unique_ptr<ProducerReadyQueue> ready_queue;
   if (knobs.ready_workers > 0) ready_queue = std::make_unique<ProducerReadyQueue>(nodes.size());
@@ -1446,8 +1456,19 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         const auto t_process_start = std::chrono::steady_clock::now();
         const double read_us =
             std::chrono::duration<double, std::micro>(t_process_start - t_read_start).count();
-        processor_->process_superposition(node.id, superposition, rx_model, node.sample_rate_hz,
-                                          std::span<std::span<IqSample>>(rows));
+        if (knobs.async_cuda) {
+          const auto observed = ready_queue->generation(n, ProducerReadyQueue::Event::Gpu);
+          auto completion = processor_->submit_superposition(node.id, superposition, rx_model, rate, rows,
+              [&, n] { ready_queue->notify(n, ProducerReadyQueue::Event::Gpu); });
+          if (completion) {
+            diag.state.store("wait_gpu");
+            co_await ready_queue->wait(n, observed, ProducerReadyQueue::Clock::time_point::max(),
+                                     ProducerReadyQueue::Event::Gpu);
+            completion->finish();
+          }
+        } else {
+          processor_->process_superposition(node.id, superposition, rx_model, rate, rows);
+        }
         const auto t_commit_start = std::chrono::steady_clock::now();
         const double process_us =
             std::chrono::duration<double, std::micro>(t_commit_start - t_process_start).count();

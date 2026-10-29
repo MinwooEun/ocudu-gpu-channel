@@ -579,6 +579,50 @@ void alloc_host_device_pair(bool zero_copy, T** host, T** device, std::size_t by
 
 class CudaChannelProcessor final : public ChannelProcessor {
 public:
+  class Completion final : public ChannelCompletion {
+  public:
+    Completion(CudaChannelProcessor& owner, CudaSuperposeState& state,
+               std::span<std::span<IqSample>> outputs,
+               std::chrono::steady_clock::time_point call_start,
+               std::chrono::steady_clock::time_point total_start,
+               std::function<void()> on_ready)
+        : owner_(owner), state_(state), outputs_(outputs), call_start_(call_start),
+          total_start_(total_start), on_ready_(std::move(on_ready)) {}
+    ~Completion() override {
+      // Shutdown may destroy a suspended producer. Drain before its input and
+      // output buffers disappear, including an in-flight host notification.
+      if (!finished_) cudaStreamSynchronize(state_.stream);
+    }
+    static void CUDART_CB ready(void* context) {
+      // CUDA APIs are forbidden inside a CUDA host function. Only notify the
+      // broker; all event queries, copies and timing APIs run on a worker.
+      static_cast<Completion*>(context)->on_ready_();
+    }
+    void finish() override {
+      if (finished_) return;
+      // In async mode D2H is already complete. This also joins the short host
+      // callback before this object can be deleted or its stream reused.
+      check(cudaStreamSynchronize(state_.stream), "cudaStreamSynchronize superpose completion");
+      const auto out_start = std::chrono::steady_clock::now();
+      const auto count = outputs_[0].size();
+      for (std::size_t r = 0; !state_.zc_direct && r < state_.rows; ++r) {
+        const auto* row = state_.host_output + r * count;
+        std::copy(row, row + count, outputs_[r].begin());
+      }
+      owner_.record_timings(state_.h2d_start, state_.h2d_done, state_.kernel_done, state_.d2h_done,
+                            call_start_, total_start_, out_start, state_.use_device_channel,
+                            state_.zc_in || state_.zc_out || state_.zc_meta || state_.zc_direct_in);
+      finished_ = true;
+    }
+  private:
+    CudaChannelProcessor& owner_;
+    CudaSuperposeState& state_;
+    std::span<std::span<IqSample>> outputs_;
+    std::chrono::steady_clock::time_point call_start_, total_start_;
+    std::function<void()> on_ready_;
+    bool finished_ = false;
+  };
+
   explicit CudaChannelProcessor(int device) : device_(device)
   {
     check(cudaSetDevice(device_), "cudaSetDevice");
@@ -1054,9 +1098,26 @@ public:
                              std::uint64_t sample_rate_hz,
                              std::span<std::span<IqSample>> outputs) override
   {
+    auto completion = launch_superposition(dst_key, inputs, rx_model, sample_rate_hz, outputs, {});
+    if (completion) completion->finish();
+  }
+
+  std::unique_ptr<ChannelCompletion> submit_superposition(
+      const std::string& dst_key, const std::vector<SuperpositionInput>& inputs,
+      const ModelConfig* rx_model, std::uint64_t sample_rate_hz,
+      std::span<std::span<IqSample>> outputs, std::function<void()> on_ready) override
+  {
+    return launch_superposition(dst_key, inputs, rx_model, sample_rate_hz, outputs, std::move(on_ready));
+  }
+
+  std::unique_ptr<ChannelCompletion> launch_superposition(
+      const std::string& dst_key, const std::vector<SuperpositionInput>& inputs,
+      const ModelConfig* rx_model, std::uint64_t sample_rate_hz,
+      std::span<std::span<IqSample>> outputs, std::function<void()> on_ready)
+  {
     const auto call_start = std::chrono::steady_clock::now();
     if (outputs.empty()) {
-      return;
+      return {};
     }
     auto sp_it = superpose_states_.find(dst_key);
     if (sp_it == superpose_states_.end()) {
@@ -1074,7 +1135,7 @@ public:
       }
     }
     if (count == 0) {
-      return;
+      return {};
     }
     if (count > sp.capacity) {
       throw std::runtime_error("CUDA superposition batch exceeds preallocated capacity");
@@ -1083,7 +1144,7 @@ public:
       for (const auto& row : outputs) {
         std::fill(row.begin(), row.end(), IqSample{});
       }
-      return;
+      return {};
     }
     // The broker hands lanes in resolved order, which is grouped by rx_port,
     // so the k-th input is the k-th lane the row boundaries were built from.
@@ -1502,15 +1563,11 @@ public:
             "cudaMemcpyAsync superpose D2H");
     }
     check(cudaEventRecord(sp.d2h_done, sp.stream), "cudaEventRecord superpose d2h_done");
-    check(cudaStreamSynchronize(sp.stream), "cudaStreamSynchronize superpose");
-    const auto out_start = std::chrono::steady_clock::now();
-    for (std::size_t r = 0; !sp.zc_direct && r != sp.rows; ++r) {
-      const IqSample* row = sp.host_output + r * count;
-      std::copy(row, row + count, outputs[r].begin());
+    auto completion = std::make_unique<Completion>(*this, sp, outputs, call_start, total_start, on_ready);
+    if (on_ready) {
+      check(cudaLaunchHostFunc(sp.stream, Completion::ready, completion.get()), "cudaLaunchHostFunc superpose ready");
     }
-
-    record_timings(sp.h2d_start, sp.h2d_done, sp.kernel_done, sp.d2h_done, call_start, total_start, out_start,
-                   sp.use_device_channel, sp.zc_in || sp.zc_out || sp.zc_meta || sp.zc_direct_in);
+    return completion;
   }
 
   ProcessorTimings last_timings() const override

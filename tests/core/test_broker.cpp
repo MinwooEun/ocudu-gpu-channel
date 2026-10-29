@@ -576,11 +576,15 @@ void scenario_relay_knobs_bit_identical()
   const std::string ready_workers = ready_env ? ready_env : "0";
   const char* mux_env = std::getenv("OCG_BROKER_MULTIPLEX");
   const std::string multiplex = mux_env ? mux_env : "0";
+  const char* async_env = std::getenv("OCG_BROKER_ASYNC_CUDA");
+  const std::string async_cuda = async_env ? async_env : "0";
+  ::setenv("OCG_BROKER_ASYNC_CUDA", "0", 1);
   ::setenv("OCG_BROKER_MULTIPLEX", "0", 1);
   ::setenv("OCG_BROKER_READY_WORKERS", "0", 1);
   const auto base = run_parity_relay(config);
   ::setenv("OCG_BROKER_READY_WORKERS", ready_workers.c_str(), 1);
   ::setenv("OCG_BROKER_MULTIPLEX", multiplex.c_str(), 1);
+  ::setenv("OCG_BROKER_ASYNC_CUDA", async_cuda.c_str(), 1);
   for (const char* k : knobs) {
     ::setenv(k, "1", 1);
   }
