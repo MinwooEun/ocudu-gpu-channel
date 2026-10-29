@@ -1,0 +1,476 @@
+{
+  "samples": 1024,
+  "period_total": 9927417299,
+  "atomic_callers": [
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0xf03c28",
+        "libcuda.so.580.178.04+0x43f81c",
+        "libcuda.so.580.178.04+0x269ffc"
+      ],
+      "samples": 31,
+      "period": 550199007,
+      "share_percent": 5.542216977777515
+    },
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0xf03c28",
+        "libcuda.so.580.178.04+0x43f81c",
+        "libcuda.so.580.178.04+0xf235ec"
+      ],
+      "samples": 31,
+      "period": 520925767,
+      "share_percent": 5.247344312326565
+    },
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0xf03c28",
+        "libcuda.so.580.178.04+0x43fcec",
+        "libcuda.so.580.178.04+0x2a8248"
+      ],
+      "samples": 17,
+      "period": 289950342,
+      "share_percent": 2.920702668852321
+    },
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0x2c7a48",
+        "libcuda.so.580.178.04+0x1ccc3c",
+        "libcuda.so.580.178.04+0x1cd320"
+      ],
+      "samples": 3,
+      "period": 48176243,
+      "share_percent": 0.48528475784787295
+    },
+    {
+      "lr": "libc.so.6+0x8b438",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0xf03f74",
+        "libcuda.so.580.178.04+0x219cfc",
+        "libcuda.so.580.178.04+0x2ca274"
+      ],
+      "samples": 2,
+      "period": 37342121,
+      "share_percent": 0.37615141859465817
+    },
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0x43fa84",
+        "libcuda.so.580.178.04+0xf23600",
+        "libcuda.so.580.178.04+0x1c222c"
+      ],
+      "samples": 2,
+      "period": 36534088,
+      "share_percent": 0.3680120105727813
+    },
+    {
+      "lr": "libc.so.6+0x88b90",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0xeff2f4",
+        "libcuda.so.580.178.04+0xf23814",
+        "libcuda.so.580.178.04+0x1c222c"
+      ],
+      "samples": 2,
+      "period": 32677869,
+      "share_percent": 0.32916787937676073
+    },
+    {
+      "lr": "libc.so.6+0x88a90",
+      "frame_callers": [
+        "ocudu-gpu-channel+0x1a070",
+        "libstdc++.so.6.0.33+0xe1ae0",
+        "libc.so.6+0x8582c"
+      ],
+      "samples": 2,
+      "period": 22484319,
+      "share_percent": 0.22648709450608942
+    },
+    {
+      "lr": "libc.so.6+0x8bfb8",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0x43f5f4",
+        "libcuda.so.580.178.04+0xf23608",
+        "libcuda.so.580.178.04+0x1c222c"
+      ],
+      "samples": 1,
+      "period": 22079936,
+      "share_percent": 0.22241369869909808
+    },
+    {
+      "lr": "libc.so.6+0x8b438",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0x43edf8",
+        "libcuda.so.580.178.04+0x269d50",
+        "libcuda.so.580.178.04+0x366d44"
+      ],
+      "samples": 1,
+      "period": 21619462,
+      "share_percent": 0.21777529188964134
+    },
+    {
+      "lr": "libc.so.6+0x94308",
+      "frame_callers": [
+        "libc.so.6+0x96e68",
+        "ocudu-gpu-channel+0x54fd8",
+        "ocudu-gpu-channel+0x569f4"
+      ],
+      "samples": 1,
+      "period": 21302717,
+      "share_percent": 0.21458468359283986
+    },
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "ocudu-gpu-channel+0x206c8",
+        "ocudu-gpu-channel+0x173c0",
+        "libstdc++.so.6.0.33+0xe1ae0"
+      ],
+      "samples": 1,
+      "period": 21219867,
+      "share_percent": 0.21375012614950217
+    },
+    {
+      "lr": "libc.so.6+0x88b90",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0x2c52f0",
+        "libcuda.so.580.178.04+0x269df0",
+        "libcuda.so.580.178.04+0x366d44"
+      ],
+      "samples": 1,
+      "period": 19879743,
+      "share_percent": 0.2002509051574019
+    },
+    {
+      "lr": "libc.so.6+0x8bfb8",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0xf041b8",
+        "libcuda.so.580.178.04+0x219cfc",
+        "libcuda.so.580.178.04+0x2ca274"
+      ],
+      "samples": 1,
+      "period": 19196203,
+      "share_percent": 0.1933655292392479
+    },
+    {
+      "lr": "libc.so.6+0x88b90",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0x43fb20",
+        "libcuda.so.580.178.04+0xf23600",
+        "libcuda.so.580.178.04+0x1c222c"
+      ],
+      "samples": 1,
+      "period": 18974592,
+      "share_percent": 0.1911332165105151
+    },
+    {
+      "lr": "libc.so.6+0x88b90",
+      "frame_callers": [
+        "libzmq.so.5.2.5+0x274a0",
+        "libzmq.so.5.2.5+0x3ef58",
+        "libzmq.so.5.2.5+0x58e80"
+      ],
+      "samples": 3,
+      "period": 18488079,
+      "share_percent": 0.18623251590181794
+    },
+    {
+      "lr": "libc.so.6+0x88b90",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0x39a450",
+        "libcuda.so.580.178.04+0x3d447c",
+        "libcuda.so.580.178.04+0x2a5c50"
+      ],
+      "samples": 1,
+      "period": 15613596,
+      "share_percent": 0.15727752274071097
+    },
+    {
+      "lr": "libc.so.6+0x8b438",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0xf03f74",
+        "libcuda.so.580.178.04+0x219af4",
+        "libcuda.so.580.178.04+0x2ca274"
+      ],
+      "samples": 1,
+      "period": 15587286,
+      "share_percent": 0.15701249912774518
+    },
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "ocudu-gpu-channel+0x20a0c",
+        "ocudu-gpu-channel+0x173c0",
+        "libstdc++.so.6.0.33+0xe1ae0"
+      ],
+      "samples": 1,
+      "period": 15469418,
+      "share_percent": 0.1558252014001492
+    },
+    {
+      "lr": "libc.so.6+0x8b438",
+      "frame_callers": [
+        "libcuda.so.580.178.04+0x43edf8",
+        "libcuda.so.580.178.04+0x2a819c",
+        "libcuda.so.580.178.04+0xf195f0"
+      ],
+      "samples": 1,
+      "period": 15102127,
+      "share_percent": 0.15212543751456137
+    },
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "ocudu-gpu-channel+0x1a274",
+        "libstdc++.so.6.0.33+0xe1ae0",
+        "libc.so.6+0x8582c"
+      ],
+      "samples": 1,
+      "period": 12098311,
+      "share_percent": 0.1218676583809837
+    },
+    {
+      "lr": "libc.so.6+0x942b4",
+      "frame_callers": [
+        "libc.so.6+0x96e68",
+        "libstdc++.so.6.0.33+0x157dac",
+        "ocudu-gpu-channel+0x54fa4"
+      ],
+      "samples": 1,
+      "period": 11105279,
+      "share_percent": 0.11186473445735627
+    },
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "ocudu-gpu-channel+0x19a20",
+        "libstdc++.so.6.0.33+0xe1ae0",
+        "libc.so.6+0x8582c"
+      ],
+      "samples": 1,
+      "period": 9747140,
+      "share_percent": 0.09818404632775778
+    },
+    {
+      "lr": "libc.so.6+0x818a0",
+      "frame_callers": [
+        "libc.so.6+0xee7a4",
+        "libzmq.so.5.2.5+0x59670",
+        "libzmq.so.5.2.5+0x27b38"
+      ],
+      "samples": 4,
+      "period": 8244216,
+      "share_percent": 0.08304492247777727
+    },
+    {
+      "lr": "libc.so.6+0x942b4",
+      "frame_callers": [
+        "libc.so.6+0x96e68",
+        "libzmq.so.5.2.5+0x31ef8",
+        "libzmq.so.5.2.5+0x5e340"
+      ],
+      "samples": 2,
+      "period": 7781656,
+      "share_percent": 0.07838550315381479
+    },
+    {
+      "lr": "libc.so.6+0x94294",
+      "frame_callers": [
+        "libc.so.6+0x96e68",
+        "libzmq.so.5.2.5+0x31ef8",
+        "libzmq.so.5.2.5+0x5e340"
+      ],
+      "samples": 3,
+      "period": 7660397,
+      "share_percent": 0.07716404749875519
+    },
+    {
+      "lr": "libc.so.6+0x81f98",
+      "frame_callers": [
+        "libc.so.6+0x944b0",
+        "libc.so.6+0x96e68",
+        "libzmq.so.5.2.5+0x31ef8"
+      ],
+      "samples": 1,
+      "period": 5311132,
+      "share_percent": 0.05349963479962705
+    },
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "libzmq.so.5.2.5+0x27528",
+        "libzmq.so.5.2.5+0x3ef58",
+        "libzmq.so.5.2.5+0x58e80"
+      ],
+      "samples": 1,
+      "period": 5029773,
+      "share_percent": 0.050665473692806835
+    },
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "libzmq.so.5.2.5+0x27578",
+        "libzmq.so.5.2.5+0x3ef58",
+        "libzmq.so.5.2.5+0x58e80"
+      ],
+      "samples": 2,
+      "period": 4667399,
+      "share_percent": 0.047015239305696885
+    },
+    {
+      "lr": "libc.so.6+0x96554",
+      "frame_callers": [
+        "libzmq.so.5.2.5+0x31d04",
+        "libzmq.so.5.2.5+0x58634",
+        "libzmq.so.5.2.5+0x2f6f8"
+      ],
+      "samples": 2,
+      "period": 4454148,
+      "share_percent": 0.044867137804801165
+    },
+    {
+      "lr": "libc.so.6+0x818a0",
+      "frame_callers": [
+        "libc.so.6+0xee404",
+        "libzmq.so.5.2.5+0x58c28",
+        "libzmq.so.5.2.5+0x58da8"
+      ],
+      "samples": 1,
+      "period": 1805219,
+      "share_percent": 0.018184175658475056
+    },
+    {
+      "lr": "libc.so.6+0x818a0",
+      "frame_callers": [
+        "libc.so.6+0xebe50",
+        "libzmq.so.5.2.5+0x26338",
+        "libzmq.so.5.2.5+0x569a0"
+      ],
+      "samples": 1,
+      "period": 1778396,
+      "share_percent": 0.017913984538346542
+    },
+    {
+      "lr": "libc.so.6+0x8a4c4",
+      "frame_callers": [
+        "ocudu-gpu-channel+0x173b4",
+        "libstdc++.so.6.0.33+0xe1ae0",
+        "libc.so.6+0x8582c"
+      ],
+      "samples": 2,
+      "period": 453,
+      "share_percent": 4.5631203600722135e-06
+    },
+    {
+      "lr": "libc.so.6+0x84544",
+      "frame_callers": [
+        "libc.so.6+0x8504c",
+        "ocudu-gpu-channel+0x1755c",
+        "libstdc++.so.6.0.33+0xe1ae0"
+      ],
+      "samples": 2,
+      "period": 2,
+      "share_percent": 2.014622675528571e-08
+    },
+    {
+      "lr": "libc.so.6+0x8430c",
+      "frame_callers": [
+        "ocudu-gpu-channel+0x2942c",
+        "ocudu-gpu-channel+0x1a174",
+        "libstdc++.so.6.0.33+0xe1ae0"
+      ],
+      "samples": 1,
+      "period": 1,
+      "share_percent": 1.0073113377642855e-08
+    },
+    {
+      "lr": "libc.so.6+0x8410c",
+      "frame_callers": [
+        "ocudu-gpu-channel+0x2942c",
+        "ocudu-gpu-channel+0x1a174",
+        "libstdc++.so.6.0.33+0xe1ae0"
+      ],
+      "samples": 1,
+      "period": 1,
+      "share_percent": 1.0073113377642855e-08
+    },
+    {
+      "lr": "libc.so.6+0x87c70",
+      "frame_callers": [
+        "libc.so.6+0x84f50",
+        "ocudu-gpu-channel+0x1755c",
+        "libstdc++.so.6.0.33+0xe1ae0"
+      ],
+      "samples": 1,
+      "period": 1,
+      "share_percent": 1.0073113377642855e-08
+    }
+  ],
+  "cpu_api_costs": [
+    {
+      "function": "cudaStreamSynchronize",
+      "samples": 108,
+      "period": 1875165207,
+      "share_percent": 18.888751731922135
+    },
+    {
+      "function": "cudaLaunchKernel",
+      "samples": 97,
+      "period": 1665267510,
+      "share_percent": 16.774428432335007
+    },
+    {
+      "function": "cudaEventRecord",
+      "samples": 49,
+      "period": 858004030,
+      "share_percent": 8.64277187266448
+    },
+    {
+      "function": "cudaMemcpyAsync",
+      "samples": 38,
+      "period": 706270342,
+      "share_percent": 7.114341230232594
+    },
+    {
+      "function": "cudaEventElapsedTime",
+      "samples": 4,
+      "period": 69181914,
+      "share_percent": 0.6968772634043375
+    }
+  ],
+  "copy_callers": [
+    {
+      "function": "IqRing::push",
+      "samples": 66,
+      "period": 807208945,
+      "share_percent": 8.131107222432476
+    },
+    {
+      "function": "zmq::msg_t::init_buffer",
+      "samples": 59,
+      "period": 657089235,
+      "share_percent": 6.61893436338361
+    },
+    {
+      "function": "other copy caller",
+      "samples": 55,
+      "period": 295653679,
+      "share_percent": 2.9781530290842264
+    },
+    {
+      "function": "IqRing::read",
+      "samples": 17,
+      "period": 199012118,
+      "share_percent": 2.0046716281388384
+    }
+  ],
+  "driver_mutex_unlock": {
+    "samples": 84,
+    "period": 1445785447,
+    "share_percent": 14.563560727377055
+  }
+}

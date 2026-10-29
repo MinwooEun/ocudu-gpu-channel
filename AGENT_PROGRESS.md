@@ -10,9 +10,11 @@
 
 ## Current Objective
 
-- Implement and measure the emulator relay bottleneck patch on Spark against frozen PR10 inputs, retaining CUDA gNB, CPU srsUE, ZMQ compatibility and sample continuity.
+- Relay patch implementation and the current validation batch are complete; scaling improvement remains unresolved. Every candidate remains experimental, with no performance fix promoted into PR10.
 
 ## Repository State
+
+- Active worktree: `/home/minwoo/ocudu-work/checkpoint-20261029`, branch `checkpoint/spark-scaling-ue-gpu-20261029`; final C++ source commit `aba7513`. Original PR10 worktree and gNB/CPU-srsUE binaries remain unchanged.
 
 - Local presentation artifacts remain in ignored `slides/`; the directory is also excluded from uploads and Docker builds. Vocabulary review is complete, with 80 definitions and six unresolved wording or protected-name records.
 
@@ -295,7 +297,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-Continue the active relay patch below: validate receiver-kernel fusion and compare fuse-control/fuse-rx on original relay execution. Queue/multiplex/completion prototypes all regressed; preserve disabled defaults, profiler evidence and original ZMQ compatibility.
+The candidate batch and diagnostics have finished; no runtime is left running. No candidate qualifies for default use; `experiments/relay-ready-20261029/report.html` and `evidence.json` contain 8/16-UE comparisons, incomplete controls, CPU demand and profiler provenance.
 
 ## Active relay patch — 2026-10-29
 
@@ -333,7 +335,7 @@ Continue the active relay patch below: validate receiver-kernel fusion and compa
 - Captured 1,024 hardware-cycle samples over three seconds in a diagnostic-only FD run; recovered PAC-signed AArch64 callers from recorded LR/FP. CPU cycle shares include stream synchronization 18.89%, kernel submission 16.77%, event recording 8.64%; these are not GPU durations.
 - Added opt-in receiver-chain fusion in the superposition kernel, reusing identical per-row operations/RNG state and removing the following receiver kernel launch. Copy/zero-copy 2×2 bit-parity tests and original-relay live control/fusion comparisons are being built on Spark.
 
-- Receiver fusion passed bit-exact comparison for 791,104 complex IQ outputs across copy/zero-copy, variable windows, two rows, CFO/phase/AWGN and noise reset; processing and CUDA relay parity also pass. The first fusion-off live control wedged after attach; it is excluded from complete-run comparisons.
+- Receiver fusion passed bit-exact comparison for 791,104 IQ outputs across copy/zero-copy, variable windows, two rows, CFO/phase/AWGN and noise reset; processing and CUDA relay parity also pass. The first fusion-off control wedged after attach; it is excluded from complete-run comparisons.
 
 - Original-relay receiver fusion measured 0.447311 (10/30 valid), without speed gain. A four-second control observation found 16 CPU UEs using 4.531 of five allocated cores; WORKER0/1 alone used 9.308 CPU-seconds for 1.79 radio seconds.
 
@@ -341,3 +343,6 @@ Continue the active relay patch below: validate receiver-kernel fusion and compa
 - Final backend/core tests pass 17/18; only pre-existing `cpu_parallel` fails, reproduced before async changes. Fusion-enabled processing/runtime-control/history tests pass 3/3; paired 8-UE trials now test whether the limitation depends on UE count.
 
 - Eight-UE frozen-input control completed at 0.920779; combined candidate completed at 0.861514, both 30/30 valid. The tested execution redesign does not improve either UE-count point, so no candidate is qualified for default use or scaling-boundary expansion.
+
+- Saved a standalone implementation/results HTML and machine-readable evidence, including failed/incomplete trials and per-case hashes. Three browser widths and twelve links pass; no external load requests or browser errors occur.
+- Source and compact evidence are prepared on the checkpoint branch; original PR10 source and binaries are untouched. All new execution and receiver-fusion modes remain opt-in after failed performance comparisons.

@@ -1,0 +1,78 @@
+{
+  "samples": 1024,
+  "total": 9927417299,
+  "note": "Shares refer to sampled userspace CPU cycles in the failed FD-sync prototype. CUDA API costs include their driver locks, so do not add the lock share again. Sampling was not part of clean speed comparisons.",
+  "costs": [
+    {
+      "function": "cudaStreamSynchronize",
+      "samples": 108,
+      "period": 1875165207,
+      "share_percent": 18.888751731922135
+    },
+    {
+      "function": "cudaLaunchKernel",
+      "samples": 97,
+      "period": 1665267510,
+      "share_percent": 16.774428432335007
+    },
+    {
+      "function": "cudaEventRecord",
+      "samples": 49,
+      "period": 858004030,
+      "share_percent": 8.64277187266448
+    },
+    {
+      "function": "cudaMemcpyAsync",
+      "samples": 38,
+      "period": 706270342,
+      "share_percent": 7.114341230232594
+    },
+    {
+      "function": "cudaEventElapsedTime",
+      "samples": 4,
+      "period": 69181914,
+      "share_percent": 0.6968772634043375
+    }
+  ],
+  "diagnostic_only": true,
+  "seconds": 3,
+  "lost_samples": 0,
+  "perf_data_sha256": "f32473ffc79f8280a265337304f9812a10fafd8fd7a018d5fc973c53e4a6142d",
+  "remote_data": "/workspace/gpuch/relay-ready-20261029/live-pr10/fd-profile/perf-cycles.data",
+  "caller_recovery": "AArch64 recorded LR/FP; PAC bits normalized to recorded 48-bit userspace mappings. Only bounded frame chains are classified.",
+  "driver_mutex_unlock": {
+    "samples": 84,
+    "period": 1445785447,
+    "share_percent": 14.563560727377055
+  },
+  "copy_callers": [
+    {
+      "function": "IqRing::push",
+      "samples": 66,
+      "period": 807208945,
+      "share_percent": 8.131107222432476
+    },
+    {
+      "function": "zmq::msg_t::init_buffer",
+      "samples": 59,
+      "period": 657089235,
+      "share_percent": 6.61893436338361
+    },
+    {
+      "function": "other copy caller",
+      "samples": 55,
+      "period": 295653679,
+      "share_percent": 2.9781530290842264
+    },
+    {
+      "function": "IqRing::read",
+      "samples": 17,
+      "period": 199012118,
+      "share_percent": 2.0046716281388384
+    }
+  ],
+  "symbol_debug_build_ids": {
+    "libc": "27027b96e5b8c475fc327aa445bea1c71d37b4e2",
+    "libzmq": "db61dd05f76d65c18e838fcdb4395eac15aebe1e"
+  }
+}
