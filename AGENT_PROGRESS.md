@@ -295,7 +295,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-No further review fixes are queued. Strict zero-starvation qualification remains failed; the existing scheduler reports retain the unresolved IQ handoff pauses and separately confirmed full-RLC-queue packet drops.
+Continue the active relay patch below: finish Spark multiplex correctness tests, then clean PR10 16-UE legacy/multiplex comparison. Keep producer-only regression separate; strict zero-starvation qualification remains failed.
 
 ## Active relay patch — 2026-10-29
 
@@ -303,3 +303,10 @@ No further review fixes are queued. Strict zero-starvation qualification remains
 - Added persistent producer frames, per-node generation notifications and timer suspension; validation pending on Spark with PR10 frozen inputs, CUDA gNB and original CPU srsUE. Transport threads remain separate in this first isolated experiment.
 
 - Restored the archived PR10 sample-indexed control patch as commit `c66de51`; initial runs without it rejected `link_clock` before measurement and are excluded. Readiness queue, legacy broker and queue broker tests pass on Spark.
+
+- Added an opt-in single transport loop using nonblocking ZMQ and internal eventfd notifications. Socket request/reply states remain per port; GPU processing and pacing stay outside the transport thread, with no wire-format changes.
+- First restored-control legacy run overlaps a separate validation build and is excluded from clean performance comparisons; rerun planned after build completion. Producer-only and multiplex modes are measured independently.
+
+- Producer-only queue measured 0.415489 radio/wall ratio with 5/30 valid segments on frozen PR10 16-UE inputs; it regresses against historical ~0.448 and is not a successful remedy. Single transport-loop validation is next.
+
+- Spark passed all five targeted tests: queue races/timers, legacy relay, producer queue, multiplex relay, and bit-exact CUDA 2×2 IQ parity against legacy. Clean 16-UE baseline/multiplex live comparisons are running sequentially.

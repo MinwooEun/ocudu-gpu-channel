@@ -56,11 +56,21 @@ public:
     std::lock_guard lock(mutex_);
     return entries_[node].generation;
   }
+  struct Metrics {
+    std::uint64_t signals = 0;
+    std::uint64_t dispatches = 0;
+    double queue_us = 0;
+    double max_queue_us = 0;
+  };
+  // Read after all workers join; queue time starts when a node becomes queued,
+  // not when it first starts waiting for IQ. It excludes channel execution.
+  Metrics metrics(std::size_t node) const { return entries_[node].metrics; }
   void notify(std::size_t node)
   {
     std::lock_guard lock(mutex_);
     auto& e = entries_[node];
     ++e.generation;
+    ++e.metrics.signals;
     if (e.waiting && !e.running && e.event_wait) enqueue(node);
     cv_.notify_all();
   }
@@ -119,6 +129,10 @@ public:
       e.running = true;
       e.waiting = false;
       const auto handle = e.handle;
+      const double queue_us = std::chrono::duration<double, std::micro>(Clock::now() - e.queued_at).count();
+      ++e.metrics.dispatches;
+      e.metrics.queue_us += queue_us;
+      e.metrics.max_queue_us = std::max(e.metrics.max_queue_us, queue_us);
       lock.unlock();
       handle.resume();
       const auto error = handle.done() ? handle.promise().error : std::exception_ptr{};
@@ -133,6 +147,8 @@ public:
 private:
   struct Entry {
     ProducerTask::Handle handle{};
+    Metrics metrics;
+    Clock::time_point queued_at{};
     std::uint64_t generation = 0;
     std::uint64_t observed = 0;
     Clock::time_point deadline = Clock::time_point::max();
@@ -146,6 +162,7 @@ private:
     auto& e = entries_[node];
     if (!e.queued) {
       e.queued = true;
+      e.queued_at = Clock::now();
       ready_.push_back(node);
     }
   }

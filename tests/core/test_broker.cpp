@@ -565,7 +565,8 @@ void scenario_relay_knobs_bit_identical()
     std::ofstream out(path);
     out << kParityTopology;
   }
-  const auto config = ocg::load_config_file(path);
+  auto config = ocg::load_config_file(path);
+  if (std::getenv("OCG_TEST_CUDA_PARITY")) config.runtime.backend = ocg::Backend::Cuda;
   std::remove(path.c_str());
   const char* knobs[] = {"OCG_BROKER_SPIN", "OCG_BROKER_FEWER_COPIES", "OCG_BROKER_DIRECT_ROWS"};
   for (const char* k : knobs) {
@@ -573,9 +574,13 @@ void scenario_relay_knobs_bit_identical()
   }
   const char* ready_env = std::getenv("OCG_BROKER_READY_WORKERS");
   const std::string ready_workers = ready_env ? ready_env : "0";
+  const char* mux_env = std::getenv("OCG_BROKER_MULTIPLEX");
+  const std::string multiplex = mux_env ? mux_env : "0";
+  ::setenv("OCG_BROKER_MULTIPLEX", "0", 1);
   ::setenv("OCG_BROKER_READY_WORKERS", "0", 1);
   const auto base = run_parity_relay(config);
   ::setenv("OCG_BROKER_READY_WORKERS", ready_workers.c_str(), 1);
+  ::setenv("OCG_BROKER_MULTIPLEX", multiplex.c_str(), 1);
   for (const char* k : knobs) {
     ::setenv(k, "1", 1);
   }
@@ -811,6 +816,11 @@ void scenario_pacer_drops_unrecoverable_debt()
 
 int main()
 {
+  if (std::getenv("OCG_TEST_CUDA_PARITY")) {
+    scenario_relay_knobs_bit_identical();
+    std::cout << "test_broker CUDA parity OK\n";
+    return 0;
+  }
   scenario_nominal_timing_crosses_arbitrary_fragment_boundaries();
   scenario_relay_knobs_bit_identical();
   scenario_pacer_drops_unrecoverable_debt();
