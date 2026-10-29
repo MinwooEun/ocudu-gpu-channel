@@ -27,6 +27,7 @@
 #include <sys/prctl.h>
 #include <sched.h>
 #include <sys/eventfd.h>
+#include <sys/epoll.h>
 #include <unistd.h>
 
 // Concurrent per-direction relay broker, modelled on srsRAN's GNU Radio
@@ -174,6 +175,51 @@ private:
   int fd_ = -1;
 };
 
+// ZMQ_FD is an edge notification, not the underlying TCP socket. Consume
+// ZMQ_EVENTS before sleeping and after every send/recv; a REQ send can make
+// the reply readable without another fd edge. See libzmq zmq_getsockopt(3).
+class RelayFdPoller {
+public:
+  explicit RelayFdPoller(std::size_t ports) : events_(2 * ports + 1), ports_(ports) {
+    fd_ = epoll_create1(EPOLL_CLOEXEC);
+    if (fd_ < 0) throw std::runtime_error("cannot create relay epoll");
+  }
+  ~RelayFdPoller() { close(fd_); }
+  void add_fd(int fd, std::size_t port) {
+    epoll_event event{};
+    event.events = EPOLLIN;
+    event.data.u64 = port;
+    if (epoll_ctl(fd_, EPOLL_CTL_ADD, fd, &event) != 0)
+      throw std::runtime_error("relay epoll registration failed");
+  }
+  void add_socket(void* socket, std::size_t port) {
+    int fd = -1;
+    std::size_t size = sizeof(fd);
+    if (zmq_getsockopt(socket, ZMQ_FD, &fd, &size) != 0)
+      throw std::runtime_error("cannot get ZMQ_FD");
+    add_fd(fd, port);
+  }
+  static int socket_events(void* socket) {
+    int events = 0;
+    std::size_t size = sizeof(events);
+    if (zmq_getsockopt(socket, ZMQ_EVENTS, &events, &size) != 0)
+      throw std::runtime_error("cannot get ZMQ_EVENTS");
+    return events;
+  }
+  void wait(std::vector<std::atomic_bool>& dirty) {
+    const int count = epoll_wait(fd_, events_.data(), static_cast<int>(events_.size()), 100);
+    if (count < 0 && errno != EINTR) throw std::runtime_error("relay epoll wait failed");
+    for (int i = 0; i < count; ++i) {
+      const auto port = events_[i].data.u64;
+      if (port < ports_) dirty[port].store(true);
+    }
+  }
+private:
+  int fd_ = -1;
+  std::vector<epoll_event> events_;
+  std::size_t ports_;
+};
+
 // Diagnostics knobs, read once per run from the environment.
 //   OCG_BROKER_POLL_US  sleep between polls of a worker waiting on another
 //                       worker (ring room, input data, output row); default 50.
@@ -227,6 +273,7 @@ struct BrokerDiagKnobs {
   bool tight_slack = false;
   std::string trace_dir;
   int io_threads = 0;
+  bool fd_poller = false;
   bool async_cuda = false;
   bool multiplex = false;
   int ready_workers = 0; // 0: legacy per-node threads; positive: bounded producer pool
@@ -287,6 +334,13 @@ BrokerDiagKnobs read_diag_knobs()
   }
   if (knobs.async_cuda && knobs.ready_workers == 0)
     throw std::runtime_error("OCG_BROKER_ASYNC_CUDA requires OCG_BROKER_READY_WORKERS > 0");
+  if (const char* fd = std::getenv("OCG_BROKER_FD_POLLER")) {
+    if (std::strcmp(fd, "0") != 0 && std::strcmp(fd, "1") != 0)
+      throw std::runtime_error("OCG_BROKER_FD_POLLER must be 0 or 1");
+    knobs.fd_poller = std::strcmp(fd, "1") == 0;
+  }
+  if (knobs.fd_poller && !knobs.multiplex)
+    throw std::runtime_error("OCG_BROKER_FD_POLLER requires OCG_BROKER_MULTIPLEX=1");
   knobs.fewer_copies = env_default_on("OCG_BROKER_FEWER_COPIES");
   knobs.direct_rows = env_default_on("OCG_BROKER_DIRECT_ROWS");
   if (const char* wedge = std::getenv("OCG_BROKER_WEDGE_TIMEOUT_MS"); wedge != nullptr && *wedge != '\0') {
@@ -1735,6 +1789,18 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
     try {
       std::vector<std::unique_ptr<State>> states;
       for (const auto& port : ports) states.push_back(std::make_unique<State>(*port));
+      std::unique_ptr<RelayFdPoller> fd_poller;
+      if (knobs.fd_poller) {
+        fd_poller = std::make_unique<RelayFdPoller>(ports.size());
+        fd_poller->add_fd(transport_wakeup.fd(), ports.size());
+        for (std::size_t p = 0; p < ports.size(); ++p) {
+          if (ports[p]->tx_port >= 0) fd_poller->add_socket(ports[p]->tx_req.get(), p);
+          if (ports[p]->rx_port >= 0) fd_poller->add_socket(ports[p]->rx_rep.get(), p);
+        }
+      }
+      const auto socket_events = [&](void* socket) {
+        return fd_poller ? RelayFdPoller::socket_events(socket) : ZMQ_POLLIN | ZMQ_POLLOUT;
+      };
       std::vector<zmq_pollitem_t> poll_items;
       poll_items.reserve(1 + 2 * ports.size());
       std::vector<std::size_t> poll_ports;
@@ -1751,6 +1817,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           auto& pull = puller_diag[p];
           auto& rep = rep_diag[p];
           if (port.tx_port >= 0) {
+            int tx_events = socket_events(port.tx_req.get());
             const auto room = tx_headroom(p);
             state.room_for_request = room >= port.batch;
             if (state.pending > 0) {
@@ -1786,20 +1853,24 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
                 }
               }
             }
-            if (state.pending == 0 && !state.outstanding && state.room_for_request) {
+            if (state.pending == 0 && !state.outstanding && state.room_for_request && (tx_events & ZMQ_POLLOUT)) {
               pull.state.store("send_req");
-              if (send_request(port.tx_req.get(), ZMQ_DONTWAIT)) {
+              const bool sent = send_request(port.tx_req.get(), ZMQ_DONTWAIT);
+              tx_events = socket_events(port.tx_req.get());
+              if (sent) {
                 state.outstanding = true;
                 puller_trace[p].add(HopEvent::PullReqSent, 0);
                 progressed = true; transport_dirty[p].store(true);
               }
             }
-            if (state.outstanding) {
+            if (state.outstanding) pull.state.store("recv_reply");
+            if (state.outstanding && (tx_events & ZMQ_POLLIN)) {
               pull.state.store("recv_reply");
               std::size_t samples = 0;
               const bool got = knobs.fewer_copies
                   ? recv_samples_msg(port.tx_req.get(), state.held, state.receive.size(), samples, ZMQ_DONTWAIT)
                   : recv_samples_into(port.tx_req.get(), state.receive, samples, ZMQ_DONTWAIT);
+              tx_events = socket_events(port.tx_req.get());
               if (got) {
                 state.outstanding = false;
                 state.pending = samples;
@@ -1813,18 +1884,23 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               pull.state.store("wait_room");
           }
           if (port.rx_port < 0) continue;
-          if (!state.request_accepted) {
+          int rx_events = socket_events(port.rx_rep.get());
+          if (!state.request_accepted) rep.state.store("wait_req");
+          if (!state.request_accepted && (rx_events & ZMQ_POLLIN)) {
             rep.state.store("wait_req");
             std::uint8_t dummy = 0;
-            if (zmq_recv(port.rx_rep.get(), &dummy, sizeof(dummy), ZMQ_DONTWAIT) >= 0) {
+            const int received = zmq_recv(port.rx_rep.get(), &dummy, sizeof(dummy), ZMQ_DONTWAIT);
+            const int receive_error = received < 0 ? zmq_errno() : 0;
+            rx_events = socket_events(port.rx_rep.get());
+            if (received >= 0) {
               state.request_accepted = true;
               state.row_start = std::chrono::steady_clock::now();
               store_us(rep.stage_us_bits[kRepStageWaitReq],
                        std::chrono::duration<double, std::micro>(state.row_start - state.request_start).count());
               rep_trace[p].add(HopEvent::RepReqRecv, 0);
               progressed = true; transport_dirty[p].store(true);
-            } else if (zmq_errno() != EAGAIN && zmq_errno() != EINTR) {
-              throw std::runtime_error(std::string("rx request failed: ") + zmq_strerror(zmq_errno()));
+            } else if (receive_error != EAGAIN && receive_error != EINTR) {
+              throw std::runtime_error(std::string("rx request failed: ") + zmq_strerror(receive_error));
             }
           }
           if (state.request_accepted && state.take == 0) {
@@ -1856,9 +1932,11 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               progressed = true; transport_dirty[p].store(true);
             }
           }
-          if (state.take > 0) {
+          if (state.take > 0 && (rx_events & ZMQ_POLLOUT)) {
             rep.state.store("send");
-            if (send_samples(port.rx_rep.get(), state.reply, ZMQ_DONTWAIT)) {
+            const bool sent = send_samples(port.rx_rep.get(), state.reply, ZMQ_DONTWAIT);
+            rx_events = socket_events(port.rx_rep.get());
+            if (sent) {
               if (!state.in_ring.empty()) {
                 {
                   std::lock_guard lock(port.rx_mutex);
@@ -1884,6 +1962,10 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           }
         }
         if (progressed) continue;
+        if (fd_poller) {
+          fd_poller->wait(transport_dirty);
+          continue;
+        }
         poll_items.clear();
         poll_ports.clear();
         poll_ports.push_back(ports.size()); // eventfd has no port.
@@ -2153,6 +2235,9 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   for (auto& worker : workers) {
     worker.join();
   }
+  // Cancelled frames may still own in-flight GPU calls. Their destructors
+  // drain callbacks before reading queue metrics or releasing any ring data.
+  producer_tasks.clear();
 
   if (ready_queue) {
     for (std::size_t n = 0; n < nodes.size(); ++n) {

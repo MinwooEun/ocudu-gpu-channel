@@ -295,7 +295,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-Continue the active relay patch below: finish Spark multiplex correctness tests, then clean PR10 16-UE legacy/multiplex comparison. Keep producer-only regression separate; strict zero-starvation qualification remains failed.
+Continue the active relay patch below: collect async one-worker result, then validate and measure ZMQ FD readiness dispatch against the failed zmq_poll prototypes. No candidate has exceeded the 0.454120 clean control; preserve disabled defaults and raw evidence.
 
 ## Active relay patch — 2026-10-29
 
@@ -322,3 +322,9 @@ Continue the active relay patch below: finish Spark multiplex correctness tests,
 - Async completion trials now run with frozen PR10 inputs and unchanged gNB/CPU-UE hashes. Existing `cpu_parallel` failure is recorded separately; no test failure has been relabeled a pass.
 
 - Async two-worker live trial measured 0.392354 with 2/30 valid segments, below the 0.454120 control. CUDA completion suspension is functional but has not produced an end-to-end gain; one-worker comparison is still running.
+
+- Added explicit ZMQ FD/epoll dispatch behind `OCG_BROKER_FD_POLLER=1`, preserving ZMQ framing and checking `ZMQ_EVENTS` after socket I/O. Pending producer frames now drain GPU callbacks before queue metrics are read at shutdown; validation is queued.
+
+- Async one-worker trial measured 0.421063 with 5/30 valid segments, still below control. FD dispatcher passed CUDA IQ parity and lock-step checks; final eight-test result and 16-UE live comparisons are being collected.
+
+- All eight FD/queue/broker correctness tests passed on Spark, including synchronous, async CUDA 2×2 bit parity, MIMO lock-step and wedge detection. FD synchronous/two-worker and FD asynchronous/two-worker live runs are underway sequentially.

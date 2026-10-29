@@ -72,7 +72,7 @@ public:
     auto& e = entries_[node];
     ++e.generation[static_cast<std::size_t>(event)];
     ++e.metrics.signals;
-    if (e.waiting && !e.running && e.event_wait && e.event == event) {
+    if (!stopped_ && e.waiting && !e.running && e.event_wait && e.event == event) {
       enqueue(node);
       cv_.notify_one();
     }
