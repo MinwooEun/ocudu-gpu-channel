@@ -161,6 +161,13 @@ if(OCUDU_GPU_CHANNEL_BUILD_TESTS)
   target_link_libraries(test_ring PRIVATE ocudu_gpu_channel_lib)
   add_test(NAME ring COMMAND test_ring)
 
+  if(OCUDU_GPU_CHANNEL_HAS_CUDA)
+    add_executable(test_cuda_rx_fusion tests/core/test_cuda_rx_fusion.cpp)
+    target_link_libraries(test_cuda_rx_fusion PRIVATE ocudu_gpu_channel_lib)
+    target_compile_definitions(test_cuda_rx_fusion PRIVATE OCG_FUSION_FIXTURE="${CMAKE_CURRENT_SOURCE_DIR}/tests/core/fixtures/relay-2x2.yaml")
+    add_test(NAME cuda_rx_fusion COMMAND test_cuda_rx_fusion)
+  endif()
+
   add_executable(test_ready_queue tests/core/test_ready_queue.cpp)
   target_link_libraries(test_ready_queue PRIVATE ocudu_gpu_channel_lib)
   add_test(NAME ready_queue COMMAND test_ready_queue)

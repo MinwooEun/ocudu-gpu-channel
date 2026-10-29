@@ -295,7 +295,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-Continue the active relay patch below: collect async one-worker result, then validate and measure ZMQ FD readiness dispatch against the failed zmq_poll prototypes. No candidate has exceeded the 0.454120 clean control; preserve disabled defaults and raw evidence.
+Continue the active relay patch below: validate receiver-kernel fusion and compare fuse-control/fuse-rx on original relay execution. Queue/multiplex/completion prototypes all regressed; preserve disabled defaults, profiler evidence and original ZMQ compatibility.
 
 ## Active relay patch — 2026-10-29
 
@@ -328,3 +328,16 @@ Continue the active relay patch below: collect async one-worker result, then val
 - Async one-worker trial measured 0.421063 with 5/30 valid segments, still below control. FD dispatcher passed CUDA IQ parity and lock-step checks; final eight-test result and 16-UE live comparisons are being collected.
 
 - All eight FD/queue/broker correctness tests passed on Spark, including synchronous, async CUDA 2×2 bit parity, MIMO lock-step and wedge detection. FD synchronous/two-worker and FD asynchronous/two-worker live runs are underway sequentially.
+
+- FD synchronous measured 0.411775 and FD async 0.404066, both 30/30 valid; neither beats 0.454120 control. All live candidates retain nonzero starvation, and strict real-time qualification remains failed.
+- Captured 1,024 hardware-cycle samples over three seconds in a diagnostic-only FD run; recovered PAC-signed AArch64 callers from recorded LR/FP. CPU cycle shares include stream synchronization 18.89%, kernel submission 16.77%, event recording 8.64%; these are not GPU durations.
+- Added opt-in receiver-chain fusion in the superposition kernel, reusing identical per-row operations/RNG state and removing the following receiver kernel launch. Copy/zero-copy 2×2 bit-parity tests and original-relay live control/fusion comparisons are being built on Spark.
+
+- Receiver fusion passed bit-exact comparison for 791,104 complex IQ outputs across copy/zero-copy, variable windows, two rows, CFO/phase/AWGN and noise reset; processing and CUDA relay parity also pass. The first fusion-off live control wedged after attach; it is excluded from complete-run comparisons.
+
+- Original-relay receiver fusion measured 0.447311 (10/30 valid), without speed gain. A four-second control observation found 16 CPU UEs using 4.531 of five allocated cores; WORKER0/1 alone used 9.308 CPU-seconds for 1.79 radio seconds.
+
+- Combined FD/async-one-worker/receiver-fusion measured 0.426759 (30/30 valid), still below control. UE demand stayed approximately 10.14 CPU-seconds/radio-second, versus 10.21 in control; original-relay control repeat also wedged and is excluded from complete-run comparisons.
+- Final backend/core tests pass 17/18; only pre-existing `cpu_parallel` fails, reproduced before async changes. Fusion-enabled processing/runtime-control/history tests pass 3/3; paired 8-UE trials now test whether the limitation depends on UE count.
+
+- Eight-UE frozen-input control completed at 0.920779; combined candidate completed at 0.861514, both 30/30 valid. The tested execution redesign does not improve either UE-count point, so no candidate is qualified for default use or scaling-boundary expansion.

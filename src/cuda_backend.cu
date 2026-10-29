@@ -1,3 +1,4 @@
+#include <cstring>
 #include "ocudu_gpu_channel/backend.h"
 #include "ocudu_gpu_channel/cuda_backend.h"
 #include "ocudu_gpu_channel/delay.h"
@@ -194,7 +195,10 @@ __global__ void superpose_kernel(const __grid_constant__ OutputRowTable dst,
                                  const int* row_begin,
                                  const IqSample* staged,
                                  const GpuStep* steps,
-                                 const int* step_meta)
+                                 const int* step_meta,
+                                 const GpuStep* rx_steps,
+                                 int rx_step_count,
+                                 std::size_t rx_stride)
 {
   const std::size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
   const int r = static_cast<int>(blockIdx.y);
@@ -214,6 +218,10 @@ __global__ void superpose_kernel(const __grid_constant__ OutputRowTable dst,
     acc_i += i;
     acc_q += q;
   }
+  // The receiver chain is pointwise, just like apply_steps_kernel. Apply
+  // the same chain after summation, with the same per-row RNG/phase state.
+  if (rx_step_count != 0)
+    apply_chain(acc_i, acc_q, rx_steps + static_cast<std::size_t>(r) * rx_stride, rx_step_count, idx);
   output_row(dst, r, count)[idx] = {acc_i, acc_q};
 }
 
@@ -643,6 +651,11 @@ public:
   {
     check(cudaSetDevice(config.runtime.gpu_device), "cudaSetDevice");
     device_ = config.runtime.gpu_device;
+    if (const char* fuse = std::getenv("OCG_CUDA_FUSE_RX")) {
+      if (std::strcmp(fuse, "0") != 0 && std::strcmp(fuse, "1") != 0)
+        throw std::runtime_error("OCG_CUDA_FUSE_RX must be 0 or 1");
+      fuse_receiver_ = std::strcmp(fuse, "1") == 0;
+    }
     zc_parts_ = resolve_zero_copy_parts(resolve_zero_copy(config.runtime.cuda_host_memory, device_), device_);
     stream_priority_ = config.runtime.cuda_stream_priority;
     {
@@ -1541,9 +1554,10 @@ public:
     }
     superpose_kernel<<<grid, block_size, 0, sp.stream>>>(
         out_rows, count, link_count, static_cast<int>(sp.rows), sp.device_row_begin,
-        staged_in, sp.device_steps, sp.device_step_meta);
+        staged_in, sp.device_steps, sp.device_step_meta,
+        sp.device_rx_steps, fuse_receiver_ ? rx_steps : 0, rx_stride);
     check(cudaGetLastError(), "superpose_kernel launch");
-    if (rx_steps != 0) {
+    if (rx_steps != 0 && !fuse_receiver_) {
       // Receiver model applied in place, once per row against that row's own
       // chain state. Nr is small, so a launch per row costs less than the
       // machinery a row-aware variant of this kernel would need.
@@ -1730,6 +1744,7 @@ private:
   // runtime.cuda_host_memory resolved against this device at prepare().
   ZeroCopyParts zc_parts_;
   bool zc_multirow_direct_ = false;
+  bool fuse_receiver_ = false;
   CudaStreamPriority stream_priority_ = CudaStreamPriority::Default;
   mutable std::mutex timings_mutex_;
   ProcessorTimings last_timings_;

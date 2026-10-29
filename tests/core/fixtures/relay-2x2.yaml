@@ -1,0 +1,77 @@
+runtime:
+  backend: cpu
+  batch_samples: 23040
+  queue_samples: 230400
+devices:
+  - id: gnb0_p0
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:25700
+    rx_endpoint: tcp://127.0.0.1:25701
+  - id: gnb0_p1
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:25702
+    rx_endpoint: tcp://127.0.0.1:25703
+  - id: ue0_p0
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:25704
+    rx_endpoint: tcp://127.0.0.1:25705
+  - id: ue0_p1
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:25706
+    rx_endpoint: tcp://127.0.0.1:25707
+radio_nodes:
+  - id: gnb0
+    tx_ports:
+      - gnb0_p0
+      - gnb0_p1
+    rx_ports:
+      - gnb0_p0
+      - gnb0_p1
+  - id: ue0
+    tx_ports:
+      - ue0_p0
+      - ue0_p1
+    rx_ports:
+      - ue0_p0
+      - ue0_p1
+links:
+  - from: gnb0
+    to: ue0
+    model: m2x2
+  - from: ue0
+    to: gnb0
+    model: m2x2
+models:
+  m2x2:
+    fixed_mimo:
+      coefficients:
+        - tap: 0
+          rx: 0
+          tx: 0
+          real: 0.7214
+          imag: 0.0724
+        - tap: 0
+          rx: 0
+          tx: 1
+          real: -0.2790
+          imag: -0.1909
+        - tap: 0
+          rx: 1
+          tx: 0
+          real: 0.3230
+          imag: -0.0999
+        - tap: 0
+          rx: 1
+          tx: 1
+          real: 0.7106
+          imag: 0.1440
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: 0.0
+            phase_rad: 0.0
