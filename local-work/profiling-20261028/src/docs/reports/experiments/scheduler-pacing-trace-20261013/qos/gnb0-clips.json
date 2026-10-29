@@ -1,0 +1,3566 @@
+[
+  {
+    "time_ns": 264403872976553,
+    "discarded_us": 1393.632,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 886.318,
+      "previous_publish": 0.101,
+      "loop_gap": 0.08,
+      "output_room": 0.036,
+      "input_wait": 2250.516,
+      "read_align": 0.121,
+      "process": 90.024,
+      "commit_telemetry": 0.522
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 90.041,
+    "gpu_event_us": [
+      20.255,
+      14.175,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264406371847514,
+    "discarded_us": 871.574,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 394.151,
+      "previous_publish": 5.705,
+      "loop_gap": 0.076,
+      "output_room": 81.623,
+      "input_wait": 2490.203,
+      "read_align": 0.127,
+      "process": 89.517,
+      "commit_telemetry": 0.417
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 89.526,
+    "gpu_event_us": [
+      19.551,
+      12.927,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264407077861535,
+    "discarded_us": 14.098,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 720.582,
+      "previous_publish": 3.873,
+      "loop_gap": 0.044,
+      "output_room": 105.877,
+      "input_wait": 1784.964,
+      "read_align": 0.124,
+      "process": 84.493,
+      "commit_telemetry": 0.484
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 84.516,
+    "gpu_event_us": [
+      20.576,
+      13.248,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264407081023636,
+    "discarded_us": 162.101,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 69.32,
+      "previous_publish": 0.081,
+      "loop_gap": 0.062,
+      "output_room": 102.406,
+      "input_wait": 1920.429,
+      "read_align": 0.129,
+      "process": 86.486,
+      "commit_telemetry": 0.424
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 86.395,
+    "gpu_event_us": [
+      20.671,
+      13.151,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264407118226949,
+    "discarded_us": 203.286,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.046,
+      "previous_publish": 0.082,
+      "loop_gap": 0.066,
+      "output_room": 0.024,
+      "input_wait": 784.503,
+      "read_align": 0.116,
+      "process": 165.691,
+      "commit_telemetry": 0.497
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 165.618,
+    "gpu_event_us": [
+      88.064,
+      14.944,
+      13.791
+    ]
+  },
+  {
+    "time_ns": 264407120749155,
+    "discarded_us": 522.251,
+    "count": 1,
+    "stages_us": {
+      "previous_pacing_sleep": 0.031,
+      "previous_publish": 4.683,
+      "loop_gap": 0.063,
+      "output_room": 0.044,
+      "input_wait": 2217.347,
+      "read_align": 0.122,
+      "process": 41.371,
+      "commit_telemetry": 0.501
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 41.387,
+    "gpu_event_us": [
+      6.879,
+      19.648,
+      7.071
+    ]
+  },
+  {
+    "time_ns": 264407120951008,
+    "discarded_us": 201.81,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.029,
+      "previous_publish": 0.094,
+      "loop_gap": 0.063,
+      "output_room": 0.024,
+      "input_wait": 0.071,
+      "read_align": 0.074,
+      "process": 200.8,
+      "commit_telemetry": 0.698
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 73.06,
+    "gpu_event_us": [
+      20.447,
+      12.959,
+      7.615
+    ]
+  },
+  {
+    "time_ns": 264407123300295,
+    "discarded_us": 349.332,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.028,
+      "previous_publish": 5.263,
+      "loop_gap": 0.043,
+      "output_room": 200.194,
+      "input_wait": 1173.921,
+      "read_align": 0.119,
+      "process": 154.654,
+      "commit_telemetry": 0.512
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 154.673,
+    "gpu_event_us": [
+      81.504,
+      12.864,
+      11.68
+    ]
+  },
+  {
+    "time_ns": 264407424362396,
+    "discarded_us": 62.104,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.042,
+      "previous_publish": 0.312,
+      "loop_gap": 0.065,
+      "output_room": 144.831,
+      "input_wait": 1446.978,
+      "read_align": 0.221,
+      "process": 196.77,
+      "commit_telemetry": 0.523
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 196.761,
+    "gpu_event_us": [
+      124.255,
+      12.128,
+      15.104
+    ]
+  },
+  {
+    "time_ns": 264408957970431,
+    "discarded_us": 1608.194,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 310.628,
+      "previous_publish": 0.11,
+      "loop_gap": 0.063,
+      "output_room": 188.485,
+      "input_wait": 3306.009,
+      "read_align": 0.117,
+      "process": 87.008,
+      "commit_telemetry": 0.469
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 86.948,
+    "gpu_event_us": [
+      20.128,
+      13.024,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264411036608306,
+    "discarded_us": 637.836,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 880.58,
+      "previous_publish": 0.128,
+      "loop_gap": 0.089,
+      "output_room": 0.03,
+      "input_wait": 1475.671,
+      "read_align": 0.12,
+      "process": 101.621,
+      "commit_telemetry": 0.517
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 101.564,
+    "gpu_event_us": [
+      22.048,
+      16.992,
+      14.816
+    ]
+  },
+  {
+    "time_ns": 264411529849101,
+    "discarded_us": 240.85,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.056,
+      "previous_publish": 8.804,
+      "loop_gap": 0.215,
+      "output_room": 254.765,
+      "input_wait": 1004.423,
+      "read_align": 0.15,
+      "process": 163.045,
+      "commit_telemetry": 0.633
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 162.944,
+    "gpu_event_us": [
+      79.007,
+      12.543,
+      10.719
+    ]
+  },
+  {
+    "time_ns": 264411544099566,
+    "discarded_us": 250.423,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 770.892,
+      "previous_publish": 0.107,
+      "loop_gap": 0.078,
+      "output_room": 0.027,
+      "input_wait": 1111.534,
+      "read_align": 0.122,
+      "process": 94.665,
+      "commit_telemetry": 0.52
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 94.63,
+    "gpu_event_us": [
+      21.663,
+      16.863,
+      7.712
+    ]
+  },
+  {
+    "time_ns": 264421616183131,
+    "discarded_us": 2083.627,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 394.667,
+      "previous_publish": 14.338,
+      "loop_gap": 0.078,
+      "output_room": 104.246,
+      "input_wait": 3724.278,
+      "read_align": 0.133,
+      "process": 154.118,
+      "commit_telemetry": 1.056
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 154.16,
+    "gpu_event_us": [
+      81.6,
+      12.671,
+      7.807
+    ]
+  },
+  {
+    "time_ns": 264424023562509,
+    "discarded_us": 4379.847,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 606.631,
+      "previous_publish": 0.163,
+      "loop_gap": 0.181,
+      "output_room": 5136.749,
+      "input_wait": 0.141,
+      "read_align": 0.133,
+      "process": 154.986,
+      "commit_telemetry": 0.638
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 154.887,
+    "gpu_event_us": [
+      86.592,
+      12.64,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264424728756573,
+    "discarded_us": 194.068,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 616.06,
+      "previous_publish": 0.145,
+      "loop_gap": 0.08,
+      "output_room": 0.054,
+      "input_wait": 897.607,
+      "read_align": 0.142,
+      "process": 141.087,
+      "commit_telemetry": 0.776
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 95.093,
+    "gpu_event_us": [
+      59.583,
+      17.632,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264426658885199,
+    "discarded_us": 1128.674,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 746.371,
+      "previous_publish": 0.163,
+      "loop_gap": 0.117,
+      "output_room": 101.154,
+      "input_wait": 2886.194,
+      "read_align": 0.193,
+      "process": 95.892,
+      "commit_telemetry": 0.679
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 95.775,
+    "gpu_event_us": [
+      22.943,
+      14.816,
+      7.807
+    ]
+  },
+  {
+    "time_ns": 264429963095242,
+    "discarded_us": 210.146,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 859.111,
+      "previous_publish": 0.116,
+      "loop_gap": 0.08,
+      "output_room": 0.031,
+      "input_wait": 1098.761,
+      "read_align": 0.121,
+      "process": 89.976,
+      "commit_telemetry": 0.529
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 89.25,
+    "gpu_event_us": [
+      20.864,
+      12.191,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264431408098391,
+    "discarded_us": 3.206,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 645.29,
+      "previous_publish": 6.561,
+      "loop_gap": 0.08,
+      "output_room": 1731.766,
+      "input_wait": 0.108,
+      "read_align": 0.141,
+      "process": 241.077,
+      "commit_telemetry": 0.679
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 240.949,
+    "gpu_event_us": [
+      165.695,
+      12.351,
+      12.575
+    ]
+  },
+  {
+    "time_ns": 264431416455273,
+    "discarded_us": 356.839,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 747.674,
+      "previous_publish": 0.15,
+      "loop_gap": 0.077,
+      "output_room": 0.039,
+      "input_wait": 1061.023,
+      "read_align": 0.212,
+      "process": 151.404,
+      "commit_telemetry": 0.549
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 151.389,
+    "gpu_event_us": [
+      81.759,
+      12.16,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264431699092612,
+    "discarded_us": 637.412,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 672.159,
+      "previous_publish": 5.638,
+      "loop_gap": 0.065,
+      "output_room": 1873.845,
+      "input_wait": 612.844,
+      "read_align": 0.128,
+      "process": 91.89,
+      "commit_telemetry": 0.466
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 89.286,
+    "gpu_event_us": [
+      21.152,
+      12.992,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264433017265571,
+    "discarded_us": 172.977,
+    "count": 1,
+    "stages_us": {
+      "previous_pacing_sleep": 0.044,
+      "previous_publish": 5.014,
+      "loop_gap": 0.068,
+      "output_room": 0.043,
+      "input_wait": 294.447,
+      "read_align": 0.143,
+      "process": 1701.771,
+      "commit_telemetry": 0.615
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 144.649,
+    "gpu_event_us": [
+      1588.415,
+      17.855,
+      14.112
+    ]
+  },
+  {
+    "time_ns": 264433017416871,
+    "discarded_us": 151.257,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.031,
+      "previous_publish": 0.182,
+      "loop_gap": 0.067,
+      "output_room": 0.031,
+      "input_wait": 0.073,
+      "read_align": 0.128,
+      "process": 150.18,
+      "commit_telemetry": 0.608
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 150.204,
+    "gpu_event_us": [
+      79.903,
+      13.151,
+      9.664
+    ]
+  },
+  {
+    "time_ns": 264436714750940,
+    "discarded_us": 334.646,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.03,
+      "previous_publish": 0.068,
+      "loop_gap": 0.028,
+      "output_room": 149.178,
+      "input_wait": 1972.845,
+      "read_align": 0.195,
+      "process": 105.712,
+      "commit_telemetry": 0.528
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 105.643,
+    "gpu_event_us": [
+      20.608,
+      22.016,
+      13.535
+    ]
+  },
+  {
+    "time_ns": 264437959806970,
+    "discarded_us": 1056.263,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 794.996,
+      "previous_publish": 0.105,
+      "loop_gap": 0.031,
+      "output_room": 106.29,
+      "input_wait": 2805.757,
+      "read_align": 0.121,
+      "process": 85.993,
+      "commit_telemetry": 0.627
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 86.014,
+    "gpu_event_us": [
+      19.872,
+      13.088,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264437966671474,
+    "discarded_us": 1864.504,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 424.982,
+      "previous_publish": 4.482,
+      "loop_gap": 0.031,
+      "output_room": 98.413,
+      "input_wait": 3597.902,
+      "read_align": 0.122,
+      "process": 84.584,
+      "commit_telemetry": 0.931
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 84.582,
+    "gpu_event_us": [
+      19.616,
+      14.208,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264438972747903,
+    "discarded_us": 76.59,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.037,
+      "previous_publish": 0.083,
+      "loop_gap": 0.064,
+      "output_room": 0.03,
+      "input_wait": 619.673,
+      "read_align": 0.086,
+      "process": 86.79,
+      "commit_telemetry": 0.426
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 86.772,
+    "gpu_event_us": [
+      21.088,
+      14.175,
+      8.639
+    ]
+  },
+  {
+    "time_ns": 264440310794241,
+    "discarded_us": 46.616,
+    "count": 1,
+    "stages_us": {
+      "previous_pacing_sleep": 0.028,
+      "previous_publish": 8.198,
+      "loop_gap": 0.066,
+      "output_room": 0.044,
+      "input_wait": 1136.656,
+      "read_align": 0.121,
+      "process": 91.358,
+      "commit_telemetry": 0.468
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 91.335,
+    "gpu_event_us": [
+      67.487,
+      12.48,
+      3.103
+    ]
+  },
+  {
+    "time_ns": 264440310882391,
+    "discarded_us": 88.107,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.031,
+      "previous_publish": 0.088,
+      "loop_gap": 0.078,
+      "output_room": 0.036,
+      "input_wait": 0.06,
+      "read_align": 0.072,
+      "process": 87.253,
+      "commit_telemetry": 0.532
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 87.318,
+    "gpu_event_us": [
+      20.959,
+      12.959,
+      8.639
+    ]
+  },
+  {
+    "time_ns": 264440311931563,
+    "discarded_us": 49.173,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.032,
+      "previous_publish": 0.09,
+      "loop_gap": 0.077,
+      "output_room": 0.022,
+      "input_wait": 103.847,
+      "read_align": 8.616,
+      "process": 161.71,
+      "commit_telemetry": 0.912
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 159.915,
+    "gpu_event_us": [
+      83.616,
+      12.191,
+      12.608
+    ]
+  },
+  {
+    "time_ns": 264440824034557,
+    "discarded_us": 103.135,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.03,
+      "previous_publish": 0.111,
+      "loop_gap": 0.076,
+      "output_room": 0.036,
+      "input_wait": 0.065,
+      "read_align": 0.089,
+      "process": 382.384,
+      "commit_telemetry": 0.602
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 78.815,
+    "gpu_event_us": [
+      81.472,
+      14.368,
+      149.407
+    ]
+  },
+  {
+    "time_ns": 264441217668763,
+    "discarded_us": 1634.292,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.029,
+      "previous_publish": 0.181,
+      "loop_gap": 0.054,
+      "output_room": 0.023,
+      "input_wait": 2395.106,
+      "read_align": 0.143,
+      "process": 162.456,
+      "commit_telemetry": 0.535
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 162.399,
+    "gpu_event_us": [
+      89.088,
+      16.607,
+      9.056
+    ]
+  },
+  {
+    "time_ns": 264441541202481,
+    "discarded_us": 533.765,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 747.317,
+      "previous_publish": 5.004,
+      "loop_gap": 0.075,
+      "output_room": 2423.156,
+      "input_wait": 0.067,
+      "read_align": 0.103,
+      "process": 96.213,
+      "commit_telemetry": 0.501
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 96.221,
+    "gpu_event_us": [
+      22.143,
+      15.072,
+      8.608
+    ]
+  },
+  {
+    "time_ns": 264441680272742,
+    "discarded_us": 70.296,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 570.748,
+      "previous_publish": 0.085,
+      "loop_gap": 0.041,
+      "output_room": 104.411,
+      "input_wait": 1825.05,
+      "read_align": 0.132,
+      "process": 87.493,
+      "commit_telemetry": 0.482
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 87.513,
+    "gpu_event_us": [
+      21.536,
+      12.864,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264441681660273,
+    "discarded_us": 387.531,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.031,
+      "previous_publish": 4.923,
+      "loop_gap": 0.044,
+      "output_room": 219.81,
+      "input_wait": 1073.844,
+      "read_align": 0.123,
+      "process": 88.273,
+      "commit_telemetry": 0.483
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 88.311,
+    "gpu_event_us": [
+      20.479,
+      13.055,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264441761203337,
+    "discarded_us": 543.095,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 249.49,
+      "previous_publish": 0.089,
+      "loop_gap": 0.038,
+      "output_room": 2365.972,
+      "input_wait": 0.132,
+      "read_align": 0.133,
+      "process": 104.32,
+      "commit_telemetry": 0.732
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 104.249,
+    "gpu_event_us": [
+      24.415,
+      16.543,
+      8.704
+    ]
+  },
+  {
+    "time_ns": 264441762616479,
+    "discarded_us": 413.142,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.06,
+      "previous_publish": 6.093,
+      "loop_gap": 0.199,
+      "output_room": 847.613,
+      "input_wait": 464.369,
+      "read_align": 0.154,
+      "process": 94.008,
+      "commit_telemetry": 0.646
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 94.095,
+    "gpu_event_us": [
+      21.663,
+      13.088,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264445530883046,
+    "discarded_us": 266.583,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.054,
+      "previous_publish": 5.101,
+      "loop_gap": 0.044,
+      "output_room": 1896.582,
+      "input_wait": 0.122,
+      "read_align": 0.126,
+      "process": 135.38,
+      "commit_telemetry": 0.654
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 135.322,
+    "gpu_event_us": [
+      21.344,
+      13.088,
+      7.712
+    ]
+  },
+  {
+    "time_ns": 264445531933931,
+    "discarded_us": 50.885,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.048,
+      "previous_publish": 0.1,
+      "loop_gap": 0.068,
+      "output_room": 576.19,
+      "input_wait": 379.845,
+      "read_align": 0.138,
+      "process": 93.981,
+      "commit_telemetry": 0.515
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 94.003,
+    "gpu_event_us": [
+      21.215,
+      12.319,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264445611068211,
+    "discarded_us": 134.28,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.046,
+      "previous_publish": 5.086,
+      "loop_gap": 0.067,
+      "output_room": 341.788,
+      "input_wait": 942.613,
+      "read_align": 0.139,
+      "process": 152.331,
+      "commit_telemetry": 0.66
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 152.276,
+    "gpu_event_us": [
+      82.175,
+      13.088,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264445905136496,
+    "discarded_us": 2068.285,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.03,
+      "previous_publish": 4.607,
+      "loop_gap": 0.065,
+      "output_room": 185.659,
+      "input_wait": 3491.88,
+      "read_align": 0.219,
+      "process": 170.721,
+      "commit_telemetry": 0.643
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 170.727,
+    "gpu_event_us": [
+      91.392,
+      14.688,
+      14.143
+    ]
+  },
+  {
+    "time_ns": 264445917595112,
+    "discarded_us": 458.616,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 791.781,
+      "previous_publish": 9.559,
+      "loop_gap": 0.044,
+      "output_room": 104.376,
+      "input_wait": 0.085,
+      "read_align": 0.112,
+      "process": 2171.565,
+      "commit_telemetry": 0.583
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 1854.366,
+    "gpu_event_us": [
+      2076.191,
+      25.696,
+      21.407
+    ]
+  },
+  {
+    "time_ns": 264446508250420,
+    "discarded_us": 1655.308,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 671.113,
+      "previous_publish": 0.114,
+      "loop_gap": 0.049,
+      "output_room": 2513.874,
+      "input_wait": 894.284,
+      "read_align": 0.13,
+      "process": 190.686,
+      "commit_telemetry": 0.529
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 99.967,
+    "gpu_event_us": [
+      21.824,
+      21.439,
+      10.08
+    ]
+  },
+  {
+    "time_ns": 264446509306679,
+    "discarded_us": 56.259,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.043,
+      "previous_publish": 7.244,
+      "loop_gap": 0.079,
+      "output_room": 105.12,
+      "input_wait": 779.987,
+      "read_align": 0.152,
+      "process": 163.011,
+      "commit_telemetry": 0.623
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 96.653,
+    "gpu_event_us": [
+      83.584,
+      12.608,
+      8.927
+    ]
+  },
+  {
+    "time_ns": 264446513720477,
+    "discarded_us": 1413.798,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.032,
+      "previous_publish": 0.115,
+      "loop_gap": 0.068,
+      "output_room": 92.406,
+      "input_wait": 2614.76,
+      "read_align": 0.284,
+      "process": 97.528,
+      "commit_telemetry": 0.799
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 97.595,
+    "gpu_event_us": [
+      21.183,
+      17.247,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264446717858381,
+    "discarded_us": 137.916,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.057,
+      "previous_publish": 0.098,
+      "loop_gap": 0.075,
+      "output_room": 0.031,
+      "input_wait": 774.819,
+      "read_align": 0.137,
+      "process": 164.742,
+      "commit_telemetry": 1.154
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 164.818,
+    "gpu_event_us": [
+      84.639,
+      16.383,
+      13.12
+    ]
+  },
+  {
+    "time_ns": 264446806898838,
+    "discarded_us": 1040.523,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.05,
+      "previous_publish": 0.115,
+      "loop_gap": 0.067,
+      "output_room": 103.223,
+      "input_wait": 2644.271,
+      "read_align": 0.318,
+      "process": 92.718,
+      "commit_telemetry": 0.643
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 92.638,
+    "gpu_event_us": [
+      23.776,
+      12.543,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264446818409221,
+    "discarded_us": 510.342,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.04,
+      "previous_publish": 0.09,
+      "loop_gap": 0.064,
+      "output_room": 0.03,
+      "input_wait": 677.424,
+      "read_align": 0.189,
+      "process": 186.451,
+      "commit_telemetry": 0.605
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 186.464,
+    "gpu_event_us": [
+      108.768,
+      12.575,
+      15.168
+    ]
+  },
+  {
+    "time_ns": 264449844109287,
+    "discarded_us": 702.473,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 889.581,
+      "previous_publish": 0.124,
+      "loop_gap": 0.113,
+      "output_room": 1482.47,
+      "input_wait": 0.079,
+      "read_align": 0.122,
+      "process": 156.657,
+      "commit_telemetry": 0.531
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 156.541,
+    "gpu_event_us": [
+      88.32,
+      11.872,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264450717169676,
+    "discarded_us": 60.878,
+    "count": 1,
+    "stages_us": {
+      "previous_pacing_sleep": 0.037,
+      "previous_publish": 4.726,
+      "loop_gap": 0.189,
+      "output_room": 0.045,
+      "input_wait": 60.766,
+      "read_align": 0.096,
+      "process": 1758.818,
+      "commit_telemetry": 0.498
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 1758.765,
+    "gpu_event_us": [
+      1731.616,
+      12.48,
+      7.807
+    ]
+  },
+  {
+    "time_ns": 264450718105055,
+    "discarded_us": 935.336,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.044,
+      "previous_publish": 0.161,
+      "loop_gap": 0.065,
+      "output_room": 0.037,
+      "input_wait": 658.512,
+      "read_align": 0.141,
+      "process": 275.806,
+      "commit_telemetry": 0.613
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 85.149,
+    "gpu_event_us": [
+      80.031,
+      15.007,
+      13.632
+    ]
+  },
+  {
+    "time_ns": 264450760354114,
+    "discarded_us": 1249.071,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 761.239,
+      "previous_publish": 0.119,
+      "loop_gap": 0.039,
+      "output_room": 2110.466,
+      "input_wait": 0.069,
+      "read_align": 0.125,
+      "process": 86.395,
+      "commit_telemetry": 0.438
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 86.421,
+    "gpu_event_us": [
+      20.608,
+      12.959,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264450770198431,
+    "discarded_us": 2844.363,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 720.786,
+      "previous_publish": 5.228,
+      "loop_gap": 0.089,
+      "output_room": 4705.29,
+      "input_wait": 0.065,
+      "read_align": 0.095,
+      "process": 92.315,
+      "commit_telemetry": 0.507
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 92.23,
+    "gpu_event_us": [
+      21.407,
+      14.816,
+      7.807
+    ]
+  },
+  {
+    "time_ns": 264450772504441,
+    "discarded_us": 305.967,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.04,
+      "previous_publish": 0.081,
+      "loop_gap": 0.103,
+      "output_room": 0.03,
+      "input_wait": 633.434,
+      "read_align": 0.117,
+      "process": 123.641,
+      "commit_telemetry": 0.708
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 83.698,
+    "gpu_event_us": [
+      51.743,
+      15.456,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264450804728003,
+    "discarded_us": 1223.592,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 505.403,
+      "previous_publish": 0.146,
+      "loop_gap": 0.147,
+      "output_room": 2076.441,
+      "input_wait": 0.089,
+      "read_align": 0.122,
+      "process": 104.777,
+      "commit_telemetry": 0.463
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 104.767,
+    "gpu_event_us": [
+      20.671,
+      15.072,
+      15.2
+    ]
+  },
+  {
+    "time_ns": 264450948339930,
+    "discarded_us": 3612.009,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 774.698,
+      "previous_publish": 0.075,
+      "loop_gap": 0.03,
+      "output_room": 4462.187,
+      "input_wait": 0.069,
+      "read_align": 0.227,
+      "process": 89.199,
+      "commit_telemetry": 0.535
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 89.219,
+    "gpu_event_us": [
+      22.08,
+      14.911,
+      7.615
+    ]
+  },
+  {
+    "time_ns": 264450949732675,
+    "discarded_us": 392.746,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.041,
+      "previous_publish": 0.081,
+      "loop_gap": 0.185,
+      "output_room": 0.03,
+      "input_wait": 632.706,
+      "read_align": 0.087,
+      "process": 92.527,
+      "commit_telemetry": 0.604
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 92.505,
+    "gpu_event_us": [
+      21.536,
+      12.864,
+      7.615
+    ]
+  },
+  {
+    "time_ns": 264450956040197,
+    "discarded_us": 4307.567,
+    "count": 1,
+    "stages_us": {
+      "previous_pacing_sleep": 0.031,
+      "previous_publish": 7.27,
+      "loop_gap": 0.077,
+      "output_room": 0.036,
+      "input_wait": 6011.652,
+      "read_align": 0.316,
+      "process": 33.43,
+      "commit_telemetry": 0.647
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 33.585,
+    "gpu_event_us": [
+      7.968,
+      15.391,
+      2.655
+    ]
+  },
+  {
+    "time_ns": 264450956419733,
+    "discarded_us": 379.493,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.029,
+      "previous_publish": 0.113,
+      "loop_gap": 0.205,
+      "output_room": 0.031,
+      "input_wait": 294.687,
+      "read_align": 0.083,
+      "process": 83.83,
+      "commit_telemetry": 0.558
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 83.748,
+    "gpu_event_us": [
+      20.671,
+      13.024,
+      8.639
+    ]
+  },
+  {
+    "time_ns": 264450960255640,
+    "discarded_us": 835.91,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 612.023,
+      "previous_publish": 0.077,
+      "loop_gap": 0.064,
+      "output_room": 1689.252,
+      "input_wait": 0.066,
+      "read_align": 0.186,
+      "process": 89.475,
+      "commit_telemetry": 0.677
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 89.49,
+    "gpu_event_us": [
+      20.832,
+      16.672,
+      7.615
+    ]
+  },
+  {
+    "time_ns": 264450961699707,
+    "discarded_us": 444.068,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.041,
+      "previous_publish": 0.082,
+      "loop_gap": 0.065,
+      "output_room": 0.031,
+      "input_wait": 656.047,
+      "read_align": 0.114,
+      "process": 87.063,
+      "commit_telemetry": 0.663
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 87.152,
+    "gpu_event_us": [
+      19.295,
+      14.208,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264450963767581,
+    "discarded_us": 67.876,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.041,
+      "previous_publish": 0.641,
+      "loop_gap": 0.088,
+      "output_room": 0.031,
+      "input_wait": 0.076,
+      "read_align": 0.073,
+      "process": 87.887,
+      "commit_telemetry": 0.649
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 87.961,
+    "gpu_event_us": [
+      20.384,
+      12.927,
+      8.639
+    ]
+  },
+  {
+    "time_ns": 264450967273643,
+    "discarded_us": 506.064,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 700.686,
+      "previous_publish": 0.108,
+      "loop_gap": 0.069,
+      "output_room": 1361.814,
+      "input_wait": 0.082,
+      "read_align": 0.11,
+      "process": 95.666,
+      "commit_telemetry": 0.467
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 95.462,
+    "gpu_event_us": [
+      22.143,
+      16.896,
+      7.648
+    ]
+  },
+  {
+    "time_ns": 264450970509574,
+    "discarded_us": 235.934,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 636.28,
+      "previous_publish": 0.075,
+      "loop_gap": 0.041,
+      "output_room": 1104.141,
+      "input_wait": 0.064,
+      "read_align": 0.083,
+      "process": 91.313,
+      "commit_telemetry": 0.53
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 91.343,
+    "gpu_event_us": [
+      21.279,
+      15.807,
+      8.639
+    ]
+  },
+  {
+    "time_ns": 264450971812297,
+    "discarded_us": 302.724,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.029,
+      "previous_publish": 0.092,
+      "loop_gap": 0.068,
+      "output_room": 0.03,
+      "input_wait": 410.297,
+      "read_align": 0.185,
+      "process": 86.094,
+      "commit_telemetry": 0.692
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 86.185,
+    "gpu_event_us": [
+      19.424,
+      13.055,
+      8.639
+    ]
+  },
+  {
+    "time_ns": 264451273584034,
+    "discarded_us": 1772.078,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.039,
+      "previous_publish": 0.063,
+      "loop_gap": 0.044,
+      "output_room": 104.876,
+      "input_wait": 3261.525,
+      "read_align": 0.125,
+      "process": 105.664,
+      "commit_telemetry": 0.549
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 93.055,
+    "gpu_event_us": [
+      20.896,
+      14.944,
+      8.864
+    ]
+  },
+  {
+    "time_ns": 264451767827538,
+    "discarded_us": 1243.641,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 376.343,
+      "previous_publish": 0.082,
+      "loop_gap": 0.064,
+      "output_room": 2118.341,
+      "input_wait": 0.074,
+      "read_align": 0.092,
+      "process": 93.204,
+      "commit_telemetry": 0.518
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 93.208,
+    "gpu_event_us": [
+      21.6,
+      14.879,
+      7.648
+    ]
+  },
+  {
+    "time_ns": 264451828850368,
+    "discarded_us": 22.878,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.057,
+      "previous_publish": 0.084,
+      "loop_gap": 0.103,
+      "output_room": 56.939,
+      "input_wait": 1548.608,
+      "read_align": 0.164,
+      "process": 152.12,
+      "commit_telemetry": 0.507
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 151.875,
+    "gpu_event_us": [
+      82.496,
+      13.088,
+      8.608
+    ]
+  },
+  {
+    "time_ns": 264451830911931,
+    "discarded_us": 1061.563,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.047,
+      "previous_publish": 6.697,
+      "loop_gap": 3.206,
+      "output_room": 106.571,
+      "input_wait": 1741.403,
+      "read_align": 0.21,
+      "process": 202.681,
+      "commit_telemetry": 0.748
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 202.675,
+    "gpu_event_us": [
+      22.016,
+      13.248,
+      9.631
+    ]
+  },
+  {
+    "time_ns": 264451832127259,
+    "discarded_us": 215.372,
+    "count": 1,
+    "stages_us": {
+      "previous_pacing_sleep": 0.117,
+      "previous_publish": 0.106,
+      "loop_gap": 0.081,
+      "output_room": 0.051,
+      "input_wait": 1180.255,
+      "read_align": 0.127,
+      "process": 34.057,
+      "commit_telemetry": 0.534
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 34.106,
+    "gpu_event_us": [
+      8.287,
+      15.328,
+      1.76
+    ]
+  },
+  {
+    "time_ns": 264451832453916,
+    "discarded_us": 326.614,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.04,
+      "previous_publish": 0.089,
+      "loop_gap": 0.114,
+      "output_room": 0.03,
+      "input_wait": 239.296,
+      "read_align": 0.102,
+      "process": 86.275,
+      "commit_telemetry": 0.711
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 86.299,
+    "gpu_event_us": [
+      20.416,
+      12.959,
+      8.639
+    ]
+  },
+  {
+    "time_ns": 264454894518778,
+    "discarded_us": 67.198,
+    "count": 1,
+    "stages_us": {
+      "previous_pacing_sleep": 0.031,
+      "previous_publish": 0.067,
+      "loop_gap": 3.971,
+      "output_room": 106.302,
+      "input_wait": 1787.044,
+      "read_align": 0.109,
+      "process": 38.828,
+      "commit_telemetry": 0.43
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 38.843,
+    "gpu_event_us": [
+      6.688,
+      15.968,
+      8.832
+    ]
+  },
+  {
+    "time_ns": 264454894871618,
+    "discarded_us": 352.797,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.04,
+      "previous_publish": 0.093,
+      "loop_gap": 0.076,
+      "output_room": 0.03,
+      "input_wait": 268.255,
+      "read_align": 0.108,
+      "process": 83.783,
+      "commit_telemetry": 0.455
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 83.772,
+    "gpu_event_us": [
+      20.128,
+      14.208,
+      7.615
+    ]
+  },
+  {
+    "time_ns": 264456026013703,
+    "discarded_us": 143.081,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.04,
+      "previous_publish": 0.089,
+      "loop_gap": 0.031,
+      "output_room": 0.031,
+      "input_wait": 947.816,
+      "read_align": 0.121,
+      "process": 100.247,
+      "commit_telemetry": 0.565
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 100.179,
+    "gpu_event_us": [
+      21.888,
+      13.439,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264456867611619,
+    "discarded_us": 1598.395,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 481.544,
+      "previous_publish": 0.114,
+      "loop_gap": 0.268,
+      "output_room": 0.03,
+      "input_wait": 2378.058,
+      "read_align": 0.123,
+      "process": 94.933,
+      "commit_telemetry": 0.594
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 94.768,
+    "gpu_event_us": [
+      22.495,
+      16.831,
+      7.807
+    ]
+  },
+  {
+    "time_ns": 264456878953786,
+    "discarded_us": 342.217,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 642.307,
+      "previous_publish": 0.126,
+      "loop_gap": 0.076,
+      "output_room": 153.591,
+      "input_wait": 2039.634,
+      "read_align": 0.124,
+      "process": 91.818,
+      "commit_telemetry": 0.558
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 91.837,
+    "gpu_event_us": [
+      21.247,
+      15.039,
+      8.832
+    ]
+  },
+  {
+    "time_ns": 264461012344877,
+    "discarded_us": 391.091,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 676.164,
+      "previous_publish": 6.971,
+      "loop_gap": 0.082,
+      "output_room": 101.998,
+      "input_wait": 2057.773,
+      "read_align": 0.121,
+      "process": 90.481,
+      "commit_telemetry": 0.647
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 90.494,
+    "gpu_event_us": [
+      20.703,
+      12.992,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264461905745570,
+    "discarded_us": 400.693,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 522.817,
+      "previous_publish": 0.129,
+      "loop_gap": 0.081,
+      "output_room": 203.908,
+      "input_wait": 2038.689,
+      "read_align": 0.32,
+      "process": 102.622,
+      "commit_telemetry": 0.666
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 102.632,
+    "gpu_event_us": [
+      22.112,
+      15.104,
+      9.056
+    ]
+  },
+  {
+    "time_ns": 264461909758883,
+    "discarded_us": 13.313,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 173.223,
+      "previous_publish": 0.101,
+      "loop_gap": 0.08,
+      "output_room": 389.558,
+      "input_wait": 1426.777,
+      "read_align": 0.287,
+      "process": 176.79,
+      "commit_telemetry": 0.658
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 176.819,
+    "gpu_event_us": [
+      83.328,
+      13.055,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264466363893466,
+    "discarded_us": 134.583,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 750.125,
+      "previous_publish": 0.141,
+      "loop_gap": 0.053,
+      "output_room": 108.691,
+      "input_wait": 1922.601,
+      "read_align": 0.148,
+      "process": 92.918,
+      "commit_telemetry": 0.553
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 92.865,
+    "gpu_event_us": [
+      21.759,
+      14.944,
+      7.84
+    ]
+  },
+  {
+    "time_ns": 264466637951353,
+    "discarded_us": 57.887,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 951.282,
+      "previous_publish": 0.126,
+      "loop_gap": 0.049,
+      "output_room": 229.303,
+      "input_wait": 1587.669,
+      "read_align": 0.128,
+      "process": 88.898,
+      "commit_telemetry": 0.67
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 88.881,
+    "gpu_event_us": [
+      21.056,
+      13.151,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264466936201261,
+    "discarded_us": 249.908,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 1617.985,
+      "previous_publish": 0.168,
+      "loop_gap": 0.078,
+      "output_room": 242.747,
+      "input_wait": 891.253,
+      "read_align": 0.206,
+      "process": 91.058,
+      "commit_telemetry": 0.621
+    },
+    "largest_stage": "previous_pacing_sleep",
+    "process_cpu_us": 91.138,
+    "gpu_event_us": [
+      21.503,
+      12.959,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264470105230019,
+    "discarded_us": 4028.758,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 627.686,
+      "previous_publish": 4.759,
+      "loop_gap": 0.076,
+      "output_room": 5886.961,
+      "input_wait": 0.079,
+      "read_align": 0.129,
+      "process": 101.549,
+      "commit_telemetry": 0.406
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 101.543,
+    "gpu_event_us": [
+      21.023,
+      16.224,
+      12.896
+    ]
+  },
+  {
+    "time_ns": 264470844823961,
+    "discarded_us": 593.942,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 716.934,
+      "previous_publish": 0.118,
+      "loop_gap": 0.067,
+      "output_room": 2445.574,
+      "input_wait": 0.072,
+      "read_align": 0.119,
+      "process": 95.166,
+      "commit_telemetry": 0.584
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 95.094,
+    "gpu_event_us": [
+      23.072,
+      15.328,
+      7.615
+    ]
+  },
+  {
+    "time_ns": 264471395194560,
+    "discarded_us": 370.61,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 367.35,
+      "previous_publish": 0.136,
+      "loop_gap": 0.064,
+      "output_room": 110.757,
+      "input_wait": 2119.066,
+      "read_align": 0.119,
+      "process": 88.123,
+      "commit_telemetry": 0.49
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 88.099,
+    "gpu_event_us": [
+      21.023,
+      12.992,
+      8.671
+    ]
+  },
+  {
+    "time_ns": 264471690502857,
+    "discarded_us": 308.298,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 814.037,
+      "previous_publish": 4.167,
+      "loop_gap": 0.031,
+      "output_room": 181.273,
+      "input_wait": 2012.128,
+      "read_align": 0.12,
+      "process": 93.143,
+      "commit_telemetry": 0.438
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 93.044,
+    "gpu_event_us": [
+      21.152,
+      12.959,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264471924717554,
+    "discarded_us": 214.721,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.028,
+      "previous_publish": 5.401,
+      "loop_gap": 0.067,
+      "output_room": 134.158,
+      "input_wait": 1356.345,
+      "read_align": 0.116,
+      "process": 92.271,
+      "commit_telemetry": 0.581
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 92.279,
+    "gpu_event_us": [
+      22.784,
+      13.759,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264471940278530,
+    "discarded_us": 560.939,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 313.051,
+      "previous_publish": 0.082,
+      "loop_gap": 0.067,
+      "output_room": 1449.016,
+      "input_wait": 0.087,
+      "read_align": 0.126,
+      "process": 91.85,
+      "commit_telemetry": 0.528
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 91.901,
+    "gpu_event_us": [
+      20.191,
+      12.575,
+      8.608
+    ]
+  },
+  {
+    "time_ns": 264471969515615,
+    "discarded_us": 237.132,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 771.367,
+      "previous_publish": 8.617,
+      "loop_gap": 0.074,
+      "output_room": 106.264,
+      "input_wait": 2018.4,
+      "read_align": 0.119,
+      "process": 95.648,
+      "commit_telemetry": 0.69
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 95.664,
+    "gpu_event_us": [
+      20.927,
+      13.024,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264473721421576,
+    "discarded_us": 906.04,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 420.637,
+      "previous_publish": 0.144,
+      "loop_gap": 0.078,
+      "output_room": 2569.468,
+      "input_wait": 0.086,
+      "read_align": 0.112,
+      "process": 231.47,
+      "commit_telemetry": 0.642
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 231.357,
+    "gpu_event_us": [
+      154.975,
+      13.024,
+      11.52
+    ]
+  },
+  {
+    "time_ns": 264473724479117,
+    "discarded_us": 57.541,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.027,
+      "previous_publish": 5.596,
+      "loop_gap": 0.078,
+      "output_room": 493.699,
+      "input_wait": 552.978,
+      "read_align": 0.127,
+      "process": 495.915,
+      "commit_telemetry": 0.879
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 85.575,
+    "gpu_event_us": [
+      59.2,
+      15.744,
+      8.0
+    ]
+  },
+  {
+    "time_ns": 264475146520164,
+    "discarded_us": 41.052,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 312.978,
+      "previous_publish": 4.216,
+      "loop_gap": 0.043,
+      "output_room": 105.833,
+      "input_wait": 1821.475,
+      "read_align": 0.132,
+      "process": 83.678,
+      "commit_telemetry": 0.563
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 83.722,
+    "gpu_event_us": [
+      20.32,
+      12.927,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264475169583780,
+    "discarded_us": 63.621,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.031,
+      "previous_publish": 0.079,
+      "loop_gap": 0.04,
+      "output_room": 105.177,
+      "input_wait": 1799.018,
+      "read_align": 0.138,
+      "process": 102.015,
+      "commit_telemetry": 0.584
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 88.227,
+    "gpu_event_us": [
+      37.023,
+      12.992,
+      7.807
+    ]
+  },
+  {
+    "time_ns": 264475416590630,
+    "discarded_us": 6.852,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.029,
+      "previous_publish": 4.901,
+      "loop_gap": 0.063,
+      "output_room": 514.532,
+      "input_wait": 1002.672,
+      "read_align": 0.15,
+      "process": 147.432,
+      "commit_telemetry": 0.598
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 147.426,
+    "gpu_event_us": [
+      79.839,
+      12.992,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264475418784095,
+    "discarded_us": 193.465,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.046,
+      "previous_publish": 4.965,
+      "loop_gap": 0.076,
+      "output_room": 662.058,
+      "input_wait": 1109.422,
+      "read_align": 0.144,
+      "process": 160.389,
+      "commit_telemetry": 0.48
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 160.369,
+    "gpu_event_us": [
+      86.079,
+      16.767,
+      11.103
+    ]
+  },
+  {
+    "time_ns": 264475934858413,
+    "discarded_us": 74.282,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.041,
+      "previous_publish": 0.087,
+      "loop_gap": 0.044,
+      "output_room": 0.03,
+      "input_wait": 60.392,
+      "read_align": 0.085,
+      "process": 82.408,
+      "commit_telemetry": 0.383
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 79.016,
+    "gpu_event_us": [
+      19.295,
+      12.959,
+      7.615
+    ]
+  },
+  {
+    "time_ns": 264476023966679,
+    "discarded_us": 108.295,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.031,
+      "previous_publish": 0.098,
+      "loop_gap": 0.077,
+      "output_room": 0.036,
+      "input_wait": 125.076,
+      "read_align": 0.115,
+      "process": 189.417,
+      "commit_telemetry": 0.77
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 114.326,
+    "gpu_event_us": [
+      85.887,
+      12.703,
+      7.648
+    ]
+  },
+  {
+    "time_ns": 264476422190735,
+    "discarded_us": 3224.178,
+    "count": 1,
+    "stages_us": {
+      "previous_pacing_sleep": 0.047,
+      "previous_publish": 7.058,
+      "loop_gap": 0.044,
+      "output_room": 0.055,
+      "input_wait": 4125.281,
+      "read_align": 0.202,
+      "process": 262.663,
+      "commit_telemetry": 0.483
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 262.638,
+    "gpu_event_us": [
+      228.799,
+      15.552,
+      8.832
+    ]
+  },
+  {
+    "time_ns": 264476422355620,
+    "discarded_us": 164.842,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.046,
+      "previous_publish": 0.094,
+      "loop_gap": 0.038,
+      "output_room": 0.036,
+      "input_wait": 0.061,
+      "read_align": 0.073,
+      "process": 163.912,
+      "commit_telemetry": 0.625
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 163.95,
+    "gpu_event_us": [
+      91.008,
+      12.351,
+      14.336
+    ]
+  },
+  {
+    "time_ns": 264476724426293,
+    "discarded_us": 70.717,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 743.714,
+      "previous_publish": 8.901,
+      "loop_gap": 0.088,
+      "output_room": 104.925,
+      "input_wait": 1734.311,
+      "read_align": 0.121,
+      "process": 166.809,
+      "commit_telemetry": 0.748
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 108.845,
+    "gpu_event_us": [
+      83.264,
+      12.191,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264476733219554,
+    "discarded_us": 793.261,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 584.182,
+      "previous_publish": 9.118,
+      "loop_gap": 0.083,
+      "output_room": 2632.879,
+      "input_wait": 0.077,
+      "read_align": 0.103,
+      "process": 94.79,
+      "commit_telemetry": 0.597
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 94.719,
+    "gpu_event_us": [
+      22.687,
+      14.56,
+      8.639
+    ]
+  },
+  {
+    "time_ns": 264476887205249,
+    "discarded_us": 985.707,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 494.895,
+      "previous_publish": 0.099,
+      "loop_gap": 0.064,
+      "output_room": 1838.266,
+      "input_wait": 0.071,
+      "read_align": 0.119,
+      "process": 94.685,
+      "commit_telemetry": 0.531
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 94.705,
+    "gpu_event_us": [
+      21.759,
+      14.751,
+      7.84
+    ]
+  },
+  {
+    "time_ns": 264477000779211,
+    "discarded_us": 1573.991,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 534.859,
+      "previous_publish": 0.215,
+      "loop_gap": 0.069,
+      "output_room": 0.026,
+      "input_wait": 2449.09,
+      "read_align": 0.3,
+      "process": 100.081,
+      "commit_telemetry": 0.573
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 100.035,
+    "gpu_event_us": [
+      23.296,
+      17.184,
+      8.832
+    ]
+  },
+  {
+    "time_ns": 264477016382024,
+    "discarded_us": 602.858,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.03,
+      "previous_publish": 11.519,
+      "loop_gap": 0.068,
+      "output_room": 119.145,
+      "input_wait": 2069.861,
+      "read_align": 0.362,
+      "process": 211.512,
+      "commit_telemetry": 0.95
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 155.593,
+    "gpu_event_us": [
+      84.671,
+      12.543,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264477253498214,
+    "discarded_us": 116.19,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 191.754,
+      "previous_publish": 0.112,
+      "loop_gap": 0.044,
+      "output_room": 203.598,
+      "input_wait": 1764.853,
+      "read_align": 0.114,
+      "process": 90.297,
+      "commit_telemetry": 0.53
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 90.292,
+    "gpu_event_us": [
+      20.671,
+      12.959,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264477256792500,
+    "discarded_us": 2294.286,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.031,
+      "previous_publish": 4.964,
+      "loop_gap": 0.069,
+      "output_room": 106.226,
+      "input_wait": 3095.314,
+      "read_align": 0.122,
+      "process": 87.119,
+      "commit_telemetry": 0.441
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 87.141,
+    "gpu_event_us": [
+      21.376,
+      12.319,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264480845876149,
+    "discarded_us": 84.068,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 104.679,
+      "previous_publish": 0.093,
+      "loop_gap": 0.117,
+      "output_room": 1987.63,
+      "input_wait": 0.075,
+      "read_align": 0.108,
+      "process": 91.321,
+      "commit_telemetry": 0.418
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 91.347,
+    "gpu_event_us": [
+      20.096,
+      12.959,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264480847093763,
+    "discarded_us": 217.614,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.037,
+      "previous_publish": 4.697,
+      "loop_gap": 0.088,
+      "output_room": 334.977,
+      "input_wait": 788.435,
+      "read_align": 0.115,
+      "process": 88.835,
+      "commit_telemetry": 0.43
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 88.836,
+    "gpu_event_us": [
+      20.511,
+      13.024,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264481449977797,
+    "discarded_us": 884.23,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 354.43,
+      "previous_publish": 7.758,
+      "loop_gap": 0.078,
+      "output_room": 96.906,
+      "input_wait": 2507.165,
+      "read_align": 0.208,
+      "process": 91.752,
+      "commit_telemetry": 0.495
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 91.75,
+    "gpu_event_us": [
+      20.735,
+      13.183,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264481451292182,
+    "discarded_us": 314.385,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.046,
+      "previous_publish": 0.095,
+      "loop_gap": 0.067,
+      "output_room": 1226.443,
+      "input_wait": 0.071,
+      "read_align": 0.099,
+      "process": 87.076,
+      "commit_telemetry": 0.488
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 87.103,
+    "gpu_event_us": [
+      20.255,
+      15.007,
+      7.648
+    ]
+  },
+  {
+    "time_ns": 264481463205337,
+    "discarded_us": 913.157,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 636.767,
+      "previous_publish": 7.346,
+      "loop_gap": 0.059,
+      "output_room": 2758.367,
+      "input_wait": 0.078,
+      "read_align": 0.125,
+      "process": 94.896,
+      "commit_telemetry": 0.432
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 94.757,
+    "gpu_event_us": [
+      21.888,
+      14.976,
+      7.84
+    ]
+  },
+  {
+    "time_ns": 264482035242825,
+    "discarded_us": 37.497,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.032,
+      "previous_publish": 6.538,
+      "loop_gap": 0.102,
+      "output_room": 224.802,
+      "input_wait": 1120.762,
+      "read_align": 0.138,
+      "process": 95.97,
+      "commit_telemetry": 0.593
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 96.019,
+    "gpu_event_us": [
+      20.991,
+      12.864,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264482054342061,
+    "discarded_us": 1099.236,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 258.342,
+      "previous_publish": 7.755,
+      "loop_gap": 0.112,
+      "output_room": 102.065,
+      "input_wait": 2843.048,
+      "read_align": 0.125,
+      "process": 93.062,
+      "commit_telemetry": 0.53
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 93.121,
+    "gpu_event_us": [
+      19.711,
+      12.992,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264482241408867,
+    "discarded_us": 66.806,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 769.881,
+      "previous_publish": 0.116,
+      "loop_gap": 0.114,
+      "output_room": 1916.447,
+      "input_wait": 0.067,
+      "read_align": 0.103,
+      "process": 97.621,
+      "commit_telemetry": 0.593
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 97.52,
+    "gpu_event_us": [
+      23.615,
+      14.592,
+      8.639
+    ]
+  },
+  {
+    "time_ns": 264482410482736,
+    "discarded_us": 73.834,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.058,
+      "previous_publish": 0.102,
+      "loop_gap": 0.066,
+      "output_room": 0.03,
+      "input_wait": 0.062,
+      "read_align": 0.074,
+      "process": 274.53,
+      "commit_telemetry": 0.56
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 113.052,
+    "gpu_event_us": [
+      26.944,
+      12.319,
+      12.223
+    ]
+  },
+  {
+    "time_ns": 264485610526284,
+    "discarded_us": 43.597,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.04,
+      "previous_publish": 0.094,
+      "loop_gap": 0.104,
+      "output_room": 0.037,
+      "input_wait": 0.075,
+      "read_align": 0.079,
+      "process": 643.373,
+      "commit_telemetry": 0.637
+    },
+    "largest_stage": "process",
+    "process_cpu_us": 144.606,
+    "gpu_event_us": [
+      82.687,
+      12.128,
+      7.648
+    ]
+  },
+  {
+    "time_ns": 264486792024124,
+    "discarded_us": 1497.925,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.038,
+      "previous_publish": 5.246,
+      "loop_gap": 0.065,
+      "output_room": 102.2,
+      "input_wait": 3152.01,
+      "read_align": 0.122,
+      "process": 92.991,
+      "commit_telemetry": 0.499
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 92.997,
+    "gpu_event_us": [
+      19.872,
+      14.399,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264490844926528,
+    "discarded_us": 902.412,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 719.323,
+      "previous_publish": 6.74,
+      "loop_gap": 0.079,
+      "output_room": 2697.186,
+      "input_wait": 0.066,
+      "read_align": 0.113,
+      "process": 97.304,
+      "commit_telemetry": 0.519
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 97.253,
+    "gpu_event_us": [
+      23.647,
+      14.751,
+      8.639
+    ]
+  },
+  {
+    "time_ns": 264491068125958,
+    "discarded_us": 199.432,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 712.906,
+      "previous_publish": 0.089,
+      "loop_gap": 0.042,
+      "output_room": 102.872,
+      "input_wait": 1938.221,
+      "read_align": 0.127,
+      "process": 105.097,
+      "commit_telemetry": 0.462
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 88.716,
+    "gpu_event_us": [
+      19.999,
+      13.984,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264491328640246,
+    "discarded_us": 514.31,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.045,
+      "previous_publish": 0.13,
+      "loop_gap": 0.065,
+      "output_room": 592.543,
+      "input_wait": 1646.787,
+      "read_align": 0.219,
+      "process": 235.82,
+      "commit_telemetry": 0.721
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 91.002,
+    "gpu_event_us": [
+      121.536,
+      12.864,
+      8.224
+    ]
+  },
+  {
+    "time_ns": 264491511057720,
+    "discarded_us": 1417.506,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 101.965,
+      "previous_publish": 6.421,
+      "loop_gap": 0.109,
+      "output_room": 107.011,
+      "input_wait": 3094.28,
+      "read_align": 0.219,
+      "process": 153.847,
+      "commit_telemetry": 0.689
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 153.603,
+    "gpu_event_us": [
+      80.64,
+      12.927,
+      10.688
+    ]
+  },
+  {
+    "time_ns": 264491519062039,
+    "discarded_us": 4.319,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 767.622,
+      "previous_publish": 8.772,
+      "loop_gap": 0.076,
+      "output_room": 176.177,
+      "input_wait": 1565.864,
+      "read_align": 0.148,
+      "process": 160.463,
+      "commit_telemetry": 0.605
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 160.409,
+    "gpu_event_us": [
+      87.007,
+      16.575,
+      11.071
+    ]
+  },
+  {
+    "time_ns": 264491837373397,
+    "discarded_us": 311.315,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 860.281,
+      "previous_publish": 0.11,
+      "loop_gap": 0.066,
+      "output_room": 0.027,
+      "input_wait": 1174.438,
+      "read_align": 0.129,
+      "process": 89.708,
+      "commit_telemetry": 0.522
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 89.707,
+    "gpu_event_us": [
+      22.016,
+      14.24,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264492663218998,
+    "discarded_us": 845.647,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 785.009,
+      "previous_publish": 0.115,
+      "loop_gap": 0.077,
+      "output_room": 2656.327,
+      "input_wait": 0.067,
+      "read_align": 0.105,
+      "process": 95.118,
+      "commit_telemetry": 0.536
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 94.997,
+    "gpu_event_us": [
+      23.231,
+      14.816,
+      7.648
+    ]
+  },
+  {
+    "time_ns": 264492699263092,
+    "discarded_us": 2044.114,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.042,
+      "previous_publish": 0.085,
+      "loop_gap": 0.031,
+      "output_room": 2615.811,
+      "input_wait": 1145.919,
+      "read_align": 0.328,
+      "process": 93.837,
+      "commit_telemetry": 2.596
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 93.9,
+    "gpu_event_us": [
+      23.615,
+      12.768,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264492732172906,
+    "discarded_us": 909.788,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.043,
+      "previous_publish": 0.09,
+      "loop_gap": 0.065,
+      "output_room": 1793.936,
+      "input_wait": 0.078,
+      "read_align": 0.131,
+      "process": 96.287,
+      "commit_telemetry": 0.635
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 96.214,
+    "gpu_event_us": [
+      22.624,
+      16.992,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264492735792371,
+    "discarded_us": 619.509,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 620.285,
+      "previous_publish": 3.895,
+      "loop_gap": 0.033,
+      "output_room": 106.107,
+      "input_wait": 2355.681,
+      "read_align": 0.131,
+      "process": 133.825,
+      "commit_telemetry": 0.613
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 92.199,
+    "gpu_event_us": [
+      21.536,
+      13.151,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264493142575822,
+    "discarded_us": 1783.458,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.032,
+      "previous_publish": 0.096,
+      "loop_gap": 0.077,
+      "output_room": 3382.014,
+      "input_wait": 0.068,
+      "read_align": 0.114,
+      "process": 96.771,
+      "commit_telemetry": 0.408
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 96.768,
+    "gpu_event_us": [
+      21.568,
+      12.223,
+      10.847
+    ]
+  },
+  {
+    "time_ns": 264493143852278,
+    "discarded_us": 276.413,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.032,
+      "previous_publish": 0.09,
+      "loop_gap": 0.198,
+      "output_room": 0.031,
+      "input_wait": 277.364,
+      "read_align": 0.158,
+      "process": 90.038,
+      "commit_telemetry": 0.459
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 90.066,
+    "gpu_event_us": [
+      20.767,
+      13.055,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264496540782022,
+    "discarded_us": 931.305,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 729.733,
+      "previous_publish": 0.105,
+      "loop_gap": 0.062,
+      "output_room": 1798.513,
+      "input_wait": 0.081,
+      "read_align": 0.132,
+      "process": 92.75,
+      "commit_telemetry": 0.478
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 92.749,
+    "gpu_event_us": [
+      20.576,
+      13.024,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264497143079146,
+    "discarded_us": 297.221,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 698.633,
+      "previous_publish": 0.106,
+      "loop_gap": 0.057,
+      "output_room": 0.04,
+      "input_wait": 1150.091,
+      "read_align": 0.119,
+      "process": 127.442,
+      "commit_telemetry": 0.802
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 88.17,
+    "gpu_event_us": [
+      20.543,
+      49.536,
+      8.0
+    ]
+  },
+  {
+    "time_ns": 264497149801454,
+    "discarded_us": 3722.311,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 76.002,
+      "previous_publish": 0.065,
+      "loop_gap": 0.03,
+      "output_room": 0.026,
+      "input_wait": 4573.698,
+      "read_align": 0.127,
+      "process": 94.282,
+      "commit_telemetry": 0.832
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 94.148,
+    "gpu_event_us": [
+      20.703,
+      16.863,
+      7.807
+    ]
+  },
+  {
+    "time_ns": 264497938019106,
+    "discarded_us": 217.71,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 708.074,
+      "previous_publish": 0.1,
+      "loop_gap": 0.075,
+      "output_room": 2051.527,
+      "input_wait": 0.067,
+      "read_align": 0.17,
+      "process": 108.771,
+      "commit_telemetry": 0.722
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 108.755,
+    "gpu_event_us": [
+      23.776,
+      14.911,
+      10.688
+    ]
+  },
+  {
+    "time_ns": 264498923235610,
+    "discarded_us": 217.087,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 1485.354,
+      "previous_publish": 0.134,
+      "loop_gap": 0.077,
+      "output_room": 0.038,
+      "input_wait": 0.069,
+      "read_align": 0.091,
+      "process": 155.555,
+      "commit_telemetry": 0.583
+    },
+    "largest_stage": "previous_pacing_sleep",
+    "process_cpu_us": 155.552,
+    "gpu_event_us": [
+      83.616,
+      12.768,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264501316932613,
+    "discarded_us": 699.365,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 904.376,
+      "previous_publish": 0.102,
+      "loop_gap": 0.066,
+      "output_room": 0.038,
+      "input_wait": 1144.22,
+      "read_align": 0.294,
+      "process": 149.645,
+      "commit_telemetry": 0.627
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 149.721,
+    "gpu_event_us": [
+      80.959,
+      12.736,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264502143982302,
+    "discarded_us": 49.69,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 591.605,
+      "previous_publish": 4.162,
+      "loop_gap": 0.066,
+      "output_room": 104.527,
+      "input_wait": 1803.047,
+      "read_align": 0.123,
+      "process": 85.948,
+      "commit_telemetry": 0.456
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 85.981,
+    "gpu_event_us": [
+      21.6,
+      13.024,
+      7.807
+    ]
+  },
+  {
+    "time_ns": 264502160723374,
+    "discarded_us": 2741.072,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.038,
+      "previous_publish": 6.053,
+      "loop_gap": 0.079,
+      "output_room": 103.998,
+      "input_wait": 3793.563,
+      "read_align": 0.127,
+      "process": 92.212,
+      "commit_telemetry": 0.439
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 92.212,
+    "gpu_event_us": [
+      21.247,
+      12.896,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264502174839526,
+    "discarded_us": 1116.152,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.03,
+      "previous_publish": 0.116,
+      "loop_gap": 0.041,
+      "output_room": 186.778,
+      "input_wait": 2748.234,
+      "read_align": 0.333,
+      "process": 96.735,
+      "commit_telemetry": 0.717
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 96.606,
+    "gpu_event_us": [
+      23.488,
+      12.736,
+      9.824
+    ]
+  },
+  {
+    "time_ns": 264502179854412,
+    "discarded_us": 14.886,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 702.935,
+      "previous_publish": 11.565,
+      "loop_gap": 0.058,
+      "output_room": 104.812,
+      "input_wait": 1638.422,
+      "read_align": 0.314,
+      "process": 93.024,
+      "commit_telemetry": 0.513
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 92.994,
+    "gpu_event_us": [
+      23.231,
+      12.799,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264502188734358,
+    "discarded_us": 879.946,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 331.968,
+      "previous_publish": 19.171,
+      "loop_gap": 0.052,
+      "output_room": 97.849,
+      "input_wait": 2516.902,
+      "read_align": 0.292,
+      "process": 155.048,
+      "commit_telemetry": 0.909
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 107.957,
+    "gpu_event_us": [
+      23.903,
+      16.607,
+      8.864
+    ]
+  },
+  {
+    "time_ns": 264502490781176,
+    "discarded_us": 46.818,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 120.56,
+      "previous_publish": 4.151,
+      "loop_gap": 0.066,
+      "output_room": 99.365,
+      "input_wait": 1817.671,
+      "read_align": 0.119,
+      "process": 83.46,
+      "commit_telemetry": 0.456
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 83.474,
+    "gpu_event_us": [
+      19.424,
+      13.216,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264503982484322,
+    "discarded_us": 703.146,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.029,
+      "previous_publish": 0.122,
+      "loop_gap": 0.093,
+      "output_room": 2459.341,
+      "input_wait": 0.086,
+      "read_align": 0.11,
+      "process": 97.016,
+      "commit_telemetry": 0.498
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 97.076,
+    "gpu_event_us": [
+      20.287,
+      12.415,
+      10.847
+    ]
+  },
+  {
+    "time_ns": 264506594322219,
+    "discarded_us": 837.897,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 432.658,
+      "previous_publish": 5.992,
+      "loop_gap": 0.063,
+      "output_room": 2602.383,
+      "input_wait": 0.072,
+      "read_align": 0.105,
+      "process": 103.971,
+      "commit_telemetry": 0.61
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 103.827,
+    "gpu_event_us": [
+      24.895,
+      16.0,
+      14.944
+    ]
+  },
+  {
+    "time_ns": 264506606870824,
+    "discarded_us": 1548.605,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.04,
+      "previous_publish": 0.127,
+      "loop_gap": 0.081,
+      "output_room": 102.888,
+      "input_wait": 3221.219,
+      "read_align": 0.126,
+      "process": 143.98,
+      "commit_telemetry": 0.589
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 92.498,
+    "gpu_event_us": [
+      20.128,
+      15.007,
+      8.0
+    ]
+  },
+  {
+    "time_ns": 264506935288546,
+    "discarded_us": 417.722,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 763.072,
+      "previous_publish": 0.113,
+      "loop_gap": 0.068,
+      "output_room": 2260.005,
+      "input_wait": 0.066,
+      "read_align": 0.122,
+      "process": 100.801,
+      "commit_telemetry": 0.413
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 100.814,
+    "gpu_event_us": [
+      20.479,
+      14.208,
+      14.751
+    ]
+  },
+  {
+    "time_ns": 264507229862304,
+    "discarded_us": 573.758,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 384.087,
+      "previous_publish": 0.086,
+      "loop_gap": 0.076,
+      "output_room": 201.59,
+      "input_wait": 2201.477,
+      "read_align": 0.283,
+      "process": 154.649,
+      "commit_telemetry": 0.607
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 154.665,
+    "gpu_event_us": [
+      81.887,
+      13.088,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264508633107769,
+    "discarded_us": 245.465,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 620.23,
+      "previous_publish": 5.563,
+      "loop_gap": 0.039,
+      "output_room": 106.246,
+      "input_wait": 1994.299,
+      "read_align": 0.12,
+      "process": 120.472,
+      "commit_telemetry": 0.426
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 120.432,
+    "gpu_event_us": [
+      21.663,
+      13.248,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264511969240766,
+    "discarded_us": 1132.997,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.029,
+      "previous_publish": 0.091,
+      "loop_gap": 0.065,
+      "output_room": 103.374,
+      "input_wait": 2509.099,
+      "read_align": 0.127,
+      "process": 140.715,
+      "commit_telemetry": 0.599
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 91.004,
+    "gpu_event_us": [
+      20.671,
+      12.992,
+      9.824
+    ]
+  },
+  {
+    "time_ns": 264513620383018,
+    "discarded_us": 142.256,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 690.985,
+      "previous_publish": 0.14,
+      "loop_gap": 0.077,
+      "output_room": 0.04,
+      "input_wait": 927.873,
+      "read_align": 0.216,
+      "process": 90.768,
+      "commit_telemetry": 0.728
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 90.818,
+    "gpu_event_us": [
+      21.056,
+      12.959,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264516185014505,
+    "discarded_us": 3631.537,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 813.321,
+      "previous_publish": 0.108,
+      "loop_gap": 0.066,
+      "output_room": 5451.768,
+      "input_wait": 0.273,
+      "read_align": 0.147,
+      "process": 103.471,
+      "commit_telemetry": 0.411
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 103.473,
+    "gpu_event_us": [
+      20.511,
+      14.208,
+      14.944
+    ]
+  },
+  {
+    "time_ns": 264516653615323,
+    "discarded_us": 600.778,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 0.03,
+      "previous_publish": 0.086,
+      "loop_gap": 0.056,
+      "output_room": 0.031,
+      "input_wait": 1395.233,
+      "read_align": 0.193,
+      "process": 111.733,
+      "commit_telemetry": 0.523
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 92.181,
+    "gpu_event_us": [
+      19.967,
+      12.992,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264516994700196,
+    "discarded_us": 1084.876,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 609.436,
+      "previous_publish": 0.109,
+      "loop_gap": 0.089,
+      "output_room": 0.041,
+      "input_wait": 1934.324,
+      "read_align": 0.129,
+      "process": 103.889,
+      "commit_telemetry": 0.44
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 103.758,
+    "gpu_event_us": [
+      23.391,
+      17.279,
+      13.984
+    ]
+  },
+  {
+    "time_ns": 264517291363015,
+    "discarded_us": 662.867,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.029,
+      "previous_publish": 0.092,
+      "loop_gap": 0.078,
+      "output_room": 104.722,
+      "input_wait": 2062.023,
+      "read_align": 0.138,
+      "process": 91.804,
+      "commit_telemetry": 0.818
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 91.796,
+    "gpu_event_us": [
+      21.183,
+      15.039,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264517314737769,
+    "discarded_us": 374.754,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 631.681,
+      "previous_publish": 7.381,
+      "loop_gap": 0.091,
+      "output_room": 2162.666,
+      "input_wait": 0.076,
+      "read_align": 0.095,
+      "process": 151.941,
+      "commit_telemetry": 0.626
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 151.999,
+    "gpu_event_us": [
+      80.448,
+      12.703,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264518929747592,
+    "discarded_us": 10.033,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 253.417,
+      "previous_publish": 0.092,
+      "loop_gap": 0.067,
+      "output_room": 203.773,
+      "input_wait": 1664.042,
+      "read_align": 0.144,
+      "process": 91.942,
+      "commit_telemetry": 0.683
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 91.99,
+    "gpu_event_us": [
+      19.648,
+      14.303,
+      8.799
+    ]
+  },
+  {
+    "time_ns": 264519747792909,
+    "discarded_us": 45.317,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 116.677,
+      "previous_publish": 0.094,
+      "loop_gap": 5.57,
+      "output_room": 200.967,
+      "input_wait": 1699.982,
+      "read_align": 0.13,
+      "process": 88.773,
+      "commit_telemetry": 0.472
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 88.783,
+    "gpu_event_us": [
+      19.904,
+      13.183,
+      8.767
+    ]
+  },
+  {
+    "time_ns": 264521431929559,
+    "discarded_us": 2136.654,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.037,
+      "previous_publish": 0.099,
+      "loop_gap": 0.201,
+      "output_room": 106.761,
+      "input_wait": 3289.09,
+      "read_align": 0.212,
+      "process": 153.773,
+      "commit_telemetry": 0.535
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 153.768,
+    "gpu_event_us": [
+      82.208,
+      12.927,
+      7.807
+    ]
+  },
+  {
+    "time_ns": 264521445576495,
+    "discarded_us": 1646.936,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 796.232,
+      "previous_publish": 0.098,
+      "loop_gap": 0.031,
+      "output_room": 3504.964,
+      "input_wait": 0.068,
+      "read_align": 0.107,
+      "process": 89.757,
+      "commit_telemetry": 0.528
+    },
+    "largest_stage": "output_room",
+    "process_cpu_us": 89.778,
+    "gpu_event_us": [
+      20.543,
+      13.055,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264522027466143,
+    "discarded_us": 1889.659,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 185.32,
+      "previous_publish": 0.095,
+      "loop_gap": 0.077,
+      "output_room": 92.662,
+      "input_wait": 3581.075,
+      "read_align": 0.202,
+      "process": 160.977,
+      "commit_telemetry": 0.491
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 160.981,
+    "gpu_event_us": [
+      84.288,
+      13.055,
+      14.944
+    ]
+  },
+  {
+    "time_ns": 264522314443248,
+    "discarded_us": 1977.105,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 365.321,
+      "previous_publish": 8.677,
+      "loop_gap": 22.408,
+      "output_room": 196.605,
+      "input_wait": 3384.778,
+      "read_align": 0.124,
+      "process": 328.573,
+      "commit_telemetry": 0.714
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 134.523,
+    "gpu_event_us": [
+      88.256,
+      12.351,
+      7.743
+    ]
+  },
+  {
+    "time_ns": 264522348823092,
+    "discarded_us": 1379.844,
+    "count": 23040,
+    "stages_us": {
+      "previous_pacing_sleep": 0.029,
+      "previous_publish": 0.089,
+      "loop_gap": 0.041,
+      "output_room": 106.494,
+      "input_wait": 3120.702,
+      "read_align": 0.125,
+      "process": 87.777,
+      "commit_telemetry": 0.458
+    },
+    "largest_stage": "input_wait",
+    "process_cpu_us": 87.7,
+    "gpu_event_us": [
+      21.312,
+      14.879,
+      7.776
+    ]
+  },
+  {
+    "time_ns": 264522418185281,
+    "discarded_us": 1362.15,
+    "count": 23039,
+    "stages_us": {
+      "previous_pacing_sleep": 2385.284,
+      "previous_publish": 0.142,
+      "loop_gap": 0.104,
+      "output_room": 0.039,
+      "input_wait": 0.065,
+      "read_align": 30.154,
+      "process": 505.079,
+      "commit_telemetry": 0.716
+    },
+    "largest_stage": "previous_pacing_sleep",
+    "process_cpu_us": 505.019,
+    "gpu_event_us": [
+      438.975,
+      12.223,
+      7.776
+    ]
+  }
+]

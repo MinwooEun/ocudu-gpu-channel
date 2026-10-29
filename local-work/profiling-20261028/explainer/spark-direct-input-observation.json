@@ -1,0 +1,13 @@
+{
+  "observed_on": "2026-10-28",
+  "evidence_kind": "First recorded row of a preserved live receiver trace; flags identify the selected path, not a latency benchmark",
+  "source": "/workspace/gpuch/profile-20261028/live/cuda-u16-c1-bw20-a1x1-trace-only/trace/channel-2449918-2449961.csv",
+  "node": "gnb0",
+  "samples": 23040,
+  "direct_in": 1,
+  "zero_in": 1,
+  "zero_out": 1,
+  "code_commit": "0a6f281",
+  "code_commit_subject": "cuda: read inputs in place on integrated GPUs; block-copy the IQ rings (Z8)",
+  "commit_present_in_current_main_ancestry": true
+}

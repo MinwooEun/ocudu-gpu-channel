@@ -1,0 +1,394 @@
+{
+  "cells": {
+    "a": {
+      "gnb": {
+        "bind": "127.0.0.11",
+        "device_id": "gnb0",
+        "gnb_id": 411,
+        "metrics_enabled": true,
+        "metrics_port": 8001,
+        "pci": 1,
+        "prach_root": 1,
+        "rx_port": 2001,
+        "tx_port": 2000
+      },
+      "links": [
+        {
+          "from": "gnb0",
+          "model": "sionna_rt",
+          "to": "ue0"
+        },
+        {
+          "from": "gnb0",
+          "model": "sionna_rt",
+          "to": "ue1"
+        },
+        {
+          "from": "ue0",
+          "model": "sionna_rt",
+          "to": "gnb0"
+        },
+        {
+          "from": "ue1",
+          "model": "sionna_rt",
+          "to": "gnb0"
+        }
+      ],
+      "noise_power": {
+        "gnb0": 3.0,
+        "ue0": 1.12e-06,
+        "ue1": 1.12e-06
+      },
+      "scheduler": "rr",
+      "scheduler_info": {
+        "config_dump_token": "rr_sched:",
+        "parameters": {},
+        "properties": [
+          "Channel-blind: ignores CQI, MCS and the achievable rate.",
+          "QoS-blind: ignores 5QI priority, packet delay budget and GBR.",
+          "Turns are counted in allocation slots, separately for DL and UL.",
+          "Expected: equal access per UE; a UE in a poor channel gets the same turns as a good one, so aggregate throughput can drop."
+        ],
+        "short": "RR",
+        "source": "lib/scheduler/policy/scheduler_time_rr.cpp",
+        "summary": "Serves the UEs in turn. A UE's priority is the number of newTx allocations made since it was last allocated, so the UE waiting longest goes first.",
+        "title": "Round-Robin (time domain)",
+        "yaml": "  scheduler:\n    policy:\n      rr_sched:\n"
+      },
+      "ues": [
+        {
+          "cell_index": 0,
+          "device_id": "ue0",
+          "five_qi": 9,
+          "flows": [
+            {
+              "direction": "dl",
+              "name": "dl_bulk",
+              "pattern": "cbr",
+              "rate_mbps": 40.0,
+              "size_bytes": 1200
+            },
+            {
+              "direction": "ul",
+              "name": "ul_bulk",
+              "pattern": "cbr",
+              "rate_mbps": 2.0,
+              "size_bytes": 1200
+            }
+          ],
+          "imsi": "001010123456780",
+          "ipv4": "10.45.1.2",
+          "netns": "ue1",
+          "qos": {
+            "example": "buffered video, TCP (default)",
+            "pdb_ms": 300,
+            "priority": 90,
+            "rlc": "AM",
+            "type": "non-GBR"
+          },
+          "role": "bulk",
+          "rx_port": 2100,
+          "scenario_node": "ue0",
+          "twin": "ue2",
+          "tx_port": 2101
+        },
+        {
+          "cell_index": 1,
+          "device_id": "ue1",
+          "five_qi": 7,
+          "flows": [
+            {
+              "direction": "dl",
+              "name": "dl_video",
+              "off_mean_s": 1.0,
+              "on_mean_s": 2.0,
+              "pattern": "onoff",
+              "rate_mbps": 12.0,
+              "size_bytes": 1200
+            },
+            {
+              "direction": "dl",
+              "interval_ms": 10.0,
+              "name": "dl_control",
+              "pattern": "periodic",
+              "size_bytes": 200
+            },
+            {
+              "direction": "ul",
+              "interval_ms": 10.0,
+              "name": "ul_control",
+              "pattern": "periodic",
+              "size_bytes": 200
+            }
+          ],
+          "imsi": "001010123456781",
+          "ipv4": "10.45.1.3",
+          "netns": "ue2",
+          "qos": {
+            "example": "voice, live video, gaming",
+            "pdb_ms": 100,
+            "priority": 70,
+            "rlc": "UM",
+            "type": "non-GBR"
+          },
+          "role": "interactive",
+          "rx_port": 2102,
+          "scenario_node": "ue1",
+          "twin": "ue3",
+          "tx_port": 2103
+        }
+      ]
+    },
+    "b": {
+      "gnb": {
+        "bind": "127.0.0.12",
+        "device_id": "gnb1",
+        "gnb_id": 412,
+        "metrics_enabled": true,
+        "metrics_port": 8002,
+        "pci": 2,
+        "prach_root": 1,
+        "rx_port": 2011,
+        "tx_port": 2010
+      },
+      "links": [
+        {
+          "from": "gnb1",
+          "model": "sionna_rt",
+          "to": "ue2"
+        },
+        {
+          "from": "gnb1",
+          "model": "sionna_rt",
+          "to": "ue3"
+        },
+        {
+          "from": "ue2",
+          "model": "sionna_rt",
+          "to": "gnb1"
+        },
+        {
+          "from": "ue3",
+          "model": "sionna_rt",
+          "to": "gnb1"
+        }
+      ],
+      "noise_power": {
+        "gnb1": 3.0,
+        "ue2": 1.12e-06,
+        "ue3": 1.12e-06
+      },
+      "scheduler": "qos",
+      "scheduler_info": {
+        "config_dump_token": "qos_sched:",
+        "parameters": {
+          "combine_function": "gbr_prioritized",
+          "gbr_enabled": true,
+          "pdb_enabled": true,
+          "pf_fairness_coeff": 2.0,
+          "prio_enabled": true
+        },
+        "properties": [
+          "PF = r_est / r_avg^a, a = pf_fairness_coeff = 2.0; r_est is the TBS the UE's current MCS would carry over the full bandwidth, r_avg an exponential average of its past TBS (alpha 0.01).",
+          "Priority = (max + 1 - min(5QI priority x ARP priority)) / (max + 1) over the UE's logical channels with data.",
+          "Delay = sum of head-of-line delay / PDB over those channels (1 when no data is waiting).",
+          "GBR = sum of GBR / average rate over GBR flows (1 when none).",
+          "A UE that has never been allocated goes first."
+        ],
+        "short": "QoS-PF",
+        "source": "lib/scheduler/policy/scheduler_time_qos.cpp",
+        "summary": "Ranks UEs by weight = GBR x PF x priority x delay and serves the largest first. This is OCUDU's default policy.",
+        "title": "QoS-aware Proportional Fair (time domain)",
+        "yaml": "  scheduler:\n    policy:\n      qos_sched:\n        combine_function: gbr_prioritized\n        pf_fairness_coeff: 2.0\n        prio_enabled: true\n        pdb_enabled: true\n        gbr_enabled: true\n"
+      },
+      "ues": [
+        {
+          "cell_index": 0,
+          "device_id": "ue2",
+          "five_qi": 9,
+          "flows": [
+            {
+              "direction": "dl",
+              "name": "dl_bulk",
+              "pattern": "cbr",
+              "rate_mbps": 40.0,
+              "size_bytes": 1200
+            },
+            {
+              "direction": "ul",
+              "name": "ul_bulk",
+              "pattern": "cbr",
+              "rate_mbps": 2.0,
+              "size_bytes": 1200
+            }
+          ],
+          "imsi": "001010123456782",
+          "ipv4": "10.45.1.4",
+          "netns": "ue3",
+          "qos": {
+            "example": "buffered video, TCP (default)",
+            "pdb_ms": 300,
+            "priority": 90,
+            "rlc": "AM",
+            "type": "non-GBR"
+          },
+          "role": "bulk",
+          "rx_port": 2104,
+          "scenario_node": "ue0",
+          "twin": "ue0",
+          "tx_port": 2105
+        },
+        {
+          "cell_index": 1,
+          "device_id": "ue3",
+          "five_qi": 7,
+          "flows": [
+            {
+              "direction": "dl",
+              "name": "dl_video",
+              "off_mean_s": 1.0,
+              "on_mean_s": 2.0,
+              "pattern": "onoff",
+              "rate_mbps": 12.0,
+              "size_bytes": 1200
+            },
+            {
+              "direction": "dl",
+              "interval_ms": 10.0,
+              "name": "dl_control",
+              "pattern": "periodic",
+              "size_bytes": 200
+            },
+            {
+              "direction": "ul",
+              "interval_ms": 10.0,
+              "name": "ul_control",
+              "pattern": "periodic",
+              "size_bytes": 200
+            }
+          ],
+          "imsi": "001010123456783",
+          "ipv4": "10.45.1.5",
+          "netns": "ue4",
+          "qos": {
+            "example": "voice, live video, gaming",
+            "pdb_ms": 100,
+            "priority": 70,
+            "rlc": "UM",
+            "type": "non-GBR"
+          },
+          "role": "interactive",
+          "rx_port": 2106,
+          "scenario_node": "ue1",
+          "twin": "ue1",
+          "tx_port": 2107
+        }
+      ]
+    }
+  },
+  "fanout_rename": {
+    "gnb0": "gnb1",
+    "ue0": "ue2",
+    "ue1": "ue3"
+  },
+  "kind": "ocudu-scheduler-benchmark",
+  "measure_seconds": 120,
+  "rx_noise": {
+    "awgn_snr_db": 40.0,
+    "tx_power_dl": 0.0112,
+    "tx_power_ul": 30000.0
+  },
+  "scenario": "/work/ocudu-native-workspace/configs/ocudu-scheduler-benchmark-native/20261013T094409Z/scenario-source.json",
+  "scenario_benchmark": {
+    "duration_s": 180.0,
+    "generator_version": 1,
+    "gnb_distance_range_m": [
+      6.0,
+      40.0
+    ],
+    "line_of_sight": "every leg sampled every 0.25 m clears every inflated obstacle box",
+    "obstacle_margin_m": 1.0,
+    "routes": {
+      "ue0": {
+        "speed_mps": 0.704,
+        "start_gnb_distance_m": 18.687,
+        "waypoints": 7
+      },
+      "ue1": {
+        "speed_mps": 0.52,
+        "start_gnb_distance_m": 15.96,
+        "waypoints": 8
+      }
+    },
+    "seed": 1,
+    "speed_range_mps": [
+      0.5,
+      1.5
+    ],
+    "start_max_gnb_distance_m": 20.0
+  },
+  "seed": 1,
+  "segment_seconds": 1.0,
+  "traffic_profile": {
+    "description": "ue A is a backlogged download (5QI 9, PDB 300 ms); ue B carries on/off video and a 100 Hz control stream (5QI 7, PDB 100 ms). The cell is oversubscribed, so the policies must choose.",
+    "name": "mixed",
+    "title": "Bulk (5QI 9) + delay-sensitive (5QI 7)",
+    "ues": [
+      {
+        "five_qi": 9,
+        "flows": [
+          {
+            "direction": "dl",
+            "name": "dl_bulk",
+            "pattern": "cbr",
+            "rate_mbps": 40.0,
+            "size_bytes": 1200
+          },
+          {
+            "direction": "ul",
+            "name": "ul_bulk",
+            "pattern": "cbr",
+            "rate_mbps": 2.0,
+            "size_bytes": 1200
+          }
+        ],
+        "role": "bulk"
+      },
+      {
+        "five_qi": 7,
+        "flows": [
+          {
+            "direction": "dl",
+            "name": "dl_video",
+            "off_mean_s": 1.0,
+            "on_mean_s": 2.0,
+            "pattern": "onoff",
+            "rate_mbps": 12.0,
+            "size_bytes": 1200
+          },
+          {
+            "direction": "dl",
+            "interval_ms": 10.0,
+            "name": "dl_control",
+            "pattern": "periodic",
+            "size_bytes": 200
+          },
+          {
+            "direction": "ul",
+            "interval_ms": 10.0,
+            "name": "ul_control",
+            "pattern": "periodic",
+            "size_bytes": 200
+          }
+        ],
+        "role": "interactive"
+      }
+    ]
+  },
+  "twins": {
+    "ue0": "ue2",
+    "ue1": "ue3",
+    "ue2": "ue0",
+    "ue3": "ue1"
+  }
+}

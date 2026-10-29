@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "file": "file:///home/minwoo/ocudu-work/profiling-20261028/profiling-explained.ko.html",
+  "offline_requests": 0,
+  "page_errors": [],
+  "viewport_checks": [
+    {
+      "viewport": 1440,
+      "body": 1440,
+      "root": 1440
+    },
+    {
+      "viewport": 1024,
+      "body": 1024,
+      "root": 1024
+    },
+    {
+      "viewport": 768,
+      "body": 768,
+      "root": 768
+    },
+    {
+      "viewport": 390,
+      "body": 390,
+      "root": 390
+    },
+    {
+      "viewport": 320,
+      "body": 320,
+      "root": 320
+    }
+  ],
+  "checks": [
+    "rendered anchors and evidence links",
+    "project context and exact 76.734 provenance",
+    "RTX copy versus existing Spark direct mode",
+    "UL/DL stages",
+    "actual UE timing selection",
+    "input and output buffer constraints",
+    "conditional CUDA state transfer",
+    "boundary tabs",
+    "remedy sort and validity",
+    "JSON/CSV downloads",
+    "print expansion"
+  ],
+  "reference": {
+    "cycle1_ms": 0.999,
+    "cycle16_ms": 2.226
+  }
+}

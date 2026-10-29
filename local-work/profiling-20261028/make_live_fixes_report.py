@@ -1,0 +1,225 @@
+"""Produce a separate follow-up report; preserve the original campaign artifacts."""
+import csv
+import json
+from pathlib import Path
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+P = Path(__file__).resolve().parent
+rows = json.loads((P / 'live-fixes-summary.json').read_text())
+good = {r['trial_directory']: r for r in rows if r.get('metrics')}
+order = ['baseline', 'baseline-repeat', 'sleep', 'poll10', 'broker4',
+         'broker4-spin', 'ue5big-shared', 'ue5big-spin',
+         'ue5big-spin-repeat', 'cuda-blocking-sleep']
+labels = {
+    'baseline': 'Original', 'baseline-repeat': 'Original repeat',
+    'sleep': 'Sleep polling (50 us)', 'poll10': 'Sleep polling (10 us)',
+    'broker4': '4 broker cores + 4 I/O, sleep',
+    'broker4-spin': '4 broker cores + 4 I/O, spin',
+    'ue5big-shared': '5 big UE cores, shared, sleep',
+    'ue5big-spin': '5 big UE cores, pinned, spin',
+    'ue5big-spin-repeat': '5 big UE cores, pinned, repeat',
+    'cuda-blocking-sleep': 'Blocking CUDA event, sleep',
+}
+fields = ['trial', 'radio_wall_ratio', 'wall_ms_per_radio_ms', 'valid_segments',
+          'complete_segments', 'all_attached', 'connectivity_gate', 'strict_zero_faults',
+          'rx_starvations', 'tx_queue_overflows', 'tx_sequence_gaps', 'zmq_errors',
+          'min_iq_ratio', 'max_iq_ratio', 'returncode']
+with (P / 'live-fixes-results.csv').open('w') as f:
+    w = csv.DictWriter(f, fieldnames=fields)
+    w.writeheader()
+    for name in order:
+        if name not in good:
+            continue
+        r = good[name]
+        ratio = r['metrics']['real_time_ratio']
+        iq = [x['ratio'] for x in r['independent_iq_progress'].values()]
+        w.writerow(dict(trial=name, radio_wall_ratio=ratio, wall_ms_per_radio_ms=1/ratio,
+                        valid_segments=r['valid_segments'], complete_segments=r['segments_complete'],
+                        all_attached=r['gate']['all_ues_attached'],
+                        connectivity_gate=r['gate']['status'],
+                        strict_zero_faults=r['strict_zero_faults'],
+                        min_iq_ratio=min(iq), max_iq_ratio=max(iq),
+                        returncode=r['returncode'], **r['metrics']['broker']))
+
+present = [n for n in order if n in good]
+fig, ax = plt.subplots(figsize=(10, max(5.5, len(present) * .5 + 1.4)))
+values = [good[n]['metrics']['real_time_ratio'] for n in present]
+colors = ['#3d657b' if n.startswith('baseline') else '#d79344' for n in present]
+bars = ax.barh(range(len(present)), values, color=colors)
+ax.set_yticks(range(len(present)), [labels[n] for n in present])
+ax.invert_yaxis()
+ax.set_xlim(0, 1.08)
+ax.axvline(1, color='#46744f', linestyle='--', linewidth=1.2)
+for bar, n, value in zip(bars, present, values):
+    ax.text(value + 0.012, bar.get_y() + bar.get_height()/2,
+            f'{value:.3f}   ({good[n]["valid_segments"]}/30 KPI-valid)', va='center', fontsize=9)
+ax.set_xlabel('Radio time / wall time; 1.0 = real-time throughput')
+ax.set_title('Spark live CUDA gNB: 16 UEs, 20 MHz, 1x1\nSame frozen channel and offered traffic, no timing profiler')
+ax.grid(axis='x', alpha=.16)
+ax.set_axisbelow(True)
+fig.text(.02, .015, 'KPI exclusions include missing UE metrics. Connectivity passes do not certify zero-miss real time.', fontsize=8)
+fig.tight_layout(rect=(0, .04, 1, 1))
+fig.savefig(P / 'live-fixes.png', dpi=180)
+fig.savefig(P / 'live-fixes.pdf')
+plt.close(fig)
+
+table = '\n'.join(
+    f'  {name:25s} R={good[name]["metrics"]["real_time_ratio"]:.6f}'
+    f'  wall={1/good[name]["metrics"]["real_time_ratio"]:.3f} ms/radio-ms'
+    f'  KPI-valid={good[name]["valid_segments"]}/30'
+    f'  starvations={good[name]["metrics"]["broker"]["rx_starvations"]}'
+    for name in present)
+exclusions = '\n'.join(
+    f'  {name}: {good[name]["invalid_segment_reasons"]}' for name in present
+    if good[name]['invalid_segment_reasons'])
+text = f'''Spark live CUDA gNB 병목 및 개선안 실험 — 2026-10-28
+
+핵심
+
+16 UE에서 먼저 고칠 대상은 live radio와 broker 사이의 IQ 전달 및 동기 진행 구조다.
+gNB 수신 경로의 채널 함수는 무선 1 ms당 약 0.17 ms인데, 입력 IQ를 기다리는 데
+약 1.58 ms, 출력 공간을 기다리는 데 약 0.46 ms가 걸린다. 전체는 약 2.2 ms다.
+이는 gNB 수신 producer 한 경로의 시간 분해다. 0.17 ms를 전체 시스템의 GPU
+계산 비용으로 읽으면 안 된다. 16개의 UE 수신 경로도 각각 채널 처리를 수행한다.
+
+어디서 기다리는가
+
+UE의 CPU PHY가 송신 IQ를 만듦 → ZMQ 응답 → broker puller가 TX ring에 기록
+→ gNB 수신 producer가 모든 입력의 공통 sample 구간을 확인
+→ GPU가 채널·합성을 수행 → RX ring에 결과 기록 → REP가 gNB에 전달
+→ gNB가 IQ를 소비하고 처리. 반대 방향으로 gNB의 송신 IQ가 UE들에 전달된다.
+
+같은 sample 시각의 UE 신호를 합쳐야 하므로, 한 입력이 없으면 그 시간 구간을
+진행할 수 없다. 결과를 받는 radio가 충분히 소비하지 않으면 출력 ring에도 새
+결과를 넣을 공간이 없다. 데이터를 임의로 생략하거나 0으로 채우면 동일한 채널
+실험이 아니므로 그런 우회는 적용하지 않았다.
+
+입력 대기는 ZMQ 복사에 걸린 시간만을 뜻하지 않는다. UE/gNB 처리, 요청·응답,
+broker worker가 실행되기까지의 시간 등이 모두 원인일 수 있다. 출력 공간 대기도
+상대 radio의 소비와 REP 전달 속도를 함께 반영한다. 두 측정은 병목이 드러난
+위치를 알려 주며, 각각을 단일 원인으로 단정하지 않는다.
+
+broker는 17개 radio port에서 puller/producer/REP 각 17개, 총 51개 worker를
+두 big core에서 실행한다. 기존 SPIN=2는 socket receive를 blocking하고 내부
+ring 대기에서는 sched_yield를 반복한다. 대기 중인 thread도 실행 가능 상태로
+남아 CPU 시간을 사용한다. 진단의 정상 진행 7.86초에서 broker는 약 2.00 core,
+UE들은 약 4.48 core를 사용했다. 이 수치는 연산과 polling을 모두 포함한다.
+여기서 OS의 thread scheduling은 gNB MAC scheduler의 무선 자원 배분과 다른
+동작이다. CPU 교대 실행과 IQ handoff 문제를 MAC 결정 비용과 혼동하지 않는다.
+
+17개 수신 노드의 채널 함수 thread CPU 시간을 무선 1 ms 기준으로 합치면 약
+1.00 CPU-ms다. host 제출은 약 0.58 ms, GPU 완료 대기는 약 0.36 ms다.
+gNB 경로 하나만 보면 작은 비용이어도, UE마다 있는 호출이 합산된다. 이 합계는
+동시 실행될 수 있는 여러 함수의 누적 CPU 작업량이며 직렬 지연 시간이 아니다.
+원본: live-summary.json의 trace-only 두 실행. CPU 전체 사용량은 별도의 진단
+구간이므로 두 측정의 차를 정확한 원인별 CPU 비율로 제시하지 않는다.
+
+CPU–GPU 경계
+
+현재 Spark 경로는 CPU 메모리의 IQ를 GPU가 직접 읽고 결과도 공유/직접 쓰는
+방식을 사용한다. CPU는 입력 pointer와 channel metadata를 준비하고 kernel을
+제출한 뒤 완료를 확인한다. 명시적 IQ H2D/D2H 복사가 매 호출 필수인 경로가
+아니다. metadata H2D와 동적 channel update 때의 조건부 상태 D2H/H2D는 있다.
+공유 메모리도 실제 메모리 접근 비용과 동기화 비용을 가지므로 비용이 0은 아니다.
+
+gNB 수신 경로의 평균 host 준비/packing은 약 2 us, model/control 약 14 us,
+kernel 제출 약 61 us, 완료 대기 약 83 us / radio-ms였다. GPU event의 kernel
+구간 약 109 us는 이 host 구간들과 겹치므로 더해서는 안 된다. RTX 5090의
+64-input synthetic 결과에서 CPU packing 658 us, H2D 445 us였던 경로와 다르다.
+
+UE 수 증가와 bandwidth/antenna 증가를 구분한다. UE가 늘면 endpoint, worker,
+동시에 준비돼야 하는 입력이 늘어난다. bandwidth가 늘면 각 stream의 IQ 양이
+늘고, antenna가 늘면 stream 수와 채널 행렬의 lane 수가 늘어난다. complex-f32
+IQ 한 stream은 23.04 MS/s에서 184.32 MB/s이므로 16 UE의 양방향 stream은
+실시간 기준 약 5.90 GB/s다. 추가 CPU/ZMQ 복사 이전의 payload 양이며, 이것만으로
+DRAM 대역폭 포화라고 결론 내리지는 않는다.
+
+이 후속 설정 실험은 20 MHz·16 UE에 해당한다. 앞선 OAI sweep에서는 50 MHz
+4x4 matched channel-only가 약 0.935, live가 0.513이었고 100 MHz 4x4는 각각
+0.443/0.339였다. 큰 antenna/bandwidth에서도 radio 소비/transport 대기가 컸지만,
+계산과 메모리 작업량도 커진다. 한 조건의 원인을 모든 경계에 그대로 적용하지 않는다.
+
+실제로 바꿔 본 결과
+
+조건: DGX Spark GB10, 실제 CUDA gNB(all supported stages), srsUE 16개,
+20 MHz, 23.04 MS/s, 1x1, RR + HARQ OLLA, MPS. 독립 sample-rate sweep 없음.
+동일한 고정 channel/traffic bundle, 10 radio-second warmup + 30 radio-second
+measurement. channel 모델은 변경하지 않았다. trace CSV/NVTX/perf/Nsight 수집
+없이 실행했고, sample-indexed replay와 기존 gate/KPI 기록은 유지했다.
+
+R=진행한 무선 시간 / 실제 시간. 1.0이 실시간 처리율이다.
+
+{table}
+
+CPU 배치
+
+baseline: gNB 5-12, broker 15-16(big 2개). UE는 17/18/19 및 13/14에 개별
+고정되며 big 3개 + little 2개다. auxiliary는 0-4.
+broker4 계열: broker 8-9,15-16(big 4개), gNB 5-7,10-12. I/O 2→4.
+ue5big 계열: UE 8-9,17-19(big 5개), gNB 5-7,10-14, broker 15-16 유지.
+shared는 각 UE가 전체 UE CPU pool을 공유하며 sleep 사용. pinned/spin은
+각 UE를 순서대로 한 core에 고정하며 기존 SPIN=2 사용.
+sleep: SPIN=0, 기본 50 us polling. poll10은 10 us 및 명시적 timer slack 1 us.
+
+주의: broker4는 broker 자원을 늘리면서 gNB CPU도 재배치한 시스템 설정 대조다.
+I/O만의 효과로 분해할 수 없다. UE core 변경도 동일하게 전체 CPU 배치 대조다.
+동일한 offered traffic과 channel trace를 사용하더라도 RAN의 적응/재전송 결과,
+실제 송수신 IQ와 delivered traffic은 조건에 따라 달라진다.
+
+검증과 제외
+
+측정이 완료된 trial은 모두 30개 측정 radio-second 구간이 끝났다. connectivity
+gate의 attached/PDU/ping 결과와 strict real-time은 다른 조건이다. 실험별
+KPI-valid 구간 수를 표에 그대로 표시했다. 다음 이유로 일부 구간이 제외됐다.
+
+{exclusions}
+
+report의 aggregate throughput은 valid 구간만의 평균이므로 valid 개수가 다른
+설정 사이에서 수치를 바로 비교하지 않는다. 전체 구간 평균과 각 원본 KPI는
+live-fixes-summary.json에 별도로 남겼다. 모든 완료 trial에는 rx_starvation이
+있으므로 strict zero-miss real-time을 통과한 개선안은 없다. 슬롯 진행률은
+각 link의 applied sample 증가량 / wall time으로 독립 확인했다.
+
+failed-environment-* 두 trial은 native root 환경이 빠져 시작 전에 실패했다.
+실제 성능 표에서 제외하고 result/launch/runner 원본은 보존했다.
+
+CUDA 완료 대기 코드 실험
+
+blocking-sync.patch는 별도 source/build에서 OCG_CUDA_BLOCKING_SYNC=1일 때만
+완료 event를 cudaEventBlockingSync로 생성하고 cudaEventSynchronize로 기다린다.
+기본 경로는 기존 cudaStreamSynchronize다. 같은 stream에서 같은 work 완료까지
+기다리며 channel 수학은 변경하지 않는다. sleep baseline과 비교하는 실험이다.
+CUDA processing/runtime-update parity/matrix history/broker 네 검증은 옵션 on/off 모두 통과.
+patch는 기존 instrumentation.patch가 적용된 별도 snapshot을 기준으로 한다.
+공식 API: https://docs.nvidia.com/cuda/cuda-runtime-api/cuda_runtime_api/group__CUDART__EVENT.html
+이 방식은 CPU를 block시킬 수 있으나 깨우는 지연이 생겨 처리율 개선을 보장하지
+않는다. 생산 source/default에는 적용하지 않았다.
+
+해결 방향
+
+단순한 polling 간격/코어 수 변경으로 16 UE의 실시간 달성을 입증하지 못했다.
+원래 설정은 두 번 0.4515/0.4508, UE big-core 개별 고정은 0.4750/0.4709였다.
+진행률 차이는 약 4~5%지만 후자의 반복은 KPI-valid가 1/30이었다. 원래 설정의
+반복도 8/30이었다. 지표 누락을 정상적인 16-UE 지속 처리로 간주하지 않으며,
+코어 재배치를 안정된 개선안으로 채택할 근거는 부족하다. CUDA blocking event는
+sleep 대비 약 6.7% 개선됐지만 원래 설정보다 느렸다.
+개선할 지점은 데이터 도착/출력 소비 시 필요한 worker만 깨우는 broker 구조,
+작은 IQ 요청·응답 횟수와 CPU 작업의 감소, 실제 UE PHY의 CPU 여유 확보다.
+특히 모든 UE의 공통 sample 구간이 필요하다는 물리적 조건은 유지해야 한다.
+
+event-driven ring notification은 코드상 구현 가능한 후보지만 이번에 구현하거나
+성능 입증한 것은 아니다. 무작정 batch를 키우면 live radio의 부분 chunk를
+서로 기다리는 deadlock을 만들 수 있으므로 합성 throughput만으로 채택하지 않는다.
+MAC/scheduler의 CPU 실행은 사실이나 기존 정상 16-UE scheduler 결정 평균은
+약 40 us다. 현재 결과를 MAC GPU 이전의 필요성으로 바로 연결할 수 없다.
+
+기록과 재현
+
+live-fixes-results.csv, live-fixes-summary.json, live-fixes.png/pdf.
+원격 원본: /workspace/gpuch/profile-20261028/fixes/<trial>/.
+check_live_fixes.py가 고정 bundle과 정확한 command/environment를 기록한다.
+원래 실험 보고서와 SHA256SUMS는 변경하지 않았으며 이 후속 결과는 별도로 저장한다.
+'''
+(P / 'live-fixes.ko.txt').write_text(text)

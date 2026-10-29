@@ -1,0 +1,129 @@
+{
+  "date": "2026-10-13",
+  "source_commit": "f95dabd0d13db3b24e9a4b04c919ad3620468f11",
+  "measurement": "model_mix_latency",
+  "unit": "microseconds",
+  "aggregation": "median of three run-level p99 values; calls from all nine RX nodes included",
+  "duration_seconds_per_run": 30,
+  "runs_per_backend": 3,
+  "separate_warmup_seconds_per_backend": 5,
+  "config": "topology.perf-tdl-a-fanin-8.cuda.yaml",
+  "backend_runs": {
+    "cpu": [
+      {
+        "run": 1,
+        "count": 2331,
+        "p50_us": 7213.463,
+        "p95_us": 57708.557,
+        "p99_us": 57924.784,
+        "p999_us": 58466.399,
+        "max_us": 59881.898
+      },
+      {
+        "run": 2,
+        "count": 2340,
+        "p50_us": 7202.916,
+        "p95_us": 57641.504,
+        "p99_us": 57853.351,
+        "p999_us": 58862.263,
+        "max_us": 59420.087
+      },
+      {
+        "run": 3,
+        "count": 2340,
+        "p50_us": 7208.477,
+        "p95_us": 57663.8,
+        "p99_us": 57783.04,
+        "p999_us": 58263.338,
+        "max_us": 58364.488
+      }
+    ],
+    "cuda": [
+      {
+        "run": 1,
+        "count": 186588,
+        "p50_us": 104.237,
+        "p95_us": 226.443,
+        "p99_us": 229.36,
+        "p999_us": 235.467,
+        "max_us": 3526.937
+      },
+      {
+        "run": 2,
+        "count": 186381,
+        "p50_us": 104.544,
+        "p95_us": 227.514,
+        "p99_us": 230.352,
+        "p999_us": 236.296,
+        "max_us": 420.592
+      },
+      {
+        "run": 3,
+        "count": 185733,
+        "p50_us": 104.89,
+        "p95_us": 228.398,
+        "p99_us": 231.591,
+        "p999_us": 239.362,
+        "max_us": 1244.905
+      }
+    ]
+  },
+  "cpu_p99_median_us": 57853.351,
+  "cpu_p99_range_us": [
+    57783.04,
+    57924.784
+  ],
+  "cuda_p99_median_us": 230.352,
+  "cuda_p99_range_us": [
+    229.36,
+    231.591
+  ],
+  "p99_speedup": 251.15193703549352,
+  "hardware": {
+    "cpu": "Intel Core Ultra 9 285K",
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "driver": "580.173.02",
+    "cuda": "12.8.1",
+    "compiler": "GCC 13.3.0",
+    "build": "Release, sm_120",
+    "cpu_reference": "single calling thread",
+    "gpu_host_memory": "explicit CPU/GPU copies (auto on discrete GPU)",
+    "observed_pcie_under_gpu_load": "Gen 5 \u00d78"
+  },
+  "input": {
+    "sample_rate_hz": 23040000,
+    "samples_per_call": 23040,
+    "signal_ms_per_call": 1,
+    "nodes": 9,
+    "directed_edges": 16,
+    "incoming_edges_gnb": 8,
+    "incoming_edges_each_ue": 1,
+    "channel": "TDL-A",
+    "taps": 23,
+    "delay_spread_ns": 100,
+    "maximum_doppler_hz": 100,
+    "fading": "Jakes",
+    "source": "deterministic synthetic IQ reused between calls",
+    "pace": false,
+    "refresh": false,
+    "thread_per_rx_node": false,
+    "sockets_opened": false
+  },
+  "gpu_monitor": {
+    "samples": 186,
+    "observed_pcie_links": [
+      [
+        "1",
+        "8"
+      ],
+      [
+        "2",
+        "8"
+      ],
+      [
+        "5",
+        "8"
+      ]
+    ]
+  }
+}

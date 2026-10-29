@@ -1,0 +1,22 @@
+{
+  "ue-gpu-phy/S4-NOTES.md": {
+    "sha256": "5bd948a8f1b7cd51fdea060131bd9cf1b82a1677f7c661f0e9f4b408e0443124",
+    "bytes": 24689
+  },
+  "ue-gpu-phy/data/s2-20261029/sessions.txt": {
+    "sha256": "26079e84b36b20da724cf019bfc8997301ee122a1ba5e23743918b764b587312",
+    "bytes": 825
+  },
+  "ue-gpu-phy/s2-chain.sh": {
+    "sha256": "2439e2aaa3131d74b0c4355cae2dc2060f7b2b64f6e35767821894601baf686d",
+    "bytes": 2272
+  },
+  "ue-gpu-phy/edit-s2.py": {
+    "sha256": "d8f93bdb7531735018642af27cd80a4fac0195665f17ff35bec363e160f044b4",
+    "bytes": 29003
+  },
+  "ue-gpu-phy/patches/srsue-s4-s1-s2-2026-10-29.patch": {
+    "sha256": "e96afdda7455a98cce40d5da1f7dbd8f1878c0f022671db78ef8d22f63cce64d",
+    "bytes": 95791
+  }
+}

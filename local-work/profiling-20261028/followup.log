@@ -1,0 +1,32 @@
+START u1-c1-bw50-a4x4-r0-trace0
+END u1-c1-bw50-a4x4-r0-trace0 0.9346666666666666 rc 0
+START u1-c1-bw50-a4x4-r1-trace1
+END u1-c1-bw50-a4x4-r1-trace1 0.92175 rc 0
+START u1-c1-bw100-a4x4-r0-trace0
+END u1-c1-bw100-a4x4-r0-trace0 0.44325 rc 0
+START u1-c1-bw100-a4x4-r1-trace1
+END u1-c1-bw100-a4x4-r1-trace1 0.4513333333333333 rc 0
+START u1-c1-bw100-a4x1-r0-trace0
+END u1-c1-bw100-a4x1-r0-trace0 0.699 rc 0
+START u1-c1-bw100-a4x1-r1-trace1
+END u1-c1-bw100-a4x1-r1-trace1 0.6026666666666667 rc 0
+START u24-c1-bw20-a1x1-r0-trace0
+END u24-c1-bw20-a1x1-r0-trace0 0.8734166666666666 rc 0
+START u24-c1-bw20-a1x1-r1-trace1
+END u24-c1-bw20-a1x1-r1-trace1 0.8764166666666666 rc 0
+START u16-c1-bw20-a1x1-r0-trace0
+END u16-c1-bw20-a1x1-r0-trace0 0.4820833333333333 rc 0
+START u16-c1-bw20-a1x1-r1-trace1
+END u16-c1-bw20-a1x1-r1-trace1 0.53475 rc 0
+START c2-u4-bw20-r0
+END c2-u4-bw20-r0 0.9992666666666666
+START c2-u4-bw20-r1
+END c2-u4-bw20-r1 0.9992666666666666
+START c4-u4-bw20-r0
+END c4-u4-bw20-r0 0.9469333333333333
+START c4-u4-bw20-r1
+END c4-u4-bw20-r1 0.9485333333333333
+START cuda-u8-c1-bw20-a1x1-control
+END cuda-u8-c1-bw20-a1x1-control 0
+START cuda-u8-c1-bw20-a1x1-nsys
+END cuda-u8-c1-bw20-a1x1-nsys 0

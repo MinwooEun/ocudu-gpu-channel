@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OCUDU CUDA Status</title>
+<style>
+:root{
+  --bg:#fbfbf9; --panel:#ffffff; --ink:#1d1f23; --muted:#5d636e; --line:#e3e4e0;
+  --accent:#2f5d8a; --ok:#2e7d4f; --warn:#a36a00; --bad:#b23b3b; --chip:#eef2f6; --code:#f3f3ef;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15171b; --panel:#1c1f24; --ink:#e7e8ea; --muted:#a2a7b0; --line:#2e3239;
+    --accent:#7fb0e0; --ok:#6cc08f; --warn:#e0b25a; --bad:#e58585; --chip:#252a31; --code:#23272d;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15171b; --panel:#1c1f24; --ink:#e7e8ea; --muted:#a2a7b0; --line:#2e3239;
+  --accent:#7fb0e0; --ok:#6cc08f; --warn:#e0b25a; --bad:#e58585; --chip:#252a31; --code:#23272d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:1080px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:28px;line-height:1.2;margin:0 0 6px}
+h2{font-size:20px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:8px 0}
+.sub{color:var(--muted);margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card h3{margin:0 0 6px}
+.kv{color:var(--muted);font-size:13px}
+.big{font-size:22px;font-weight:600}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+.chip{display:inline-block;background:var(--chip);border-radius:999px;padding:1px 9px;font-size:12px;margin:2px 4px 2px 0}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.03em;background:var(--panel)}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px}
+ul{margin:6px 0 6px 20px;padding:0}
+li{margin:3px 0}
+.note{border-left:3px solid var(--accent);padding:6px 12px;background:var(--panel);border-radius:0 8px 8px 0;margin:12px 0}
+a{color:var(--accent)}
+footer{margin-top:40px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>OCUDU CUDA acceleration: status across three platforms</h1>
+<p class="sub">RTX 5090 (discrete), DGX Spark GB10 (integrated), Jetson AGX Orin (integrated) · state as of 2026-09-25 · WG1 <code>cuda_accelerated_ocudu</code> pinned at <code>5830c9cb</code></p>
+
+<div class="grid">
+  <div class="card">
+    <h3>RTX 5090 · track C</h3>
+    <div class="big ok">C0–C4 done</div>
+    <p class="kv">Vendor suite unpatched 9/12 → with candidate patch C1: PHY 14/14, OFH 16/16. All-acceleration live attach 3/3. Defects 1–5 reported upstream (issue #2, 2026-09-14). C5–C7 not started.</p>
+  </div>
+  <div class="card">
+    <h3>DGX Spark GB10 · track S</h3>
+    <div class="big ok">S0–S6 done, live parity</div>
+    <p class="kv">C1 + D8 + D9: live all-acceleration BLER/SINR matches the CPU gNB (6× interleaved, ΔBLER −0.00 pp, ΔSINR −0.19 dB). Pinned benchmarks reproduce the vendor table (PUSCH 21.7×, PDSCH 3.4× at 100 MHz 4L).</p>
+  </div>
+  <div class="card">
+    <h3>Jetson AGX Orin · track J</h3>
+    <div class="big ok">First full pass + live parity</div>
+    <p class="kv">C1 + D6 + D7: vendor PHY suite 14/14, OFH 16/16 (first full pass on Orin). First all-acceleration live attach. With D8/D9 added: live ΔBLER −0.08 pp, ΔSINR +0.01 dB vs CPU gNB.</p>
+  </div>
+</div>
+
+<div class="note">Pull request with the integration and all three tracks: <a href="https://github.com/zhouyou-gu/ocudu-gpu-channel/pull/2">zhouyou-gu/ocudu-gpu-channel#2</a> (branch <code>cuda-gb10-orin</code>, three commits on top of <code>main</code>). The vendor follow-up comment (defects 6–9) is drafted locally and <strong>not posted</strong>.</div>
+
+<h2>Platforms</h2>
+<div class="table-wrap"><table>
+<tr><th></th><th>RTX 5090</th><th>DGX Spark (GB10)</th><th>Jetson AGX Orin 64GB</th></tr>
+<tr><td>Memory model</td><td>Discrete, PCIe Gen5 x16</td><td>Integrated, shared LPDDR5x</td><td>Integrated, shared LPDDR5</td></tr>
+<tr><td>Arch / CUDA / driver</td><td><code>sm_120</code> / 12.8 / 595.71</td><td><code>sm_121</code> / 13.0.88 / 580.178</td><td><code>sm_87</code> / 12.6.68 / 540.4 (L4T R36.4.4), MODE_30W</td></tr>
+<tr><td>ConcurrentManagedAccess / PageableUsesHostPT / DirectManagedFromHost</td><td>1 / 0 / 0</td><td><strong>1 / 1 / 0</strong></td><td><strong>0 / 0 / 0</strong></td></tr>
+<tr><td>Consequence</td><td>Grid must be staged over PCIe; TX always stages</td><td>Direct GPU grid access possible; the CPU still cannot read GPU-resident managed pages without migration</td><td>The CPU must not touch managed memory while any kernel runs; the strictest rules</td></tr>
+</table></div>
+
+<h2>Defects found and fixed</h2>
+<div class="table-wrap"><table>
+<tr><th>ID</th><th>Where</th><th>What</th><th>Fix</th><th>Status</th></tr>
+<tr><td>D1</td><td>all</td><td>SRS benchmarks registered with <code>-G host</code> hit a removed host-grid path (RX-port assertion). Introduced by vendor commit <code>35b27de4d6</code>; not discrete-only.</td><td>C1 patch</td><td class="ok">fixed, reported</td></tr>
+<tr><td>D2</td><td>all</td><td>OFH compression refuses live reads (a), and on GB10 leaks a live read hold (b) so the next host read returns zeros. Same commit.</td><td>C1 patch</td><td class="ok">fixed, reported</td></tr>
+<tr><td>D3–D5</td><td>all</td><td>PUSCH time interpolation config dropped; EVM substituted for sync-path SINR; PDSCH without codeblock executor under sequential PHY.</td><td>C1 patch</td><td class="ok">fixed, reported</td></tr>
+<tr><td>D6</td><td>Orin</td><td>Managed prefetch/advise return <code>cudaErrorInvalidDevice</code> (101) without ConcurrentManagedAccess; treated as failure or left pending → fatal errors, PDSCH SIGSEGV.</td><td>Treat 101 like NotSupported and consume it (<code>j2</code> layer)</td><td class="ok">fixed, negative control reproduces</td></tr>
+<tr><td>D7</td><td>Orin</td><td>Host DM-RS writes into a managed DL grid while the previous slot's PDSCH kernels run → SIGSEGV. <code>auto</code> picked managed on Orin despite the documented policy.</td><td>(a) <code>auto</code> = managed only with ConcurrentManagedAccess; (b) device-wide wait before host access when managed is explicit (<code>j2b</code>)</td><td class="ok">fixed; trade-off: auto=pinned disables lower-PHY acceleration</td></tr>
+<tr><td>D8</td><td>all</td><td>GPU PUSCH SINR +2.4 dB on 1-PRB allocations (FD smoothing skipped for <code>nof_prb==1</code>); naive fix loses 2.5 dB under timing offset. Drives link adaptation into failing MCSs.</td><td>Slope-compensated FD smoothing in SISO, MIMO and wide-MIMO kernels</td><td class="ok">fixed (live verified)</td></tr>
+<tr><td>D9</td><td>all</td><td>Resident LDPC decoder's fixed min-sum scale 0.75 loses ~0.15 dB at the BLER threshold in the live configuration (CPU uses 0.8).</td><td><code>min_sum_scale = 0.80</code> (offset 0.10 kept)</td><td class="ok">fixed (live verified)</td></tr>
+<tr><td>F1</td><td>GB10</td><td><code>ofdm_demodulator_cuda_test</code> snapshot copy returns <code>cudaErrorInvalidValue</code> 2–5% of suite runs, order-dependent.</td><td>—</td><td class="warn">open; pending error, pointer and host registration ruled out</td></tr>
+</table></div>
+
+<h2>Milestones</h2>
+<h3>RTX 5090 (C)</h3>
+<div class="table-wrap"><table>
+<tr><th>Stage</th><th>Result</th></tr>
+<tr><td>C0 vendor build + own validation</td><td>Builds unpatched; PHY 9/12, OFH 16/16 (the patch is a runtime-correctness requirement, not a build one).</td></tr>
+<tr><td>C1 patch + negative controls</td><td>PHY 14/14, OFH 16/16, controls 5/5 fail as expected. Report submitted as WG1 issue #2 (2026-09-14).</td></tr>
+<tr><td>C2–C3 provisioning + CUDA gate</td><td>Separate lock and resolver; existing gates unchanged; <code>disabled</code> 3/3.</td></tr>
+<tr><td>C4 staged activation</td><td>All-acceleration attach 3/3; every backend CUDA, no silent fallback. Lower-PHY TX stays on host staging on discrete (hardware constraint).</td></tr>
+<tr><td>C5–C7</td><td class="warn">Not started (measurement, Sionna concurrency, observability).</td></tr>
+</table></div>
+
+<h3>DGX Spark (S)</h3>
+<div class="table-wrap"><table>
+<tr><th>Stage</th><th>Result</th></tr>
+<tr><td>S0–S1</td><td>Containers; vendor suite 9/12 at pin and at head <code>900d8d0e</code>; parent of <code>35b27de4d6</code> is 12/12 → regression pinned.</td></tr>
+<tr><td>S2</td><td>C1: PHY 14/14, OFH 16/16, negative controls D1–D5 fail with their own symptoms.</td></tr>
+<tr><td>S3</td><td>Direct-ZMQ live: CUDA <code>disabled</code> 3/3, <code>all</code> 3/3, CPU gNB baseline 4/4.</td></tr>
+<tr><td>S4</td><td>Staged ladder all pass; TX direct path appears once GPU PDSCH writes the grid.</td></tr>
+<tr><td>S5</td><td>C1 alone: pooled BLER 6× the CPU gNB → traced to D8 + D9. With C1+D8+D9: parity.</td></tr>
+<tr><td>S6</td><td>Pinned CPU: PUSCH 21.7×, PDSCH 3.4× (100 MHz 4L); 20 MHz 1L PUSCH 1.1×. Earlier unpinned 40× / 2.3× were artefacts.</td></tr>
+</table></div>
+
+<h3>Jetson AGX Orin (J)</h3>
+<div class="table-wrap"><table>
+<tr><th>Stage</th><th>Result</th></tr>
+<tr><td>J0–J1</td><td>Container; vendor build on CUDA 12.6 / <code>sm_87</code>; PHY 7/12, OFH 14/16; D6 identified.</td></tr>
+<tr><td>J2 / J2b</td><td>C1 + D6: 13/14 (D7 found). C1 + D6 + D7: <strong>14/14, OFH 16/16</strong>. SRS failures were D1, not D6.</td></tr>
+<tr><td>J3</td><td>Five live blockers cleared (L4T kernel without SCTP → out-of-tree module; CMake 4 leaking <code>-shared</code> into Open5GS; AMF readiness; <code>python3-click</code>; srsUE PHY init ~200 s). CPU, <code>disabled</code> and <code>all</code> attach. With J2c (+D8/D9): parity.</td></tr>
+<tr><td>J4</td><td>Managed grids: all five ladder stages pass, no crashes. <code>auto</code> (pinned after D7): lower-PHY acceleration unavailable by design.</td></tr>
+</table></div>
+
+<h2>Live parity (direct ZMQ, gNB ↔ srsUE, matched allocations, first transmissions)</h2>
+<div class="table-wrap"><table>
+<tr><th>Platform · build</th><th class="num">Runs</th><th class="num">Pooled BLER GPU / CPU</th><th class="num">16QAM [0,17) GPU / CPU</th><th class="num">ΔBLER</th><th class="num">ΔSINR</th><th>Verdict</th></tr>
+<tr><td>GB10 · C1</td><td class="num">6+6</td><td class="num">0.72 / 0.41%</td><td class="num">5.31 / 2.26%</td><td class="num">+0.52 pp</td><td class="num">−0.27 dB</td><td class="warn">pass, gap on one allocation</td></tr>
+<tr><td>GB10 · C1+D8+D9</td><td class="num">6+6</td><td class="num">0.52 / 0.34%</td><td class="num">1.89 / 1.90%</td><td class="num">−0.00 pp</td><td class="num">−0.19 dB</td><td class="ok">parity</td></tr>
+<tr><td>Orin · C1+D6+D7</td><td class="num">1+1</td><td class="num">1.60 / 0.24%</td><td class="num">3.69 / 0.89%</td><td class="num">+2.80 pp</td><td class="num">−0.10 dB</td><td class="bad">fail (D8/D9 signature)</td></tr>
+<tr><td>Orin · C1+D6–D9</td><td class="num">3+3</td><td class="num">0.51 / 0.46%</td><td class="num">1.33 / 1.66%</td><td class="num">−0.08 pp</td><td class="num">+0.01 dB</td><td class="ok">parity</td></tr>
+</table></div>
+<p class="kv">Criteria: |ΔBLER| ≤ 1 pp and |ΔSINR| ≤ 0.5 dB, weighted over allocations with ≥30 first transmissions in both arms. First transmissions come from the scheduler's <code>newtx=true</code> (retransmissions also use rv 0 in this configuration).</p>
+
+<h2>Performance</h2>
+<div class="table-wrap"><table>
+<tr><th>Workload (GB10, CPU pinned to one X925 core)</th><th class="num">CPU</th><th class="num">GPU</th><th class="num">Ratio</th><th class="num">Vendor doc</th></tr>
+<tr><td>PUSCH 100 MHz 273 PRB 4L 8RX (mean)</td><td class="num">6.8 ms</td><td class="num">312 µs</td><td class="num">21.7×</td><td class="num">21.20×</td></tr>
+<tr><td>PDSCH 100 MHz 273 PRB 4L 4P (p50)</td><td class="num">577 µs</td><td class="num">171 µs</td><td class="num">3.4×</td><td class="num">3.36×</td></tr>
+<tr><td>PUSCH 51 PRB 1L (mean)</td><td class="num">155 µs</td><td class="num">141 µs</td><td class="num">1.1×</td><td class="num">0.86×</td></tr>
+<tr><td>Live PUSCH 20 MHz 1L, PHY-reported p50 / p99</td><td class="num">89 / 296 µs</td><td class="num">226 / 498 µs</td><td class="num">0.4×</td><td class="num">—</td></tr>
+<tr><td>Live PUSCH, Orin MODE_30W, p50 / p99</td><td class="num">540 / 1290 µs</td><td class="num">1666 / 3531 µs</td><td class="num">0.3×</td><td class="num">—</td></tr>
+</table></div>
+<p class="kv">ZMQ is not real-time: sample flow waits for processing, so missed deadlines cannot appear in these live runs; only the processing-time distributions are stated. Unpinned CPU numbers on GB10 (A725 + X925) roughly double and are not comparable.</p>
+
+<h2>Does integrated memory remove H2D/D2H?</h2>
+
+<p><strong>Short answer:</strong> on GB10, the <em>bytes</em> mostly no longer need to move. The <em>hand-over</em> between CPU and GPU still has to happen, and it now costs synchronization and complexity instead of PCIe bandwidth. At scale, the dominant cost is per-user execution, not memory.</p>
+
+<h3>1. Where data crosses between CPU and GPU in the CUDA gNB</h3>
+<p>The CUDA gNB does not run everything on the GPU. With every acceleration enabled (<code>all</code>), the split is:</p>
+<div class="table-wrap"><table>
+<tr><th>On the GPU</th><th>On the CPU</th></tr>
+<tr><td>Lower-PHY OFDM demodulation (RX) and modulation (TX), PUSCH (channel estimation, equalization, LDPC decode), PDSCH data (LDPC encode, modulation, mapping), PRACH detection, SRS</td><td>Radio I/O (ZMQ sockets here, Open Fronthaul on real radios), PDCCH, SSB, CSI-RS, PUCCH, <strong>PDSCH DM-RS mapping</strong> (<code>pdsch_processor_flexible_impl::map_reference_signals</code>), MAC and scheduler</td></tr>
+</table></div>
+
+<svg viewBox="0 0 960 300" width="100%" role="img" aria-label="Three crossing points between CPU and GPU" style="margin:14px 0;max-width:960px">
+  <style>
+    .bx{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+    .cpu{fill:var(--chip)}
+    .t{fill:var(--ink);font:600 14px sans-serif}
+    .s{fill:var(--muted);font:12px sans-serif}
+    .ar{stroke:var(--accent);stroke-width:2;fill:none;marker-end:url(#ah)}
+    .hot{stroke:var(--bad);stroke-width:2.5;fill:none;marker-end:url(#ahr)}
+    .lbl{fill:var(--accent);font:600 12px sans-serif}
+    .lblr{fill:var(--bad);font:600 12px sans-serif}
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+    <marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--bad)"/></marker>
+  </defs>
+  <rect class="bx cpu" x="20" y="20" width="200" height="110" rx="8"/>
+  <text class="t" x="40" y="48">CPU: radio I/O</text>
+  <text class="s" x="40" y="70">time-domain IQ samples</text>
+  <text class="s" x="40" y="88">(ZMQ / fronthaul)</text>
+
+  <rect class="bx" x="380" y="20" width="200" height="110" rx="8"/>
+  <text class="t" x="400" y="48">GPU: lower PHY</text>
+  <text class="s" x="400" y="70">OFDM demod / mod</text>
+
+  <rect class="bx" x="380" y="170" width="200" height="110" rx="8"/>
+  <text class="t" x="400" y="198">Resource grid</text>
+  <text class="s" x="400" y="220">one per slot, shared</text>
+  <text class="s" x="400" y="238">writers change every slot</text>
+
+  <rect class="bx" x="740" y="20" width="200" height="110" rx="8"/>
+  <text class="t" x="760" y="48">GPU: upper PHY</text>
+  <text class="s" x="760" y="70">PUSCH, PDSCH data,</text>
+  <text class="s" x="760" y="88">PRACH, SRS</text>
+
+  <rect class="bx cpu" x="740" y="170" width="200" height="110" rx="8"/>
+  <text class="t" x="760" y="198">CPU: other channels</text>
+  <text class="s" x="760" y="220">PDCCH, SSB, CSI-RS,</text>
+  <text class="s" x="760" y="238">PUCCH, PDSCH DM-RS, MAC</text>
+
+  <path class="ar" d="M220 75 L378 75"/>
+  <text class="lbl" x="232" y="66">① IQ edge</text>
+  <path class="ar" d="M480 130 L480 168"/>
+  <path class="hot" d="M738 225 L582 225"/>
+  <path class="hot" d="M740 110 L600 180"/>
+  <text class="lblr" x="600" y="160">② grid hand-over</text>
+  <path class="ar" d="M840 168 L840 132"/>
+  <text class="lbl" x="850" y="155">③ config / results</text>
+</svg>
+
+<div class="table-wrap"><table>
+<tr><th>Crossing</th><th>What moves</th><th>On GB10</th><th>Measured / observed</th></tr>
+<tr><td>① IQ edge</td><td>Time-domain samples from the radio into the lower-PHY RX, and TX samples back out. The radio stack runs on the CPU.</td><td>Host buffers are registered and mapped for the GPU (<code>cudaHostRegisterMapped</code>), so the load kernel reads them in place (zero-copy).</td><td>No defect found here.</td></tr>
+<tr><td>② Grid hand-over</td><td>The frequency-domain resource grid of one slot. CPU channels and GPU channels write into <em>the same grid</em>, so its owner changes during every slot.</td><td>Direct access where the code allows it; otherwise staging copies, owned snapshots, page prefetch and event synchronization.</td><td><strong>Where almost every defect was</strong>: D2 (read hold leak), <code>35b27de4d6</code> (host access to live managed grid → Xid 31, then D1/D2), D7 (Orin crash), TX staging on host-written slots.</td></tr>
+<tr><td>③ Config / results</td><td>Per-PDU parameters from MAC, and CRC, transport-block bits and SINR back to MAC.</td><td>Small H2D/D2H copies.</td><td>Live PUSCH p50: H2D 8.9 µs, D2H 3.8 µs, about 5% of the 245 µs wall time. Repeated for every PDU.</td></tr>
+</table></div>
+
+<h3>2. Why sharing the same DRAM is not enough</h3>
+<p>Being in the same physical DRAM does not mean both processors may touch the same bytes at any time. Page tables, caches and the CUDA memory type decide who may access what and when:</p>
+<div class="table-wrap"><table>
+<tr><th>CUDA memory type</th><th>CPU access</th><th>GPU access</th><th>Used here for</th></tr>
+<tr><td>Pageable host (<code>malloc</code>)</td><td>yes</td><td>only via host page tables (GB10: yes; Orin, RTX 5090: no)</td><td>radio buffers, CPU PHY</td></tr>
+<tr><td>Pinned / registered host</td><td>yes</td><td>yes (mapped)</td><td>IQ buffers, pinned grids</td></tr>
+<tr><td>Device (<code>cudaMalloc</code>)</td><td>no</td><td>yes</td><td>GPU scratch, owned snapshots</td></tr>
+<tr><td>Managed (<code>cudaMallocManaged</code>)</td><td>depends on the attributes below</td><td>depends on the attributes below</td><td>the shared resource grid</td></tr>
+</table></div>
+<p>The managed-memory rules come from three device attributes:</p>
+<div class="table-wrap"><table>
+<tr><th>Attribute</th><th>RTX 5090</th><th>GB10</th><th>Orin</th><th>Meaning when 0</th></tr>
+<tr><td><code>ConcurrentManagedAccess</code></td><td class="num">1</td><td class="num">1</td><td class="num"><strong>0</strong></td><td>The CPU must not touch <em>any</em> global managed page while <em>any</em> kernel in the context runs (Orin → D7).</td></tr>
+<tr><td><code>PageableMemoryAccessUsesHostPageTables</code></td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td>The GPU cannot read ordinary host memory directly.</td></tr>
+<tr><td><code>DirectManagedMemAccessFromHost</code></td><td class="num">0</td><td class="num"><strong>0</strong></td><td class="num">0</td><td>The CPU cannot read a GPU-resident managed page in place; the page must migrate back first.</td></tr>
+</table></div>
+<p>GB10 is 1 / 1 / 0. So on GB10 the GPU can reach host data directly, but a host read of the grid after a GPU write still needs the pages brought home. The vendor code says this in its own comments: GB10 cannot CPU-load GPU-resident managed pages, and a D2H copy of the live managed address raised Xid 31. The vendor classifies only GH200-class parts (1 / 1 / 1) as fully coherent.</p>
+
+<h3>3. What the code does at the hand-over</h3>
+<div class="table-wrap"><table>
+<tr><th>Mechanism</th><th>What it is</th><th>Cost</th><th>When it runs</th></tr>
+<tr><td><strong>Direct</strong></td><td>The GPU reads or writes the shared grid in place.</td><td>No copy; needs event ordering.</td><td>Live PUSCH read (<code>direct_grid=true</code> in 2745/2745 slots); TX on slots whose last writer was the GPU PDSCH.</td></tr>
+<tr><td><strong>Staging</strong></td><td>Copy the grid through a host/device buffer before the consumer runs.</td><td>A real copy plus its synchronization.</td><td>Always on the RTX 5090 (TX never went direct); on GB10 for TX slots last written by the CPU (both paths appear in the same live run).</td></tr>
+<tr><td><strong>Owned snapshot</strong></td><td>After a GPU producer finishes, copy the grid to a private device buffer so later readers never touch the live managed address.</td><td>A device-to-device copy (a triple-buffered ring).</td><td>GPU lower-PHY RX output consumed by PUSCH/PUCCH.</td></tr>
+<tr><td><strong>Prefetch home</strong></td><td>Migrate managed pages back to the host before a host access.</td><td>Page migration, TLB and cache maintenance; no user-visible copy.</td><td>Host reads/writes of a grid the GPU touched (non-coherent parts).</td></tr>
+<tr><td><strong>Read holds + events</strong></td><td>Track who is reading or writing, and wait for it.</td><td>Waiting, and bugs if a hold is not released.</td><td>Every hand-over; D2(b) was a hold that was never released.</td></tr>
+</table></div>
+<p>So on GB10 H2D/D2H has largely become D2D snapshots, page migration and synchronization. That is cheaper than PCIe, but it is harder to get right. Four of the defects in this work (D1, D2, D7 and the vendor's own <code>35b27de4d6</code> fix) are hand-over bugs.</p>
+
+<h3>4. Measurements</h3>
+<div class="table-wrap"><table>
+<tr><th>Measurement (GB10 unless noted)</th><th class="num">Result</th><th>Reading</th></tr>
+<tr><td>Live PUSCH 20 MHz 1L: demod H2D / D2H p50</td><td class="num">8.9 / 3.8 µs</td><td>~5% of the 245 µs wall time. The rest is LDPC and completion wait.</td></tr>
+<tr><td>PDSCH 100 MHz 4L4P, 1 UE: staged vs direct</td><td class="num">286 vs 172 µs</td><td>The staged path costs 114 µs (40%). Moving the 730 KB grid at memory bandwidth takes a few µs, so the cost is the staging procedure, not the bytes.</td></tr>
+<tr><td>PDSCH 1 layer broadcast to 1 / 4 / 8 ports: staged vs direct</td><td class="num">112/101, 124/130, 134/170 µs</td><td>Direct GPU writes into the managed grid grow with the port count. Which path is faster depends on the configuration.</td></tr>
+<tr><td>PDSCH at ≥16 ports (CPU) and ≥32 ports (GPU)</td><td class="num">segfault</td><td>The vendor benchmark cannot measure massive-MIMO port counts. Unmeasured.</td></tr>
+<tr><td>RTX 5090 (PCIe) under the same benchmarks</td><td class="num">not measured</td><td>The GPU is available again (attributes measured 1 / 0 / 0). The comparison is still to be run.</td></tr>
+</table></div>
+
+<h3>5. What this means for many users (massive MU)</h3>
+<ul>
+  <li><strong>Per-PDU execution dominates.</strong> With 16 UEs × 17 PRB (4L4P): CPU 610 µs, GPU direct path 995 µs (62 µs per PDU, the same with <code>--sync-after-process=0</code>). The GPU becomes <em>slower</em> than the CPU as users are added, even with no copies.</li>
+  <li><strong>Batching exists but is not connected.</strong> The same 16 UEs with cross-PDU transport-block batching (<code>--encoder-batch=1</code>): <strong>140 µs</strong> (8.8 µs per PDU). The batch encoder (<code>ldpc_encoder_cuda_batch</code>, <code>transport_block.cu</code>) is in the vendor library, at the pin and at head <code>900d8d0e</code>, but no gNB code calls it. Only the benchmark does, through the low-level API, so the 140 µs may not include everything the gNB processor does.</li>
+  <li><strong>Small transfers multiply.</strong> Crossing ③ happens per PDU. Unified memory does not reduce per-call and per-sync overhead.</li>
+  <li><strong>Shared bandwidth.</strong> On integrated parts the CPU and GPU draw from the same memory bandwidth, so heavy MIMO traffic makes them compete. Not measured.</li>
+</ul>
+
+<h3>6. What would actually remove the problem</h3>
+<ol style="margin:6px 0 6px 20px;padding:0">
+  <li><strong>Hardware:</strong> full coherence (<code>DirectManagedMemAccessFromHost = 1</code>, GH200-class) removes snapshots and prefetch. GB10 and Orin do not have it.</li>
+  <li><strong>Software ownership:</strong> stop handing the grid back and forth within a slot. Either move the remaining grid writers (PDCCH, SSB, CSI-RS, PUCCH, PDSCH DM-RS) to the GPU, or collapse the hand-over to one point per slot. MAC and the scheduler can stay on the CPU; they exchange only small per-slot messages.</li>
+  <li><strong>Batching:</strong> wire cross-PDU batching into the gNB PDSCH path (and check PUSCH), so per-user overhead stops scaling with the number of UEs.</li>
+</ol>
+
+<h3>7. Not yet verified</h3>
+<ul>
+  <li>How often live TX takes the staging path (fraction of slots).</li>
+  <li>Page-migration counts and time (Nsight Systems unified-memory events).</li>
+  <li>Transfer share at 100 MHz 4L in a live gNB, and PUSCH multi-UE scaling.</li>
+  <li>The RTX 5090 (PCIe) numbers for the same benchmarks, which would turn "PCIe vs unified" into measured numbers.</li>
+  <li>Port counts ≥16 (blocked by the benchmark crash).</li>
+</ul>
+
+<h2>Open items</h2>
+<ul>
+  <li>Post the vendor follow-up (defects 6–9, corrections, performance notes) after review; needs approval and a new GitLab token.</li>
+  <li>Re-run the legacy 1×1 gate on <code>main</code> + the PR branch (the two native gate scripts were merged automatically).</li>
+  <li>PCIe comparison on the RTX 5090 (available again): host-path PDSCH/PUSCH at the same configurations, multi-UE sweep.</li>
+  <li>Wire cross-PDU batching into the gNB PDSCH path (design review first); measure PUSCH multi-UE scaling.</li>
+  <li>F1 flaky snapshot copy; MIMO wide FD-smoothing in-place race (pre-existing).</li>
+  <li>Orin: cost of the D7 device-wide wait; MAXN power mode comparison (needs the device owner's agreement).</li>
+  <li>RTX 5090 track C5–C7 (measurement envelope, Sionna concurrency, observability hooks).</li>
+</ul>
+
+<h2>Where things are</h2>
+<ul>
+  <li>Milestones: <code>CUDA_MILESTONES.md</code>, <code>SPARK_MILESTONES.md</code>, <code>JETSON_MILESTONES.md</code> (repository root).</li>
+  <li>Tooling: <code>scripts/cuda/</code> (lock, resolver, render, direct-ZMQ runner, verifiers), <code>scripts/cuda/spark/</code>, <code>scripts/cuda/jetson/</code>.</li>
+  <li>Vendor patches: <code>scripts/cuda/patches/</code> — <code>c1-*</code> (D1–D5), <code>s-c1-d8-d9.patch</code> (GB10 build), <code>j2c-ocudu-cuda-orin-d8-d9.patch</code> (Orin build).</li>
+</ul>
+
+<footer>Generated 2026-09-25 from the project milestone documents and run evidence. Lab hostnames, addresses and account names are omitted.</footer>
+</main>
+</body>
+</html>

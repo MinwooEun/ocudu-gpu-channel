@@ -1,0 +1,378 @@
+# Set 1 (1-to-N): 1 gNB + 32 UEs, no UE-UE crosstalk. gNB has 32 incoming UL edges (fan-in choke point); each UE has 1 incoming DL edge.
+runtime:
+  backend: cuda
+  gpu_device: 0
+  batch_samples: 23040
+  queue_samples: 2457600
+devices:
+  - id: gnb0
+    role: gnb
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5000
+    rx_endpoint: tcp://*:5001
+  - id: ue0
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5100
+    rx_endpoint: tcp://*:5101
+  - id: ue1
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5102
+    rx_endpoint: tcp://*:5103
+  - id: ue2
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5104
+    rx_endpoint: tcp://*:5105
+  - id: ue3
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5106
+    rx_endpoint: tcp://*:5107
+  - id: ue4
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5108
+    rx_endpoint: tcp://*:5109
+  - id: ue5
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5110
+    rx_endpoint: tcp://*:5111
+  - id: ue6
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5112
+    rx_endpoint: tcp://*:5113
+  - id: ue7
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5114
+    rx_endpoint: tcp://*:5115
+  - id: ue8
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5116
+    rx_endpoint: tcp://*:5117
+  - id: ue9
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5118
+    rx_endpoint: tcp://*:5119
+  - id: ue10
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5120
+    rx_endpoint: tcp://*:5121
+  - id: ue11
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5122
+    rx_endpoint: tcp://*:5123
+  - id: ue12
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5124
+    rx_endpoint: tcp://*:5125
+  - id: ue13
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5126
+    rx_endpoint: tcp://*:5127
+  - id: ue14
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5128
+    rx_endpoint: tcp://*:5129
+  - id: ue15
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5130
+    rx_endpoint: tcp://*:5131
+  - id: ue16
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5132
+    rx_endpoint: tcp://*:5133
+  - id: ue17
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5134
+    rx_endpoint: tcp://*:5135
+  - id: ue18
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5136
+    rx_endpoint: tcp://*:5137
+  - id: ue19
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5138
+    rx_endpoint: tcp://*:5139
+  - id: ue20
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5140
+    rx_endpoint: tcp://*:5141
+  - id: ue21
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5142
+    rx_endpoint: tcp://*:5143
+  - id: ue22
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5144
+    rx_endpoint: tcp://*:5145
+  - id: ue23
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5146
+    rx_endpoint: tcp://*:5147
+  - id: ue24
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5148
+    rx_endpoint: tcp://*:5149
+  - id: ue25
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5150
+    rx_endpoint: tcp://*:5151
+  - id: ue26
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5152
+    rx_endpoint: tcp://*:5153
+  - id: ue27
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5154
+    rx_endpoint: tcp://*:5155
+  - id: ue28
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5156
+    rx_endpoint: tcp://*:5157
+  - id: ue29
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5158
+    rx_endpoint: tcp://*:5159
+  - id: ue30
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5160
+    rx_endpoint: tcp://*:5161
+  - id: ue31
+    role: ue
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:5162
+    rx_endpoint: tcp://*:5163
+links:
+  - from: gnb0
+    to: ue0
+    model: cuda_mvp
+  - from: ue0
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue1
+    model: cuda_mvp
+  - from: ue1
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue2
+    model: cuda_mvp
+  - from: ue2
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue3
+    model: cuda_mvp
+  - from: ue3
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue4
+    model: cuda_mvp
+  - from: ue4
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue5
+    model: cuda_mvp
+  - from: ue5
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue6
+    model: cuda_mvp
+  - from: ue6
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue7
+    model: cuda_mvp
+  - from: ue7
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue8
+    model: cuda_mvp
+  - from: ue8
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue9
+    model: cuda_mvp
+  - from: ue9
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue10
+    model: cuda_mvp
+  - from: ue10
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue11
+    model: cuda_mvp
+  - from: ue11
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue12
+    model: cuda_mvp
+  - from: ue12
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue13
+    model: cuda_mvp
+  - from: ue13
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue14
+    model: cuda_mvp
+  - from: ue14
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue15
+    model: cuda_mvp
+  - from: ue15
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue16
+    model: cuda_mvp
+  - from: ue16
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue17
+    model: cuda_mvp
+  - from: ue17
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue18
+    model: cuda_mvp
+  - from: ue18
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue19
+    model: cuda_mvp
+  - from: ue19
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue20
+    model: cuda_mvp
+  - from: ue20
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue21
+    model: cuda_mvp
+  - from: ue21
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue22
+    model: cuda_mvp
+  - from: ue22
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue23
+    model: cuda_mvp
+  - from: ue23
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue24
+    model: cuda_mvp
+  - from: ue24
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue25
+    model: cuda_mvp
+  - from: ue25
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue26
+    model: cuda_mvp
+  - from: ue26
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue27
+    model: cuda_mvp
+  - from: ue27
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue28
+    model: cuda_mvp
+  - from: ue28
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue29
+    model: cuda_mvp
+  - from: ue29
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue30
+    model: cuda_mvp
+  - from: ue30
+    to: gnb0
+    model: cuda_mvp
+  - from: gnb0
+    to: ue31
+    model: cuda_mvp
+  - from: ue31
+    to: gnb0
+    model: cuda_mvp
+models:
+  cuda_mvp:
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: -3.0
+            phase_rad: 0.0
+      - type: phase
+        phase_rad: 0.125
+      - type: cfo
+        cfo_hz: 250
+        phase_rad: 0

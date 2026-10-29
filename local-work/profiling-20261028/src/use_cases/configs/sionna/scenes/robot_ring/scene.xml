@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?>
+<scene version="2.1.0">
+  <bsdf type="itu-radio-material" id="concrete">
+    <string name="type" value="concrete" />
+    <float name="thickness" value="0.2" />
+  </bsdf>
+  <bsdf type="itu-radio-material" id="metal">
+    <string name="type" value="metal" />
+    <float name="thickness" value="0.01" />
+  </bsdf>
+  <shape type="ply" id="mesh-ground">
+    <string name="filename" value="meshes/ground.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-fence">
+    <string name="filename" value="meshes/fence.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="metal" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_pillar_0">
+    <string name="filename" value="meshes/building_pillar_0.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_pillar_1">
+    <string name="filename" value="meshes/building_pillar_1.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_pillar_2">
+    <string name="filename" value="meshes/building_pillar_2.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_mast">
+    <string name="filename" value="meshes/building_mast.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="metal" name="bsdf" />
+  </shape>
+</scene>

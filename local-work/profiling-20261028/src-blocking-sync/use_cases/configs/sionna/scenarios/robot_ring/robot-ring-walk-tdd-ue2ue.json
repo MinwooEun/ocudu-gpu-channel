@@ -1,0 +1,119 @@
+{
+  "name": "robot-ring-walk-tdd-ue2ue",
+  "description": "robot-ring-walk-tdd.json plus the two UE<->UE edges (X4). On a shared TDD carrier a UE really hears the other UE's uplink in its own receiver, so the broker's carrier guard admits these edges (every port is `carrier: n78`); with the per-device tx_scale_db the other UE's energy lands in the victim's UL slots at its emitted level instead of as an ~80 dB software-gain jammer, and the DL slots stay at the noise floor.",
+  "scene": "robot_ring",
+  "simple_road": false,
+  "solver": {
+    "max_depth": 3,
+    "samples_per_source": 200000,
+    "seed": 42,
+    "path_polylines": 6,
+    "propagation": {
+      "los": true,
+      "specular_reflection": true,
+      "diffuse_reflection": false,
+      "refraction": true,
+      "diffraction": false
+    }
+  },
+  "nodes": {
+    "gnb0": {
+      "start_m": [
+        15.0,
+        0.0,
+        8.0
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue0": {
+      "mobility": "robot",
+      "route_m": [
+        [
+          2.0,
+          3.4,
+          0.4
+        ],
+        [
+          2.0,
+          -3.4,
+          0.4
+        ]
+      ],
+      "route_mode": "pingpong",
+      "speed_mps": 0.2,
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue1": {
+      "mobility": "robot",
+      "route_m": [
+        [
+          -2.0,
+          3.4,
+          0.4
+        ],
+        [
+          -2.0,
+          -3.4,
+          0.4
+        ]
+      ],
+      "route_mode": "pingpong",
+      "speed_mps": 0.2,
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    }
+  },
+  "links": [
+    {
+      "from": "gnb0",
+      "to": "ue0",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "gnb0",
+      "to": "ue1",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue0",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue1",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue0",
+      "to": "ue1",
+      "direction": "crosstalk",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue1",
+      "to": "ue0",
+      "direction": "crosstalk",
+      "model": "sionna_rt"
+    }
+  ]
+}

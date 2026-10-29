@@ -1,0 +1,178 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d2654b270..5be91a52c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -466,6 +466,11 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+     endif(HAVE_SSE)
+   endif(NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+ 
++  option(SRSRAN_LDPC_SIMDE "Build the AVX2 LDPC encoder/decoder on non-x86 through SIMDe (NEON emulation)" OFF)
++  if(SRSRAN_LDPC_SIMDE AND NOT HAVE_AVX2)
++    add_definitions(-DSRSRAN_LDPC_SIMDE)
++    message(STATUS "LDPC: AVX2 encoder/decoder enabled through SIMDe")
++  endif()
+   if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
+     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIS_ARM -DHAVE_NEON")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIS_ARM")
+diff --git a/lib/include/srsran/phy/fec/ldpc/ldpc_encoder.h b/lib/include/srsran/phy/fec/ldpc/ldpc_encoder.h
+index 90db63cb6..f0057eaf8 100644
+--- a/lib/include/srsran/phy/fec/ldpc/ldpc_encoder.h
++++ b/lib/include/srsran/phy/fec/ldpc/ldpc_encoder.h
+@@ -39,7 +39,7 @@
+  */
+ typedef enum SRSRAN_API {
+   SRSRAN_LDPC_ENCODER_C = 0, /*!< \brief Non-optimized encoder. */
+-#if LV_HAVE_AVX2
++#if defined(LV_HAVE_AVX2) || defined(SRSRAN_LDPC_SIMDE)
+   SRSRAN_LDPC_ENCODER_AVX2, /*!< \brief SIMD-optimized encoder. */
+ #endif                      // LV_HAVE_AVX2
+ #if LV_HAVE_AVX512
+diff --git a/lib/src/phy/fec/CMakeLists.txt b/lib/src/phy/fec/CMakeLists.txt
+index 7f1d3d1c1..aa22a3ab2 100644
+--- a/lib/src/phy/fec/CMakeLists.txt
++++ b/lib/src/phy/fec/CMakeLists.txt
+@@ -30,4 +30,13 @@ add_subdirectory(polar)
+ add_subdirectory(test)
+ add_subdirectory(turbo)
+ 
++if (SRSRAN_LDPC_SIMDE AND NOT HAVE_AVX2)
++    # AVX2 LDPC sources (and the dispatchers) see LV_HAVE_AVX2 only in their own translation units;
++    # immintrin.h resolves to the SIMDe shim.
++    foreach(src ldpc_dec_c_avx2.c ldpc_dec_c_avx2long.c ldpc_dec_c_avx2_flood.c ldpc_dec_c_avx2long_flood.c
++                ldpc_enc_avx2.c ldpc_enc_avx2long.c ldpc_decoder.c ldpc_encoder.c)
++        set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/ldpc/${src} PROPERTIES
++            COMPILE_FLAGS "-DLV_HAVE_AVX2 -I${CMAKE_CURRENT_SOURCE_DIR}/ldpc/simde_shim")
++    endforeach()
++endif()
+ add_library(srsran_fec OBJECT ${FEC_SOURCES})
+diff --git a/lib/src/phy/fec/ldpc/CMakeLists.txt b/lib/src/phy/fec/ldpc/CMakeLists.txt
+index c6a9e9ad6..d13292db9 100644
+--- a/lib/src/phy/fec/ldpc/CMakeLists.txt
++++ b/lib/src/phy/fec/ldpc/CMakeLists.txt
+@@ -18,7 +18,7 @@
+ # and at http://www.gnu.org/licenses/.
+ #
+ 
+-if (HAVE_AVX2)
++if (HAVE_AVX2 OR SRSRAN_LDPC_SIMDE)
+     set(AVX2_SOURCES
+             ldpc/ldpc_dec_c_avx2.c
+             ldpc/ldpc_dec_c_avx2long.c
+@@ -27,7 +27,7 @@ if (HAVE_AVX2)
+             ldpc/ldpc_enc_avx2.c
+             ldpc/ldpc_enc_avx2long.c
+             )
+-endif (HAVE_AVX2)
++endif ()
+ 
+ if (HAVE_AVX512)
+     set(AVX512_SOURCES
+diff --git a/lib/src/phy/fec/ldpc/simde_shim/immintrin.h b/lib/src/phy/fec/ldpc/simde_shim/immintrin.h
+new file mode 100644
+index 000000000..f61609dc1
+--- /dev/null
++++ b/lib/src/phy/fec/ldpc/simde_shim/immintrin.h
+@@ -0,0 +1,8 @@
++/* immintrin.h shim: lets srsRAN's AVX2 LDPC encoder/decoder compile on aarch64 through SIMDe
++ * (256-bit intrinsics emulated with NEON). Only on the include path of the LDPC AVX2 sources
++ * when SRSRAN_LDPC_SIMDE=ON. */
++#ifndef SRSRAN_LDPC_SIMDE_IMMINTRIN_SHIM_H
++#define SRSRAN_LDPC_SIMDE_IMMINTRIN_SHIM_H
++#define SIMDE_ENABLE_NATIVE_ALIASES
++#include <simde/x86/avx2.h>
++#endif
+diff --git a/lib/src/phy/fec/ldpc/test/CMakeLists.txt b/lib/src/phy/fec/ldpc/test/CMakeLists.txt
+index 6b931670e..7971d037b 100644
+--- a/lib/src/phy/fec/ldpc/test/CMakeLists.txt
++++ b/lib/src/phy/fec/ldpc/test/CMakeLists.txt
+@@ -41,13 +41,13 @@ target_link_libraries(ldpc_rm_test srsran_phy)
+ add_executable(ldpc_rm_chain_test ldpc_rm_chain_test.c)
+ target_link_libraries(ldpc_rm_chain_test srsran_phy)
+ 
+-if(HAVE_AVX2)
++if(HAVE_AVX2 OR SRSRAN_LDPC_SIMDE)
+   add_executable(ldpc_enc_avx2_test ldpc_enc_avx2_test.c)
+   target_link_libraries(ldpc_enc_avx2_test srsran_phy)
+ 
+   add_executable(ldpc_dec_avx2_test ldpc_dec_avx2_test.c)
+   target_link_libraries(ldpc_dec_avx2_test srsran_phy)
+-endif(HAVE_AVX2)
++endif()
+ 
+ if(HAVE_AVX512)
+   add_executable(ldpc_enc_avx512_test ldpc_enc_avx512_test.c)
+@@ -94,7 +94,7 @@ set(test_command ldpc_dec_test -b2)
+ ldpc_unit_tests(${lifting_sizes})
+ 
+ 
+-if (HAVE_AVX2)
++if (HAVE_AVX2 OR SRSRAN_LDPC_SIMDE)
+ 
+ set(test_name LDPC-ENC-AVX2-BG1)
+ set(test_command ldpc_enc_avx2_test -b1)
+diff --git a/lib/src/phy/phch/sch_nr.c b/lib/src/phy/phch/sch_nr.c
+index cab53cd49..73ee2eeb1 100644
+--- a/lib/src/phy/phch/sch_nr.c
++++ b/lib/src/phy/phch/sch_nr.c
+@@ -20,6 +20,8 @@
+  */
+ 
+ #include "srsran/phy/phch/sch_nr.h"
++#include <stdlib.h>
++#include "srsran/phy/utils/slot_trace.h"
+ #include "srsran/config.h"
+ #include "srsran/phy/fec/cbsegm.h"
+ #include "srsran/phy/fec/ldpc/ldpc_common.h"
+@@ -230,7 +232,7 @@ int srsran_sch_nr_init_tx(srsran_sch_nr_t* q, const srsran_sch_nr_args_t* args)
+     encoder_type = SRSRAN_LDPC_ENCODER_AVX512;
+   }
+ #else // LV_HAVE_AVX512
+-#ifdef LV_HAVE_AVX2
++#if defined(LV_HAVE_AVX2) || defined(SRSRAN_LDPC_SIMDE)
+   if (!args->disable_simd) {
+     encoder_type = SRSRAN_LDPC_ENCODER_AVX2;
+   }
+@@ -295,7 +297,7 @@ int srsran_sch_nr_init_rx(srsran_sch_nr_t* q, const srsran_sch_nr_args_t* args)
+     decoder_type = args->decoder_use_flooded ? SRSRAN_LDPC_DECODER_C_AVX512_FLOOD : SRSRAN_LDPC_DECODER_C_AVX512;
+   }
+ #else // LV_HAVE_AVX512
+-#ifdef LV_HAVE_AVX2
++#if defined(LV_HAVE_AVX2) || defined(SRSRAN_LDPC_SIMDE)
+   if (!args->disable_simd) {
+     decoder_type = args->decoder_use_flooded ? SRSRAN_LDPC_DECODER_C_AVX2_FLOOD : SRSRAN_LDPC_DECODER_C_AVX2;
+   }
+@@ -323,6 +325,13 @@ int srsran_sch_nr_init_rx(srsran_sch_nr_t* q, const srsran_sch_nr_args_t* args)
+     decoder_args.ls                         = ls;
+     decoder_args.scaling_fctr               = scaling_factor;
+     decoder_args.max_nof_iter               = args->max_nof_iter;
++    {
++      // diagnostic knob: SRSRAN_LDPC_MAX_ITER overrides the LDPC iteration cap (lock-step real-time analysis)
++      const char* st_it__ = getenv("SRSRAN_LDPC_MAX_ITER");
++      if (st_it__ != NULL && atoi(st_it__) > 0) {
++        decoder_args.max_nof_iter = (uint32_t)atoi(st_it__);
++      }
++    }
+ 
+     q->decoder_bg1[ls] = SRSRAN_MEM_ALLOC(srsran_ldpc_decoder_t, 1);
+     if (!q->decoder_bg1[ls]) {
+@@ -647,8 +656,10 @@ static int sch_nr_decode(srsran_sch_nr_t*        q,
+                 tb->rv,
+                 cfg.Qm,
+                 cfg.Nref);
++    const int64_t st_rm0__ = st_now_ns();
+     int n_llr =
+         srsran_ldpc_rm_rx_c(&q->rx_rm, input_ptr, rm_buffer, E, cfg.F, cfg.bg, cfg.Z, tb->rv, tb->mod, cfg.Nref);
++    st_ev("schnr", "RM", 0, ST_US(st_rm0__), E, n_llr);
+     if (n_llr < SRSRAN_SUCCESS) {
+       ERROR("Error in LDPC rate mateching");
+       return SRSRAN_ERROR;
+@@ -661,7 +672,9 @@ static int sch_nr_decode(srsran_sch_nr_t*        q,
+     }
+ 
+     // Decode. if CRC=KO, then ret=0
++    const int64_t st_ld0__ = st_now_ns();
+     int ret = srsran_ldpc_decoder_decode_crc_c(decoder, rm_buffer, q->temp_cb, n_llr, crc);
++    st_ev("schnr", "LDPC", 0, ST_US(st_ld0__), n_llr, (ret == 0) ? -(long long)decoder->max_nof_iter : ret);
+     if (ret < SRSRAN_SUCCESS) {
+       ERROR("Error decoding CB");
+       return SRSRAN_ERROR;

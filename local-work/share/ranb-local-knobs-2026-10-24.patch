@@ -1,0 +1,117 @@
+diff --git a/use_cases/ran_benchmark/controller.py b/use_cases/ran_benchmark/controller.py
+index 87b9f9b..d7054f6 100644
+--- a/use_cases/ran_benchmark/controller.py
++++ b/use_cases/ran_benchmark/controller.py
+@@ -447,7 +447,8 @@ class Controller:
+         running = self._runner_alive()
+         state = status.get("state", "VALIDATING")
+         if not running and state not in TERMINAL_STATES and (self.process is not None or self.runner_pid):
+-            state, status["message"] = "FAILED", "The runner exited without a final state (runtime/runner.log)"
++            rc = self.process.returncode if self.process is not None else None
++            state, status["message"] = "FAILED", f"The runner exited without a final state (runtime/runner.log) exit={rc}"
+             self._write_status(self.session, state, status["message"])
+         config = {k: self.session.get(k) for k in list(DEFAULTS) + list(RADIO_DEFAULTS)}
+         return {**status, **self.identity(), "state": state, "runner_alive": running, "config": config}
+diff --git a/use_cases/ran_benchmark/definitions.py b/use_cases/ran_benchmark/definitions.py
+index 90bf137..de5e27e 100755
+--- a/use_cases/ran_benchmark/definitions.py
++++ b/use_cases/ran_benchmark/definitions.py
+@@ -605,6 +605,14 @@ def single_cell_profile(name: str, ue_count: int) -> dict[str, Any]:
+             if index % 2 == 0:
+                 ue["flows"][0]["rate_mbps"] = rate
+             ues.append(ue)
++    # local experiment knob (minwoo 2026-10-22): RANB_TRAFFIC_SCALE multiplies every flow rate (decode-load isolation)
++    import os as _os
++    _scale = float(_os.environ.get("RANB_TRAFFIC_SCALE", "1") or 1)
++    if _scale != 1:
++        for _ue in ues:
++            for _f in _ue["flows"]:
++                if "rate_mbps" in _f:
++                    _f["rate_mbps"] = round(_f["rate_mbps"] * _scale, 6)
+     profile = {"name": name, "ue_count": ue_count, **SINGLE_CELL_PROFILES[name], "ues": ues}
+     profile["description"] = profile["role_rule"]
+     validate_profile(profile, ue_count)
+diff --git a/use_cases/ran_benchmark/run-single-cell-policy-inner.sh b/use_cases/ran_benchmark/run-single-cell-policy-inner.sh
+index ae11d41..1933a93 100755
+--- a/use_cases/ran_benchmark/run-single-cell-policy-inner.sh
++++ b/use_cases/ran_benchmark/run-single-cell-policy-inner.sh
+@@ -298,8 +298,11 @@ for index in "${!ue_ids[@]}"; do
+   id="${ue_ids[index]}"
+   date -u +%s%3N >"${log_dir}/srsue-${id}.start_unix_ms"
+   # Distinct contention preambles for up to 16 UEs (definitions.single_cell_prach_preamble).
++  # local knob (minwoo 2026-10-24): SINGLE_CELL_CPUS_UE<i> pins one UE to its own CPU set
++  ue_cpus_var="SINGLE_CELL_CPUS_UE${index}"; this_pin=("${ue_pin[@]}")
++  if [[ -n "${!ue_cpus_var:-}" ]]; then mapfile -t this_pin < <(pin "${!ue_cpus_var}"); echo "event=ue_pin ue=${id} cpus=${!ue_cpus_var}"; fi
+   start_group "srsue-${id}" "${log_dir}/srsue-${id}.log" env "SRSUE_PRACH_PREAMBLE_INDEX=$((index * 4))" \
+-    "${ue_pin[@]}" "${srsue}" --general.metrics_csv_enable 1 --general.metrics_period_secs 1 \
++    "${this_pin[@]}" "${srsue}" --general.metrics_csv_enable 1 --general.metrics_period_secs 1 \
+     --general.metrics_csv_filename "${log_dir}/srsue-metrics-${id}.csv" "${config_dir}/srsue-${id}.conf"
+   srsue_pids+=("${started_pid}")
+ done
+diff --git a/use_cases/ran_benchmark/run-single-cell-policy.sh b/use_cases/ran_benchmark/run-single-cell-policy.sh
+index 4a2a819..40dd834 100755
+--- a/use_cases/ran_benchmark/run-single-cell-policy.sh
++++ b/use_cases/ran_benchmark/run-single-cell-policy.sh
+@@ -127,6 +127,40 @@ if [[ -n "${gnb_rx_gain}" ]]; then
+   grep -qx '  rx_gain: 0' "${config_dir}/gnb0.yaml" || usage_error "gnb0.yaml has no 'rx_gain: 0' line"
+   sed -i "s/^  rx_gain: 0\$/  rx_gain: ${gnb_rx_gain}/" "${config_dir}/gnb0.yaml"
+ fi
++# --- local experiment knobs (minwoo, 2026-10-22; not upstream) ---------------
++# SINGLE_CELL_UE_RX_SLEEP=false  -> srsUE ZMQ rx_sleep=false (needs srsue-zmq-rx-sleep.patch build)
++# SINGLE_CELL_LOG_LEVEL=warning  -> gNB all_level + srsUE all_level
++# SINGLE_CELL_PCAP=off           -> gNB MAC/NGAP pcap off
++if [[ "${SINGLE_CELL_UE_RX_SLEEP:-true}" == "false" ]]; then
++  sed -i '/^device_args *=/ s/$/,rx_sleep=false/' "${config_dir}"/srsue-ue*.conf
++fi
++if [[ -n "${SINGLE_CELL_LOG_LEVEL:-}" ]]; then
++  sed -i "s/^all_level = info$/all_level = ${SINGLE_CELL_LOG_LEVEL}/" "${config_dir}"/srsue-ue*.conf
++  sed -i "s/^  all_level: info$/  all_level: ${SINGLE_CELL_LOG_LEVEL}/" "${config_dir}/gnb0.yaml"
++fi
++if [[ "${SINGLE_CELL_PCAP:-on}" == "off" ]]; then
++  sed -i "s/^  mac_enable: enable$/  mac_enable: false/; s/^  ngap_enable: enable$/  ngap_enable: false/" "${config_dir}/gnb0.yaml"
++fi
++if [[ "${SINGLE_CELL_QUIET_LOGS:-0}" == "1" ]]; then
++  # local knob (minwoo 2026-10-24): drop the per-PDU / per-candidate info logging that runs inline in the
++  # gNB (RLC/PDCP/GTPU/PHY) and srsUE (PHY_LIB) data paths; SCHED (via mac) and the UE PHY/RRC lines the
++  # analysis and gates parse stay at info.
++  sed -i "s/^  all_level: info$/  all_level: info\n  phy_level: warning\n  rlc_level: warning\n  pdcp_level: warning\n  gtpu_level: warning/" "${config_dir}/gnb0.yaml"
++  sed -i "s/^all_level = info$/all_level = info\nphy_lib_level = warning/" "${config_dir}"/srsue-ue*.conf
++fi
++if [[ -n "${SINGLE_CELL_UE_PHY_THREADS:-}" ]]; then
++  for f in "${config_dir}"/srsue-ue*.conf; do printf '\n[phy]\nnof_phy_threads = %s\n' "${SINGLE_CELL_UE_PHY_THREADS}" >>"$f"; done
++fi
++if [[ -n "${SINGLE_CELL_GNB_MAIN_POOL:-}" || -n "${SINGLE_CELL_GNB_MAIN_POOL_CPUS:-}" || -n "${SINGLE_CELL_GNB_RU_CPUS:-}" ]]; then
++  grep -q '^expert_execution:' "${config_dir}/gnb0.yaml" && usage_error "gnb0.yaml already has expert_execution"
++  { printf 'expert_execution:\n'
++    [[ -n "${SINGLE_CELL_GNB_MAIN_POOL_CPUS:-}" ]] && printf '  affinities:\n    main_pool_cpus: %s\n    main_pool_pinning: mask\n' "${SINGLE_CELL_GNB_MAIN_POOL_CPUS}"
++    [[ -n "${SINGLE_CELL_GNB_MAIN_POOL:-}" ]] && printf '  threads:\n    main_pool:\n      nof_threads: %s\n' "${SINGLE_CELL_GNB_MAIN_POOL}"
++    [[ -n "${SINGLE_CELL_GNB_RU_CPUS:-}" ]] && printf '  cell_affinities:\n    - ru_cpus: %s\n      ru_pinning: mask\n' "${SINGLE_CELL_GNB_RU_CPUS}"
++    true; } >>"${config_dir}/gnb0.yaml"
++fi
++printf 'event=local_knobs ue_rx_sleep=%s log_level=%s pcap=%s broker_env=%s ue_phy_threads=%s gnb_main_pool=%s quiet_logs=%s\n' "${SINGLE_CELL_UE_RX_SLEEP:-true}" \
++  "${SINGLE_CELL_LOG_LEVEL:-default}" "${SINGLE_CELL_PCAP:-on}" "${OCG_BROKER_SPIN:-unset}" "${SINGLE_CELL_UE_PHY_THREADS:-3}" "${SINGLE_CELL_GNB_MAIN_POOL:-auto}" "${SINGLE_CELL_QUIET_LOGS:-0}" | tee "${log_dir}/local-knobs.log"
+ "${gnb_binary}" -c "${config_dir}/gnb0.yaml" --dryrun >"${log_dir}/gnb0-dryrun.log" 2>&1 || {
+   tail -20 "${log_dir}/gnb0-dryrun.log" >&2; usage_error "gnb0 dry run failed"; }
+ 
+diff --git a/use_cases/ran_benchmark/scene_registry.py b/use_cases/ran_benchmark/scene_registry.py
+index 980d81d..5e2578f 100755
+--- a/use_cases/ran_benchmark/scene_registry.py
++++ b/use_cases/ran_benchmark/scene_registry.py
+@@ -159,7 +159,7 @@ SCENES: dict[str, dict[str, Any]] = {
+         "base_scenario": "sutd/sionna-multi-ue-sutd.json",
+         "adapter": "prisms",
+         "region": {"min_gnb_distance_m": 15.0, "max_gnb_distance_m": 80.0, "edge_margin_m": 10.0},
+-        "ue_counts": [1, 2, 4],
++        "ue_counts": [1, 2, 4, 8, 16],
+         "ue_height_m": UE_HEIGHT_DEFAULT_M,
+         "rng_key": "scheduler-benchmark:{scene}:{seed}:{ue}:{purpose}",
+         "line_of_sight": "3D segment gNB->UE passes 0.5 m above every OSM building prism it crosses; "
+@@ -171,7 +171,7 @@ SCENES: dict[str, dict[str, Any]] = {
+         "base_scenario": "simple_blocks/sionna-1gnb-simple-blocks.json",
+         "adapter": "prisms",
+         "region": {"min_gnb_distance_m": 15.0, "max_gnb_distance_m": 80.0, "edge_margin_m": 10.0},
+-        "ue_counts": [1, 2, 4],
++        "ue_counts": [1, 2, 4, 8, 16],
+         "ue_height_m": UE_HEIGHT_DEFAULT_M,
+         "rng_key": "scheduler-benchmark:{scene}:{seed}:{ue}:{purpose}",
+         "line_of_sight": "3D segment gNB->UE passes 0.5 m above every building prism it crosses; "

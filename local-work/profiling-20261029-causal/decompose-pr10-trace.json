@@ -1,0 +1,936 @@
+[
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 194.7246280841024,
+      "source_ready_to_send": 16.001157121720002,
+      "send_to_receiver_return": 27.838152184135335,
+      "receiver_return_to_ring": 2.58509707799606,
+      "ring_ready_to_producer": 122.4626694144664
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue14",
+    "calls": 37836,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 363.6117038824202,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.10168605586542714,
+      "request_until_receive": 238.4622513340923,
+      "receive_until_ring_push": 2.58509707799606,
+      "ring_ready_until_producer_observed": 122.4626694144664
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 37836
+    },
+    "negative_ready_intervals": 229,
+    "max_ring_timestamp_race_us": 7.168,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 471.7805320008108,
+      "source_ready_to_send": 34.59329368554962,
+      "send_to_receiver_return": 60.43374690340846,
+      "receiver_return_to_ring": 5.602787101568098,
+      "ring_ready_to_producer": 260.57949043459615
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue8",
+    "calls": 32312,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 832.9898501259332,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.19498118203941753,
+      "request_until_receive": 566.6125914077295,
+      "receive_until_ring_push": 5.602787101568098,
+      "ring_ready_until_producer_observed": 260.57949043459615
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 32312
+    },
+    "negative_ready_intervals": 331,
+    "max_ring_timestamp_race_us": 8.432,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 206.0359771746627,
+      "source_ready_to_send": 17.304947555838734,
+      "send_to_receiver_return": 30.707815071955263,
+      "receiver_return_to_ring": 2.8262405066664464,
+      "ring_ready_to_producer": 141.1692087953087
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue6",
+    "calls": 38319,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 398.04418910443184,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.133130942217473,
+      "request_until_receive": 253.91560886023922,
+      "receive_until_ring_push": 2.8262405066664464,
+      "ring_ready_until_producer_observed": 141.1692087953087
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 38319
+    },
+    "negative_ready_intervals": 233,
+    "max_ring_timestamp_race_us": 5.424,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 404.1792339333333,
+      "source_ready_to_send": 31.394346866666666,
+      "send_to_receiver_return": 55.2465899,
+      "receiver_return_to_ring": 5.152152966666667,
+      "ring_ready_to_producer": 241.42946423333333
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue15",
+    "calls": 36892,
+    "radio_ms": 30000.0,
+    "data_us_per_radio_ms": 737.4017878999999,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.17734283333333334,
+      "request_until_receive": 490.64282786666666,
+      "receive_until_ring_push": 5.152152966666667,
+      "ring_ready_until_producer_observed": 241.42946423333333
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 36892
+    },
+    "negative_ready_intervals": 372,
+    "max_ring_timestamp_race_us": 4.56,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 553.0750879167153,
+      "source_ready_to_send": 38.510207485500224,
+      "send_to_receiver_return": 67.06808365725536,
+      "receiver_return_to_ring": 6.21755793474048,
+      "ring_ready_to_producer": 276.9808432159535
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue5",
+    "calls": 32212,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 941.851780210165,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.23071886652826976,
+      "request_until_receive": 658.4226601929427,
+      "receive_until_ring_push": 6.21755793474048,
+      "ring_ready_until_producer_observed": 276.9808432159535
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 32212
+    },
+    "negative_ready_intervals": 436,
+    "max_ring_timestamp_race_us": 5.792,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.017617659020113273,
+      "source_not_yet_at_send_boundary": 528.8871154816339,
+      "source_ready_to_send": 36.94076096668361,
+      "send_to_receiver_return": 64.56778570912078,
+      "receiver_return_to_ring": 6.0407528448121335,
+      "ring_ready_to_producer": 275.04895748777886
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue1",
+    "calls": 32101,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 911.5029901490494,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.23732636366043244,
+      "request_until_receive": 630.175953452798,
+      "receive_until_ring_push": 6.0407528448121335,
+      "ring_ready_until_producer_observed": 275.04895748777886
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 32101
+    },
+    "negative_ready_intervals": 376,
+    "max_ring_timestamp_race_us": 12.064,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 395.2845587666667,
+      "source_ready_to_send": 30.66472693333333,
+      "send_to_receiver_return": 53.80748946666667,
+      "receiver_return_to_ring": 5.051332199999999,
+      "ring_ready_to_producer": 231.42732406666667
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue7",
+    "calls": 37909,
+    "radio_ms": 30000.0,
+    "data_us_per_radio_ms": 716.2354314333334,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0846562,
+      "request_until_receive": 479.6721189666667,
+      "receive_until_ring_push": 5.051332199999999,
+      "ring_ready_until_producer_observed": 231.42732406666667
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 37909
+    },
+    "negative_ready_intervals": 357,
+    "max_ring_timestamp_race_us": 4.368,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.004531198033334187,
+      "source_not_yet_at_send_boundary": 486.95020811675,
+      "source_ready_to_send": 35.758660446414744,
+      "send_to_receiver_return": 62.08863755180662,
+      "receiver_return_to_ring": 5.83572470046671,
+      "ring_ready_to_producer": 271.89832392190806
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue2",
+    "calls": 32179,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 862.5360859353794,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.21200840798246182,
+      "request_until_receive": 584.5900289050221,
+      "receive_until_ring_push": 5.83572470046671,
+      "ring_ready_until_producer_observed": 271.89832392190806
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 32179
+    },
+    "negative_ready_intervals": 374,
+    "max_ring_timestamp_race_us": 4.64,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 555.0313394009812,
+      "source_ready_to_send": 38.41317999427952,
+      "send_to_receiver_return": 67.29072832728805,
+      "receiver_return_to_ring": 6.190655246416995,
+      "ring_ready_to_producer": 282.24543019764315
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue12",
+    "calls": 31720,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 949.1713331666089,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.07418790113372346,
+      "request_until_receive": 660.661059821415,
+      "receive_until_ring_push": 6.190655246416995,
+      "ring_ready_until_producer_observed": 282.24543019764315
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 31720
+    },
+    "negative_ready_intervals": 425,
+    "max_ring_timestamp_race_us": 4.192,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 462.75442928505674,
+      "source_ready_to_send": 34.93149240542864,
+      "send_to_receiver_return": 60.45932992563806,
+      "receiver_return_to_ring": 5.629327056715688,
+      "ring_ready_to_producer": 263.3330827061273
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue13",
+    "calls": 31939,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 827.1076613789664,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.12289464666030961,
+      "request_until_receive": 558.0223569694631,
+      "receive_until_ring_push": 5.629327056715688,
+      "ring_ready_until_producer_observed": 263.3330827061273
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 31939
+    },
+    "negative_ready_intervals": 380,
+    "max_ring_timestamp_race_us": 4.864,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.017489125742566954,
+      "source_not_yet_at_send_boundary": 536.65978370808,
+      "source_ready_to_send": 36.924125440570556,
+      "send_to_receiver_return": 64.40235321425642,
+      "receiver_return_to_ring": 5.957607847566038,
+      "ring_ready_to_producer": 257.2896058958308
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue3",
+    "calls": 32674,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 901.2509652320464,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.07054736938048205,
+      "request_until_receive": 637.933204119269,
+      "receive_until_ring_push": 5.957607847566038,
+      "ring_ready_until_producer_observed": 257.2896058958308
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 32674
+    },
+    "negative_ready_intervals": 442,
+    "max_ring_timestamp_race_us": 4.416,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 517.2047945520858,
+      "source_ready_to_send": 37.11128899266971,
+      "send_to_receiver_return": 64.70650614891227,
+      "receiver_return_to_ring": 6.064456701190668,
+      "ring_ready_to_producer": 275.4161586617367
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue10",
+    "calls": 32607,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 900.5032050565951,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.13768934023900162,
+      "request_until_receive": 618.8849003534286,
+      "receive_until_ring_push": 6.064456701190668,
+      "ring_ready_until_producer_observed": 275.4161586617367
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 32607
+    },
+    "negative_ready_intervals": 335,
+    "max_ring_timestamp_race_us": 7.632,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 542.0040088885378,
+      "source_ready_to_send": 37.82968241420035,
+      "send_to_receiver_return": 65.7737301857074,
+      "receiver_return_to_ring": 6.096462287299355,
+      "ring_ready_to_producer": 278.79086386368755
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue9",
+    "calls": 32805,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 930.4947476394325,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.18254808743572593,
+      "request_until_receive": 645.4248734010098,
+      "receive_until_ring_push": 6.096462287299355,
+      "ring_ready_until_producer_observed": 278.79086386368755
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 32805
+    },
+    "negative_ready_intervals": 440,
+    "max_ring_timestamp_race_us": 3.409,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 483.7981659181572,
+      "source_ready_to_send": 35.32893699959332,
+      "send_to_receiver_return": 60.85686718642918,
+      "receiver_return_to_ring": 5.714206486542324,
+      "ring_ready_to_producer": 268.4973346313652
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue4",
+    "calls": 31914,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 854.1955112220871,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.08672336235965176,
+      "request_until_receive": 579.89724674182,
+      "receive_until_ring_push": 5.714206486542324,
+      "ring_ready_until_producer_observed": 268.4973346313652
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 31914
+    },
+    "negative_ready_intervals": 418,
+    "max_ring_timestamp_race_us": 4.528,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 427.5598929604632,
+      "source_ready_to_send": 32.23015177788552,
+      "send_to_receiver_return": 56.34972177598882,
+      "receiver_return_to_ring": 5.24732478918195,
+      "ring_ready_to_producer": 255.93888261541554
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue11",
+    "calls": 32065,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 777.325973918935,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.08062469833997468,
+      "request_until_receive": 516.0591418159975,
+      "receive_until_ring_push": 5.24732478918195,
+      "ring_ready_until_producer_observed": 255.93888261541554
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 32065
+    },
+    "negative_ready_intervals": 345,
+    "max_ring_timestamp_race_us": 3.376,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "gnb0_p0",
+        "file": "gnb-2726242.wire",
+        "matched_iq_messages": 64323,
+        "readiness": "gnb transmit_samples entry (IQ already generated)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 402.23854138396644,
+      "source_ready_to_send": 31.48650330064961,
+      "send_to_receiver_return": 54.15662052785567,
+      "receiver_return_to_ring": 5.070042399460764,
+      "ring_ready_to_producer": 250.74415673673755
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "ue0",
+    "calls": 32385,
+    "radio_ms": 30000.013020833332,
+    "data_us_per_radio_ms": 743.69586434867,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.1275901112890142,
+      "request_until_receive": 487.7540751011827,
+      "receive_until_ring_push": 5.070042399460764,
+      "ring_ready_until_producer_observed": 250.74415673673755
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 32385
+    },
+    "negative_ready_intervals": 359,
+    "max_ring_timestamp_race_us": 6.72,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  },
+  {
+    "wire_checks": [
+      {
+        "source": "ue0_p0",
+        "file": "srsue-2726432.wire",
+        "matched_iq_messages": 64333,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue10_p0",
+        "file": "srsue-2726465.wire",
+        "matched_iq_messages": 64334,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue11_p0",
+        "file": "srsue-2726468.wire",
+        "matched_iq_messages": 64329,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue12_p0",
+        "file": "srsue-2726471.wire",
+        "matched_iq_messages": 64329,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue13_p0",
+        "file": "srsue-2726474.wire",
+        "matched_iq_messages": 64331,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue14_p0",
+        "file": "srsue-2726478.wire",
+        "matched_iq_messages": 64330,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue15_p0",
+        "file": "srsue-2726482.wire",
+        "matched_iq_messages": 64332,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue1_p0",
+        "file": "srsue-2726435.wire",
+        "matched_iq_messages": 64327,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue2_p0",
+        "file": "srsue-2726438.wire",
+        "matched_iq_messages": 64332,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue3_p0",
+        "file": "srsue-2726441.wire",
+        "matched_iq_messages": 64326,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue4_p0",
+        "file": "srsue-2726444.wire",
+        "matched_iq_messages": 64326,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue5_p0",
+        "file": "srsue-2726447.wire",
+        "matched_iq_messages": 64331,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue6_p0",
+        "file": "srsue-2726450.wire",
+        "matched_iq_messages": 64327,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue7_p0",
+        "file": "srsue-2726453.wire",
+        "matched_iq_messages": 64329,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue8_p0",
+        "file": "srsue-2726457.wire",
+        "matched_iq_messages": 64327,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      },
+      {
+        "source": "ue9_p0",
+        "file": "srsue-2726461.wire",
+        "matched_iq_messages": 64325,
+        "readiness": "UE TX request-receive entry (inside baseband send, IQ prepared)",
+        "ready_after_send": 0,
+        "ring_insert_before_recv": 0
+      }
+    ],
+    "wire_parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "source_not_yet_at_send_boundary": 440.90286021059853,
+      "source_ready_to_send": 4.628528999851498,
+      "send_to_receiver_return": 473.0349101781618,
+      "receiver_return_to_ring": 10.671413922805165,
+      "ring_ready_to_producer": 545.3683578549163
+    },
+    "negative_wire_parts": {
+      "request": 0,
+      "ready": 0,
+      "send": 0,
+      "receive": 0,
+      "ring": 0,
+      "producer": 0
+    },
+    "node": "gnb0",
+    "calls": 56218,
+    "radio_ms": 30000.00021701389,
+    "data_us_per_radio_ms": 1474.6060711663333,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.2821665312921981,
+      "request_until_receive": 918.2841328573195,
+      "receive_until_ring_push": 10.671413922805165,
+      "ring_ready_until_producer_observed": 545.3683578549163
+    },
+    "critical_source_counts": {
+      "ue6_p0": 15881,
+      "ue5_p0": 1271,
+      "ue11_p0": 2715,
+      "ue15_p0": 6258,
+      "ue2_p0": 4565,
+      "ue14_p0": 11119,
+      "ue3_p0": 643,
+      "ue1_p0": 360,
+      "ue7_p0": 2255,
+      "ue8_p0": 675,
+      "ue13_p0": 1250,
+      "ue4_p0": 677,
+      "ue9_p0": 1020,
+      "ue0_p0": 3938,
+      "ue12_p0": 365,
+      "ue10_p0": 3226
+    },
+    "negative_ready_intervals": 19,
+    "max_ring_timestamp_race_us": 0.352,
+    "sample_window": [
+      695462400,
+      1386662400
+    ]
+  }
+]

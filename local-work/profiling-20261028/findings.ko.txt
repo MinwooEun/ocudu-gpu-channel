@@ -1,0 +1,131 @@
+2026-10-28 Spark CUDA gNB / GPU channel emulator 처리시간 조사
+
+1. 이번 조사에서 확인한 것
+
+RTX 5090의 64 UE 기록은 존재한다. 그러나 실제 gNB와 UE 64개를 붙인 live 실험이 아니라, 합성 IQ로 channel 함수를 순차 호출한 fan-in 벤치였다. 원본 52개 파일의 SHA256이 저장된 값과 모두 일치했다.
+
+64 UE에서 모든 수신 노드를 섞은 호출 중앙값은 약 59 us이지만, gNB 수신 노드만 보면 전체 호출 중앙값 약 1,198 us, p99 약 1,338 us이다. 한 호출의 IQ는 무선 시간 1 ms를 나타낸다. GPU 계산 구간만 보면 중앙값 약 68 us이므로, 이 값이나 전체 노드의 중앙값을 실시간 기준으로 읽으면 잘못된 결론이 된다.
+
+당시 gNB 수신 노드의 CPU preparation 중앙값은 약 658 us, H2D는 약 445 us였다. 64개 입력의 23,040 complex-float 샘플은 약 11.8 MB다. CPU가 이 IQ를 staging buffer로 모으고 GPU에 복사하는 비용이 컸다. 여기서 CPU preparation은 emulator 내부 작업이며 MAC·스케줄링 시간이 아니다.
+
+2. 현재 Spark live 16 UE에서는 어디에 시간이 쓰이나
+
+CUDA gNB와 MPS를 사용한 20 MHz·1x1·16 UE 조건에서:
+
+  계측을 끈 대조:       0.4502 / 0.4519 x real time
+  호출 계측만 사용:     0.4453 / 0.4470 x real time
+  가벼운 CPU 샘플링:    0.4475 / 0.4545 x real time
+
+호출 계측 실행은 두 번 모두 측정 구간을 완주했다. 별도의 무거운 perf 다중 수집 실행은 replay timeout이 발생했으므로 실패한 진단 자료로 보존했다. 위 처리율은 무선 시간 / 실제 시간이며, 모든 통신·트래픽 검증이 통과했다는 뜻은 아니다.
+
+IQ가 조각나 들어오기 때문에 gNB 수신 노드의 channel 호출은 무선 시간 1 ms당 약 2.04~2.17번 발생했다. 호출당 시간이 아니라 실제 처리한 샘플 수로 환산해야 한다.
+
+무선 시간 1 ms를 진행하는 데 사용한 gNB 수신 노드의 시간:
+
+  입력 IQ 대기(data_us):            약 1,533~1,619 us
+  출력 공간 대기(room_us):          약   406~  519 us
+  전체 channel 처리(process_us):    약   169~  179 us
+  입력 읽기와 결과 게시:            각각 약 4 us
+  commit 및 pacing:                약 5 us
+
+그 안의 channel 함수만 보면:
+
+  입력 검증·packing:               약 2 us / 무선 1 ms
+  모델·제어값 처리:                약 14 us / 무선 1 ms
+  receiver parameter 준비:         약 1 us / 무선 1 ms
+  CUDA 제출:                       약 59~63 us / 무선 1 ms
+  stream 완료 대기:                약 82~85 us / 무선 1 ms
+
+계측 callback 비용이 broker의 process_us에 추가된다. 별도 on/off 대조에서 호출 중앙값에 약 5~10 us의 추가 비용이 관측됐다. 따라서 위 process_us는 계측을 포함한 수치다. CUDA kernel event 구간은 host 제출·완료 대기와 겹치므로 위 항목에 다시 더하지 않는다.
+
+이 결과에서 emulator 내부 IQ packing은 큰 시간이 아니다. 대부분의 경과 시간은 IQ가 도착하거나 출력이 소비되기를 기다리는 데 쓰인다. 단, 입력 대기가 길다고 바로 UE의 계산만 원인이라고 단정하면 안 된다. broker의 수신·생산·전송 thread가 CPU를 제때 얻지 못해도 같은 지표가 커진다.
+
+3. CPU 배치와 대기 방식이 실제 제한 요소다
+
+20 MHz·16 UE의 합성 radio 대조:
+
+  broker 10개 코어, sleep 기반 대기:  최소 수신 진행률 약 1.000 x
+  live와 같은 broker 2개 코어,
+    spin 대기:                       약 0.482 x
+    sleep 기반 대기:                 약 0.721 x
+
+2개 코어 대조끼리는 radio 배치와 모델을 유지하고 spin 설정만 바꿨다. 이는 spin 대기가 이 환경의 처리율을 실제로 낮춘다는 근거다. sleep 기반 모드는 event-driven 설계가 아니라 현재 코드의 주기적인 sleep/poll 방식이다.
+
+10개 코어의 일반 boundary 실험과 2개 코어의 live 배치는 radio 코어 배치도 다르다. 따라서 이 두 행을 CPU 개수만 바꾼 실험으로 읽으면 안 된다. 합성 source와 sink는 서로 독립적이므로 최소·평균·최대 진행률도 함께 기록했다. 실제 RAN에서는 느린 radio 하나가 다른 참여자의 진행까지 늦출 수 있다.
+
+live UE 배치는 big core 3개(17~19)와 little core 2개(13~14)다. 5개 모두 big core인 구성이 아니다. 진단 측정의 정상 진행 구간 약 7.86초에서 broker는 배정된 2개 코어를 거의 모두 사용했고, UE들은 평균 4.48코어, gNB는 약 1.87코어를 사용했다. 이는 polling과 GPU 완료 대기를 포함한 CPU 실행 시간이다.
+
+MAC과 스케줄러는 CPU에서 실행된다. 그러나 이번 16 UE의 스케줄러 결정 시간은 평균 약 40 us 수준이었다. 현재 수 ms의 진행 간격을 MAC·스케줄링만의 문제로 설명하는 것은 근거가 부족하다. broker의 thread scheduling·대기 방식·ZMQ와 radio 처리의 결합이 직접 관측된 제한이다.
+
+4. UE 수·대역폭·안테나·셀 수에 따른 경계
+
+일반 channel-only boundary는 고정 8-tap 채널, broker 10개 코어, ZMQ I/O thread 2개, 합성 radio 5개 big core 조건이다. 각 점은 12초 동안 계측을 끈 기준 실행과 계측 실행을 짝지었다.
+
+20 MHz·1x1에서 계측을 끈 최소 수신 진행률:
+
+  1 / 4 / 8 / 16 UE:  약 1.000 x
+  24 UE:              약 0.661 x
+  32 UE:              약 0.494 x
+  64 UE:              약 0.239 x
+
+24 UE에서 ZMQ I/O thread만 2개에서 4개로 늘리면 약 0.661 -> 0.873 x로 개선됐다. 이 구간에는 host IQ transport의 병목이 존재한다.
+
+bandwidth는 20 / 50 / 100 MHz를 사용했다. sample rate는 별도 sweep하지 않고 기존 radio 설정의 23.04 / 61.44 / 122.88 MS/s를 따랐다. 일반 합성 grid의 batch는 각각 1 / 1 / 0.5 ms다.
+
+한 OAI UE를 사용한 CUDA gNB live 결과(1 Mb/s DL):
+
+  gNB x UE ports        20 MHz      50 MHz      100 MHz
+  2 x 2                 1.000       0.997       0.684
+  4 x 4                 1.000       0.513       0.339
+  4 x 1                   -           -         0.491
+
+100 MHz·4x4는 PUSCH 오류 비율이 health 기준을 넘었다. 안테나 포트 수와 spatial layer 수는 다르며, 이 OAI gate의 DL rank는 최대 2다.
+
+live의 채널 모델과 batch·queue 설정을 보존하고 endpoint만 합성 radio로 바꾼 대조:
+
+  50 MHz·4x4:   channel-only 약 0.935 x / live 약 0.513 x
+  100 MHz·4x4:  channel-only 약 0.443 x / live 약 0.339 x
+  100 MHz·4x1:  channel-only 약 0.699 x / live 약 0.491 x
+
+이 대조는 configured batch를 보존하지만, 실제 radio의 조각 요청·처리 패턴 전체를 복제하는 실험은 아니다. 100 MHz의 보존된 configured batch는 1 ms이며 일반 합성 grid의 0.5 ms와 구분해야 한다.
+
+100 MHz·4x4의 matched channel-only 계측에서 gNB 노드의 전체 channel 호출 평균은 약 285 us인 반면 출력 공간 대기는 약 1,897 us였다. 따라서 GPU 계산량만으로 이 경계를 설명할 수 없다.
+
+순수 broker를 셀마다 별도 process로 실행하면 4 UE/cell·20 MHz에서 2개 broker는 약 0.999 x, 4개는 약 0.947 x였다. process 수가 늘면 GPU context 외에 전체 ZMQ I/O thread 수도 늘어나므로, 이 차이를 context switching만의 비용이라고 읽으면 안 된다.
+
+실제 CUDA gNB 두 셀은 새 실행에서 sample 진행률 0.868 / 0.890 x였다. 계측을 끈 반복의 gate 슬롯 처리율도 약 0.867 / 0.877 x였다. PR10의 약 0.53 x는 이번에 재현되지 않았다. 과거 수치를 일반적인 CUDA multi-cell 한계로 사용하기 전에 조건 차이를 다시 감사해야 한다.
+
+5. GPU timeline에서 확인한 것
+
+성공적으로 저장한 Nsight는 합성 broker 대조의 timeline이다. live 전체 runner에 profiler를 씌운 실행은 unshare 오류로 측정 전에 실패했다. live 자체의 channel 함수는 수신 노드별 host timer와 CUDA event로 계측했다.
+
+16 UE 합성 실행에서 관측된 kernel 실행 시간의 합집합은 전체 kernel activity span의 약 31%였다. 이는 SM occupancy나 GPU utilization과 같은 지표가 아니다. kernel 간 overlap은 중복 합산하지 않았다.
+
+이 capture의 명시적 H2D 복사는 전체 약 14.1 MB였다. 연속 IQ의 D2H activity는 없었다. 현재 Spark 경로는 IQ를 직접 읽고 쓰며 작은 metadata를 복사한다. 반면 동적 채널 값을 갱신할 때는 코드상 GPU delay-line 상태 보존을 위해 조건부 D2H, 동기화, H2D가 발생한다. 이 비용은 host 준비 구간에 포함된다.
+
+GPU kernel 제출 이후 시작까지의 대기에는 같은 stream에서 먼저 실행돼야 하는 kernel도 포함된다. 그 시간을 모두 GPU context 경쟁이라고 부르면 안 된다. 제출·동기화 API의 host 시간과 GPU kernel 시간은 겹쳐서 진행된다.
+
+6. 검증과 해석의 범위
+
+CUDA processing, runtime-update parity, matrix history, broker 검증 4개는 Release 빌드에서 모두 통과했다. CPU parallel reference의 parity 실패는 기존 Spark 바이너리에서도 재현됐으며 새 CUDA 회귀로 분류하지 않았다.
+
+무거운 perf 동시 수집은 live 동작을 방해했다. 가벼운 호출 trace와 tracing-off 대조를 성능 기준으로 사용했다. 최종 CPU stack은 warmup 이후 단일 hardware-cycle 수집기를 auxiliary core에 고정해 측정했다. CPU 종류별 PMU가 나뉘고 kernel symbol 일부가 해석되지 않으며 59개 sample loss가 있어, CPU 작업 비중을 소수점 단위의 확정 비율로 제시하지 않는다.
+
+Sionna 채널 trace는 측정 전에 계산해 두고 10 Hz로 replay한다. timed window에서 ray-tracing solver가 별도 GPU tenant로 실행되는 조건은 아니다.
+
+처리율, 모든 호출의 deadline 충족, attach·PDU·ping, offered traffic의 검증은 별개다. 실패한 실행과 gate 결과를 원본에 그대로 남겼다.
+
+현재 우선순위는 broker의 작은 CPU 배치에서 생기는 대기·thread scheduling 비용과 ZMQ IQ 경로를 줄이는 것이다. UE 처리에도 CPU 여유가 적다. MAC을 추가로 GPU에 옮기는 것이 이 측정의 직접적인 해결책이라고 결론 낼 근거는 없다. 합성 대조의 spin 개선량을 live에 그대로 적용할 수 있는지는 별도 검증이 필요하다.
+
+파일 안내
+
+  report.txt                 상세 수치와 측정 정의, 실행별 결과
+  live-time-breakdown.png     무선 시간 1 ms 기준의 live 시간 분해
+  spark-boundary.png          UE·대역폭·안테나 경계
+  rtx5090-audit.png           RTX 5090 원본 재해석
+  boundary-results.csv        기준 실행·trace 실행의 측정값
+  timing-summary.json/csv     수신 노드별 timing 통계
+  live-summary.json           live policy별 결과와 시간 분해
+  nsys-summary.json           실제 kernel·CUDA API·복사 activity
+  raw-evidence.tar.gz         호출별 CSV, CPU profile, GPU timeline, gate 원본
+  instrumentation.patch      364391b에 적용하는 선택적 계측 변경

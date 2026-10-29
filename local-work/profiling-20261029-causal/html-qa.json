@@ -1,0 +1,22 @@
+{
+  "checks": [
+    "viewport 360",
+    "viewport 768",
+    "viewport 1440",
+    "axis ue",
+    "axis bw",
+    "axis cell",
+    "axis synthetic",
+    "flow cpu",
+    "flow ldpc",
+    "flow newrx",
+    "flow full",
+    "location 1",
+    "location 2",
+    "location 3"
+  ],
+  "links": 29,
+  "errors": [],
+  "externalRequests": [],
+  "print": "all axes visible"
+}

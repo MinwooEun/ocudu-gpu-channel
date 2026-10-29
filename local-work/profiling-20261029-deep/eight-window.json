@@ -1,0 +1,7 @@
+{
+  "start_ns": 3020227064841076,
+  "end_ns": 3020229064951620,
+  "trigger_k": 161,
+  "clock": "CLOCK_MONOTONIC",
+  "trace_clock": "local global counter uptime perf [mono] mono_raw boot tai\n"
+}

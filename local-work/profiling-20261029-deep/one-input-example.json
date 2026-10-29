@@ -1,0 +1,10 @@
+{
+  "kind": "single actual wall-time interval, not radio-normalized",
+  "yield_start_ns": 3020021617741297,
+  "input_ready_ns": 3020021617773681,
+  "yield_return_ns": 3020021618311832,
+  "producer_confirm_ns": 3020021618314952,
+  "ready_us_from_yield": 32.384,
+  "return_us_from_yield": 570.535,
+  "confirm_us_from_yield": 573.655
+}

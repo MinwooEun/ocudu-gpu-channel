@@ -1,0 +1,12 @@
+baseline 0.4515283212796943 valid 30 strict False
+baseline-repeat 0.4507894944873964 valid 8 strict False
+broker4 0.43309533966981595 valid 30 strict False
+broker4-spin 0.44612467886551477 valid 4 strict False
+cuda-blocking-sleep 0.40123326378046315 valid 30 strict False
+failed-environment-baseline None valid None strict None
+failed-environment-sleep None valid None strict None
+poll10 0.23251771372626787 valid 30 strict False
+sleep 0.3761644466215071 valid 26 strict False
+ue5big-shared 0.3787952417264738 valid 6 strict False
+ue5big-spin 0.47495925056011296 valid 30 strict False
+ue5big-spin-repeat 0.47094738450470414 valid 1 strict False

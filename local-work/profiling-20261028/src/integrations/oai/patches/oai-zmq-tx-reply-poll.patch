@@ -1,0 +1,24 @@
+OAI nrUE ZMQ radio driver (pin 2b69bde6): reply to a pending REQ as soon as TX
+samples are queued. Upstream sleeps in zmq_poll for up to 10 ms while a reply is
+owed, although a REP socket gets no new input until it replies; in a lock-step
+ZMQ chain that stall paces the whole run (SPARK_MILESTONES.md S9).
+Apply in the OAI source root: patch -p1 < oai-zmq-tx-reply-poll.patch
+
+--- a/radio/zmq/zmq_radio.cpp	2026-09-02 13:19:29.000000000 +0000
++++ b/radio/zmq/zmq_radio.cpp	2026-09-28 07:11:43.215373152 +0000
+@@ -84,7 +84,14 @@
+       }
+     }
+ 
+-    int rc = zmq_poll(&item, 1, 10); // 10ms timeout
++    // A REP socket gets no new input until it replies, so
++    // while a reply is owed, re-check the TX queue every 20 us instead of
++    // sleeping in zmq_poll for up to 10 ms.
++    int rc = zmq_poll(&item, 1, reply_requested ? 0 : 10);
++    if (rc == 0 && reply_requested) {
++      usleep(20);
++      continue;
++    }
+     if (rc < 0) {
+       if (errno == EINTR)
+         continue;

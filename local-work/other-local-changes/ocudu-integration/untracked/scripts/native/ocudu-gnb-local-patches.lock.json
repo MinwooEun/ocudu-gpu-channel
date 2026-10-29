@@ -1,0 +1,37 @@
+{
+  "schema": "ocudu-native-gnb-local-patches/v1",
+  "why": "Local patches to the pinned CPU OCUDU gNB that this repository carries until they are reported upstream. They are applied at build time into builds/ocudu-zmq-local; the pinned tree src/ocudu and builds/ocudu-zmq-release are never modified. Gates pick the build with OCUDU_NATIVE_GNB_BINARY (the pinned build stays the default).",
+  "ocudu_commit": "a1916edcdbcd70ba6e0af47ee87be061dad5a4e4",
+  "builder": "scripts/native/build-ocudu-gnb-local.sh",
+  "output_dir": "builds/ocudu-zmq-local",
+  "patches": [
+    {
+      "path": "scripts/native/patches/ocudu-zmq-lower-phy-profile.patch",
+      "sha256": "b05111e6595b4248ce3e662c3616979a04dfb01f8565acfa4aa0b07cab17f2d2",
+      "files": [
+        "apps/services/worker_manager/worker_manager.cpp",
+        "apps/units/flexible_o_du/split_8/helpers/ru_sdr_config.h",
+        "apps/units/flexible_o_du/split_8/helpers/ru_sdr_config_cli11_schema.cpp",
+        "apps/units/flexible_o_du/split_8/helpers/ru_sdr_config_translator.cpp",
+        "apps/units/flexible_o_du/split_8/split_8_o_du_application_unit_impl.cpp",
+        "lib/phy/lower/lower_phy_baseband_processor.cpp",
+        "lib/phy/lower/lower_phy_factory.cpp",
+        "lib/radio/zmq/radio_session_zmq_impl.cpp",
+        "lib/radio/zmq/radio_zmq_rx_channel.cpp",
+        "lib/radio/zmq/radio_zmq_tx_channel.cpp"
+      ],
+      "env": {
+        "OCUDU_ZMQ_LOWER_PHY_PROFILE": "single|dual|triple keeps that lower-PHY thread profile with the ZMQ radio instead of the forced blocking/sequential mode; unset = stock",
+        "OCUDU_LPHY_RX_TO_TX_MAX_MS": "scales the 1 ms bound by which the DL baseband may run ahead of the last received UL timestamp (lower_phy_factory.cpp); unset = 1 ms, minimum 0.5",
+        "OCUDU_LPHY_DL_WAIT_MS": "replaces the 2-slot wall-clock escape in lower_phy_baseband_processor::dl_process (how long the DL waits for the UL timestamp to catch up); needed with a threaded profile over ZMQ because the loop is peer-paced, not clock-paced; unset = stock 2 slots",
+        "OCUDU_ZMQ_RADIO_RT_PRIO": "k: run the 'radio' worker (all ZMQ requests/replies) with SCHED_FIFO priority max-k; unset = stock SCHED_OTHER. Needed with a threaded profile: the FIFO lower-PHY workers starved it (370 ms run-queue wait per 2 s on 5 shared cores)",
+        "OCUDU_ZMQ_IO_RT_PRIO": "k: libzmq I/O thread with SCHED_FIFO priority max-k (zmq_ctx_set THREAD_SCHED_POLICY/THREAD_PRIORITY); unset = stock",
+        "OCUDU_ZMQ_RADIO_IDLE_US": "n: the ZMQ channel tasks sleep n us after a poll that made no progress instead of re-queuing immediately (stock = busy loop, 95-100% of a core once the radio worker is real-time); 5 us used",
+        "OCUDU_ZMQ_RX_POP_SLEEP_US": "n: radio_zmq_rx_channel::receive polls the circular buffer every n us (stock 1 us, a busy loop on the real-time lower_phy_rx worker); 10 us used",
+        "OCUDU_ZMQ_SINGLE_COPY": "1: receive straight from the ZMQ message into the circular buffer and pop straight into the outgoing message (stock copies each 491 KB message twice on the radio worker)"
+      },
+      "why": "Lock-step pipelining (SPARK_MILESTONES.md S15 follow-up). With a ZMQ radio the gNB forces the blocking lower PHY at three sites (ru_sdr_config_cli11_schema.cpp autoderive, ru_sdr_config_translator.cpp fill_sdr_worker_manager_config, split_8_o_du_application_unit_impl.cpp fill_worker_manager_config), so TX, RX and the upper PHY share one phy_worker and the gNB produces one DL block per received UL block. Through the channel emulator that makes every slot wait for the whole gNB -> broker -> UE -> broker -> gNB round (100 MHz 2x2 idle 0.68x, see docs/plans/x6-gnb-realtime-traffic.md). The patch keeps the threaded profile named by OCUDU_ZMQ_LOWER_PHY_PROFILE and makes the 1 ms DL run-ahead bound (rx_to_tx_max_delay) scalable by OCUDU_LPHY_RX_TO_TX_MAX_MS. Both default to the stock behaviour when unset. A third knob, OCUDU_LPHY_DL_WAIT_MS, is required with the threaded profile: dl_process gives up waiting for the UL timestamp after 2 slots of wall-clock time, and over a lock-step ZMQ loop slower than real time that let the DL run ahead by wall clock (RF overflow flood, RAR window missed, no attach in the first dual run). v4/v5 (S17 batch 10): with the real-time radio worker the stock channel tasks busy-poll (radio 95%, lower_phy_rx 70%) and under traffic starve the upper-PHY pools at the same priority (DL/UL processor pools exhausted even at 20 MHz, 'Could not acquire downlink processor'); idle sleeps plus radio at max-1 restore 20 MHz 2x2 under 200M load to 0.98x real time with no late slots. OCUDU_ZMQ_SINGLE_COPY halves the radio worker's memcpy per slot.",
+      "recommended": "OCUDU_ZMQ_LOWER_PHY_PROFILE=dual OCUDU_LPHY_DL_WAIT_MS=5000 OCUDU_LPHY_RX_TO_TX_MAX_MS=2 OCUDU_ZMQ_RADIO_RT_PRIO=1 OCUDU_ZMQ_IO_RT_PRIO=2 OCUDU_ZMQ_RADIO_IDLE_US=5 OCUDU_ZMQ_RX_POP_SLEEP_US=10 OCUDU_ZMQ_SINGLE_COPY=1"
+    }
+  ]
+}

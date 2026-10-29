@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scheduler Benchmark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: an instrument sheet. A hardware strip (scene + host), a radio
+   specification sheet, then two scheduler lanes side by side with every
+   evaluation row aligned across both lanes behind one shared label gutter. */
+:root {
+  --bg: #eef1f2;
+  --surface: #ffffff;
+  --sunken: #f5f7f8;
+  --ink: #18222a;
+  --muted: #5a6872;
+  --faint: #8b979f;
+  --rule: #d6dde1;
+  --accent: #17708f;
+  --lane-a: #5b4bc4;
+  --lane-b: #b45f12;
+  --ue-a: #1f8a78;
+  --ue-b: #cc3f63;
+  --common: #a3adb4;
+  --good: #2b8550;
+  --warn: #b7800c;
+  --bad: #c03b33;
+  --grid-bg: #f7f9fa;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.5rem;
+  --step-3: 2.125rem;
+  --radius: 6px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1418; --surface: #161e24; --sunken: #121a1f; --ink: #e2e8eb; --muted: #94a3ad; --faint: #6c7a84;
+    --rule: #28333a; --accent: #57b5d3; --lane-a: #a59bff; --lane-b: #eea25b; --ue-a: #4cc4ad; --ue-b: #f17d99;
+    --common: #5d6a72; --good: #5cc488; --warn: #e2b043; --bad: #f0746a; --grid-bg: #11181d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1418; --surface: #161e24; --sunken: #121a1f; --ink: #e2e8eb; --muted: #94a3ad; --faint: #6c7a84;
+  --rule: #28333a; --accent: #57b5d3; --lane-a: #a59bff; --lane-b: #eea25b; --ue-a: #4cc4ad; --ue-b: #f17d99;
+  --common: #5d6a72; --good: #5cc488; --warn: #e2b043; --bad: #f0746a; --grid-bg: #11181d; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); font: 400 var(--step-0)/1.5 var(--font-body);
+  padding: 0 clamp(16px, 3vw, 40px) 48px;
+}
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; letter-spacing: .005em; }
+h2 { font-size: var(--step-2); }
+h3 { font-size: var(--step-1); }
+.label { font: 500 0.6875rem/1.2 var(--font-body); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* --- header --------------------------------------------------------------- */
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding-block: 14px 12px;
+  border-bottom: 1px solid var(--rule); margin-bottom: 24px;
+}
+.brand { display: flex; flex-direction: column; gap: 2px; margin-right: auto; min-width: 0; }
+.brand h1 { font-size: var(--step-2); line-height: 1.1; }
+.brand .sub { font-size: var(--step--1); color: var(--muted); }
+.run-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+select, button {
+  font: 500 var(--step--1) var(--font-body); color: var(--ink); background: var(--surface);
+  border: 1px solid var(--rule); border-radius: var(--radius); padding: 6px 10px;
+}
+button { cursor: pointer; }
+button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; font: 600 0.6875rem/1 var(--font-body);
+  letter-spacing: .08em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px;
+  border: 1px solid currentColor; white-space: nowrap;
+}
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.live { color: var(--good); }
+.pill.live::before { animation: pulse 1.6s ease-in-out infinite; }
+.pill.complete { color: var(--accent); }
+.pill.failed, .pill.incomplete { color: var(--bad); }
+.pill.waiting { color: var(--warn); }
+@keyframes pulse { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .pill.live::before { animation: none; } }
+.progress { display: flex; flex-direction: column; gap: 4px; min-width: 180px; }
+.progress .bar { height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+.progress .bar > span { display: block; height: 100%; background: var(--accent); width: 0; transition: width .4s; }
+.progress .txt { font: 400 var(--step--1) var(--font-mono); color: var(--muted); }
+
+/* --- sections ---------------------------------------------------------------- */
+section { margin-bottom: 36px; }
+.section-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-bottom: 12px; }
+.section-head p { margin: 0; color: var(--muted); font-size: var(--step--1); max-width: 70ch; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); }
+
+/* --- scene + hardware ----------------------------------------------------------- */
+.strip { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 960px) { .strip { grid-template-columns: minmax(0, 1fr); } }
+.scene { position: relative; min-height: 420px; overflow: hidden; }
+.scene canvas { display: block; width: 100%; height: 100%; }
+#scene3d { position: absolute; inset: 0; }
+.scene-overlay {
+  position: absolute; left: 12px; top: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 8px;
+  pointer-events: none; align-items: flex-start;
+}
+.chip {
+  background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid var(--rule);
+  border-radius: var(--radius); padding: 6px 9px; font-size: var(--step--1); line-height: 1.35;
+}
+.chip b { font: 600 var(--step--1) var(--font-mono); font-variant-numeric: tabular-nums; }
+.scene-legend { position: absolute; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; pointer-events: none; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 5px; }
+.scene-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); padding: 24px; text-align: center; }
+.scene-empty[hidden] { display: none; }
+
+.hw { display: flex; flex-direction: column; gap: 14px; padding: 16px; min-width: 0; }
+.hw-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; }
+.stat { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.stat .v { font: 500 var(--step-1) var(--font-mono); font-variant-numeric: tabular-nums; }
+.stat .v small { font-size: var(--step--1); color: var(--muted); margin-left: 2px; }
+.gpu-name { font: 600 var(--step-1) var(--font-display); }
+.cores { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px; }
+.core {
+  position: relative; height: 46px; border-radius: 3px; background: var(--sunken); border: 1px solid var(--rule);
+  overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 2px 3px;
+}
+.core .fill { position: absolute; left: 0; right: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 35%, transparent); }
+.core .n, .core .who { position: relative; font: 500 0.625rem/1.1 var(--font-mono); }
+.core .who { color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.core.cell-a { border-color: color-mix(in srgb, var(--lane-a) 60%, var(--rule)); }
+.core.cell-b { border-color: color-mix(in srgb, var(--lane-b) 60%, var(--rule)); }
+.cluster-label { display: flex; justify-content: space-between; font-size: var(--step--1); color: var(--muted); margin-top: 4px; }
+.procs { width: 100%; border-collapse: collapse; font-size: var(--step--1); }
+.procs th { text-align: left; font-weight: 500; color: var(--muted); padding: 3px 6px 3px 0; border-bottom: 1px solid var(--rule); }
+.procs td { padding: 3px 6px 3px 0; border-bottom: 1px solid color-mix(in srgb, var(--rule) 55%, transparent); }
+.procs td.num { text-align: right; }
+.table-wrap { overflow-x: auto; }
+
+/* --- radio sheet --------------------------------------------------------------------- */
+.sheet { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 1100px) { .sheet { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .sheet .gnb { grid-column: 1 / -1; } }
+@media (max-width: 680px) { .sheet { grid-template-columns: minmax(0, 1fr); } }
+.card { padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.card-head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.tag { font: 500 0.6875rem/1 var(--font-mono); padding: 4px 6px; border-radius: 4px; background: var(--sunken); border: 1px solid var(--rule); color: var(--muted); }
+.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; margin: 0; font-size: var(--step--1); }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.gnb-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+@media (max-width: 560px) { .gnb-body { grid-template-columns: minmax(0, 1fr); } }
+.patterns { display: flex; gap: 10px; }
+.patterns figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.patterns figcaption { font-size: 0.6875rem; color: var(--muted); }
+.flows { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: var(--step--1); }
+.flows li { display: flex; justify-content: space-between; gap: 10px; border-top: 1px dashed var(--rule); padding-top: 4px; }
+.live-ue { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.live-ue .chip { background: var(--sunken); }
+.ue-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+/* --- lanes + evaluation ---------------------------------------------------------------- */
+.board { display: grid; grid-template-columns: minmax(150px, 0.62fr) repeat(var(--cell-count, 2), minmax(0, 1fr)); column-gap: 16px; }
+.board > .gutter { grid-column: 1; }
+.lane-head { padding: 18px; border-top: 4px solid var(--lane-color); display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.lane-a { --lane-color: var(--lane-a); }
+.lane-b { --lane-color: var(--lane-b); }
+.lane-head .cell { font: 500 var(--step--1) var(--font-mono); color: var(--lane-color); }
+.lane-head h3 { font-size: var(--step-2); line-height: 1.15; }
+.lane-head p { margin: 0; max-width: 62ch; }
+.lane-head .mono { overflow-wrap: anywhere; }
+.lane-head ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: var(--step--1); display: flex; flex-direction: column; gap: 3px; }
+.verify { font-size: var(--step--1); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ok { color: var(--good); } .bad { color: var(--bad); } .warn { color: var(--warn); }
+.grid-wrap { display: flex; flex-direction: column; gap: 6px; }
+.grid-wrap canvas { width: 100%; height: 150px; display: block; border-radius: 4px; background: var(--grid-bg); border: 1px solid var(--rule); }
+.grid-legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.6875rem; color: var(--muted); }
+.board-gutter-head { display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; padding-bottom: 18px; color: var(--muted); font-size: var(--step--1); }
+
+.metric-row { display: contents; }
+.metric-row > div { padding: 14px 0; border-top: 1px solid var(--rule); min-width: 0; }
+.metric-label h4 { margin: 0 0 3px; font: 600 var(--step-0)/1.25 var(--font-body); }
+.metric-label p { margin: 0; font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+.metric-label .layer { display: inline-block; margin-top: 6px; }
+.cellv { display: flex; flex-direction: column; gap: 6px; }
+.cellv .main { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.cellv .big { font: 500 var(--step-3)/1 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.cellv .unit { color: var(--muted); font-size: var(--step--1); }
+.cellv .better { font: 600 0.625rem/1 var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--lane-color); border: 1px solid currentColor; border-radius: 3px; padding: 3px 5px; }
+.meter { height: 6px; background: var(--sunken); border-radius: 3px; overflow: hidden; }
+.meter > span { display: block; height: 100%; background: var(--lane-color); }
+.subs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 4px 12px; font-size: var(--step--1); }
+.subs .s { display: flex; justify-content: space-between; gap: 6px; border-top: 1px dashed var(--rule); padding-top: 3px; }
+.subs .s span:first-child { color: var(--muted); }
+.paired { grid-column: 2 / -1; font-size: 0.75rem; color: var(--muted); padding: 0 0 14px !important; border-top: 0 !important; }
+.paired .num { color: var(--ink); }
+.excluded { grid-column: 1 / -1; font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 12px; }
+
+@media (max-width: 860px) {
+  .board { grid-template-columns: repeat(var(--cell-count, 2), minmax(0, 1fr)); }
+  .board > .gutter, .board-gutter-head { grid-column: 1 / -1; }
+  .metric-label { grid-column: 1 / -1; padding-bottom: 0 !important; }
+  .metric-row > .cellv { border-top: 0; padding-top: 8px; }
+  .paired { grid-column: 1 / -1; }
+}
+@media (max-width: 520px) {
+  .board { grid-template-columns: minmax(0, 1fr); }
+  .cellv { padding-left: 10px !important; border-left: 3px solid var(--lane-color) !important; }
+}
+
+/* --- per-second chart + integrity -------------------------------------------------------- */
+.chart-panel { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.seg-control { display: flex; flex-wrap: wrap; gap: 6px; }
+#chart { width: 100%; height: 240px; display: block; }
+.integrity { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.integrity .card { gap: 8px; }
+.check { display: flex; justify-content: space-between; gap: 10px; font-size: var(--step--1); border-top: 1px dashed var(--rule); padding-top: 4px; }
+.check span:last-child { font-family: var(--font-mono); text-align: right; }
+.empty-state { padding: 28px; color: var(--muted); }
+footer { color: var(--faint); font-size: 0.75rem; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <h1>Scheduler Benchmark</h1>
+    <span class="sub">OCUDU MAC scheduling with a Sionna channel</span>
+  </div>
+  <div class="run-controls">
+    <label class="label" for="run">Run</label>
+    <select id="run" aria-label="Benchmark run"></select>
+    <span id="state" class="pill waiting">Loading</span>
+    <span id="seed" class="tag">seed –</span>
+    <div class="progress" aria-live="polite">
+      <div class="bar"><span id="progressBar"></span></div>
+      <span class="txt" id="progressTxt">–</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section aria-labelledby="h-scene">
+    <div class="section-head">
+      <h2 id="h-scene">Scene and host</h2>
+      <p>The Sionna RT scene, seeded UE routes, and hardware used by the active cells.</p>
+    </div>
+    <div class="strip">
+      <div class="panel scene" id="sceneHost">
+        <div id="scene3d"></div>
+        <div class="scene-overlay" id="sceneOverlay"></div>
+        <div class="scene-legend" id="sceneLegend"></div>
+        <div class="scene-empty" id="sceneEmpty">Waiting for the Sionna bridge to write the scene.</div>
+      </div>
+      <div class="panel hw" id="hw">
+        <div class="empty-state">Reading this host’s GPU and CPU…</div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-radio">
+    <div class="section-head">
+      <h2 id="h-radio">Radio setup</h2>
+      <p>Two-cell runs use matched channels and traffic. Single-cell runs show one policy on the same resources for comparison across separate runs.</p>
+    </div>
+    <div class="sheet" id="sheet"><div class="panel empty-state">Waiting for the run’s configuration.</div></div>
+  </section>
+
+  <section aria-labelledby="h-eval">
+    <div class="section-head">
+      <h2 id="h-eval">Schedulers and evaluation</h2>
+      <p id="evalNote">Metrics cover valid seconds only: every UE of the active cells in service. Values are means over those seconds unless stated.</p>
+    </div>
+    <div class="board" id="board"><div class="panel empty-state" style="grid-column:1/-1">Waiting for the run’s configuration.</div></div>
+  </section>
+
+  <section aria-labelledby="h-chart">
+    <div class="section-head">
+      <h2 id="h-chart">Second by second</h2>
+      <p>Each point is one second of scenario time; two-cell runs share the same channel. Shaded seconds are invalid and excluded from the metrics above.</p>
+    </div>
+    <div class="panel chart-panel">
+      <div class="seg-control" role="group" aria-label="Metric" id="chartPick"></div>
+      <canvas id="chart" aria-label="Per-second comparison chart"></canvas>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-integrity">
+    <div class="section-head">
+      <h2 id="h-integrity">Run integrity</h2>
+      <p>Counters that must be non-zero (or zero) for the comparison to mean anything.</p>
+    </div>
+    <div class="integrity" id="integrity"><div class="panel empty-state">No checks yet.</div></div>
+  </section>
+  <footer id="footer"></footer>
+</main>
+
+<script type="importmap">{"imports": {"three": "/vendor/three.module.min.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from '/vendor/OrbitControls.js';
+
+const $ = (id) => document.getElementById(id);
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fin = (v) => typeof v === 'number' && Number.isFinite(v);
+function fmt(v, digits = 2) {
+  if (!fin(v)) return '–';
+  const a = Math.abs(v);
+  if (a >= 1000) return v.toFixed(0);
+  if (a >= 100) return v.toFixed(Math.min(digits, 1));
+  return v.toFixed(digits);
+}
+const pct = (v, d = 1) => fin(v) ? (100 * v).toFixed(d) : '–';
+
+const state = { runId: null, run: null, report: null, live: null, system: null, timeline: [], lastGrid: -1, chart: 'aggregate' };
+
+async function get(path) {
+  const response = await fetch(path, { cache: 'no-store' });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || response.statusText);
+  return body;
+}
+function activeCells() { return Object.keys(state.run?.benchmark?.cells || {}); }
+const q = () => state.runId ? `?id=${encodeURIComponent(state.runId)}` : '';
+
+// ---------------------------------------------------------------- runs + header
+async function loadRuns() {
+  let data;
+  try { data = await get('/api/runs'); } catch { return; }
+  const select = $('run');
+  const current = select.value;
+  select.innerHTML = data.runs.map((r) => {
+    const sched = r.schedulers ? Object.values(r.schedulers).join(' vs ') : '?';
+    return `<option value="${esc(r.id)}">${esc(r.id)} · seed ${esc(r.seed ?? '–')} · ${esc(sched)} · ${esc(r.state)}</option>`;
+  }).join('') || '<option value="">No benchmark runs yet</option>';
+  const wanted = state.runId || current || (data.runs[0] && data.runs[0].id) || '';
+  select.value = wanted;
+  if (wanted && (wanted !== state.runId || !state.run)) selectRun(wanted);
+}
+$('run').addEventListener('change', (e) => selectRun(e.target.value));
+
+async function selectRun(id) {
+  state.runId = id; state.run = null; state.report = null; state.timeline = []; state.lastGrid = -1;
+  try { localStorage.setItem('sb.run', id); } catch {}
+  await refreshRun();
+  refreshReport();
+  refreshLive();
+  loadMesh();
+}
+
+async function refreshRun() {
+  if (!state.runId) return;
+  const wasLive = state.run?.live;
+  try { state.run = await get('/api/run' + q()); } catch (e) { state.run = null; renderHeader(String(e.message)); return; }
+  // A run that just finished: fetch the final report and grid once.
+  if (wasLive && !state.run.live) { refreshReport(); refreshLive(); }
+  renderHeader();
+  renderSheet();
+  renderBoard();
+}
+
+function renderHeader(error) {
+  const run = state.run, report = state.report;
+  const pill = $('state');
+  let cls = 'waiting', text = error ? 'Unavailable' : 'Waiting';
+  if (run) {
+    if (run.live) { cls = 'live'; text = 'Live'; }
+    else if (report && !report.live) { cls = run.gate && run.gate.status === 'failed' ? 'failed' : 'complete'; text = cls === 'failed' ? 'Gate failed' : 'Complete'; }
+  }
+  pill.className = `pill ${cls}`; pill.textContent = text;
+  $('seed').textContent = `seed ${run ? run.benchmark.seed : '–'}`;
+  const total = report?.measure_seconds ?? run?.benchmark.measure_seconds ?? 0;
+  const done = report?.segments_complete ?? 0, valid = report?.segments_valid ?? 0;
+  $('progressBar').style.width = total ? `${(100 * done / total).toFixed(1)}%` : '0';
+  $('progressTxt').textContent = report?.anchor_unix_ms
+    ? `${done}/${total} s measured · ${valid} valid`
+    : (run ? 'attaching UEs; scenario time held at 0' : (error || '–'));
+}
+
+// ---------------------------------------------------------------- hardware
+const ROLE_SHORT = { 'gnb0': 'gNB a', 'gnb1': 'gNB b', 'broker a': 'brk a', 'broker b': 'brk b', 'ue0': 'ue0', 'ue1': 'ue1', 'ue2': 'ue2', 'ue3': 'ue3', 'sionna': 'sionna', 'traffic': 'traffic' };
+function expandCpus(list) {
+  const out = new Set();
+  for (const part of String(list || '').split(',')) {
+    const m = part.match(/^(\d+)(?:-(\d+))?$/);
+    if (!m) continue;
+    for (let i = +m[1]; i <= +(m[2] ?? m[1]); i++) out.add(i);
+  }
+  return out;
+}
+async function refreshSystem() {
+  try { state.system = await get('/api/system'); } catch { return; }
+  renderHardware();
+}
+function renderHardware() {
+  const s = state.system; if (!s || !s.static) return;
+  const gpu = (s.gpus || [])[0] || {};
+  const cpus = s.static.cpus || [];
+  const usage = s.cpu_percent || [];
+  const owners = {};
+  const nCpus = cpus.length || usage.length;
+  for (const p of s.processes || []) {
+    const allowed = expandCpus(p.cpus_allowed);
+    if (!allowed.size || allowed.size >= nCpus) continue;  // unpinned processes say nothing about placement
+    for (const c of allowed) (owners[c] ||= []).push(p);
+  }
+  const ordered = [...cpus].sort((a, b) => a.cpu - b.cpu);
+  const cores = (ordered.length ? ordered : usage.map((_, i) => ({ cpu: i }))).map((c) => {
+    const u = usage[c.cpu];
+    const who = owners[c.cpu] || [];
+    const cell = who.length && who.every((p) => p.cell === who[0].cell) ? who[0].cell : null;
+    const label = who.map((p) => ROLE_SHORT[p.label] || p.label).filter((v, i, a) => a.indexOf(v) === i).join('/');
+    return `<div class="core ${cell ? 'cell-' + cell : ''}" title="CPU ${c.cpu}${c.model ? ' · ' + esc(c.model) : ''}${label ? ' · ' + esc(label) : ''} · ${fin(u) ? u.toFixed(0) + '%' : 'n/a'}">
+      <div class="fill" style="height:${fin(u) ? Math.min(100, u).toFixed(0) : 0}%"></div>
+      <span class="n">${c.cpu}</span><span class="who">${esc(label)}</span></div>`;
+  }).join('');
+  const models = (s.static.cpu_models || []).map((m) => `${m.count}× ${esc(m.model)}`).join(' + ');
+  const proc = (s.processes || []).map((p) => `<tr><td>${esc(p.label)}${p.count ? ` ×${p.count}` : ''}</td><td>${p.cell ? esc(p.cell) : ''}</td>
+    <td class="num">${fin(p.cpu_percent) ? p.cpu_percent.toFixed(0) + '%' : '–'}</td><td class="mono">${esc(p.cpus_allowed || '')}</td><td class="num">${p.threads ?? ''}</td></tr>`).join('');
+  $('hw').innerHTML = `
+    <div class="stat"><span class="label">GPU</span><span class="gpu-name">${esc(gpu.name || 'not reported')}</span>
+      <span class="muted mono" style="font-size:var(--step--1)">driver ${esc(gpu.driver_version || '–')} · CUDA ${esc(s.static.cuda_version || '–')}</span></div>
+    <div class="hw-row">
+      <div class="stat"><span class="label">Utilisation</span><span class="v">${fmt(gpu['utilization.gpu'], 0)}<small>%</small></span></div>
+      <div class="stat"><span class="label">SM clock</span><span class="v">${fmt(gpu['clocks.sm'], 0)}<small>MHz</small></span></div>
+      <div class="stat"><span class="label">Power</span><span class="v">${fmt(gpu['power.draw'], 1)}<small>W</small></span></div>
+      <div class="stat"><span class="label">Temp</span><span class="v">${fmt(gpu['temperature.gpu'], 0)}<small>°C</small></span></div>
+      <div class="stat"><span class="label">GPU memory</span><span class="v">${fin(gpu['memory.used']) ? (gpu['memory.used'] / 1024).toFixed(1) + '<small>GiB</small>' : '<small>unified</small>'}</span></div>
+    </div>
+    <div class="stat"><span class="label">CPU</span><span class="mono" style="font-size:var(--step--1)">${models || 'not reported'}</span></div>
+    <div><div class="cores">${cores}</div>
+      <div class="cluster-label"><span>core load, label = pinned process</span><span>load ${(s.load || []).map((v) => v.toFixed(2)).join(' ')} · RAM ${fmt(s.memory_used_gib, 1)}/${fmt(s.static.memory_total_gib, 0)} GiB</span></div></div>
+    <div class="table-wrap"><table class="procs"><thead><tr><th>Process</th><th>Cell</th><th>CPU</th><th>Cores</th><th>Thr</th></tr></thead>
+      <tbody>${proc || '<tr><td colspan="5" class="muted">No benchmark processes on this host right now.</td></tr>'}</tbody></table></div>`;
+}
+
+// ---------------------------------------------------------------- radio sheet
+function antennaGainDb(pattern, thetaDeg, phiDeg) {
+  const t = thetaDeg * Math.PI / 180;
+  switch (pattern) {
+    case 'dipole': return 10 * Math.log10(Math.max(1e-6, 1.5 * Math.sin(t) ** 2));
+    case 'hw_dipole': { const s = Math.sin(t); if (Math.abs(s) < 1e-6) return -60; return 10 * Math.log10(Math.max(1e-6, 1.643 * (Math.cos(Math.PI / 2 * Math.cos(t)) / s) ** 2)); }
+    case 'tr38901': {
+      const av = -Math.min(12 * ((thetaDeg - 90) / 65) ** 2, 30);
+      const ah = -Math.min(12 * (phiDeg / 65) ** 2, 30);
+      return -Math.min(-(av + ah), 30) + 8;
+    }
+    default: return 0;
+  }
+}
+function polarSvg(pattern, cut) {
+  // cut 'az': theta = 90, phi sweeps; 'el': phi = 0, theta sweeps (0 = zenith).
+  const size = 132, c = size / 2, r = 54, floor = -30, ceil = 10;
+  const radius = (g) => r * (Math.max(floor, Math.min(ceil, g)) - floor) / (ceil - floor);
+  let d = '';
+  for (let a = 0; a <= 360; a += 3) {
+    const g = cut === 'az' ? antennaGainDb(pattern, 90, a > 180 ? a - 360 : a) : antennaGainDb(pattern, a <= 180 ? a : 360 - a, a <= 180 ? 0 : 180);
+    const ang = (cut === 'az' ? a : a - 90) * Math.PI / 180;
+    const x = c + radius(g) * Math.cos(ang), y = c - radius(g) * Math.sin(ang);
+    d += `${a ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`;
+  }
+  const rings = [-30, -20, -10, 0, 10].map((g) => `<circle cx="${c}" cy="${c}" r="${radius(g).toFixed(1)}" fill="none" stroke="var(--rule)" stroke-width="${g === 0 ? 1.2 : .7}"/>`).join('');
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${cut === 'az' ? 'Azimuth' : 'Elevation'} cut of the ${esc(pattern)} pattern">
+    ${rings}<line x1="${c - r}" y1="${c}" x2="${c + r}" y2="${c}" stroke="var(--rule)" stroke-width=".7"/><line x1="${c}" y1="${c - r}" x2="${c}" y2="${c + r}" stroke="var(--rule)" stroke-width=".7"/>
+    <path d="${d}Z" fill="color-mix(in srgb, var(--accent) 18%, transparent)" stroke="var(--accent)" stroke-width="1.6"/>
+    <text x="${c + radius(0) + 2}" y="${c - 3}" font-size="8" fill="var(--muted)" font-family="var(--font-mono)">0 dBi</text></svg>`;
+}
+const ROLE_COLOR = { 0: 'var(--ue-a)', 1: 'var(--ue-b)' };
+function arrayText(a) { if (!a) return 'iso 1×1'; return `${a.pattern || 'iso'} ${a.rows || 1}×${a.cols || 1}, ${a.polarization || 'V'}-pol`; }
+function renderSheet() {
+  const run = state.run; if (!run) return;
+  const b = run.benchmark, sc = run.scenario || {}, env = run.sionna_environment || {};
+  const g = (sc.nodes || {}).gnb0 || {}, gpos = g.start_m || [];
+  const freq = env.frequencies_hz || { downlink: 1842.5e6, uplink: 1747.5e6 };
+  const solver = env.solver || sc.solver || {};
+  const prop = Object.entries(solver.propagation || {}).filter(([, v]) => v).map(([k]) => k.replace('_', ' ')).join(', ');
+  const pattern = (g.array && g.array.pattern) || 'iso';
+  const cells = activeCells().map((c) => b.cells[c]);
+  const gnbCard = `<div class="panel card gnb">
+    <div class="card-head"><h3>gNB</h3>${cells.map(c => `<span class="tag">${esc(c.gnb.device_id)} · PCI ${c.gnb.pci}</span>`).join('')}</div>
+    <div class="gnb-body">
+      <dl class="kv">
+        <dt>Software</dt><dd>${esc(run.software.ocudu_gnb)}</dd>
+        <dt>Band</dt><dd>n3 FDD · DL-ARFCN 368500</dd>
+        <dt>Carriers</dt><dd>DL ${fmt(freq.downlink / 1e6, 1)} MHz · UL ${fmt(freq.uplink / 1e6, 1)} MHz</dd>
+        <dt>Bandwidth</dt><dd>20 MHz · SCS 15 kHz · 106 PRB</dd>
+        <dt>MCS tables</dt><dd>PDSCH qam64 · PUSCH qam64</dd>
+        <dt>Radio</dt><dd>ZMQ 23.04 Msps · 1 TX / 1 RX port</dd>
+        <dt>Position</dt><dd>(${gpos.map((v) => fmt(v, 1)).join(', ')}) m, on the mast</dd>
+        <dt>Antenna</dt><dd>${esc(arrayText(g.array))}</dd>
+        <dt>Sionna solver</dt><dd>depth ${esc(solver.max_depth ?? '–')} · ${esc(solver.samples_per_source ?? '–')} rays/src · seed ${esc(solver.seed ?? '–')}</dd>
+        <dt>Propagation</dt><dd>${esc(prop || '–')}</dd>
+        <dt>Noise floor</dt><dd>${b.rx_noise && fin(b.rx_noise.awgn_snr_db) ? `${b.rx_noise.awgn_snr_db} dB SNR at unit gain` : 'off'}</dd>
+      </dl>
+      <div class="patterns"><figure>${polarSvg(pattern, 'az')}<figcaption>azimuth cut</figcaption></figure>
+        <figure>${polarSvg(pattern, 'el')}<figcaption>elevation cut</figcaption></figure></div>
+    </div></div>`;
+  const ueCards = [0, 1].map((i) => {
+    const ua = cells[0].ues[i];
+    const node = (sc.nodes || {})[`ue${i}`] || {};
+    const route = (sc.benchmark?.routes || {})[`ue${i}`] || {};
+    const flows = ua.flows.map((f) => {
+      const rate = f.pattern === 'periodic' ? `${f.size_bytes} B / ${f.interval_ms} ms` : `${f.rate_mbps} Mb/s`;
+      return `<li><span class="mono">${esc(f.name)}</span><span>${esc(f.direction.toUpperCase())} · ${esc(f.pattern)} · ${esc(rate)}</span></li>`;
+    }).join('');
+    return `<div class="panel card">
+      <div class="card-head"><span class="ue-dot" style="background:${ROLE_COLOR[i]}"></span><h3>${cells.map(c => esc(c.ues[i].device_id)).join(' · ')}</h3><span class="tag">${esc(ua.role)}</span></div>
+      <dl class="kv">
+        <dt>UE</dt><dd>${esc(run.software.srsue)}</dd>
+        <dt>Radio</dt><dd>ZMQ · 1 TX / 1 RX · ${esc(arrayText(node.array))}</dd>
+        <dt>5QI</dt><dd>${ua.five_qi} · ${esc(ua.qos.type)} · priority ${ua.qos.priority} · PDB ${ua.qos.pdb_ms} ms · RLC ${esc(ua.qos.rlc)}</dd>
+        <dt>Mobility</dt><dd>random waypoint · ${fmt(node.speed_mps ?? route.speed_mps, 2)} m/s · ${route.waypoints ?? '–'} waypoints</dd>
+        <dt>Addresses</dt><dd>${activeCells().map(c => `${esc(b.cells[c].ues[i].ipv4)} (cell ${esc(c)})`).join(' · ')}</dd>
+      </dl>
+      <ul class="flows">${flows}</ul>
+      <div class="live-ue" id="ueLive${i}"></div>
+    </div>`;
+  }).join('');
+  $('sheet').innerHTML = gnbCard + ueCards;
+  renderUeLive();
+}
+function renderUeLive() {
+  const run = state.run; if (!run) return;
+  const last = state.timeline[state.timeline.length - 1];
+  const g = last?.positions?.gnb0 || run.scenario?.nodes?.gnb0?.start_m;
+  for (const i of [0, 1]) {
+    const el = $(`ueLive${i}`); if (!el) continue;
+    const p = last?.positions?.[`ue${i}`];
+    const dist = p && g ? Math.hypot(p[0] - g[0], p[1] - g[1], p[2] - g[2]) : null;
+    const dl = last?.channels?.[`gnb0>ue${i}:sionna_rt`], ul = last?.channels?.[`ue${i}>gnb0:sionna_rt`];
+    el.innerHTML = `<div class="chip">position <b>${p ? p.map((v) => v.toFixed(1)).join(', ') : '–'}</b> m<br>to gNB <b>${fmt(dist, 1)}</b> m</div>
+      <div class="chip">DL tap <b>${fmt(dl?.tap_gain_db, 1)}</b> dB<br>UL tap <b>${fmt(ul?.tap_gain_db, 1)}</b> dB</div>`;
+  }
+}
+
+// ---------------------------------------------------------------- lanes + metrics
+const BETTER = { higher: 1, lower: -1, none: 0 };
+function laneOf(cell) { return state.report?.lanes?.[cell]; }
+function metricRows() {
+  // Each row: title, definition, layer, better, value(m) -> {main, unit, subs:[[label,value]]}
+  const run = state.run; const cells = run?.benchmark?.cells || {};
+  const ueName = (cell, i) => cells[cell]?.ues?.[i]?.device_id;
+  const ueLabel = (cell, i) => `${ueName(cell, i)} (${cells[cell]?.ues?.[i]?.role}, 5QI ${cells[cell]?.ues?.[i]?.five_qi})`;
+  const pu = (m, cell, i) => m?.per_ue?.[ueName(cell, i)];
+  return [
+    { key: 'aggregate', title: 'Aggregate throughput', def: 'UDP payload delivered per second, all UEs of the cell.', layer: 'app + mac', better: 'higher',
+      value: (m) => ({ main: m.aggregate_throughput_mbps.dl, unit: 'Mb/s DL', subs: [['UL', `${fmt(m.aggregate_throughput_mbps.ul)} Mb/s`], ['DL scheduled (MAC)', `${fmt(m.aggregate_throughput_mbps.mac_dl)} Mb/s`]] }) },
+    { key: 'per_ue', title: 'Per-UE throughput', def: 'DL delivered per UE against its offered load.', layer: 'app', better: 'none',
+      value: (m, cell) => ({ main: null, unit: '', subs: [0, 1].map((i) => { const u = pu(m, cell, i); return [ueLabel(cell, i), `${fmt(u?.throughput_mbps.dl)} / ${fmt(u?.offered_mbps.dl)} Mb/s`]; }) }) },
+    { key: 'jain', title: 'Jain’s fairness index', def: '(Σx)² / (n·Σx²) over the cell’s UEs: 1 is equal, 0.5 is one UE taking all.', layer: 'app + mac', better: 'higher',
+      value: (m) => ({ main: m.jain_fairness.dl_throughput, unit: 'DL throughput', digits: 3, subs: [['throughput ÷ offered', fmt(m.jain_fairness.dl_throughput_over_offered, 3)], ['PRB share', fmt(m.jain_fairness.dl_prb_share, 3)]] }) },
+    { key: 'delay_mean', title: 'Average packet delay', def: 'One-way DL delay of delivered packets (sender and receiver share the host clock).', layer: 'app', better: 'lower',
+      value: (m, cell) => ({ main: pu(m, cell, 1)?.delay_ms.dl.mean, unit: `ms · ${ueName(cell, 1)}`, subs: [0, 1].map((i) => [ueLabel(cell, i), `${fmt(pu(m, cell, i)?.delay_ms.dl.mean, 1)} ms`]) }) },
+    { key: 'delay_tail', title: '95th / 99th percentile delay', def: 'Tail of the DL delay distribution over all valid seconds.', layer: 'app', better: 'lower',
+      value: (m, cell) => ({ main: pu(m, cell, 1)?.delay_ms.dl.p99, unit: `ms p99 · ${ueName(cell, 1)}`, subs: [0, 1].map((i) => { const d = pu(m, cell, i)?.delay_ms.dl; return [ueLabel(cell, i), `${fmt(d?.p95, 1)} / ${fmt(d?.p99, 1)} ms`]; }) }) },
+    { key: 'pdb', title: 'PDB violation rate', def: 'Sent packets delivered later than the UE’s 5QI packet delay budget.', layer: 'app', better: 'lower',
+      value: (m, cell) => ({ main: fin(pu(m, cell, 1)?.pdb_violation_rate) ? 100 * pu(m, cell, 1).pdb_violation_rate : null, unit: `% · ${ueName(cell, 1)}`, subs: [0, 1].map((i) => [`${ueLabel(cell, i)}, PDB ${cells[cell]?.ues?.[i]?.qos.pdb_ms} ms`, `${pct(pu(m, cell, i)?.pdb_violation_rate, 2)} %`]) }) },
+    { key: 'drop', title: 'Packet drop rate', def: 'Sent packets never received, after the drain window.', layer: 'app', better: 'lower',
+      value: (m, cell) => ({ main: fin(pu(m, cell, 0)?.drop_rate) ? 100 * pu(m, cell, 0).drop_rate : null, unit: `% · ${ueName(cell, 0)}`, subs: [0, 1].map((i) => [ueLabel(cell, i), `${pct(pu(m, cell, i)?.drop_rate, 2)} %`]) }) },
+    { key: 'util', title: 'Resource utilization', def: 'Granted PRBs over PRBs × slots in the carrier, from the scheduler log.', layer: 'mac', better: 'none',
+      value: (m, cell) => ({ main: fin(m.resource_utilization.dl_prb) ? 100 * m.resource_utilization.dl_prb : null, unit: '% DL PRB', subs: [['UL PRB', `${pct(m.resource_utilization.ul_prb)} %`], ['slots / s', fmt(m.resource_utilization.slots_per_s, 0)], ...[0, 1].map((i) => [`${ueName(cell, i)} PRB share`, `${pct(pu(m, cell, i)?.dl_prb_share)} %`])] }) },
+    { key: 'se', title: 'Spectral efficiency', def: 'Bits per second per hertz of the 20 MHz carrier; “per used PRB” counts only the granted bandwidth.', layer: 'app + mac', better: 'higher',
+      value: (m) => ({ main: m.spectral_efficiency_bps_hz.dl_app, unit: 'bit/s/Hz DL delivered', digits: 3, subs: [['DL scheduled (MAC)', fmt(m.spectral_efficiency_bps_hz.dl_mac, 3)], ['DL per used PRB', fmt(m.spectral_efficiency_bps_hz.dl_per_used_prb, 2)], ['UL delivered', fmt(m.spectral_efficiency_bps_hz.ul_app, 3)]] }) },
+    { key: 'starve', title: 'Starvation and scheduling delay', def: 'DL wait from a grant that left data queued to the UE’s next grant; an event is a wait over 20 ms.', layer: 'mac', better: 'lower',
+      value: (m, cell) => ({ main: Math.max(...[0, 1].map((i) => pu(m, cell, i)?.starvation.dl_wait_ms.p99 ?? -Infinity)), unit: 'ms worst-UE p99 wait', digits: 1, subs: [0, 1].map((i) => { const s = pu(m, cell, i)?.starvation; return [ueName(cell, i), `p99 ${fmt(s?.dl_wait_ms.p99, 1)} · max ${fmt(s?.dl_wait_ms.max, 0)} ms · ${fmt(s?.events_per_s, 2)} ev/s`]; }) }) },
+    { key: 'decision', title: 'Scheduler decision time', def: 'Extra: time the scheduler spent per slot (`t=` of OCUDU’s Slot decisions log).', layer: 'mac', better: 'lower',
+      value: (m) => ({ main: m.decision_latency_us.mean, unit: 'µs mean', digits: 1, subs: [['p99', `${fmt(m.decision_latency_us.p99, 0)} µs`], ['max', `${fmt(m.decision_latency_us.max, 0)} µs`]] }) },
+  ];
+}
+const PAIRED = { aggregate: 'aggregate_dl_mbps', jain: 'jain_dl', util: 'dl_prb_util', decision: 'decision_us', delay_tail: 'ue1_dl_delay_p99_ms', pdb: 'ue1_pdb_violation', drop: 'ue0_drop', starve: 'ue0_dl_wait_max_ms' };
+const PAIRED_UNIT = { aggregate: 'Mb/s', jain: '', util: '', decision: 'µs', delay_tail: 'ms', pdb: '', drop: '', starve: 'ms' };
+
+function renderBoard() {
+  const run = state.run; if (!run) return;
+  const cells = run.benchmark.cells;
+  const policy = run.policy_check?.gnbs || {};
+  const laneHead = (cell) => {
+    const meta = cells[cell], info = meta.scheduler_info;
+    const pc = policy[meta.gnb.device_id];
+    const verify = pc ? (pc.ok ? `<span class="ok">✓ gNB loaded <span class="mono">${esc(pc.found_in_config_dump.join(', '))}</span></span>` : `<span class="bad">✗ gNB config dump shows ${esc((pc.found_in_config_dump || []).join(', ') || 'no policy')}</span>`)
+      : '<span class="warn">policy check pending (gNB not started)</span>';
+    const params = Object.entries(info.parameters || {}).map(([k, v]) => `${k}: ${v}`).join(' · ') || 'no parameters';
+    return `<div class="panel lane-head lane-${cell}">
+      <span class="cell">cell ${cell} · ${esc(meta.gnb.device_id)} · PCI ${meta.gnb.pci} · ${esc(meta.ues.map((u) => u.device_id).join(', '))}</span>
+      <h3>${esc(info.title)}</h3>
+      <p>${esc(info.summary)}</p>
+      <ul>${info.properties.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
+      <div class="mono muted" style="font-size:var(--step--1)">${esc(params)}<br>${esc(info.source)}</div>
+      <div class="verify">${verify}</div>
+      <div class="grid-wrap"><span class="label">Resource grid · last 240 logged slots · DL above, UL below</span>
+        <canvas id="grid-${cell}" aria-label="PRB allocation per slot in cell ${cell}"></canvas>
+        <div class="grid-legend">${meta.ues.map((u, i) => `<span><span class="swatch" style="background:${ROLE_COLOR[i]}"></span>${esc(u.device_id)}</span>`).join('')}
+          <span><span class="swatch" style="background:var(--common)"></span>SIB / RAR / paging</span><span>lighter = retransmission</span></div>
+      </div></div>`;
+  };
+  const profile = run.benchmark.traffic_profile || {};
+  let html = `<div class="board-gutter-head gutter"><span class="label">Traffic profile</span><strong>${esc(profile.title || profile.name)}</strong><span>${esc(profile.description || '')}</span></div>`;
+  html += activeCells().map(laneHead).join('');
+  $('board').style.setProperty('--cell-count', activeCells().length);
+  const report = state.report;
+  for (const row of metricRows()) {
+    html += `<div class="metric-row"><div class="metric-label gutter"><h4>${esc(row.title)}</h4><p>${esc(row.def)}</p><span class="tag layer">${esc(row.layer)}</span></div>`;
+    const values = {};
+    for (const cell of activeCells()) {
+      const m = laneOf(cell)?.metrics;
+      values[cell] = m && m.segments ? row.value(m, cell) : null;
+    }
+    const mains = activeCells().map((c) => values[c]?.main).filter(fin);
+    const maxMain = Math.max(...mains.map(Math.abs), 1e-9);
+    const dir = BETTER[row.better];
+    let best = null;
+    if (dir && mains.length === 2 && values.a.main !== values.b.main) best = (values.a.main - values.b.main) * dir > 0 ? 'a' : 'b';
+    for (const cell of activeCells()) {
+      const v = values[cell];
+      if (!v) { html += `<div class="cellv lane-${cell}"><span class="muted">${report ? 'no valid seconds yet' : 'waiting for measurements'}</span></div>`; continue; }
+      const main = fin(v.main) ? `<span class="big">${fmt(v.main, v.digits ?? 2)}</span><span class="unit">${esc(v.unit)}</span>` : '';
+      const meter = fin(v.main) && row.key !== 'per_ue' ? `<div class="meter" aria-hidden="true"><span style="width:${(100 * Math.abs(v.main) / maxMain).toFixed(1)}%"></span></div>` : '';
+      html += `<div class="cellv lane-${cell}"><div class="main">${main}${best === cell ? `<span class="better">${row.better} is better</span>` : ''}</div>${meter}
+        <div class="subs">${v.subs.map(([k, val]) => `<div class="s"><span>${esc(k)}</span><span class="num">${esc(val)}</span></div>`).join('')}</div></div>`;
+    }
+    const pair = report?.comparison?.[PAIRED[row.key]];
+    if (pair && pair.n) {
+      const unit = PAIRED_UNIT[row.key];
+      const ci = pair.ci95 ? `95% CI [${fmt(pair.ci95[0], 3)}, ${fmt(pair.ci95[1], 3)}]${unit ? ' ' + unit : ''}` : 'CI needs ≥ 20 valid seconds';
+      html += `<div class="paired">Paired over ${pair.n} s: mean (a − b) <span class="num">${fmt(pair.mean_diff, 3)}${unit ? ' ' + unit : ''}</span>, ${ci}; a higher in <span class="num">${pair.x_higher}</span> s, b higher in <span class="num">${pair.y_higher}</span> s.</div>`;
+    }
+    html += `</div>`;
+  }
+  html += `<div class="excluded"><strong>Not measured: GBR satisfaction ratio.</strong> srsUE carries one default non-GBR QoS flow per PDU session, so no GBR target exists to satisfy; the QoS-aware policy’s GBR term is 1 for every UE.</div>`;
+  $('board').innerHTML = html;
+  drawGrids();
+}
+
+// ---------------------------------------------------------------- resource grids
+function drawGrids() {
+  const grid = state.live?.grid; if (!grid || !state.run) return;
+  for (const cell of activeCells()) {
+    const canvas = $(`grid-${cell}`); if (!canvas) continue;
+    const data = grid[cell]; if (!data) continue;
+    const dpr = window.devicePixelRatio || 1, w = canvas.clientWidth, h = canvas.clientHeight;
+    canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+    const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+    const slots = data.slots; const n = 240, nprb = data.nof_prb || 106;
+    const half = (h - 6) / 2, colW = w / n;
+    const ues = state.run.benchmark.cells[cell].ues.map((u) => u.device_id);
+    const color = (owner, newtx) => {
+      const i = ues.indexOf(owner);
+      const base = i >= 0 ? css(i === 0 ? '--ue-a' : '--ue-b') : css('--common');
+      ctx.globalAlpha = newtx ? 0.95 : 0.4; return base;
+    };
+    const first = slots.length ? slots[0].slot : 0;
+    const span = slots.length ? Math.max(n, slots[slots.length - 1].slot - first + 1) : n;
+    const xOf = (slot) => (slot - first) / span * w;
+    for (const s of slots) {
+      const x = xOf(s.slot), cw = Math.max(1, w / span);
+      for (const [owner, rb0, rb1, newtx] of s.dl) { ctx.fillStyle = color(owner, newtx); ctx.fillRect(x, half * (rb0 / nprb), cw, Math.max(1, half * (rb1 - rb0) / nprb)); }
+      for (const [owner, rb0, rb1, newtx] of s.ul) { ctx.fillStyle = color(owner, newtx); ctx.fillRect(x, half + 6 + half * (rb0 / nprb), cw, Math.max(1, half * (rb1 - rb0) / nprb)); }
+    }
+    ctx.globalAlpha = 1; ctx.fillStyle = css('--rule'); ctx.fillRect(0, half + 2, w, 2);
+    ctx.fillStyle = css('--muted'); ctx.font = `10px ${css('--font-mono')}`;
+    ctx.fillText('DL', 4, 11); ctx.fillText('UL', 4, half + 17);
+    if (!slots.length) { ctx.fillText('no scheduled slots yet', 24, 11); }
+  }
+}
+
+// ---------------------------------------------------------------- chart
+const CHARTS = [
+  ['aggregate', 'Aggregate DL', (c) => c.dl_rx_mbps, 'Mb/s'],
+  ['jain', 'Jain DL', (c) => c.jain_dl, ''],
+  ['delay', 'Interactive UE p99 delay', (c, cell) => { const u = state.run?.benchmark.cells[cell].ues[1].device_id; const f = Object.values(c.ues[u]?.flows || {}).filter((x) => x.direction === 'dl').map((x) => x.delay_ms.p99).filter(fin); return f.length ? Math.max(...f) : null; }, 'ms'],
+  ['util', 'DL PRB utilization', (c) => fin(c.dl_prb_util) ? 100 * c.dl_prb_util : null, '%'],
+  ['wait', 'Worst DL wait', (c) => { const v = Object.values(c.ues).map((u) => u.dl_wait_ms_max).filter(fin); return v.length ? Math.max(...v) : null; }, 'ms'],
+  ['decision', 'Decision time', (c) => c.decision_us_mean, 'µs'],
+];
+function renderChartPicker() {
+  $('chartPick').innerHTML = CHARTS.map(([key, label]) => `<button type="button" data-k="${key}" aria-pressed="${state.chart === key}">${esc(label)}</button>`).join('');
+}
+$('chartPick').addEventListener('click', (e) => {
+  const k = e.target?.dataset?.k; if (!k) return;
+  state.chart = k; try { localStorage.setItem('sb.chart', k); } catch {}
+  renderChartPicker(); drawChart();
+});
+function drawChart() {
+  const canvas = $('chart'); const segs = state.report?.segments || [];
+  const dpr = window.devicePixelRatio || 1, w = canvas.clientWidth, h = canvas.clientHeight;
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  const [, label, extract, unit] = CHARTS.find((c) => c[0] === state.chart);
+  const pad = { l: 52, r: 14, t: 12, b: 26 };
+  ctx.font = `11px ${css('--font-mono')}`;
+  if (!segs.length) { ctx.fillStyle = css('--muted'); ctx.fillText('No measured seconds yet.', pad.l, pad.t + 14); return; }
+  const series = activeCells().map((cell) => segs.map((s) => { const v = extract(s.cells[cell], cell); return fin(v) ? v : null; }));
+  const all = series.flat().filter(fin);
+  let ymax = all.length ? Math.max(...all) : 1; let ymin = Math.min(0, ...all);
+  if (ymax === ymin) ymax = ymin + 1;
+  const niceStep = (range) => { const raw = range / 4, mag = 10 ** Math.floor(Math.log10(raw)), f = raw / mag; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag; };
+  const step = niceStep(ymax - ymin); ymax = Math.ceil(ymax / step) * step; ymin = Math.floor(ymin / step) * step;
+  const total = state.report.measure_seconds;
+  const x = (k) => pad.l + (w - pad.l - pad.r) * (k + 0.5) / total;
+  const y = (v) => pad.t + (h - pad.t - pad.b) * (1 - (v - ymin) / (ymax - ymin));
+  ctx.fillStyle = css('--sunken');
+  for (const s of segs) if (!s.valid) ctx.fillRect(x(s.k) - (w - pad.l - pad.r) / total / 2, pad.t, (w - pad.l - pad.r) / total, h - pad.t - pad.b);
+  ctx.strokeStyle = css('--rule'); ctx.lineWidth = 1; ctx.fillStyle = css('--muted');
+  for (let v = ymin; v <= ymax + step / 2; v += step) {
+    ctx.beginPath(); ctx.moveTo(pad.l, y(v)); ctx.lineTo(w - pad.r, y(v)); ctx.stroke();
+    ctx.fillText(fmt(v, step < 0.1 ? 2 : step < 1 ? 1 : 0), 6, y(v) + 4);
+  }
+  const tickStep = total > 200 ? 60 : total > 60 ? 20 : 10;
+  for (let k = 0; k <= total; k += tickStep) ctx.fillText(`${k}s`, x(k) - 8, h - 8);
+  ctx.fillText(unit, 6, pad.t - 1 + 10 > 12 ? 10 : 10);
+  activeCells().forEach((cell, i) => {
+    ctx.strokeStyle = css(cell === 'a' ? '--lane-a' : '--lane-b'); ctx.lineWidth = 1.8; ctx.beginPath();
+    let pen = false;
+    series[i].forEach((v, k) => { if (!fin(v)) { pen = false; return; } const px = x(segs[k].k), py = y(v); if (pen) ctx.lineTo(px, py); else ctx.moveTo(px, py); pen = true; });
+    ctx.stroke();
+    const lastIdx = series[i].map((v, k) => fin(v) ? k : -1).filter((k) => k >= 0).pop();
+    if (lastIdx !== undefined) { ctx.fillStyle = ctx.strokeStyle; ctx.beginPath(); ctx.arc(x(segs[lastIdx].k), y(series[i][lastIdx]), 3.2, 0, Math.PI * 2); ctx.fill(); }
+  });
+  const run = state.run;
+  ctx.font = `600 11px ${css('--font-body')}`;
+  activeCells().forEach((cell, i) => {
+    ctx.fillStyle = css(cell === 'a' ? '--lane-a' : '--lane-b');
+    ctx.fillText(`cell ${cell} · ${run?.benchmark.cells[cell].scheduler_info.short || cell}`, pad.l + 8 + i * 150, pad.t + 12);
+  });
+}
+
+// ---------------------------------------------------------------- integrity
+function renderIntegrity() {
+  const r = state.report, run = state.run; if (!r || !run) return;
+  const c = r.checks || {}, s = r.sionna || {};
+  const flows = Object.entries(c.flows || {});
+  const sent = flows.reduce((a, [, f]) => a + f.sent, 0), received = flows.reduce((a, [, f]) => a + f.received, 0);
+  const rcvErr = Object.values(c.receivers || {}).map((x) => x.udp_rcvbuf_errors_delta).filter(fin);
+  const gate = run.gate;
+  const brokers = gate?.brokers || {};
+  const row = (k, v, cls = '') => `<div class="check"><span>${esc(k)}</span><span class="${cls}">${v}</span></div>`;
+  const policyOk = run.policy_check?.ok;
+  $('integrity').innerHTML = `
+    <div class="panel card"><h3>Channel</h3>
+      ${row('Sionna updates (grid points)', s.updates ?? '–')}
+      ${row('Skipped grid points', s.skipped_grid_points ?? '–', s.skipped_grid_points > 0 ? 'warn' : '')}
+      ${row('Solve time p50 / p99', `${fmt(s.generation_ms?.p50, 0)} / ${fmt(s.generation_ms?.p99, 0)} ms`)}
+      ${row('Lag behind grid p99', `${fmt(s.lag_ms?.p99, 1)} ms`)}
+      ${activeCells().length === 2 ? row('Fan-out ack skew p99', `${fmt(s.fanout_ack_skew_ms?.p99, 1)} ms`) +
+        row('Both brokers accepted every batch', c.fanout_all_ok ? 'yes' : 'no', c.fanout_all_ok ? 'ok' : 'bad') : ''}
+      ${row('Channel digests recorded', c.sionna_digests ?? '–')}</div>
+    <div class="panel card"><h3>Traffic</h3>
+      ${row('Packets sent (all flows)', sent.toLocaleString())}
+      ${row('Packets received', received.toLocaleString())}
+      ${row('Receiver socket overflows', rcvErr.length ? rcvErr.reduce((a, b) => a + b, 0) : '–', rcvErr.some((v) => v > 0) ? 'bad' : 'ok')}
+      ${row('Valid / measured seconds', `${r.segments_valid} / ${r.segments_complete}`, r.segments_valid < r.segments_complete ? 'warn' : '')}
+      ${row('Senders finished', Object.keys(c.senders || {}).length ? 'yes' : 'no')}</div>
+    <div class="panel card"><h3>Radio stack</h3>
+      ${row('Scheduler policies loaded as requested', policyOk === undefined ? '–' : policyOk ? 'yes' : 'no', policyOk ? 'ok' : 'bad')}
+      ${(() => { const speeds = activeCells().map(cell => r.lanes?.[cell]?.metrics.resource_utilization.slots_per_s);
+        const measured = speeds.filter(fin), slow = measured.some(v => v < 950);
+        const uneven = measured.length === 2 && Math.abs(measured[0] - measured[1]) > 0.03 * Math.max(...measured);
+        return row(`Radio speed ${activeCells().join(' / ')} (real time = 1000 slots/s)`, speeds.map(v => fmt(v, 0)).join(' / '), uneven ? 'bad' : slow ? 'warn' : measured.length === speeds.length ? 'ok' : ''); })()}
+      ${row(`SCHED lines parsed ${activeCells().join(' / ')}`, activeCells().map(cell => c.sched_lines?.[cell] ?? 0).join(' / '))}
+      ${row('C-RNTIs mapped', Object.values(c.rnti_map || {}).map((m) => Object.keys(m).length).join(' / '))}
+      ${activeCells().map((cell) => row(`Broker ${cell} gaps / overflows / ZMQ errors`, brokers[cell] ? `${brokers[cell].tx_sequence_gaps} / ${brokers[cell].tx_queue_overflows} / ${brokers[cell].zmq_errors}` : '–')).join('')}
+      ${row('Gate verdict', gate?.status || 'running', gate?.status === 'passed' ? 'ok' : gate?.status ? 'bad' : '')}
+      ${row('Host load (1 min) mean / max', c.host_load?.samples ? `${fmt(c.host_load.load1_mean, 1)} / ${fmt(c.host_load.load1_max, 1)}` : '–')}
+      ${row('Other busy processes', Object.keys(c.host_load?.other_busy_processes || {}).join(', ') || 'none seen', Object.keys(c.host_load?.other_busy_processes || {}).length ? 'warn' : '')}</div>`;
+  const invalid = (r.segments || []).filter((x) => !x.valid).slice(0, 3).map((x) => `${x.k}s: ${x.reasons.join('; ')}`);
+  $('footer').textContent = invalid.length ? `First invalid seconds — ${invalid.join(' | ')}` : '';
+}
+
+// ---------------------------------------------------------------- 3D scene
+const scene3 = { ready: false };
+function initScene() {
+  const host = $('scene3d');
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); } catch { $('sceneEmpty').textContent = 'WebGL is unavailable in this browser.'; return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  host.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
+  camera.up.set(0, 0, 1); camera.position.set(-22, -30, 24);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(6, 0, 1); controls.enableDamping = true;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.6));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.2); sun.position.set(-20, -30, 50); scene.add(sun);
+  const world = new THREE.Group(); scene.add(world);
+  const markers = new THREE.Group(); scene.add(markers);
+  Object.assign(scene3, { renderer, scene, camera, controls, world, markers, ready: true, trails: {} });
+  const resize = () => { const r = $('sceneHost').getBoundingClientRect(); renderer.setSize(r.width, r.height, false); renderer.domElement.style.width = '100%'; renderer.domElement.style.height = '100%'; camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); };
+  new ResizeObserver(resize).observe($('sceneHost')); resize();
+  const loop = () => { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); };
+  loop();
+}
+const MATERIAL_COLOR = { concrete: 0xb9bfc3, metal: 0x8aa0b4, marble: 0xd8d4cc, brick: 0xa86f5a, wood: 0x9b7a55, glass: 0x9cc6d8 };
+async function loadMesh() {
+  if (!scene3.ready || !state.runId) return;
+  scene3.world.clear(); scene3.meshLoaded = false;
+  let mesh;
+  try { mesh = await get('/api/scene_mesh' + q()); } catch { $('sceneEmpty').hidden = false; return; }
+  for (const obj of mesh.objects || []) {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(obj.positions, 3));
+    geo.setIndex(obj.indices); geo.computeVertexNormals();
+    const key = Object.keys(MATERIAL_COLOR).find((m) => String(obj.material).includes(m));
+    const mat = new THREE.MeshStandardMaterial({ color: MATERIAL_COLOR[key] ?? 0xb0b6ba, roughness: 0.9, metalness: key === 'metal' ? 0.4 : 0.05, side: THREE.DoubleSide,
+      polygonOffset: obj.kind === 'ground', polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+    scene3.world.add(new THREE.Mesh(geo, mat));
+  }
+  scene3.meshLoaded = true; $('sceneEmpty').hidden = true;
+  updateMarkers();
+}
+function updateMarkers() {
+  if (!scene3.ready || !state.run) return;
+  const last = state.timeline[state.timeline.length - 1];
+  const nodes = state.run.scenario?.nodes || {};
+  const pos = { gnb0: last?.positions?.gnb0 || nodes.gnb0?.start_m, ue0: last?.positions?.ue0 || nodes.ue0?.route_m?.[0], ue1: last?.positions?.ue1 || nodes.ue1?.route_m?.[0] };
+  const m = scene3.markers; m.clear();
+  const colorOf = (name) => new THREE.Color(css(name));
+  if (pos.gnb0) {
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.6, 4), new THREE.MeshStandardMaterial({ color: colorOf('--accent') }));
+    cone.rotation.x = Math.PI / 2; cone.position.set(...pos.gnb0); m.add(cone);
+  }
+  ['ue0', 'ue1'].forEach((ue, i) => {
+    const p = pos[ue]; if (!p) return;
+    const color = colorOf(i === 0 ? '--ue-a' : '--ue-b');
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.45, 20, 14), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.25 }));
+    sphere.position.set(...p); m.add(sphere);
+    const trail = state.timeline.map((s) => s.positions?.[ue]).filter(Boolean).slice(-300);
+    if (trail.length > 1) m.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(trail.map((t) => new THREE.Vector3(t[0], t[1], t[2] + 0.02))), new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.7 })));
+    if (pos.gnb0) {
+      const gain = last?.channels?.[`gnb0>${ue}:sionna_rt`]?.tap_gain_db;
+      const strength = fin(gain) ? Math.max(0.15, Math.min(1, (gain + 30) / 40)) : 0.3;
+      m.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...pos.gnb0), new THREE.Vector3(...p)]),
+        new THREE.LineBasicMaterial({ color, transparent: true, opacity: strength })));
+    }
+  });
+  const run = state.run, cells = run.benchmark.cells;
+  $('sceneOverlay').innerHTML = `
+    <span class="chip">scenario time <b>${last ? fmt(last.scenario_time_s, 1) : '0.0'} s</b>${last ? '' : ' (held)'}<br>grid point <b>${last?.grid_index ?? '–'}</b></span>
+    <span class="chip">channel SHA-256<br><b>${last?.digest ? last.digest.slice(0, 12) + '…' : '–'}</b></span>
+    <span class="chip">${activeCells().length === 2 ? 'same channel in both cells' : 'single-cell channel'}<br><b>${esc(cells.a.ues.map((u, i) => activeCells().map(c => cells[c].ues[i].device_id).join('=')).join(' · '))}</b></span>`;
+  $('sceneLegend').innerHTML = `<span class="chip"><span class="swatch" style="background:var(--accent)"></span>gNB</span>
+    ${cells.a.ues.map((u, i) => `<span class="chip"><span class="swatch" style="background:${ROLE_COLOR[i]}"></span>${activeCells().map(c => esc(cells[c].ues[i].device_id)).join(' / ')} · ${esc(u.role)}</span>`).join('')}
+    <span class="chip">line opacity = DL tap gain</span>`;
+}
+
+// ---------------------------------------------------------------- polling
+async function refreshReport() {
+  if (!state.runId) return;
+  try { state.report = await get('/api/report' + q()); } catch { return; }
+  renderHeader(); renderBoard(); drawChart(); renderIntegrity();
+}
+async function refreshLive() {
+  if (!state.runId) return;
+  try { state.live = await get(`/api/live${q()}&since=${state.lastGrid}`); } catch { return; }
+  if (state.live.timeline?.length) {
+    state.timeline.push(...state.live.timeline);
+    state.timeline = state.timeline.slice(-2000);
+    state.lastGrid = state.timeline[state.timeline.length - 1].grid_index ?? state.lastGrid;
+  }
+  drawGrids(); updateMarkers(); renderUeLive();
+}
+function schedule(fn, ms) { const tick = async () => { await fn(); setTimeout(tick, typeof ms === 'function' ? ms() : ms); }; tick(); }
+
+try { state.chart = localStorage.getItem('sb.chart') || state.chart; state.runId = localStorage.getItem('sb.run') || null; } catch {}
+renderChartPicker();
+initScene();
+window.addEventListener('resize', () => { drawChart(); drawGrids(); });
+schedule(refreshSystem, 1500);
+schedule(loadRuns, 5000);
+schedule(async () => { if (state.run?.live) await refreshReport(); }, 2000);
+schedule(async () => { if (state.run?.live) await refreshLive(); }, 1000);
+// The UI starts before the bridge writes the scene sidecar: retry until it exists.
+schedule(async () => { if (state.runId && !scene3.meshLoaded) await loadMesh(); }, 3000);
+schedule(async () => { if (state.run && !state.run.live) await refreshRun(); }, 15000);
+</script>
+</body>
+</html>

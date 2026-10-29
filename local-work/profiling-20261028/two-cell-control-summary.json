@@ -1,0 +1,13 @@
+{
+  "definition": "mean gate per-second scheduler slots metric in valid post-warmup wall-time segments, divided by 1000",
+  "results": {
+    "instrumented": {
+      "a": 0.854759635506142,
+      "b": 0.8704614548282488
+    },
+    "control": {
+      "a": 0.8670886440074231,
+      "b": 0.8765238769121272
+    }
+  }
+}

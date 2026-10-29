@@ -1,0 +1,2295 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d2654b2..6e67949 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -85,6 +85,18 @@ option(RPATH                 "Enable RPATH"                             OFF)
+ option(ENABLE_ASAN           "Enable gcc/clang address sanitizer"       OFF)
+ option(ENABLE_GCOV           "Enable gcov"                              OFF)
+ option(ENABLE_MSAN           "Enable clang memory sanitizer"            OFF)
++option(SRSRAN_LDPC_CUDA      "Local S1: GPU batch LDPC decoder via OCUDU lib/phy/cuda" OFF)
++set(SRSRAN_LDPC_CUDA_ROOT "" CACHE PATH "OCUDU lib/phy/cuda source dir (include/)")
++set(SRSRAN_LDPC_CUDA_LIB  "" CACHE FILEPATH "libocudu_phy_cuda.a")
++if (SRSRAN_LDPC_CUDA)
++  find_package(CUDAToolkit REQUIRED)
++  enable_language(CUDA)
++  if (NOT CMAKE_CUDA_ARCHITECTURES)
++    set(CMAKE_CUDA_ARCHITECTURES 121)
++  endif ()
++  set(CMAKE_CUDA_STANDARD 17)
++  message(STATUS "SRSRAN_LDPC_CUDA on: root=${SRSRAN_LDPC_CUDA_ROOT} lib=${SRSRAN_LDPC_CUDA_LIB}")
++endif (SRSRAN_LDPC_CUDA)
+ option(ENABLE_TSAN           "Enable clang thread sanitizer"            OFF)
+ option(ENABLE_TIDY           "Enable clang tidy"                        OFF)
+ 
+diff --git a/lib/include/srsran/phy/fec/ldpc/ldpc_dec_cuda.h b/lib/include/srsran/phy/fec/ldpc/ldpc_dec_cuda.h
+new file mode 100644
+index 0000000..a66cbaf
+--- /dev/null
++++ b/lib/include/srsran/phy/fec/ldpc/ldpc_dec_cuda.h
+@@ -0,0 +1,70 @@
++/**
++ * Local S1 (2026-10-27): batch LDPC decoding of one transport block on the GPU through the OCUDU CUDA LDPC
++ * decoder (lib/phy/cuda, libocudu_phy_cuda.a). Selected at run time with SRSRAN_LDPC_DECODER=cuda; compiled in
++ * with -DSRSRAN_LDPC_CUDA=ON. Input/output conventions match the srsRAN CPU decoder: LLRs start at codeword bit
++ * 2*Z (punctured systematic bits excluded), negative LLR = bit 1, message is one byte per bit, liftK bits per CB.
++ */
++#ifndef SRSRAN_LDPC_DEC_CUDA_H
++#define SRSRAN_LDPC_DEC_CUDA_H
++
++#include "srsran/config.h"
++#include <stdbool.h>
++#include <stdint.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++typedef struct srsran_ldpc_cuda_s srsran_ldpc_cuda_t;
++
++/// Creates the decoder (one CUDA context, buffers for SRSRAN_SCH_NR_MAX_NOF_CB_LDPC code blocks). NULL on failure.
++SRSRAN_API srsran_ldpc_cuda_t* srsran_ldpc_cuda_create(uint32_t max_nof_iter, float scaling_fctr);
++
++SRSRAN_API void srsran_ldpc_cuda_free(srsran_ldpc_cuda_t* q);
++
++/**
++ * Decodes nof_cb code blocks of the same (bg, ls, F) in one GPU call.
++ * \param bg        1 or 2
++ * \param ls        lifting size Z
++ * \param F         filler bits per code block
++ * \param nof_cb    number of code blocks (<= SRSRAN_SCH_NR_MAX_NOF_CB_LDPC)
++ * \param llrs      per-CB rate-dematched int8 LLRs (codeword bits 2Z..), n_llr valid entries each
++ * \param n_llr     number of valid LLRs per CB (<= liftN - 2Z)
++ * \param crc_type  0 none, 16, 241 (CRC24A), 242 (CRC24B): used only for the decoder's early termination
++ * \param messages  per-CB output, liftK bytes each (one bit per byte)
++ * \param avg_iter  average iterations over the batch (may be NULL)
++ * \return 0 on success, -1 on failure (caller falls back to the CPU decoder)
++ */
++SRSRAN_API int srsran_ldpc_cuda_decode_tb(srsran_ldpc_cuda_t*  q,
++                                          int                  bg,
++                                          uint16_t             ls,
++                                          uint32_t             F,
++                                          uint32_t             nof_cb,
++                                          const int8_t* const* llrs,
++                                          uint32_t             n_llr,
++                                          uint32_t             crc_type,
++                                          uint8_t* const*      messages,
++                                          float*               avg_iter);
++
++/**
++ * Local S2: selects (creating/configuring if needed) the cached decoder handle for (bg, ls, F, crc_type) and
++ * nof_cb code blocks. Returns the OCUDU ldpc_decoder_handle_t, the output word buffer (LDPC_CUDA_MAX_KW words
++ * per CB), the iteration limit and the host sync mode (0 spin, 1 block, 2 yield). The caller runs
++ * ldpc_decoder_decode_batch_half on its own stream.
++ */
++SRSRAN_API int srsran_ldpc_cuda_select(srsran_ldpc_cuda_t* q,
++                                       int                 bg,
++                                       uint16_t            ls,
++                                       uint32_t            F,
++                                       uint32_t            crc_type,
++                                       uint32_t            nof_cb,
++                                       void**              dec_handle,
++                                       uint32_t**          out_words,
++                                       uint32_t*           max_nof_iter,
++                                       int*                sync_mode);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif // SRSRAN_LDPC_DEC_CUDA_H
+diff --git a/lib/include/srsran/phy/phch/sch_nr.h b/lib/include/srsran/phy/phch/sch_nr.h
+index d9596b6..3ecbcb5 100644
+--- a/lib/include/srsran/phy/phch/sch_nr.h
++++ b/lib/include/srsran/phy/phch/sch_nr.h
+@@ -76,6 +76,10 @@ typedef struct SRSRAN_API {
+   /// LDPC Rate matcher
+   srsran_ldpc_rm_t tx_rm;
+   srsran_ldpc_rm_t rx_rm;
++
++  /// Local S1: optional GPU batch decoder (SRSRAN_LDPC_DECODER=cuda, built with SRSRAN_LDPC_CUDA)
++  void*    cuda;
++  uint8_t* temp_cb_batch;
+ } srsran_sch_nr_t;
+ 
+ /**
+@@ -177,6 +181,18 @@ SRSRAN_API int srsran_dlsch_nr_decode(srsran_sch_nr_t*        q,
+                                       int8_t*                 e_bits,
+                                       srsran_sch_tb_res_nr_t* res);
+ 
++/**
++ * Local S2: DL-SCH decoding from descrambled fp16 LLRs that already live on the GPU (rate dematching + LDPC on
++ * the GPU through ue_dl_cuda). All code blocks of the TB must be fresh (no soft combining). Returns SRSRAN_ERROR
++ * when the GPU path cannot be used; the caller then runs the CPU path.
++ */
++SRSRAN_API int srsran_dlsch_nr_decode_device(srsran_sch_nr_t*        q,
++                                             const srsran_sch_cfg_t* sch_cfg,
++                                             const srsran_sch_tb_t*  tb,
++                                             void*                   ue_dl_cuda,
++                                             const void*             d_llrs,
++                                             srsran_sch_tb_res_nr_t* res);
++
+ SRSRAN_API int srsran_ulsch_nr_encode(srsran_sch_nr_t*        q,
+                                       const srsran_sch_cfg_t* cfg,
+                                       const srsran_sch_tb_t*  tb,
+diff --git a/lib/include/srsran/phy/ue/ue_dl_cuda.h b/lib/include/srsran/phy/ue/ue_dl_cuda.h
+new file mode 100644
+index 0000000..91c5e6c
+--- /dev/null
++++ b/lib/include/srsran/phy/ue/ue_dl_cuda.h
+@@ -0,0 +1,160 @@
++/**
++ * Local S2 (2026-10-29): GPU front end for the srsUE NR downlink receive chain.
++ *
++ *  - OFDM demodulation of one 1 ms subframe (14 symbols at 15 kHz): CP removal, DFT window offset, cuFFT,
++ *    FFT shift and per-symbol phase compensation exactly as srsran_ofdm_rx_sf(), written to the float resource
++ *    grid the CPU keeps using (PDCCH, CSI) and in parallel to a complex-bf16 copy for the GPU PDSCH path.
++ *  - PDSCH reception through the OCUDU fused PUSCH receiver (DMRS channel estimation, MMSE equalisation, soft
++ *    demodulation, descrambling -> fp16 LLRs), a rate-dematching kernel that mirrors srsran_ldpc_rm_rx_c(), and
++ *    the OCUDU batch LDPC decoder (handle cache of ldpc_dec_cuda.cpp).
++ *
++ * Selected at run time with SRSRAN_UE_DL_CUDA=fft|pdsch|all (pdsch needs SRSRAN_LDPC_DECODER=cuda); compiled
++ * in with -DSRSRAN_LDPC_CUDA=ON. Every entry point returns a negative value when the GPU path cannot be used,
++ * in which case the caller runs the CPU path on the same buffers.
++ *
++ * This header is shared between C (ue_dl_nr.c) and CUDA C++ (ue_dl_cuda.cu): complex samples are passed as
++ * interleaved float pairs and no srsRAN type is used.
++ */
++#ifndef SRSRAN_UE_DL_CUDA_H
++#define SRSRAN_UE_DL_CUDA_H
++
++#include <stdbool.h>
++#include <stdint.h>
++
++#ifndef SRSRAN_API
++#define SRSRAN_API
++#endif
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++#define SRSRAN_UE_DL_CUDA_FFT 1U
++#define SRSRAN_UE_DL_CUDA_PDSCH 2U
++
++typedef struct srsran_ue_dl_cuda_s srsran_ue_dl_cuda_t;
++
++/// OFDM demodulation parameters mirrored from the srsran_ofdm_t object of the CPU path.
++typedef struct {
++  uint32_t symbol_sz;       ///< DFT size N
++  uint32_t nof_re;          ///< Subcarriers kept per symbol (nof_prb * 12)
++  uint32_t cp1;             ///< CP length of the first symbol of each 7-symbol slot
++  uint32_t cp2;             ///< CP length of the other symbols
++  uint32_t slot_sz;         ///< Samples per 7-symbol slot (N * 15 / 2)
++  uint32_t window_offset_n; ///< DFT window advance into the CP (samples)
++  uint32_t dc;              ///< 1 when the DC subcarrier is skipped (keep_dc = false)
++  uint32_t normalize;       ///< 1 when the output is divided by sqrt(N)
++  float    phase[2 * 14];   ///< Per-symbol phase compensation (re, im), the receiver multiplies by its conjugate
++} srsran_ue_dl_cuda_ofdm_t;
++
++/// PDSCH parameters needed by the GPU receiver (all derived from the srsRAN grant/config by ue_dl_nr.c).
++typedef struct {
++  uint32_t   carrier_nof_prb;   ///< Resource grid width in PRB
++  uint32_t   start_prb;         ///< First allocated PRB (contiguous allocation)
++  uint32_t   nof_prb;           ///< Number of allocated PRB
++  uint32_t   S;                 ///< First OFDM symbol
++  uint32_t   L;                 ///< Number of OFDM symbols
++  uint32_t   dmrs_symbol_mask;  ///< Bit l set if symbol l carries DMRS
++  uint32_t   nof_cdm_groups_without_data;
++  uint32_t   dmrs_scrambling_id; ///< N_ID used for the DMRS sequence
++  uint32_t   n_scid;
++  uint32_t   slot_idx;          ///< Slot index within the frame
++  float      beta_dmrs;         ///< Linear DMRS amplitude ratio (0 = 1)
++  uint32_t   Qm;                ///< Modulation order (2, 4, 6, 8)
++  uint16_t   rnti;
++  uint16_t   data_n_id;         ///< N_ID used for data scrambling
++  uint32_t   nof_data_re;       ///< Number of entries in re_indices (= grant nof_re)
++  const int* re_indices;        ///< Host array of grid indices (l * carrier_nof_prb * 12 + k) in codeword order
++} srsran_ue_dl_cuda_pdsch_t;
++
++/// Channel measurements the GPU receiver reports back (0 when not available).
++typedef struct {
++  float rsrp;
++  float epre;
++  float noise;
++  float sinr_db;
++  float cfo_hz;
++  float ta_us;
++} srsran_ue_dl_cuda_meas_t;
++
++/**
++ * Creates the GPU context. mode is a bit mask of SRSRAN_UE_DL_CUDA_FFT / _PDSCH; when 0 the environment variable
++ * SRSRAN_UE_DL_CUDA is read (fft, pdsch, all, comma separated). Returns NULL when nothing is enabled.
++ */
++SRSRAN_API srsran_ue_dl_cuda_t* srsran_ue_dl_cuda_create(uint32_t max_prb, uint32_t mode);
++SRSRAN_API void                 srsran_ue_dl_cuda_free(srsran_ue_dl_cuda_t* q);
++SRSRAN_API uint32_t             srsran_ue_dl_cuda_mode(const srsran_ue_dl_cuda_t* q);
++SRSRAN_API void                 srsran_ue_dl_cuda_set_mode(srsran_ue_dl_cuda_t* q, uint32_t mode);
++
++/// Allocates a resource grid (nof_re_total complex floats) in managed memory readable by CPU and GPU.
++SRSRAN_API float* srsran_ue_dl_cuda_alloc_grid(srsran_ue_dl_cuda_t* q, uint32_t nof_re_total);
++SRSRAN_API void   srsran_ue_dl_cuda_free_grid(srsran_ue_dl_cuda_t* q, float* grid);
++
++/// (Re)plans the FFT for a carrier. symbol_sz is the DFT size, nof_prb the grid width.
++SRSRAN_API int srsran_ue_dl_cuda_set_carrier(srsran_ue_dl_cuda_t* q, uint32_t nof_prb, uint32_t symbol_sz);
++
++/**
++ * OFDM demodulation of one subframe. in: time-domain samples (host memory, 15 * N complex floats); grid: output,
++ * a grid from srsran_ue_dl_cuda_alloc_grid. Blocks until the grid is complete. Returns 0 on success.
++ */
++SRSRAN_API int srsran_ue_dl_cuda_fft(srsran_ue_dl_cuda_t*            q,
++                                     const float*                    in,
++                                     const srsran_ue_dl_cuda_ofdm_t* ofdm,
++                                     float*                          grid);
++
++/// Converts a float grid (14 x nof_prb*12 complex) into the internal bf16 grid (CPU FFT + GPU PDSCH mix, tests).
++SRSRAN_API int srsran_ue_dl_cuda_grid_to_bf16(srsran_ue_dl_cuda_t* q, const float* grid, uint32_t nof_prb);
++
++/**
++ * Runs channel estimation, equalisation, soft demodulation and descrambling for one PDSCH on the bf16 grid produced
++ * by the last srsran_ue_dl_cuda_fft()/grid_to_bf16() call. On success *d_llrs points at nof_data_re*Qm fp16 LLRs in
++ * device memory (valid until the next call). Asynchronous: the LLRs are consumed by srsran_ue_dl_cuda_decode_cbs()
++ * on the same stream, which also fills meas (may be NULL).
++ */
++SRSRAN_API int srsran_ue_dl_cuda_pdsch_llrs(srsran_ue_dl_cuda_t*             q,
++                                            const srsran_ue_dl_cuda_pdsch_t* cfg,
++                                            const void**                     d_llrs,
++                                            srsran_ue_dl_cuda_meas_t*        meas);
++
++/**
++ * Rate dematching (bit de-interleaving, circular-buffer selection with filler bits, LLR accumulation on repetition)
++ * and LDPC decoding of nof_cb code blocks of one transport block directly from the device LLRs.
++ * \param ldpc        the srsran_ldpc_cuda_t of the SCH object (handle cache, sync mode)
++ * \param E, off      per-CB rate-matched length and offset in the LLR stream
++ * \param k0, Ncb     circular buffer start and size (codeword bits excluding the 2Z punctured ones)
++ * \param crc_type    0, 16, 241 (CRC24A) or 242 (CRC24B), for the decoder's early termination
++ * \param messages    per-CB output, Kb*Z bytes each (one bit per byte)
++ * Blocks until the decode is complete. Returns 0 on success.
++ */
++SRSRAN_API int srsran_ue_dl_cuda_decode_cbs(srsran_ue_dl_cuda_t* q,
++                                            void*                ldpc,
++                                            int                  bg,
++                                            uint16_t             ls,
++                                            uint32_t             F,
++                                            uint32_t             nof_cb,
++                                            const void*          d_llrs,
++                                            const uint32_t*      E,
++                                            const uint32_t*      off,
++                                            uint32_t             Qm,
++                                            uint32_t             k0,
++                                            uint32_t             Ncb,
++                                            uint32_t             crc_type,
++                                            uint8_t* const*      messages,
++                                            float*               avg_iter);
++
++/// Timing of the last PDSCH call in microseconds (host launch, GPU span from events, wait), for the slot trace.
++typedef struct {
++  float e2e_launch_us;
++  float rm_launch_us;
++  float ldpc_launch_us;
++  float gpu_span_us;
++  float wait_us;
++  float unpack_us;
++} srsran_ue_dl_cuda_timing_t;
++SRSRAN_API void srsran_ue_dl_cuda_get_timing(const srsran_ue_dl_cuda_t* q, srsran_ue_dl_cuda_timing_t* t);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif // SRSRAN_UE_DL_CUDA_H
+diff --git a/lib/include/srsran/phy/ue/ue_dl_nr.h b/lib/include/srsran/phy/ue/ue_dl_nr.h
+index a735d4c..503b552 100644
+--- a/lib/include/srsran/phy/ue/ue_dl_nr.h
++++ b/lib/include/srsran/phy/ue/ue_dl_nr.h
+@@ -87,8 +87,17 @@ typedef struct SRSRAN_API {
+ 
+   srsran_dci_msg_nr_t ul_dci_msg[SRSRAN_MAX_DCI_MSG_NR];
+   uint32_t            ul_dci_count;
++
++  /// Local S2: GPU front end (SRSRAN_UE_DL_CUDA), NULL when disabled
++  void* cuda;
++  int*  cuda_re_idx;
++  bool  sf_symbols_managed;
++  uint32_t cuda_pdsch_count;
+ } srsran_ue_dl_nr_t;
+ 
++/// Local S2: changes the GPU mode at run time (bit mask of SRSRAN_UE_DL_CUDA_FFT/PDSCH, 0 = CPU), for tests
++SRSRAN_API void srsran_ue_dl_nr_set_cuda_mode(srsran_ue_dl_nr_t* q, uint32_t mode);
++
+ SRSRAN_API int
+ srsran_ue_dl_nr_init(srsran_ue_dl_nr_t* q, cf_t* input[SRSRAN_MAX_PORTS], const srsran_ue_dl_nr_args_t* args);
+ 
+diff --git a/lib/src/phy/CMakeLists.txt b/lib/src/phy/CMakeLists.txt
+index d278809..a234c9f 100644
+--- a/lib/src/phy/CMakeLists.txt
++++ b/lib/src/phy/CMakeLists.txt
+@@ -59,4 +59,7 @@ set(srsran_srcs     $<TARGET_OBJECTS:srsran_agc>
+ 
+ add_library(srsran_phy STATIC ${srsran_srcs} )
+ target_link_libraries(srsran_phy pthread m ${FFT_LIBRARIES})
++if (SRSRAN_LDPC_CUDA)
++    target_link_libraries(srsran_phy ${SRSRAN_LDPC_CUDA_LIB} CUDA::cudart CUDA::cuda_driver CUDA::nvrtc CUDA::cufft stdc++)
++endif (SRSRAN_LDPC_CUDA)
+ install(TARGETS srsran_phy DESTINATION ${LIBRARY_DIR} OPTIONAL)
+diff --git a/lib/src/phy/common/phy_common.c b/lib/src/phy/common/phy_common.c
+index 46de21d..b5c8b9b 100644
+--- a/lib/src/phy/common/phy_common.c
++++ b/lib/src/phy/common/phy_common.c
+@@ -48,7 +48,7 @@ bool srsran_cellid_isvalid(uint32_t cell_id)
+ 
+ bool srsran_nofprb_isvalid(uint32_t nof_prb)
+ {
+-  if (nof_prb == 1 || (nof_prb >= 6 && nof_prb <= SRSRAN_MAX_PRB)) {
++  if (nof_prb == 1 || (nof_prb >= 6 && nof_prb <= SRSRAN_MAX_PRB) || nof_prb == 270 /* local */) {
+     return true;
+   } else {
+     return false;
+@@ -353,6 +353,8 @@ int srsran_symbol_sz_power2(uint32_t nof_prb)
+     return 1536;
+   } else if (nof_prb <= 110) {
+     return 2048;
++  } else if (nof_prb <= 275) {
++    return 4096; /* local: 270-PRB NR carrier */
+   } else {
+     return -1;
+   }
+@@ -376,6 +378,8 @@ int srsran_symbol_sz(uint32_t nof_prb)
+       return 1024;
+     } else if (nof_prb <= 110) {
+       return 1536;
++    } else if (nof_prb <= 275) {
++      return 4096; /* local: 270-PRB NR carrier (50 MHz, 15 kHz) for the PRACH path */
+     } else {
+       return SRSRAN_ERROR;
+     }
+@@ -400,6 +404,8 @@ int srsran_nof_prb(uint32_t symbol_sz)
+         return 75;
+       case 1536:
+         return 100;
++      case 4096:
++        return 270; /* local */
+     }
+   } else {
+     switch (symbol_sz) {
+@@ -415,6 +421,8 @@ int srsran_nof_prb(uint32_t symbol_sz)
+         return 75;
+       case 2048:
+         return 100;
++      case 4096:
++        return 270; /* local */
+     }
+   }
+   return SRSRAN_ERROR;
+@@ -424,14 +432,14 @@ bool srsran_symbol_sz_isvalid(uint32_t symbol_sz)
+ {
+   if (!use_standard_rates) {
+     if (symbol_sz == 128 || symbol_sz == 256 || symbol_sz == 384 || symbol_sz == 768 || symbol_sz == 1024 ||
+-        symbol_sz == 1536) {
++        symbol_sz == 1536 || symbol_sz == 4096) {
+       return true;
+     } else {
+       return false;
+     }
+   } else {
+     if (symbol_sz == 128 || symbol_sz == 256 || symbol_sz == 512 || symbol_sz == 1024 || symbol_sz == 1536 ||
+-        symbol_sz == 2048) {
++        symbol_sz == 2048 || symbol_sz == 4096) {
+       return true;
+     } else {
+       return false;
+diff --git a/lib/src/phy/common/phy_common_nr.c b/lib/src/phy/common/phy_common_nr.c
+index 4524743..22804a9 100644
+--- a/lib/src/phy/common/phy_common_nr.c
++++ b/lib/src/phy/common/phy_common_nr.c
+@@ -413,6 +413,8 @@ int srsran_carrier_to_cell(const srsran_carrier_nr_t* carrier, srsran_cell_t* ce
+     cell->nof_prb = 75;
+   } else if (carrier->nof_prb <= 106) {
+     cell->nof_prb = 100;
++  } else if (carrier->nof_prb == 270) {
++    cell->nof_prb = 270; /* local: 50 MHz 15 kHz carrier, 4096-point PRACH grid */
+   } else {
+     return SRSRAN_ERROR_OUT_OF_BOUNDS;
+   }
+diff --git a/lib/src/phy/fec/CMakeLists.txt b/lib/src/phy/fec/CMakeLists.txt
+index 7f1d3d1..e5a7949 100644
+--- a/lib/src/phy/fec/CMakeLists.txt
++++ b/lib/src/phy/fec/CMakeLists.txt
+@@ -31,3 +31,7 @@ add_subdirectory(test)
+ add_subdirectory(turbo)
+ 
+ add_library(srsran_fec OBJECT ${FEC_SOURCES})
++if (SRSRAN_LDPC_CUDA)
++    target_include_directories(srsran_fec PRIVATE ${SRSRAN_LDPC_CUDA_ROOT}/include ${CUDAToolkit_INCLUDE_DIRS})
++    target_compile_definitions(srsran_fec PRIVATE SRSRAN_LDPC_CUDA)
++endif (SRSRAN_LDPC_CUDA)
+diff --git a/lib/src/phy/fec/ldpc/CMakeLists.txt b/lib/src/phy/fec/ldpc/CMakeLists.txt
+index c6a9e9a..5cba833 100644
+--- a/lib/src/phy/fec/ldpc/CMakeLists.txt
++++ b/lib/src/phy/fec/ldpc/CMakeLists.txt
+@@ -39,7 +39,11 @@ if (HAVE_AVX512)
+             )
+ endif (HAVE_AVX512)
+ 
+-set(FEC_SOURCES ${FEC_SOURCES} ${AVX2_SOURCES} ${AVX512_SOURCES}
++if (SRSRAN_LDPC_CUDA)
++    set(LDPC_CUDA_SOURCES ldpc/ldpc_dec_cuda.cpp)
++endif (SRSRAN_LDPC_CUDA)
++
++set(FEC_SOURCES ${FEC_SOURCES} ${AVX2_SOURCES} ${AVX512_SOURCES} ${LDPC_CUDA_SOURCES}
+         ldpc/base_graph.c
+         ldpc/ldpc_dec_f.c
+         ldpc/ldpc_dec_s.c
+diff --git a/lib/src/phy/fec/ldpc/ldpc_dec_cuda.cpp b/lib/src/phy/fec/ldpc/ldpc_dec_cuda.cpp
+new file mode 100644
+index 0000000..4356ce4
+--- /dev/null
++++ b/lib/src/phy/fec/ldpc/ldpc_dec_cuda.cpp
+@@ -0,0 +1,313 @@
++/**
++ * Local S1 (2026-10-27): GPU batch LDPC decoder for sch_nr.c, see ldpc_dec_cuda.h.
++ * Built only with SRSRAN_LDPC_CUDA=ON (needs the OCUDU lib/phy/cuda headers and libocudu_phy_cuda.a).
++ */
++#include "srsran/phy/fec/ldpc/ldpc_dec_cuda.h"
++#include "ocudu_phy_cuda.h"
++#include <cuda_fp16.h>
++#include <cuda_runtime.h>
++#include <chrono>
++#include <sched.h>
++#include <cstdio>
++#include <cstdlib>
++#include <cstring>
++
++#define LDPC_CUDA_MAX_CB 152     // SRSRAN_SCH_NR_MAX_NOF_CB_LDPC
++#define LDPC_CUDA_MAX_N (68 * 384) // BG1, Z=384 codeword incl. punctured bits
++#define LDPC_CUDA_MAX_KW ((22 * 384 + 31) / 32)
++
++#define LDPC_CUDA_MAX_HANDLES 64
++#define LDPC_CUDA_PREALLOC_CB 32
++
++struct ldpc_cuda_handle_s {
++  ldpc_decoder_handle_t dec;
++  int                   bg;
++  uint16_t              ls;
++  uint32_t              F;
++  uint32_t              crc;
++  int                   prealloc_cb;
++  uint64_t              last_use;
++};
++
++struct srsran_ldpc_cuda_s {
++  ldpc_decoder_handle_t dec; // handle selected for the current call
++  ldpc_cuda_handle_s    handles[LDPC_CUDA_MAX_HANDLES];
++  int                   nof_handles;
++  uint64_t              use_counter;
++  cudaStream_t          stream;
++  __half*               llr;    // managed, LDPC_CUDA_MAX_N * LDPC_CUDA_MAX_CB
++  uint32_t*             out;    // managed, LDPC_CUDA_MAX_KW * LDPC_CUDA_MAX_CB
++  uint32_t              max_nof_iter;
++  float                 scaling;
++  bool                  verbose;
++  int                   sync_mode; // 0 spin (cudaStreamSynchronize), 1 block, 2 yield-poll
++};
++
++static cudaError_t ldpc_cuda_sync(srsran_ldpc_cuda_t* q)
++{
++  if (q->sync_mode != 2) {
++    return cudaStreamSynchronize(q->stream);
++  }
++  auto        t0 = std::chrono::steady_clock::now();
++  cudaError_t err;
++  while ((err = cudaStreamQuery(q->stream)) == cudaErrorNotReady) {
++    if (std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t0).count() > 40.0) {
++      sched_yield();
++    }
++  }
++  return err;
++}
++
++static inline unsigned cuda_bitpos(unsigned i)
++{
++  unsigned b = i % 32;
++  return (b / 8) * 8 + (7 - (b % 8));
++}
++
++#define LDPC_CUDA_CK(x)                                                                                              \
++  do {                                                                                                               \
++    cudaError_t e_ = (x);                                                                                            \
++    if (e_ != cudaSuccess) {                                                                                         \
++      fprintf(stderr, "[ldpc_cuda] %s failed: %s\n", #x, cudaGetErrorString(e_));                                    \
++      return -1;                                                                                                     \
++    }                                                                                                                \
++  } while (0)
++
++static int ldpc_cuda_params(srsran_ldpc_cuda_t* q, int bg, uint16_t ls, uint32_t F, uint32_t crc_type, nr_ldpc_config_t* cfg, ldpc_decoder_params_t* dp)
++{
++  const int Kb = (bg == 1) ? 22 : 10, Pc = (bg == 1) ? 46 : 42;
++  *cfg                    = {};
++  cfg->base_graph         = bg;
++  cfg->lifting_size       = ls;
++  cfg->lifting_set_index  = nr_ldpc_get_lifting_set_index(ls);
++  cfg->num_info_bits      = Kb * ls - (int)F;
++  cfg->num_parity_bits    = Pc * ls;
++  cfg->num_filler_bits    = (int)F;
++  cfg->num_codeword_bits  = (Kb + Pc) * ls;
++  cfg->puncture           = true;
++  cfg->max_parity_nodes   = Pc;
++  cfg->redundancy_version = 0;
++  ldpc_decoder_params_init(dp);
++  dp->max_iterations           = (int)q->max_nof_iter;
++  dp->early_termination        = true;
++  dp->auto_scale               = false;
++  dp->min_sum_scale            = q->scaling;
++  dp->min_sum_offset           = 0.10f;
++  dp->llr_clamp                = 127.0f;
++  dp->syndrome_tolerance       = 0;
++  dp->deferred_iteration_stats = true;
++  dp->use_boxplus              = true;
++  dp->confidence_threshold     = 0.15f;
++  dp->crc_early_termination    = (crc_type != 0);
++  dp->crc_type = (crc_type == 16) ? LDPC_CRC_16 : (crc_type == 241) ? LDPC_CRC_24A : (crc_type == 242) ? LDPC_CRC_24B : LDPC_CRC_NONE;
++  return 0;
++}
++
++/* Every (bg, ls, F, crc) combination gets its own configured decoder handle: ldpc_decoder_configure costs
++ * milliseconds (13k reconfigurations in a 20 s live run, decode stalls up to 9.6 ms before this cache). */
++static int ldpc_cuda_configure(srsran_ldpc_cuda_t* q, int bg, uint16_t ls, uint32_t F, uint32_t crc_type, uint32_t nof_cb)
++{
++  q->use_counter++;
++  int slot = -1;
++  for (int i = 0; i < q->nof_handles; i++) {
++    ldpc_cuda_handle_s* h = &q->handles[i];
++    if (h->bg == bg && h->ls == ls && h->F == F && h->crc == crc_type) {
++      slot = i;
++      break;
++    }
++  }
++  if (slot < 0) {
++    if (q->nof_handles < LDPC_CUDA_MAX_HANDLES) {
++      slot = q->nof_handles++;
++      q->handles[slot] = {};
++    } else {
++      // evict the least recently used handle
++      slot = 0;
++      for (int i = 1; i < q->nof_handles; i++) {
++        if (q->handles[i].last_use < q->handles[slot].last_use) {
++          slot = i;
++        }
++      }
++      ldpc_decoder_destroy(q->handles[slot].dec);
++      q->handles[slot] = {};
++    }
++    ldpc_cuda_handle_s* h = &q->handles[slot];
++    auto t_create0 = std::chrono::steady_clock::now();
++    if (ldpc_decoder_create(&h->dec) != NR_LDPC_SUCCESS) {
++      fprintf(stderr, "[ldpc_cuda] decoder create failed\n");
++      q->nof_handles--;
++      return -1;
++    }
++    nr_ldpc_config_t      cfg;
++    ldpc_decoder_params_t dp;
++    ldpc_cuda_params(q, bg, ls, F, crc_type, &cfg, &dp);
++    if (ldpc_decoder_configure(h->dec, &cfg, &dp) != NR_LDPC_SUCCESS) {
++      fprintf(stderr, "[ldpc_cuda] configure failed bg=%d ls=%d F=%u\n", bg, ls, F);
++      ldpc_decoder_destroy(h->dec);
++      q->handles[slot] = {};
++      q->nof_handles--;
++      return -1;
++    }
++    h->bg = bg; h->ls = ls; h->F = F; h->crc = crc_type; h->prealloc_cb = 0;
++    if (q->verbose) {
++      double us = std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t_create0).count();
++      fprintf(stderr, "[ldpc_cuda] configured handle %d: bg=%d ls=%d F=%u crc=%u (handles=%d) create+configure=%.0f us\n", slot, bg, ls, F, crc_type, q->nof_handles, us);
++    }
++  }
++  ldpc_cuda_handle_s* h = &q->handles[slot];
++  int want = (nof_cb > (uint32_t)h->prealloc_cb) ? ((nof_cb <= 8) ? 8 : (nof_cb <= 32) ? 32 : LDPC_CUDA_MAX_CB) : h->prealloc_cb;
++  if (h->prealloc_cb < want) {
++    auto t_pre0 = std::chrono::steady_clock::now();
++    if (ldpc_decoder_preallocate_workspace(h->dec, want) != NR_LDPC_SUCCESS) {
++      fprintf(stderr, "[ldpc_cuda] preallocate failed\n");
++      return -1;
++    }
++    h->prealloc_cb = want;
++    if (q->verbose) {
++      double us = std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t_pre0).count();
++      fprintf(stderr, "[ldpc_cuda] preallocate(%d) for handle bg=%d ls=%d F=%u: %.0f us\n", want, bg, ls, F, us);
++    }
++  }
++  h->last_use = q->use_counter;
++  q->dec      = h->dec;
++  return 0;
++}
++
++extern "C" srsran_ldpc_cuda_t* srsran_ldpc_cuda_create(uint32_t max_nof_iter, float scaling_fctr)
++{
++  if (ocudu_phy_cuda_init() != NR_LDPC_SUCCESS) {
++    fprintf(stderr, "[ldpc_cuda] ocudu_phy_cuda_init failed\n");
++    return nullptr;
++  }
++  // Blocking sync: with cudaDeviceScheduleAuto the host spins in cudaStreamSynchronize and burns the UE core
++  // for the whole GPU decode; a single-core srsUE at 50 MHz has no core to spare.
++  // SRSRAN_LDPC_CUDA_SYNC=spin|block|yield (default yield: spin ~40 us, then poll with sched_yield; keeps the
++  // wake-up latency of a spin while letting the other UE threads use the core during the GPU decode).
++  const char* sync_mode = getenv("SRSRAN_LDPC_CUDA_SYNC");
++  if (sync_mode != nullptr && strcmp(sync_mode, "block") == 0) {
++    cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
++  } else {
++    cudaSetDeviceFlags(cudaDeviceScheduleSpin);
++  }
++  srsran_ldpc_cuda_t* q = new srsran_ldpc_cuda_t();
++  q->max_nof_iter       = max_nof_iter ? max_nof_iter : 10;
++  q->scaling            = (scaling_fctr > 0.f) ? scaling_fctr : 0.8f;
++  const char* v         = getenv("SRSRAN_LDPC_CUDA_VERBOSE");
++  q->verbose            = (v != nullptr && v[0] != '0');
++  q->sync_mode          = (sync_mode == nullptr) ? 2 : (strcmp(sync_mode, "block") == 0) ? 1 : (strcmp(sync_mode, "spin") == 0) ? 0 : 2;
++  q->dec         = nullptr;
++  q->nof_handles = 0;
++  q->use_counter = 0;
++  if (cudaStreamCreateWithFlags(&q->stream, cudaStreamNonBlocking) != cudaSuccess ||
++      cudaMallocManaged(&q->llr, sizeof(__half) * (size_t)LDPC_CUDA_MAX_N * LDPC_CUDA_MAX_CB) != cudaSuccess ||
++      cudaMallocManaged(&q->out, sizeof(uint32_t) * (size_t)LDPC_CUDA_MAX_KW * LDPC_CUDA_MAX_CB) != cudaSuccess) {
++    fprintf(stderr, "[ldpc_cuda] buffer allocation failed\n");
++    delete q;
++    return nullptr;
++  }
++  // Warm-up (kernel load) with a BG1/Z384 configuration so the first live slot does not pay for it.
++  if (ldpc_cuda_configure(q, 1, 384, 0, 242, 1) == 0) {
++    memset(q->llr, 0, sizeof(__half) * (size_t)LDPC_CUDA_MAX_N);
++    ldpc_decoder_decode_batch_half(q->dec, q->llr, q->out, 1, q->stream);
++    cudaStreamSynchronize(q->stream);
++  }
++  int dev = -1; cudaGetDevice(&dev);
++  cudaDeviceProp prop{}; cudaGetDeviceProperties(&prop, dev);
++  fprintf(stderr, "[ldpc_cuda] backend=cuda device=%s sm_%d%d max_cb=%d handle_cache=%d max_iter=%u scale=%.2f sync=%s\n", prop.name, prop.major, prop.minor, LDPC_CUDA_MAX_CB, LDPC_CUDA_MAX_HANDLES, q->max_nof_iter, q->scaling, q->sync_mode == 2 ? "yield" : q->sync_mode == 1 ? "block" : "spin");
++  return q;
++}
++
++extern "C" void srsran_ldpc_cuda_free(srsran_ldpc_cuda_t* q)
++{
++  if (q == nullptr) {
++    return;
++  }
++  if (q->llr) cudaFree(q->llr);
++  if (q->out) cudaFree(q->out);
++  for (int i = 0; i < q->nof_handles; i++) {
++    if (q->handles[i].dec) ldpc_decoder_destroy(q->handles[i].dec);
++  }
++  if (q->stream) cudaStreamDestroy(q->stream);
++  delete q;
++}
++
++extern "C" int srsran_ldpc_cuda_select(srsran_ldpc_cuda_t* q,
++                                       int                 bg,
++                                       uint16_t            ls,
++                                       uint32_t            F,
++                                       uint32_t            crc_type,
++                                       uint32_t            nof_cb,
++                                       void**              dec_handle,
++                                       uint32_t**          out_words,
++                                       uint32_t*           max_nof_iter,
++                                       int*                sync_mode)
++{
++  if (q == nullptr || nof_cb == 0 || nof_cb > LDPC_CUDA_MAX_CB || dec_handle == nullptr || out_words == nullptr) {
++    return -1;
++  }
++  if (ldpc_cuda_configure(q, bg, ls, F, crc_type, nof_cb) < 0) {
++    return -1;
++  }
++  *dec_handle = (void*)q->dec;
++  *out_words  = q->out;
++  if (max_nof_iter) {
++    *max_nof_iter = q->max_nof_iter;
++  }
++  if (sync_mode) {
++    *sync_mode = q->sync_mode;
++  }
++  return 0;
++}
++
++extern "C" int srsran_ldpc_cuda_decode_tb(srsran_ldpc_cuda_t*  q,
++                                          int                  bg,
++                                          uint16_t             ls,
++                                          uint32_t             F,
++                                          uint32_t             nof_cb,
++                                          const int8_t* const* llrs,
++                                          uint32_t             n_llr,
++                                          uint32_t             crc_type,
++                                          uint8_t* const*      messages,
++                                          float*               avg_iter)
++{
++  if (q == nullptr || nof_cb == 0 || nof_cb > LDPC_CUDA_MAX_CB) {
++    return -1;
++  }
++  if (ldpc_cuda_configure(q, bg, ls, F, crc_type, nof_cb) < 0) {
++    return -1;
++  }
++  const uint32_t Kb = (bg == 1) ? 22 : 10, Pc = (bg == 1) ? 46 : 42;
++  const uint32_t N_full = (Kb + Pc) * ls, liftK = Kb * ls, K_words = (liftK + 31) / 32, skip = 2 * ls;
++  if (n_llr > N_full - skip) {
++    n_llr = N_full - skip;
++  }
++  // Fill fp16 LLRs: punctured 2Z zeros, then the dematched LLRs, then zeros.
++  for (uint32_t c = 0; c < nof_cb; c++) {
++    __half*       dst = q->llr + (size_t)c * N_full;
++    const int8_t* src = llrs[c];
++    for (uint32_t i = 0; i < skip; i++) dst[i] = __float2half(0.f);
++    for (uint32_t i = 0; i < n_llr; i++) dst[skip + i] = __float2half((float)src[i]);
++    for (uint32_t i = skip + n_llr; i < N_full; i++) dst[i] = __float2half(0.f);
++  }
++  if (ldpc_decoder_decode_batch_half(q->dec, q->llr, q->out, (int)nof_cb, q->stream) != NR_LDPC_SUCCESS) {
++    fprintf(stderr, "[ldpc_cuda] decode_batch_half failed (nof_cb=%u)\n", nof_cb);
++    return -1;
++  }
++  if (avg_iter != nullptr) {
++    ldpc_decoder_flush_iteration_stats(q->dec, q->stream);
++  }
++  LDPC_CUDA_CK(ldpc_cuda_sync(q));
++  for (uint32_t c = 0; c < nof_cb; c++) {
++    const uint32_t* w   = q->out + (size_t)c * K_words;
++    uint8_t*        msg = messages[c];
++    for (uint32_t i = 0; i < liftK; i++) {
++      msg[i] = (uint8_t)((w[i / 32] >> cuda_bitpos(i)) & 1u);
++    }
++  }
++  if (avg_iter != nullptr) {
++    bool  ready = false;
++    float it    = ldpc_decoder_get_avg_iterations_async(q->dec, &ready);
++    *avg_iter   = ready ? it : (float)q->max_nof_iter;
++  }
++  return 0;
++}
+diff --git a/lib/src/phy/phch/CMakeLists.txt b/lib/src/phy/phch/CMakeLists.txt
+index ff708c6..7e0f89d 100644
+--- a/lib/src/phy/phch/CMakeLists.txt
++++ b/lib/src/phy/phch/CMakeLists.txt
+@@ -20,4 +20,7 @@
+ 
+ file(GLOB SOURCES "*.c")
+ add_library(srsran_phch OBJECT ${SOURCES})
++if (SRSRAN_LDPC_CUDA)
++    target_compile_definitions(srsran_phch PRIVATE SRSRAN_LDPC_CUDA)
++endif (SRSRAN_LDPC_CUDA)
+ add_subdirectory(test)
+diff --git a/lib/src/phy/phch/prach.c b/lib/src/phy/phch/prach.c
+index 0c3bdbe..7f1d847 100644
+--- a/lib/src/phy/phch/prach.c
++++ b/lib/src/phy/phch/prach.c
+@@ -558,7 +558,7 @@ int srsran_prach_set_cfg(srsran_prach_t* p, srsran_prach_cfg_t* cfg, uint32_t no
+ int srsran_prach_init(srsran_prach_t* p, uint32_t max_N_ifft_ul)
+ {
+   int ret = SRSRAN_ERROR;
+-  if (p != NULL && max_N_ifft_ul < 2049) {
++  if (p != NULL && max_N_ifft_ul < 4097) { /* local: 4096 for 270 PRB */
+     bzero(p, sizeof(srsran_prach_t));
+ 
+     p->max_N_ifft_ul = max_N_ifft_ul;
+@@ -622,7 +622,7 @@ int srsran_prach_set_cell_(srsran_prach_t*      p,
+                            srsran_tdd_config_t* tdd_config)
+ {
+   int ret = SRSRAN_ERROR;
+-  if (p != NULL && N_ifft_ul < 2049 && cfg->config_idx < 64 && cfg->root_seq_idx < MAX_ROOTS) {
++  if (p != NULL && N_ifft_ul < 4097 && cfg->config_idx < 64 && cfg->root_seq_idx < MAX_ROOTS) { /* local */
+     if (N_ifft_ul > p->max_N_ifft_ul) {
+       ERROR("PRACH: Error in set_cell(): N_ifft_ul (%d) must be lower or equal max_N_ifft_ul (%d) in init()",
+             N_ifft_ul,
+diff --git a/lib/src/phy/phch/pucch_cfg_nr.c b/lib/src/phy/phch/pucch_cfg_nr.c
+index 4d12889..b9275af 100644
+--- a/lib/src/phy/phch/pucch_cfg_nr.c
++++ b/lib/src/phy/phch/pucch_cfg_nr.c
+@@ -165,7 +165,7 @@ int srsran_pucch_nr_cfg_resource_valid(const srsran_pucch_nr_resource_t* resourc
+     return SRSRAN_ERROR_INVALID_INPUTS;
+   }
+ 
+-  if (resource->starting_prb > SRSRAN_MAX_NRE_NR - 1) {
++  if (resource->starting_prb > SRSRAN_MAX_PRB_NR - 1) { /* local S4: was SRSRAN_MAX_NRE_NR (156), rejects PUCCH above PRB 155 on wide carriers */
+     return SRSRAN_ERROR;
+   }
+ 
+@@ -175,7 +175,7 @@ int srsran_pucch_nr_cfg_resource_valid(const srsran_pucch_nr_resource_t* resourc
+     return SRSRAN_ERROR;
+   }
+ 
+-  if (resource->second_hop_prb > SRSRAN_MAX_NRE_NR - 1) {
++  if (resource->second_hop_prb > SRSRAN_MAX_PRB_NR - 1) { /* local S4 */
+     return SRSRAN_ERROR;
+   }
+ 
+diff --git a/lib/src/phy/phch/sch_nr.c b/lib/src/phy/phch/sch_nr.c
+index cab53cd..fd78028 100644
+--- a/lib/src/phy/phch/sch_nr.c
++++ b/lib/src/phy/phch/sch_nr.c
+@@ -28,6 +28,12 @@
+ #include "srsran/phy/utils/bit.h"
+ #include "srsran/phy/utils/debug.h"
+ #include "srsran/phy/utils/vector.h"
++#include <stdlib.h>
++#include <string.h>
++#include <time.h>
++#ifdef SRSRAN_LDPC_CUDA
++#include "srsran/phy/fec/ldpc/ldpc_dec_cuda.h"
++#endif
+ 
+ #define SCH_INFO_TX(...) INFO("SCH Tx: " __VA_ARGS__)
+ #define SCH_INFO_RX(...) INFO("SCH Rx: " __VA_ARGS__)
+@@ -356,6 +362,25 @@ int srsran_sch_nr_init_rx(srsran_sch_nr_t* q, const srsran_sch_nr_args_t* args)
+     return SRSRAN_ERROR;
+   }
+ 
++#ifdef SRSRAN_LDPC_CUDA
++  {
++    // Local S1: SRSRAN_LDPC_DECODER=cuda decodes all code blocks of a TB in one GPU call (falls back to CPU on error)
++    const char* sel_cuda = getenv("SRSRAN_LDPC_DECODER");
++    if (sel_cuda != NULL && strcmp(sel_cuda, "cuda") == 0 && q->cuda == NULL) {
++      q->cuda = srsran_ldpc_cuda_create(args->max_nof_iter, scaling_factor);
++      if (q->cuda != NULL) {
++        q->temp_cb_batch = srsran_vec_u8_malloc(SRSRAN_LDPC_MAX_LEN_CB * SRSRAN_SCH_NR_MAX_NOF_CB_LDPC);
++        if (q->temp_cb_batch == NULL) {
++          srsran_ldpc_cuda_free((srsran_ldpc_cuda_t*)q->cuda);
++          q->cuda = NULL;
++        }
++      } else {
++        fprintf(stderr, "[ldpc_cuda] GPU decoder unavailable, using the CPU decoder\n");
++      }
++    }
++  }
++#endif // SRSRAN_LDPC_CUDA
++
+   return SRSRAN_SUCCESS;
+ }
+ 
+@@ -402,6 +427,17 @@ void srsran_sch_nr_free(srsran_sch_nr_t* q)
+ 
+   srsran_ldpc_rm_tx_free(&q->tx_rm);
+   srsran_ldpc_rm_rx_free_c(&q->rx_rm);
++
++#ifdef SRSRAN_LDPC_CUDA
++  if (q->cuda != NULL) {
++    srsran_ldpc_cuda_free((srsran_ldpc_cuda_t*)q->cuda);
++    q->cuda = NULL;
++  }
++  if (q->temp_cb_batch != NULL) {
++    free(q->temp_cb_batch);
++    q->temp_cb_batch = NULL;
++  }
++#endif // SRSRAN_LDPC_CUDA
+ }
+ 
+ static inline int sch_nr_encode(srsran_sch_nr_t*        q,
+@@ -551,6 +587,108 @@ static inline int sch_nr_encode(srsran_sch_nr_t*        q,
+   return SRSRAN_SUCCESS;
+ }
+ 
++#ifdef SRSRAN_LDPC_CUDA
++/**
++ * Local S1: rate-dematch every pending code block, decode them in one GPU call, then check CRC and pack like the
++ * per-CB CPU loop does. Returns SRSRAN_SUCCESS when the GPU path handled the TB, SRSRAN_ERROR to fall back.
++ */
++static int sch_nr_decode_cuda_cbs(srsran_sch_nr_t*               q,
++                                  const srsran_sch_nr_tb_info_t* cfg,
++                                  const srsran_sch_tb_t*         tb,
++                                  srsran_ldpc_decoder_t*         decoder,
++                                  int8_t*                        e_bits,
++                                  uint32_t*                      cb_ok,
++                                  uint32_t*                      nof_iter_sum)
++{
++  const int8_t* llr_ptrs[SRSRAN_SCH_NR_MAX_NOF_CB_LDPC];
++  uint8_t*      msg_ptrs[SRSRAN_SCH_NR_MAX_NOF_CB_LDPC];
++  uint32_t      cb_idx[SRSRAN_SCH_NR_MAX_NOF_CB_LDPC];
++  uint32_t      n          = 0;
++  uint32_t      n_llr      = 0;
++  uint32_t      ok_before  = 0;
++  int8_t*       input_ptr  = e_bits;
++  uint32_t      j          = 0;
++  uint32_t      cb_len     = cfg->Kp - cfg->L_cb;
++
++  for (uint32_t r = 0; r < cfg->C; r++) {
++    bool    decoded   = tb->softbuffer.rx->cb_crc[r];
++    int8_t* rm_buffer = (int8_t*)tb->softbuffer.tx->buffer_b[r];
++    if (!rm_buffer) {
++      return SRSRAN_ERROR;
++    }
++    if (!cfg->mask[r]) {
++      if (decoded) {
++        ok_before++;
++      }
++      continue;
++    }
++    uint32_t E = sch_nr_get_E(cfg, j);
++    j++;
++    if (decoded) {
++      ok_before++;
++      continue; // same as the CPU loop: input_ptr is not advanced for already decoded CBs
++    }
++    int ret = srsran_ldpc_rm_rx_c(&q->rx_rm, input_ptr, rm_buffer, E, cfg->F, cfg->bg, cfg->Z, tb->rv, tb->mod, cfg->Nref);
++    if (ret < SRSRAN_SUCCESS) {
++      return SRSRAN_ERROR;
++    }
++    n_llr       = (uint32_t)ret;
++    llr_ptrs[n] = rm_buffer;
++    msg_ptrs[n] = q->temp_cb_batch + (size_t)n * SRSRAN_LDPC_MAX_LEN_CB;
++    cb_idx[n]   = r;
++    n++;
++    input_ptr += E;
++  }
++  *cb_ok += ok_before;
++  if (n == 0) {
++    return SRSRAN_SUCCESS;
++  }
++
++  srsran_crc_t* crc      = (cfg->L_tb == 16) ? &q->crc_tb_16 : &q->crc_tb_24;
++  uint32_t      crc_type = (cfg->L_tb == 16) ? 16 : 241;
++  if (cfg->L_cb) {
++    crc      = &q->crc_cb;
++    crc_type = 242;
++  }
++  float avg_iter = 0.0f;
++  if (srsran_ldpc_cuda_decode_tb((srsran_ldpc_cuda_t*)q->cuda, (cfg->bg == BG1) ? 1 : 2, cfg->Z, cfg->F, n, llr_ptrs, n_llr, crc_type, msg_ptrs, &avg_iter) < 0) {
++    return SRSRAN_ERROR;
++  }
++  uint32_t iter_ok = (uint32_t)(avg_iter + 0.5f);
++  if (iter_ok == 0) {
++    iter_ok = 1;
++  }
++  for (uint32_t k = 0; k < n; k++) {
++    uint32_t r   = cb_idx[k];
++    uint8_t* msg = msg_ptrs[k];
++    bool     ok  = srsran_crc_match(crc, msg, (int)(decoder->liftK - crc->order));
++    tb->softbuffer.rx->cb_crc[r] = ok;
++    *nof_iter_sum += ok ? iter_ok : decoder->max_nof_iter;
++    if (ok) {
++      srsran_bit_pack_vector(msg, tb->softbuffer.rx->data[r], cb_len);
++      (*cb_ok)++;
++    }
++  }
++  return SRSRAN_SUCCESS;
++}
++#endif // SRSRAN_LDPC_CUDA
++
++/* Local S1 diagnostic: SRSRAN_SCH_TIMING=1 prints p50/p90/p99 of the per-TB decode section every 1000 TBs. */
++static int    sch_timing_enabled = -1;
++static double sch_timing_buf[1000];
++static int    sch_timing_n = 0;
++static int    sch_timing_cmp(const void* a, const void* b) { double x = *(const double*)a, y = *(const double*)b; return (x > y) - (x < y); }
++static inline double sch_timing_now_us(void) { struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts); return ts.tv_sec * 1e6 + ts.tv_nsec / 1e3; }
++static void sch_timing_add(double us, uint32_t C, uint32_t nof_prb_hint, const char* backend)
++{
++  sch_timing_buf[sch_timing_n++] = us;
++  if (sch_timing_n == 1000) {
++    qsort(sch_timing_buf, 1000, sizeof(double), sch_timing_cmp);
++    fprintf(stderr, "[sch_timing] backend=%s last_C=%u p50=%.0f p90=%.0f p99=%.0f max=%.0f us\n", backend, C, sch_timing_buf[500], sch_timing_buf[900], sch_timing_buf[990], sch_timing_buf[999]);
++    sch_timing_n = 0;
++  }
++}
++
+ static int sch_nr_decode(srsran_sch_nr_t*        q,
+                          const srsran_sch_cfg_t* sch_cfg,
+                          const srsran_sch_tb_t*  tb,
+@@ -607,6 +745,19 @@ static int sch_nr_decode(srsran_sch_nr_t*        q,
+   uint32_t cb_ok = 0;
+   res->crc       = false;
+ 
++  if (sch_timing_enabled < 0) {
++    const char* te = getenv("SRSRAN_SCH_TIMING");
++    sch_timing_enabled = (te != NULL && te[0] != '0') ? 1 : 0;
++  }
++  double sch_t0 = sch_timing_enabled ? sch_timing_now_us() : 0.0;
++
++  bool cuda_done = false;
++#ifdef SRSRAN_LDPC_CUDA
++  if (q->cuda != NULL) {
++    cuda_done = (sch_nr_decode_cuda_cbs(q, &cfg, tb, decoder, e_bits, &cb_ok, &nof_iter_sum) == SRSRAN_SUCCESS);
++  }
++#endif // SRSRAN_LDPC_CUDA
++  if (!cuda_done) {
+   // For each code block...
+   uint32_t j = 0;
+   for (uint32_t r = 0; r < cfg.C; r++) {
+@@ -691,6 +842,10 @@ static int sch_nr_decode(srsran_sch_nr_t*        q,
+ 
+     input_ptr += E;
+   }
++  } // !cuda_done
++  if (sch_timing_enabled) {
++    sch_timing_add(sch_timing_now_us() - sch_t0, cfg.C, 0, cuda_done ? "cuda" : "cpu");
++  }
+   // Set average number of iterations
+   res->avg_iter = (float)nof_iter_sum / (float)cfg.C;
+ 
+@@ -767,6 +922,121 @@ int srsran_dlsch_nr_decode(srsran_sch_nr_t*        q,
+   return sch_nr_decode(q, sch_cfg, tb, e_bits, res);
+ }
+ 
++#ifdef SRSRAN_LDPC_CUDA
++#include "srsran/phy/ue/ue_dl_cuda.h"
++static const uint32_t sch_nr_basek0[4][2] = {{0, 0}, {17, 13}, {33, 25}, {56, 43}};
++
++int srsran_dlsch_nr_decode_device(srsran_sch_nr_t*        q,
++                                  const srsran_sch_cfg_t* sch_cfg,
++                                  const srsran_sch_tb_t*  tb,
++                                  void*                   ue_dl_cuda,
++                                  const void*             d_llrs,
++                                  srsran_sch_tb_res_nr_t* res)
++{
++  if (!q || !sch_cfg || !tb || !res || !ue_dl_cuda || !d_llrs || q->cuda == NULL) {
++    return SRSRAN_ERROR;
++  }
++  if (!tb->softbuffer.rx || !res->payload || tb->rv < 0 || tb->rv > 3) {
++    return SRSRAN_ERROR;
++  }
++  srsran_sch_nr_tb_info_t cfg = {};
++  if (srsran_sch_nr_fill_tb_info(&q->carrier, sch_cfg, tb, &cfg) < SRSRAN_SUCCESS) {
++    return SRSRAN_ERROR;
++  }
++  srsran_ldpc_decoder_t* decoder = (cfg.bg == BG1) ? q->decoder_bg1[cfg.Z] : q->decoder_bg2[cfg.Z];
++  srsran_crc_t*          crc_tb  = (cfg.L_tb == 24) ? &q->crc_tb_24 : &q->crc_tb_16;
++  if (decoder == NULL || cfg.C == 0 || cfg.C > SRSRAN_SCH_NR_MAX_NOF_CB_LDPC || cfg.Cp != cfg.C) {
++    return SRSRAN_ERROR;
++  }
++  if (tb->softbuffer.rx->max_cb < cfg.Cp || tb->softbuffer.rx->max_cb_size < (decoder->liftN - 2 * cfg.Z)) {
++    return SRSRAN_ERROR;
++  }
++  // The GPU path has no soft combining: every code block must be a fresh one
++  for (uint32_t r = 0; r < cfg.C; r++) {
++    if (tb->softbuffer.rx->cb_crc[r] || !cfg.mask[r]) {
++      return SRSRAN_ERROR;
++    }
++  }
++  uint32_t E[SRSRAN_SCH_NR_MAX_NOF_CB_LDPC];
++  uint32_t off[SRSRAN_SCH_NR_MAX_NOF_CB_LDPC];
++  uint8_t* msg[SRSRAN_SCH_NR_MAX_NOF_CB_LDPC];
++  uint32_t o = 0;
++  for (uint32_t r = 0; r < cfg.C; r++) {
++    E[r]   = sch_nr_get_E(&cfg, r);
++    off[r] = o;
++    msg[r] = q->temp_cb_batch + (size_t)r * SRSRAN_LDPC_MAX_LEN_CB;
++    o += E[r];
++  }
++  if (o != cfg.G) {
++    return SRSRAN_ERROR;
++  }
++  // Circular buffer as in srsran_ldpc_rm_rx_c (init_rm)
++  uint32_t bgi    = (cfg.bg == BG1) ? 0 : 1;
++  uint32_t N      = cfg.Z * ((cfg.bg == BG1) ? 66 : 50);
++  uint32_t basek0 = sch_nr_basek0[tb->rv][bgi];
++  uint32_t Ncb    = N;
++  uint32_t k0     = cfg.Z * basek0;
++  if (N > cfg.Nref) {
++    Ncb = cfg.Nref;
++    k0  = cfg.Z * ((basek0 * cfg.Nref) / N);
++  }
++  srsran_crc_t* crc      = (cfg.L_tb == 16) ? &q->crc_tb_16 : &q->crc_tb_24;
++  uint32_t      crc_type = (cfg.L_tb == 16) ? 16 : 241;
++  if (cfg.L_cb) {
++    crc      = &q->crc_cb;
++    crc_type = 242;
++  }
++  float avg_iter = 0.0f;
++  if (srsran_ue_dl_cuda_decode_cbs((srsran_ue_dl_cuda_t*)ue_dl_cuda, q->cuda, (cfg.bg == BG1) ? 1 : 2, cfg.Z, cfg.F, cfg.C, d_llrs, E, off, cfg.Qm, k0, Ncb, crc_type, msg, &avg_iter) < 0) {
++    return SRSRAN_ERROR;
++  }
++  uint32_t iter_ok = (uint32_t)(avg_iter + 0.5f);
++  if (iter_ok == 0) {
++    iter_ok = 1;
++  }
++  uint32_t cb_ok        = 0;
++  uint32_t nof_iter_sum = 0;
++  uint32_t cb_len       = cfg.Kp - cfg.L_cb;
++  for (uint32_t r = 0; r < cfg.C; r++) {
++    bool ok                      = srsran_crc_match(crc, msg[r], (int)(decoder->liftK - crc->order));
++    tb->softbuffer.rx->cb_crc[r] = ok;
++    nof_iter_sum += ok ? iter_ok : decoder->max_nof_iter;
++    if (ok) {
++      srsran_bit_pack_vector(msg[r], tb->softbuffer.rx->data[r], cb_len);
++      cb_ok++;
++    }
++  }
++  res->avg_iter = (float)nof_iter_sum / (float)cfg.C;
++  res->crc      = false;
++  if (cb_ok != cfg.C) {
++    return SRSRAN_SUCCESS;
++  }
++  uint32_t checksum2  = 0;
++  uint8_t* output_ptr = res->payload;
++  for (uint32_t r = 0; r < cfg.C; r++) {
++    uint32_t len = cfg.Kp - cfg.L_cb;
++    if (r == cfg.C - 1) {
++      len -= cfg.L_tb;
++    }
++    srsran_vec_u8_copy(output_ptr, tb->softbuffer.rx->data[r], len / 8);
++    output_ptr += len / 8;
++    if (cfg.C > 1 && r == cfg.C - 1) {
++      uint8_t  tb_crc_unpacked[24] = {};
++      uint8_t* tb_crc_unpacked_ptr = tb_crc_unpacked;
++      srsran_bit_unpack_vector(&tb->softbuffer.rx->data[r][len / 8], tb_crc_unpacked, cfg.L_tb);
++      checksum2 = srsran_bit_pack(&tb_crc_unpacked_ptr, cfg.L_tb);
++    }
++  }
++  if (cfg.C == 1) {
++    res->crc = true;
++  } else {
++    uint32_t checksum1 = srsran_crc_checksum_byte(crc_tb, res->payload, tb->tbs);
++    res->crc           = (checksum1 == checksum2);
++  }
++  return SRSRAN_SUCCESS;
++}
++#endif // SRSRAN_LDPC_CUDA
++
+ int srsran_ulsch_nr_encode(srsran_sch_nr_t*        q,
+                            const srsran_sch_cfg_t* pdsch_cfg,
+                            const srsran_sch_tb_t*  tb,
+diff --git a/lib/src/phy/ue/CMakeLists.txt b/lib/src/phy/ue/CMakeLists.txt
+index 1f01a4a..a67b9a0 100644
+--- a/lib/src/phy/ue/CMakeLists.txt
++++ b/lib/src/phy/ue/CMakeLists.txt
+@@ -19,6 +19,14 @@
+ #
+ 
+ file(GLOB SOURCES "*.c")
++if (SRSRAN_LDPC_CUDA)
++    list(APPEND SOURCES ue_dl_cuda.cu)
++endif (SRSRAN_LDPC_CUDA)
+ add_library(srsran_ue OBJECT ${SOURCES})
++if (SRSRAN_LDPC_CUDA)
++    target_include_directories(srsran_ue PRIVATE ${SRSRAN_LDPC_CUDA_ROOT}/include ${CUDAToolkit_INCLUDE_DIRS})
++    target_compile_definitions(srsran_ue PRIVATE SRSRAN_LDPC_CUDA)
++    set_target_properties(srsran_ue PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
++endif (SRSRAN_LDPC_CUDA)
+ 
+ add_subdirectory(test)
+\ No newline at end of file
+diff --git a/lib/src/phy/ue/ue_dl_cuda.cu b/lib/src/phy/ue/ue_dl_cuda.cu
+new file mode 100644
+index 0000000..68517ab
+--- /dev/null
++++ b/lib/src/phy/ue/ue_dl_cuda.cu
+@@ -0,0 +1,688 @@
++/**
++ * Local S2 (2026-10-29): GPU front end for the srsUE NR downlink, see ue_dl_cuda.h.
++ * Built only with SRSRAN_LDPC_CUDA=ON (OCUDU lib/phy/cuda headers + libocudu_phy_cuda.a, cuFFT).
++ */
++#include "srsran/config.h"
++#include "srsran/phy/fec/ldpc/ldpc_dec_cuda.h"
++#include "srsran/phy/ue/ue_dl_cuda.h"
++#include "ocudu_phy_cuda.h"
++#include "ldpc_decoder.h"
++#include "pusch_e2e.h"
++#include <cuda_bf16.h>
++#include <cuda_fp16.h>
++#include <cuda_runtime.h>
++#include <cufft.h>
++#include <chrono>
++#include <cmath>
++#include <cstdio>
++#include <cstdlib>
++#include <cstring>
++#include <sched.h>
++
++#define UEDL_MAX_CB 152          // SRSRAN_SCH_NR_MAX_NOF_CB_LDPC
++#define UEDL_MAX_N (68 * 384)    // BG1 Z=384 codeword incl. punctured bits
++#define UEDL_NSYMB 14
++#define UEDL_LLR_CLAMP 48.0f     // |LLR| bound after accumulation (fp16, decoder clamp is 127)
++#define UEDL_FILLER_LLR 48.0f    // filler bits are known zeros: large positive LLR
++
++#define UEDL_CK(x)                                                                                                   \
++  do {                                                                                                               \
++    cudaError_t e_ = (x);                                                                                            \
++    if (e_ != cudaSuccess) {                                                                                         \
++      fprintf(stderr, "[ue_dl_cuda] %s failed: %s\n", #x, cudaGetErrorString(e_));                                   \
++      return -1;                                                                                                     \
++    }                                                                                                                \
++  } while (0)
++
++struct srsran_ue_dl_cuda_s {
++  uint32_t     mode;
++  uint32_t     max_prb;
++  cudaStream_t stream;
++  cudaEvent_t  ev0, ev1;
++  int          sync_mode; // 0 spin, 1 block, 2 yield-poll
++  bool         verbose;
++
++  // OFDM
++  cufftHandle plan;
++  bool        plan_ok;
++  uint32_t    plan_N;
++  uint32_t    nof_prb;
++  uint32_t    symbol_sz;
++  float2*     fft_in;   // device [14 * N]
++  float2*     fft_out;  // device [14 * N]
++  uint32_t*   grid_bf16; // managed [14 * max_prb * 12]
++  float2*     phase;     // managed [14]
++  const void* reg_ptr;   // host buffer registered for device access
++  size_t      reg_len;
++  void*       reg_dev;
++
++  // PDSCH
++  pusch_e2e_handle_t e2e;
++  bool               e2e_ok;
++  pusch_e2e_config_t e2e_cfg;
++  bool               warm;
++  int*               re_idx;   // managed [max_re]
++  uint32_t           max_re;
++  __half*            llrs;     // device [max_re * 8]
++  __half*            llr_cb;   // device [UEDL_MAX_CB * UEDL_MAX_N]
++  uint32_t*          d_E;      // managed [UEDL_MAX_CB]
++  uint32_t*          d_off;    // managed [UEDL_MAX_CB]
++  srsran_ue_dl_cuda_meas_t*  pending_meas;
++  bool                       meas_launched;
++  srsran_ue_dl_cuda_timing_t timing;
++};
++
++static double now_us()
++{
++  return std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now().time_since_epoch()).count();
++}
++
++static cudaError_t uedl_sync(srsran_ue_dl_cuda_t* q)
++{
++  if (q->sync_mode != 2) {
++    return cudaStreamSynchronize(q->stream);
++  }
++  double      t0 = now_us();
++  cudaError_t err;
++  while ((err = cudaStreamQuery(q->stream)) == cudaErrorNotReady) {
++    if (now_us() - t0 > 40.0) {
++      sched_yield();
++    }
++  }
++  return err;
++}
++
++// ------------------------------------------------------------------------------------------------------------------
++// Kernels
++// ------------------------------------------------------------------------------------------------------------------
++
++__device__ __forceinline__ uint32_t pack_cbf16(float re, float im)
++{
++  __nv_bfloat16 r = __float2bfloat16(re);
++  __nv_bfloat16 i = __float2bfloat16(im);
++  return (uint32_t)__bfloat16_as_ushort(r) | ((uint32_t)__bfloat16_as_ushort(i) << 16);
++}
++
++/// CP removal / DFT window placement: 14 symbols of N samples, contiguous.
++__global__ void k_gather(const float2* __restrict__ in, float2* __restrict__ out, int N, int cp1, int cp2, int slot_sz, int woff)
++{
++  int idx = blockIdx.x * blockDim.x + threadIdx.x;
++  if (idx >= UEDL_NSYMB * N) {
++    return;
++  }
++  int l     = idx / N;
++  int n     = idx - l * N;
++  int s     = l / 7;
++  int i     = l - s * 7;
++  int start = cp1 + s * slot_sz + i * (N + cp2) - woff;
++  out[idx]  = in[start + n];
++}
++
++/// FFT shift, DC handling, window-offset phase ramp, phase compensation, normalisation; float + bf16 outputs.
++__global__ void k_post(const float2* __restrict__ f,
++                       float2* __restrict__ grid,
++                       uint32_t* __restrict__ gridbf,
++                       int N,
++                       int nof_re,
++                       int dc,
++                       float woff,
++                       const float2* __restrict__ phase,
++                       float norm)
++{
++  int idx = blockIdx.x * blockDim.x + threadIdx.x;
++  if (idx >= UEDL_NSYMB * nof_re) {
++    return;
++  }
++  int    l   = idx / nof_re;
++  int    k   = idx - l * nof_re;
++  int    bin = (k < nof_re / 2) ? (N - nof_re / 2 + k) : (k - nof_re / 2 + dc);
++  float2 v   = f[l * N + bin];
++  if (woff != 0.0f) {
++    float s, c;
++    sincospif(2.0f * woff * (float)bin / (float)N, &s, &c);
++    v = make_float2(v.x * c - v.y * s, v.x * s + v.y * c);
++  }
++  // multiply by conj(phase[l]) * norm
++  float2 p = phase[l];
++  float2 o = make_float2((v.x * p.x + v.y * p.y) * norm, (v.y * p.x - v.x * p.y) * norm);
++  grid[idx]   = o;
++  gridbf[idx] = pack_cbf16(o.x, o.y);
++}
++
++__global__ void k_f2bf(const float2* __restrict__ grid, uint32_t* __restrict__ gridbf, int n)
++{
++  int idx = blockIdx.x * blockDim.x + threadIdx.x;
++  if (idx < n) {
++    float2 v    = grid[idx];
++    gridbf[idx] = pack_cbf16(v.x, v.y);
++  }
++}
++
++/**
++ * Rate dematching, one thread per output LLR of every code block. Mirrors srsran_ldpc_rm_rx_c(): the e-th
++ * received LLR of a code block (after bit de-interleaving) lands on the e-th non-filler position of the circular
++ * buffer walked from k0; repetitions are accumulated and clamped; filler positions get a large positive LLR; the
++ * first 2Z (punctured) positions and positions beyond Ncb are zero.
++ */
++__global__ void k_dematch(const __half* __restrict__ llrs,
++                          const uint32_t* __restrict__ E_cb,
++                          const uint32_t* __restrict__ off_cb,
++                          __half* __restrict__ out,
++                          int nof_cb,
++                          int N_full,
++                          int Z,
++                          int Ncb,
++                          int k0,
++                          int ini,
++                          int end,
++                          int Qm)
++{
++  int idx = blockIdx.x * blockDim.x + threadIdx.x;
++  if (idx >= nof_cb * N_full) {
++    return;
++  }
++  int cb  = idx / N_full;
++  int p   = idx - cb * N_full;
++  int pos = p - 2 * Z;
++  float val = 0.0f;
++  if (pos >= 0 && pos < Ncb) {
++    if (pos >= ini && pos < end) {
++      val = UEDL_FILLER_LLR;
++    } else {
++      int kk = (k0 >= ini && k0 < end) ? end : k0; // a start inside the fillers equals a start right after them
++      int rank;
++      if (kk < ini) {
++        // walk: [kk,ini) [end,Ncb) [0,kk)
++        if (pos >= kk && pos < ini) {
++          rank = pos - kk;
++        } else if (pos >= end) {
++          rank = (ini - kk) + (pos - end);
++        } else {
++          rank = (ini - kk) + (Ncb - end) + pos;
++        }
++      } else {
++        // kk >= end, walk: [kk,Ncb) [0,ini) [end,kk)
++        if (pos >= kk) {
++          rank = pos - kk;
++        } else if (pos < ini) {
++          rank = (Ncb - kk) + pos;
++        } else {
++          rank = (Ncb - kk) + ini + (pos - end);
++        }
++      }
++      int E    = (int)E_cb[cb];
++      int off  = (int)off_cb[cb];
++      int m    = Ncb - (end - ini);
++      int cols = E / Qm;
++      float acc = 0.0f;
++      for (int k = rank; k < E; k += m) {
++        int i = k / cols;
++        int j = k - i * cols;
++        acc += __half2float(llrs[off + j * Qm + i]);
++      }
++      val = fminf(fmaxf(acc, -UEDL_LLR_CLAMP), UEDL_LLR_CLAMP);
++    }
++  }
++  out[idx] = __float2half(val);
++}
++
++// ------------------------------------------------------------------------------------------------------------------
++// Context
++// ------------------------------------------------------------------------------------------------------------------
++
++static uint32_t uedl_mode_from_env()
++{
++  const char* e = getenv("SRSRAN_UE_DL_CUDA");
++  if (e == nullptr || e[0] == '\0' || e[0] == '0') {
++    return 0;
++  }
++  uint32_t m = 0;
++  if (strstr(e, "all")) {
++    m = SRSRAN_UE_DL_CUDA_FFT | SRSRAN_UE_DL_CUDA_PDSCH;
++  }
++  if (strstr(e, "fft")) {
++    m |= SRSRAN_UE_DL_CUDA_FFT;
++  }
++  if (strstr(e, "pdsch")) {
++    m |= SRSRAN_UE_DL_CUDA_PDSCH;
++  }
++  return m;
++}
++
++extern "C" srsran_ue_dl_cuda_t* srsran_ue_dl_cuda_create(uint32_t max_prb, uint32_t mode)
++{
++  if (mode == 0) {
++    mode = uedl_mode_from_env();
++  }
++  if (mode == 0 || max_prb == 0) {
++    return nullptr;
++  }
++  if (ocudu_phy_cuda_init() != NR_LDPC_SUCCESS) {
++    fprintf(stderr, "[ue_dl_cuda] ocudu_phy_cuda_init failed\n");
++    return nullptr;
++  }
++  const char* sync_mode = getenv("SRSRAN_LDPC_CUDA_SYNC");
++  if (sync_mode != nullptr && strcmp(sync_mode, "block") == 0) {
++    cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync);
++  } else {
++    cudaSetDeviceFlags(cudaDeviceScheduleSpin);
++  }
++  srsran_ue_dl_cuda_t* q = new srsran_ue_dl_cuda_t();
++  q->mode     = mode;
++  q->max_prb  = max_prb;
++  q->sync_mode = (sync_mode == nullptr) ? 2 : (strcmp(sync_mode, "block") == 0) ? 1 : (strcmp(sync_mode, "spin") == 0) ? 0 : 2;
++  const char* v = getenv("SRSRAN_LDPC_CUDA_VERBOSE");
++  q->verbose    = (v != nullptr && v[0] != '0');
++  q->max_re     = max_prb * 12 * UEDL_NSYMB;
++  size_t max_N  = 4096; // up to 270 PRB at 15 kHz; replanned on demand
++  if (cudaStreamCreateWithFlags(&q->stream, cudaStreamNonBlocking) != cudaSuccess ||
++      cudaEventCreate(&q->ev0) != cudaSuccess || cudaEventCreate(&q->ev1) != cudaSuccess ||
++      cudaMalloc(&q->fft_in, sizeof(float2) * UEDL_NSYMB * max_N) != cudaSuccess ||
++      cudaMalloc(&q->fft_out, sizeof(float2) * UEDL_NSYMB * max_N) != cudaSuccess ||
++      cudaMallocManaged(&q->grid_bf16, sizeof(uint32_t) * q->max_re) != cudaSuccess ||
++      cudaMallocManaged(&q->phase, sizeof(float2) * UEDL_NSYMB) != cudaSuccess ||
++      cudaMallocManaged(&q->re_idx, sizeof(int) * q->max_re) != cudaSuccess ||
++      cudaMalloc(&q->llrs, sizeof(__half) * (size_t)q->max_re * 8) != cudaSuccess ||
++      cudaMalloc(&q->llr_cb, sizeof(__half) * (size_t)UEDL_MAX_CB * UEDL_MAX_N) != cudaSuccess ||
++      cudaMallocManaged(&q->d_E, sizeof(uint32_t) * UEDL_MAX_CB) != cudaSuccess ||
++      cudaMallocManaged(&q->d_off, sizeof(uint32_t) * UEDL_MAX_CB) != cudaSuccess) {
++    fprintf(stderr, "[ue_dl_cuda] allocation failed\n");
++    delete q;
++    return nullptr;
++  }
++  memset(q->grid_bf16, 0, sizeof(uint32_t) * q->max_re);
++  if (mode & SRSRAN_UE_DL_CUDA_PDSCH) {
++    if (pusch_e2e_create(&q->e2e) != NR_LDPC_SUCCESS) {
++      fprintf(stderr, "[ue_dl_cuda] pusch_e2e_create failed, PDSCH stays on the CPU\n");
++      q->e2e = nullptr;
++      q->mode &= ~SRSRAN_UE_DL_CUDA_PDSCH;
++    }
++  }
++  int dev = -1;
++  cudaGetDevice(&dev);
++  cudaDeviceProp prop{};
++  cudaGetDeviceProperties(&prop, dev);
++  fprintf(stderr,
++          "[ue_dl_cuda] mode=%s%s device=%s max_prb=%u sync=%s\n",
++          (q->mode & SRSRAN_UE_DL_CUDA_FFT) ? "fft " : "",
++          (q->mode & SRSRAN_UE_DL_CUDA_PDSCH) ? "pdsch" : "",
++          prop.name,
++          max_prb,
++          q->sync_mode == 2 ? "yield" : q->sync_mode == 1 ? "block" : "spin");
++  return q;
++}
++
++extern "C" void srsran_ue_dl_cuda_free(srsran_ue_dl_cuda_t* q)
++{
++  if (q == nullptr) {
++    return;
++  }
++  if (q->plan_ok) {
++    cufftDestroy(q->plan);
++  }
++  if (q->e2e) {
++    pusch_e2e_destroy(q->e2e);
++  }
++  if (q->reg_ptr) {
++    cudaHostUnregister((void*)q->reg_ptr);
++  }
++  cudaFree(q->fft_in);
++  cudaFree(q->fft_out);
++  cudaFree(q->grid_bf16);
++  cudaFree(q->phase);
++  cudaFree(q->re_idx);
++  cudaFree(q->llrs);
++  cudaFree(q->llr_cb);
++  cudaFree(q->d_E);
++  cudaFree(q->d_off);
++  cudaEventDestroy(q->ev0);
++  cudaEventDestroy(q->ev1);
++  cudaStreamDestroy(q->stream);
++  delete q;
++}
++
++extern "C" uint32_t srsran_ue_dl_cuda_mode(const srsran_ue_dl_cuda_t* q)
++{
++  return q ? q->mode : 0;
++}
++
++extern "C" void srsran_ue_dl_cuda_set_mode(srsran_ue_dl_cuda_t* q, uint32_t mode)
++{
++  if (q) {
++    q->mode = mode & ((q->e2e ? SRSRAN_UE_DL_CUDA_PDSCH : 0) | SRSRAN_UE_DL_CUDA_FFT);
++  }
++}
++
++extern "C" float* srsran_ue_dl_cuda_alloc_grid(srsran_ue_dl_cuda_t* q, uint32_t nof_re_total)
++{
++  float* p = nullptr;
++  if (cudaMallocManaged(&p, sizeof(float2) * (size_t)nof_re_total) != cudaSuccess) {
++    return nullptr;
++  }
++  memset(p, 0, sizeof(float2) * (size_t)nof_re_total);
++  return p;
++}
++
++extern "C" void srsran_ue_dl_cuda_free_grid(srsran_ue_dl_cuda_t* q, float* grid)
++{
++  if (grid) {
++    cudaFree(grid);
++  }
++}
++
++extern "C" int srsran_ue_dl_cuda_set_carrier(srsran_ue_dl_cuda_t* q, uint32_t nof_prb, uint32_t symbol_sz)
++{
++  if (q == nullptr || nof_prb == 0 || nof_prb > q->max_prb || symbol_sz == 0 || symbol_sz > 4096) {
++    return -1;
++  }
++  q->nof_prb   = nof_prb;
++  q->symbol_sz = symbol_sz;
++  if (q->plan_ok && q->plan_N == symbol_sz) {
++    return 0;
++  }
++  if (q->plan_ok) {
++    cufftDestroy(q->plan);
++    q->plan_ok = false;
++  }
++  if (cufftPlan1d(&q->plan, (int)symbol_sz, CUFFT_C2C, UEDL_NSYMB) != CUFFT_SUCCESS) {
++    fprintf(stderr, "[ue_dl_cuda] cufftPlan1d(%u x %d) failed\n", symbol_sz, UEDL_NSYMB);
++    return -1;
++  }
++  cufftSetStream(q->plan, q->stream);
++  q->plan_ok = true;
++  q->plan_N  = symbol_sz;
++  // warm up the plan so the first slot does not pay for kernel loading
++  cudaMemsetAsync(q->fft_in, 0, sizeof(float2) * UEDL_NSYMB * symbol_sz, q->stream);
++  cufftExecC2C(q->plan, (cufftComplex*)q->fft_in, (cufftComplex*)q->fft_out, CUFFT_FORWARD);
++  cudaStreamSynchronize(q->stream);
++  if (q->verbose) {
++    fprintf(stderr, "[ue_dl_cuda] carrier nof_prb=%u symbol_sz=%u: cuFFT plan ready\n", nof_prb, symbol_sz);
++  }
++  return 0;
++}
++
++static int uedl_device_ptr(srsran_ue_dl_cuda_t* q, const void* host, size_t len, const void** dev)
++{
++  if (q->reg_ptr == host && q->reg_len >= len) {
++    *dev = q->reg_dev;
++    return 0;
++  }
++  if (q->reg_ptr) {
++    cudaHostUnregister((void*)q->reg_ptr);
++    q->reg_ptr = nullptr;
++  }
++  // Register the worker's receive buffer once; on the GB10 (pageable access) the host pointer is also usable.
++  void* d = nullptr;
++  if (cudaHostRegister((void*)host, len, cudaHostRegisterMapped) == cudaSuccess &&
++      cudaHostGetDevicePointer(&d, (void*)host, 0) == cudaSuccess) {
++    q->reg_ptr = host;
++    q->reg_len = len;
++    q->reg_dev = d;
++    *dev       = d;
++    return 0;
++  }
++  cudaGetLastError();
++  cudaDeviceProp prop{};
++  int            dev_id = 0;
++  cudaGetDevice(&dev_id);
++  cudaGetDeviceProperties(&prop, dev_id);
++  if (prop.pageableMemoryAccess) {
++    *dev = host;
++    return 0;
++  }
++  return -1;
++}
++
++extern "C" int srsran_ue_dl_cuda_fft(srsran_ue_dl_cuda_t*            q,
++                                     const float*                    in,
++                                     const srsran_ue_dl_cuda_ofdm_t* o,
++                                     float*                          grid)
++{
++  if (q == nullptr || !(q->mode & SRSRAN_UE_DL_CUDA_FFT) || !q->plan_ok || o == nullptr || in == nullptr ||
++      grid == nullptr) {
++    return -1;
++  }
++  if (o->symbol_sz != q->plan_N || o->nof_re > q->nof_prb * 12 || o->nof_re == 0) {
++    return -1;
++  }
++  const int N      = (int)o->symbol_sz;
++  size_t    in_len = sizeof(float2) * (size_t)N * 15;
++  const void* d_in = nullptr;
++  if (uedl_device_ptr(q, in, in_len, &d_in) < 0) {
++    return -1;
++  }
++  memcpy(q->phase, o->phase, sizeof(float2) * UEDL_NSYMB);
++  float norm = o->normalize ? (1.0f / sqrtf((float)N)) : 1.0f;
++  int   n1   = UEDL_NSYMB * N;
++  int   n2   = UEDL_NSYMB * (int)o->nof_re;
++  k_gather<<<(n1 + 255) / 256, 256, 0, q->stream>>>((const float2*)d_in, q->fft_in, N, (int)o->cp1, (int)o->cp2, (int)o->slot_sz, (int)o->window_offset_n);
++  if (cufftExecC2C(q->plan, (cufftComplex*)q->fft_in, (cufftComplex*)q->fft_out, CUFFT_FORWARD) != CUFFT_SUCCESS) {
++    fprintf(stderr, "[ue_dl_cuda] cufftExecC2C failed\n");
++    return -1;
++  }
++  k_post<<<(n2 + 255) / 256, 256, 0, q->stream>>>(q->fft_out, (float2*)grid, q->grid_bf16, N, (int)o->nof_re, (int)o->dc, (float)o->window_offset_n, q->phase, norm);
++  UEDL_CK(uedl_sync(q));
++  return 0;
++}
++
++extern "C" int srsran_ue_dl_cuda_grid_to_bf16(srsran_ue_dl_cuda_t* q, const float* grid, uint32_t nof_prb)
++{
++  if (q == nullptr || grid == nullptr || nof_prb == 0 || nof_prb > q->max_prb) {
++    return -1;
++  }
++  const void* d_grid = nullptr;
++  int         n      = (int)(UEDL_NSYMB * nof_prb * 12);
++  // a managed grid can be read directly; any other host grid is registered
++  cudaPointerAttributes attr{};
++  if (cudaPointerGetAttributes(&attr, grid) == cudaSuccess && attr.type == cudaMemoryTypeManaged) {
++    d_grid = grid;
++  } else {
++    cudaGetLastError();
++    if (uedl_device_ptr(q, grid, sizeof(float2) * (size_t)n, &d_grid) < 0) {
++      return -1;
++    }
++  }
++  k_f2bf<<<(n + 255) / 256, 256, 0, q->stream>>>((const float2*)d_grid, q->grid_bf16, n);
++  UEDL_CK(uedl_sync(q));
++  return 0;
++}
++
++// ------------------------------------------------------------------------------------------------------------------
++// PDSCH
++// ------------------------------------------------------------------------------------------------------------------
++
++static bool e2e_needs_configure(const pusch_e2e_config_t& a, const pusch_e2e_config_t& b)
++{
++  return a.nof_prb != b.nof_prb || a.nof_symbols != b.nof_symbols || a.grid_nof_subcarriers != b.grid_nof_subcarriers ||
++         a.dmrs_type != b.dmrs_type || a.nof_cdm_groups_without_data != b.nof_cdm_groups_without_data ||
++         a.scrambling_id != b.scrambling_id || a.n_scid != b.n_scid || a.dmrs_scaling != b.dmrs_scaling ||
++         a.start_symbol != b.start_symbol;
++}
++
++extern "C" int srsran_ue_dl_cuda_pdsch_llrs(srsran_ue_dl_cuda_t*             q,
++                                            const srsran_ue_dl_cuda_pdsch_t* c,
++                                            const void**                     d_llrs,
++                                            srsran_ue_dl_cuda_meas_t*        meas)
++{
++  if (q == nullptr || !(q->mode & SRSRAN_UE_DL_CUDA_PDSCH) || q->e2e == nullptr || c == nullptr || d_llrs == nullptr) {
++    return -1;
++  }
++  if (c->nof_data_re == 0 || c->nof_data_re > q->max_re || c->carrier_nof_prb > q->max_prb || c->L == 0 ||
++      c->S + c->L > UEDL_NSYMB || c->start_prb + c->nof_prb > c->carrier_nof_prb || c->nof_cdm_groups_without_data == 0 ||
++      c->nof_cdm_groups_without_data > 2 || (c->Qm != 2 && c->Qm != 4 && c->Qm != 6 && c->Qm != 8)) {
++    return -1;
++  }
++  double t0 = now_us();
++  pusch_e2e_config_t cfg          = {};
++  cfg.nof_prb                     = (int)c->carrier_nof_prb; // configure for the whole carrier: pilots/scrambling cover every allocation
++  cfg.nof_symbols                 = (int)c->L;
++  cfg.nof_rx_ports                = 1;
++  cfg.nof_tx_layers               = 1;
++  cfg.grid_nof_subcarriers        = (int)(c->carrier_nof_prb * 12);
++  cfg.grid_nof_symbols            = UEDL_NSYMB;
++  cfg.dmrs_type                   = DMRS_TYPE_1;
++  cfg.dmrs_symbol_mask            = (int)c->dmrs_symbol_mask;
++  cfg.nof_cdm_groups_without_data = (int)c->nof_cdm_groups_without_data;
++  cfg.scrambling_id               = c->dmrs_scrambling_id;
++  cfg.n_scid                      = (int)c->n_scid;
++  cfg.slot_idx                    = (int)c->slot_idx;
++  cfg.dmrs_scaling                = (c->beta_dmrs > 0.0f) ? c->beta_dmrs : 1.0f;
++  cfg.mod_order                   = (int)c->Qm;
++  cfg.rnti                        = c->rnti;
++  cfg.n_id                        = c->data_n_id;
++  cfg.start_prb                   = 0;
++  cfg.start_symbol                = (int)c->S;
++  cfg.tx_scaling                  = 1.0f;
++  cfg.equalizer_algorithm         = EQUALIZER_MMSE;
++  cfg.scs_khz                     = 15;
++  cfg.use_low_papr_dmrs           = 0;
++  cfg.n_rs_id                     = 0;
++  cfg.compensate_cfo              = 1;
++  cfg.noise_mode                  = 1;
++  cfg.time_interp_mode            = 0;
++  cfg.enable_evm_metric           = 0;
++
++  if (!q->e2e_ok || e2e_needs_configure(cfg, q->e2e_cfg)) {
++    double tc0 = now_us();
++    if (pusch_e2e_configure(q->e2e, &cfg) != NR_LDPC_SUCCESS) {
++      fprintf(stderr, "[ue_dl_cuda] pusch_e2e_configure failed (prb=%u S=%u L=%u mask=0x%x cdm=%u)\n", c->carrier_nof_prb, c->S, c->L, c->dmrs_symbol_mask, c->nof_cdm_groups_without_data);
++      q->e2e_ok = false;
++      return -1;
++    }
++    q->e2e_cfg = cfg;
++    q->e2e_ok  = true;
++    if (q->verbose) {
++      fprintf(stderr, "[ue_dl_cuda] pusch_e2e configured: carrier=%u PRB S=%u L=%u cdm=%u scr_id=%u n_scid=%u beta=%.3f (%.0f us)\n", c->carrier_nof_prb, c->S, c->L, c->nof_cdm_groups_without_data, c->dmrs_scrambling_id, c->n_scid, cfg.dmrs_scaling, now_us() - tc0);
++    }
++  }
++  if (q->e2e_cfg.rnti != c->rnti || q->e2e_cfg.n_id != c->data_n_id || q->e2e_cfg.mod_order != (int)c->Qm) {
++    if (pusch_e2e_update_data_params(q->e2e, c->rnti, c->data_n_id, (int)c->Qm) != NR_LDPC_SUCCESS) {
++      return -1;
++    }
++    q->e2e_cfg.rnti      = c->rnti;
++    q->e2e_cfg.n_id      = c->data_n_id;
++    q->e2e_cfg.mod_order = (int)c->Qm;
++  }
++  if (pusch_e2e_update_slot_config(q->e2e, (int)c->nof_prb, (int)c->start_prb, (int)c->slot_idx, (int)c->dmrs_symbol_mask) != NR_LDPC_SUCCESS) {
++    return -1;
++  }
++  memcpy(q->re_idx, c->re_indices, sizeof(int) * c->nof_data_re);
++  cudaEventRecord(q->ev0, q->stream);
++  nr_ldpc_status_t st = pusch_e2e_process_full_gpu_optimized(q->e2e, q->grid_bf16, q->llrs, q->re_idx, (int)c->nof_data_re, q->stream);
++  if (st != NR_LDPC_SUCCESS) {
++    fprintf(stderr, "[ue_dl_cuda] pusch_e2e_process failed: %s\n", nr_ldpc_get_error_string(st));
++    return -1;
++  }
++  q->pending_meas  = meas;
++  q->meas_launched = false;
++  if (meas != nullptr) {
++    pusch_e2e_sinr_async_launch(q->e2e, q->stream);
++    q->meas_launched = true;
++  }
++  *d_llrs               = q->llrs;
++  q->timing.e2e_launch_us = (float)(now_us() - t0);
++  return 0;
++}
++
++static inline unsigned cuda_bitpos(unsigned i)
++{
++  unsigned b = i % 32;
++  return (b / 8) * 8 + (7 - (b % 8));
++}
++
++extern "C" int srsran_ue_dl_cuda_decode_cbs(srsran_ue_dl_cuda_t* q,
++                                            void*                ldpc,
++                                            int                  bg,
++                                            uint16_t             ls,
++                                            uint32_t             F,
++                                            uint32_t             nof_cb,
++                                            const void*          d_llrs,
++                                            const uint32_t*      E,
++                                            const uint32_t*      off,
++                                            uint32_t             Qm,
++                                            uint32_t             k0,
++                                            uint32_t             Ncb,
++                                            uint32_t             crc_type,
++                                            uint8_t* const*      messages,
++                                            float*               avg_iter)
++{
++  if (q == nullptr || ldpc == nullptr || nof_cb == 0 || nof_cb > UEDL_MAX_CB || d_llrs == nullptr || Qm == 0) {
++    return -1;
++  }
++  void*     dec      = nullptr;
++  uint32_t* out      = nullptr;
++  uint32_t  max_iter = 10;
++  int       sync_mode = 0;
++  double    t0 = now_us();
++  if (srsran_ldpc_cuda_select((srsran_ldpc_cuda_t*)ldpc, bg, ls, F, crc_type, nof_cb, &dec, &out, &max_iter, &sync_mode) < 0) {
++    return -1;
++  }
++  const uint32_t Kb = (bg == 1) ? 22 : 10, Pc = (bg == 1) ? 46 : 42;
++  const uint32_t N_full = (Kb + Pc) * ls, liftK = Kb * ls, K_words = (liftK + 31) / 32;
++  const int      end = (int)(liftK - 2 * ls), ini = end - (int)F;
++  if (Ncb > N_full - 2 * ls || ini < 0 || k0 >= Ncb) {
++    return -1;
++  }
++  for (uint32_t c = 0; c < nof_cb; c++) {
++    q->d_E[c]   = E[c];
++    q->d_off[c] = off[c];
++  }
++  int n = (int)(nof_cb * N_full);
++  k_dematch<<<(n + 255) / 256, 256, 0, q->stream>>>((const __half*)d_llrs, q->d_E, q->d_off, q->llr_cb, (int)nof_cb, (int)N_full, (int)ls, (int)Ncb, (int)k0, ini, end, (int)Qm);
++  q->timing.rm_launch_us = (float)(now_us() - t0);
++  double t1 = now_us();
++  if (ldpc_decoder_decode_batch_half((ldpc_decoder_handle_t)dec, q->llr_cb, out, (int)nof_cb, q->stream) != NR_LDPC_SUCCESS) {
++    fprintf(stderr, "[ue_dl_cuda] decode_batch_half failed (nof_cb=%u)\n", nof_cb);
++    return -1;
++  }
++  if (avg_iter != nullptr) {
++    ldpc_decoder_flush_iteration_stats((ldpc_decoder_handle_t)dec, q->stream);
++  }
++  cudaEventRecord(q->ev1, q->stream);
++  q->timing.ldpc_launch_us = (float)(now_us() - t1);
++  double t2 = now_us();
++  UEDL_CK(uedl_sync(q));
++  q->timing.wait_us = (float)(now_us() - t2);
++  float ms = 0.0f;
++  if (cudaEventElapsedTime(&ms, q->ev0, q->ev1) == cudaSuccess) {
++    q->timing.gpu_span_us = ms * 1000.0f;
++  } else {
++    cudaGetLastError();
++    q->timing.gpu_span_us = 0.0f;
++  }
++  double t3 = now_us();
++  for (uint32_t c = 0; c < nof_cb; c++) {
++    const uint32_t* w   = out + (size_t)c * K_words;
++    uint8_t*        msg = messages[c];
++    for (uint32_t i = 0; i < liftK; i++) {
++      msg[i] = (uint8_t)((w[i / 32] >> cuda_bitpos(i)) & 1u);
++    }
++  }
++  if (avg_iter != nullptr) {
++    bool  ready = false;
++    float it    = ldpc_decoder_get_avg_iterations_async((ldpc_decoder_handle_t)dec, &ready);
++    *avg_iter   = ready ? it : (float)max_iter;
++  }
++  if (q->pending_meas != nullptr) {
++    srsran_ue_dl_cuda_meas_t* m = q->pending_meas;
++    *m                          = {};
++    if (q->meas_launched && q->e2e != nullptr) {
++      m->sinr_db = pusch_e2e_sinr_get_result(q->e2e);
++      m->epre    = pusch_e2e_epre_get_result(q->e2e);
++      m->rsrp    = pusch_e2e_rsrp_get_result(q->e2e);
++      m->cfo_hz  = pusch_e2e_cfo_get_result(q->e2e);
++      m->ta_us   = pusch_e2e_ta_get_result(q->e2e);
++      m->noise   = (m->epre > m->rsrp) ? (m->epre - m->rsrp) : 0.0f;
++    }
++    q->pending_meas = nullptr;
++  }
++  q->timing.unpack_us = (float)(now_us() - t3);
++  return 0;
++}
++
++extern "C" void srsran_ue_dl_cuda_get_timing(const srsran_ue_dl_cuda_t* q, srsran_ue_dl_cuda_timing_t* t)
++{
++  if (q && t) {
++    *t = q->timing;
++  }
++}
+diff --git a/lib/src/phy/ue/ue_dl_nr.c b/lib/src/phy/ue/ue_dl_nr.c
+index ecf9807..29fcaf1 100644
+--- a/lib/src/phy/ue/ue_dl_nr.c
++++ b/lib/src/phy/ue/ue_dl_nr.c
+@@ -21,6 +21,17 @@
+ 
+ #include "srsran/phy/ue/ue_dl_nr.h"
+ #include <complex.h>
++#ifdef SRSRAN_LDPC_CUDA
++#include "srsran/phy/ue/ue_dl_cuda.h"
++#include "srsran/phy/utils/re_pattern.h"
++#include <stdio.h>
++#if defined(__has_include)
++#if __has_include("srsran/phy/utils/slot_trace.h")
++#include "srsran/phy/utils/slot_trace.h"
++#define UEDL_TRACE 1
++#endif
++#endif
++#endif // SRSRAN_LDPC_CUDA
+ 
+ #define UE_DL_NR_PDCCH_CORR_DEFAULT_THR 0.5f
+ #define UE_DL_NR_PDCCH_EPRE_DEFAULT_THR -80.0f
+@@ -44,9 +55,20 @@ static int ue_dl_nr_alloc_prb(srsran_ue_dl_nr_t* q, uint32_t new_nof_prb)
+ 
+     for (uint32_t i = 0; i < q->nof_rx_antennas; i++) {
+       if (q->sf_symbols[i] != NULL) {
++#ifdef SRSRAN_LDPC_CUDA
++        if (q->sf_symbols_managed) {
++          srsran_ue_dl_cuda_free_grid((srsran_ue_dl_cuda_t*)q->cuda, (float*)q->sf_symbols[i]);
++        } else
++#endif
+         free(q->sf_symbols[i]);
+       }
+ 
++#ifdef SRSRAN_LDPC_CUDA
++      if (q->cuda != NULL) {
++        q->sf_symbols[i]      = (cf_t*)srsran_ue_dl_cuda_alloc_grid((srsran_ue_dl_cuda_t*)q->cuda, SRSRAN_SLOT_LEN_RE_NR(q->max_prb));
++        q->sf_symbols_managed = true;
++      } else
++#endif
+       q->sf_symbols[i] = srsran_vec_cf_malloc(SRSRAN_SLOT_LEN_RE_NR(q->max_prb));
+       if (q->sf_symbols[i] == NULL) {
+         ERROR("Malloc");
+@@ -89,6 +111,18 @@ int srsran_ue_dl_nr_init(srsran_ue_dl_nr_t* q, cf_t* input[SRSRAN_MAX_PORTS], co
+     return SRSRAN_ERROR;
+   }
+ 
++#ifdef SRSRAN_LDPC_CUDA
++  q->cuda = srsran_ue_dl_cuda_create(args->nof_max_prb, 0);
++  if (q->cuda != NULL) {
++    uint32_t mode = srsran_ue_dl_cuda_mode((srsran_ue_dl_cuda_t*)q->cuda);
++    if ((mode & SRSRAN_UE_DL_CUDA_PDSCH) && q->pdsch.sch.cuda == NULL) {
++      fprintf(stderr, "[ue_dl_cuda] SRSRAN_LDPC_DECODER=cuda is required for the GPU PDSCH path, disabling it\n");
++      srsran_ue_dl_cuda_set_mode((srsran_ue_dl_cuda_t*)q->cuda, mode & ~SRSRAN_UE_DL_CUDA_PDSCH);
++    }
++    q->cuda_re_idx = (int*)malloc(sizeof(int) * SRSRAN_SLOT_LEN_RE_NR(args->nof_max_prb));
++  }
++#endif
++
+   if (ue_dl_nr_alloc_prb(q, args->nof_max_prb)) {
+     ERROR("Error allocating");
+     return SRSRAN_ERROR;
+@@ -130,9 +164,20 @@ void srsran_ue_dl_nr_free(srsran_ue_dl_nr_t* q)
+     srsran_ofdm_rx_free(&q->fft[i]);
+ 
+     if (q->sf_symbols[i] != NULL) {
++#ifdef SRSRAN_LDPC_CUDA
++      if (q->sf_symbols_managed) {
++        srsran_ue_dl_cuda_free_grid((srsran_ue_dl_cuda_t*)q->cuda, (float*)q->sf_symbols[i]);
++      } else
++#endif
+       free(q->sf_symbols[i]);
+     }
+   }
++#ifdef SRSRAN_LDPC_CUDA
++  if (q->cuda_re_idx != NULL) {
++    free(q->cuda_re_idx);
++  }
++  srsran_ue_dl_cuda_free((srsran_ue_dl_cuda_t*)q->cuda);
++#endif
+ 
+   srsran_chest_dl_res_free(&q->chest);
+   srsran_pdsch_nr_free(&q->pdsch);
+@@ -176,12 +221,24 @@ int srsran_ue_dl_nr_set_carrier(srsran_ue_dl_nr_t* q, const srsran_carrier_nr_t*
+       cfg.rx_window_offset      = UE_DL_NR_FFT_WINDOW_OFFSET;
+       cfg.phase_compensation_hz = carrier->dl_center_frequency_hz;
+ 
+-      srsran_ofdm_rx_init_cfg(&q->fft[i], &cfg);
++      if (srsran_ofdm_rx_init_cfg(&q->fft[i], &cfg) < SRSRAN_SUCCESS) {
++        ERROR("Error initialising DL OFDM for %d PRB (symbol_sz=%d)", carrier->nof_prb, cfg.symbol_sz);
++        return SRSRAN_ERROR;
++      }
+     }
+   }
+ 
+   q->carrier = *carrier;
+ 
++#ifdef SRSRAN_LDPC_CUDA
++  if (q->cuda != NULL) {
++    if (srsran_ue_dl_cuda_set_carrier((srsran_ue_dl_cuda_t*)q->cuda, carrier->nof_prb, srsran_min_symbol_sz_rb(carrier->nof_prb)) < 0) {
++      fprintf(stderr, "[ue_dl_cuda] carrier setup failed, GPU FFT disabled\n");
++      srsran_ue_dl_cuda_set_mode((srsran_ue_dl_cuda_t*)q->cuda, srsran_ue_dl_cuda_mode((srsran_ue_dl_cuda_t*)q->cuda) & ~SRSRAN_UE_DL_CUDA_FFT);
++    }
++  }
++#endif
++
+   return SRSRAN_SUCCESS;
+ }
+ 
+@@ -224,9 +281,49 @@ void srsran_ue_dl_nr_estimate_fft(srsran_ue_dl_nr_t* q, const srsran_slot_cfg_t*
+   }
+ 
+   // OFDM demodulation
++#ifdef SRSRAN_LDPC_CUDA
++  bool fft_done = false;
++  if (q->cuda != NULL && q->nof_rx_antennas == 1 && (srsran_ue_dl_cuda_mode((srsran_ue_dl_cuda_t*)q->cuda) & SRSRAN_UE_DL_CUDA_FFT)) {
++    const srsran_ofdm_t* f = &q->fft[0];
++    if (f->cfg.cp == SRSRAN_CP_NORM && !f->mbsfn_subframe && !isnormal(f->cfg.freq_shift_f) && f->nof_symbols == 7) {
++      srsran_ue_dl_cuda_ofdm_t o = {};
++      o.symbol_sz                = f->cfg.symbol_sz;
++      o.nof_re                   = f->nof_re;
++      o.cp1                      = (uint32_t)SRSRAN_CP_LEN_NORM(0, f->cfg.symbol_sz);
++      o.cp2                      = (uint32_t)SRSRAN_CP_LEN_NORM(1, f->cfg.symbol_sz);
++      o.slot_sz                  = f->slot_sz;
++      o.window_offset_n          = f->window_offset_n;
++      o.dc                       = f->fft_plan.dc ? 1 : 0;
++      o.normalize                = f->fft_plan.norm ? 1 : 0;
++      bool pc                    = isnormal(f->cfg.phase_compensation_hz);
++      for (uint32_t l = 0; l < 14; l++) {
++        o.phase[2 * l]     = pc ? crealf(f->phase_compensation[l]) : 1.0f;
++        o.phase[2 * l + 1] = pc ? cimagf(f->phase_compensation[l]) : 0.0f;
++      }
++#ifdef UEDL_TRACE
++      const int64_t st_gf0__ = st_now_ns();
++#endif
++      if (srsran_ue_dl_cuda_fft((srsran_ue_dl_cuda_t*)q->cuda, (const float*)f->cfg.in_buffer, &o, (float*)q->sf_symbols[0]) == 0) {
++        fft_done = true;
++      }
++#ifdef UEDL_TRACE
++      st_ev("uedl", "GFFT", slot_cfg->idx, ST_US(st_gf0__), fft_done, o.symbol_sz);
++#endif
++    }
++  }
++  if (!fft_done) {
++    for (uint32_t i = 0; i < q->nof_rx_antennas; i++) {
++      srsran_ofdm_rx_sf(&q->fft[i]);
++    }
++    if (q->cuda != NULL && (srsran_ue_dl_cuda_mode((srsran_ue_dl_cuda_t*)q->cuda) & SRSRAN_UE_DL_CUDA_PDSCH)) {
++      srsran_ue_dl_cuda_grid_to_bf16((srsran_ue_dl_cuda_t*)q->cuda, (const float*)q->sf_symbols[0], q->carrier.nof_prb);
++    }
++  }
++#else
+   for (uint32_t i = 0; i < q->nof_rx_antennas; i++) {
+     srsran_ofdm_rx_sf(&q->fft[i]);
+   }
++#endif
+ 
+   // Estimate PDCCH channel for every configured CORESET
+   for (uint32_t i = 0; i < SRSRAN_UE_DL_NR_MAX_NOF_CORESET; i++) {
+@@ -573,11 +670,174 @@ int srsran_ue_dl_nr_find_ul_dci(srsran_ue_dl_nr_t*       q,
+   return count;
+ }
+ 
++#ifdef SRSRAN_LDPC_CUDA
++/**
++ * Local S2: PDSCH on the GPU (OCUDU fused receiver + rate dematching + LDPC). Returns 1 when the TB was
++ * processed, 0 when the configuration is not eligible or the GPU path failed before touching the result
++ * (the caller then runs the CPU path on the same grid).
++ */
++static int ue_dl_nr_decode_pdsch_cuda(srsran_ue_dl_nr_t*         q,
++                                      const srsran_slot_cfg_t*   slot,
++                                      const srsran_sch_cfg_nr_t* cfg,
++                                      srsran_pdsch_res_nr_t*     res)
++{
++  const srsran_sch_grant_nr_t* grant = &cfg->grant;
++  if (q->cuda == NULL || q->cuda_re_idx == NULL || q->pdsch.sch.cuda == NULL ||
++      !(srsran_ue_dl_cuda_mode((srsran_ue_dl_cuda_t*)q->cuda) & SRSRAN_UE_DL_CUDA_PDSCH)) {
++    return 0;
++  }
++  const srsran_sch_tb_t* tb = &grant->tb[0];
++  if (grant->rnti_type != srsran_rnti_type_c || grant->nof_layers > 1 || !tb->enabled || grant->tb[1].enabled ||
++      grant->mapping != srsran_sch_mapping_type_A || cfg->dmrs.type != srsran_dmrs_sch_type_1 ||
++      cfg->dmrs.reference_point_k_rb != 0 || tb->rv != 0 || q->nof_rx_antennas != 1 || tb->softbuffer.rx == NULL ||
++      grant->nof_dmrs_cdm_groups_without_data == 0 || grant->nof_dmrs_cdm_groups_without_data > 2 ||
++      grant->L == 0 || grant->S + grant->L > SRSRAN_NSYMB_PER_SLOT_NR) {
++    return 0;
++  }
++  // Contiguous PRB allocation
++  uint32_t start = UINT32_MAX, count = 0;
++  for (uint32_t i = 0; i < q->carrier.nof_prb; i++) {
++    if (grant->prb_idx[i]) {
++      if (start == UINT32_MAX) {
++        start = i;
++      } else if (i != start + count) {
++        return 0;
++      }
++      count++;
++    }
++  }
++  if (count == 0 || count != grant->nof_prb) {
++    return 0;
++  }
++  // DMRS symbols and reserved RE pattern
++  uint32_t symbols[SRSRAN_DMRS_SCH_MAX_SYMBOLS] = {};
++  int      nof_symbols                          = srsran_dmrs_sch_get_symbols_idx(&cfg->dmrs, grant, symbols);
++  if (nof_symbols <= 0) {
++    return 0;
++  }
++  uint32_t dmrs_mask = 0;
++  for (int i = 0; i < nof_symbols; i++) {
++    dmrs_mask |= 1U << symbols[i];
++  }
++  srsran_re_pattern_t dmrs_pattern = {};
++  if (srsran_dmrs_sch_rvd_re_pattern(&cfg->dmrs, grant, &dmrs_pattern) < SRSRAN_SUCCESS) {
++    return 0;
++  }
++  // Data RE indices in codeword order (same walk as srsran_pdsch_nr_cp)
++  uint32_t n = 0;
++  for (uint32_t l = grant->S; l < grant->S + grant->L; l++) {
++    bool rvd_mask[SRSRAN_NRE * SRSRAN_MAX_PRB_NR] = {};
++    if (srsran_re_pattern_to_symbol_mask(&dmrs_pattern, l, rvd_mask) < SRSRAN_SUCCESS ||
++        srsran_re_pattern_list_to_symbol_mask(&cfg->rvd_re, l, rvd_mask) < SRSRAN_SUCCESS) {
++      return 0;
++    }
++    for (uint32_t rb = start; rb < start + count; rb++) {
++      for (uint32_t k = 0; k < SRSRAN_NRE; k++) {
++        if (!rvd_mask[rb * SRSRAN_NRE + k]) {
++          q->cuda_re_idx[n++] = (int)((q->carrier.nof_prb * l + rb) * SRSRAN_NRE + k);
++        }
++      }
++    }
++  }
++  uint32_t Qm = srsran_mod_bits_x_symbol(tb->mod);
++  if (n == 0 || n != tb->nof_re || n * Qm != tb->nof_bits) {
++    return 0;
++  }
++  // Sequence identities as in srsran_dmrs_sch_seed() and pdsch_nr_cinit()
++  uint32_t dmrs_n_id = q->carrier.pci;
++  uint32_t n_scid    = grant->n_scid ? 1 : 0;
++  if (!grant->n_scid && cfg->dmrs.scrambling_id0_present) {
++    dmrs_n_id = cfg->dmrs.scrambling_id0;
++  } else if (grant->n_scid && cfg->dmrs.scrambling_id1_present) {
++    dmrs_n_id = cfg->dmrs.scrambling_id1;
++  }
++  uint32_t data_n_id = q->carrier.pci;
++  if (cfg->scrambling_id_present && SRSRAN_RNTI_ISUSER(grant->rnti)) {
++    data_n_id = cfg->scambling_id;
++  }
++  srsran_ue_dl_cuda_pdsch_t p      = {};
++  p.carrier_nof_prb                = q->carrier.nof_prb;
++  p.start_prb                      = start;
++  p.nof_prb                        = count;
++  p.S                              = grant->S;
++  p.L                              = grant->L;
++  p.dmrs_symbol_mask               = dmrs_mask;
++  p.nof_cdm_groups_without_data    = grant->nof_dmrs_cdm_groups_without_data;
++  p.dmrs_scrambling_id             = dmrs_n_id;
++  p.n_scid                         = n_scid;
++  p.slot_idx                       = SRSRAN_SLOT_NR_MOD(q->carrier.scs, slot->idx);
++  p.beta_dmrs                      = isnormal(grant->beta_dmrs) ? grant->beta_dmrs : 1.0f;
++  p.Qm                             = Qm;
++  p.rnti                           = grant->rnti;
++  p.data_n_id                      = (uint16_t)data_n_id;
++  p.nof_data_re                    = n;
++  p.re_indices                     = q->cuda_re_idx;
++#ifdef UEDL_TRACE
++  const int64_t st_gp0__ = st_now_ns();
++#endif
++  const void*              d_llrs = NULL;
++  srsran_ue_dl_cuda_meas_t meas   = {};
++  if (srsran_ue_dl_cuda_pdsch_llrs((srsran_ue_dl_cuda_t*)q->cuda, &p, &d_llrs, &meas) < 0) {
++    return 0;
++  }
++  if (srsran_dlsch_nr_decode_device(&q->pdsch.sch, &cfg->sch_cfg, tb, q->cuda, d_llrs, &res->tb[0]) < SRSRAN_SUCCESS) {
++    return 0;
++  }
++  res->evm[0] = 0.0f;
++  // Channel measurements from the GPU estimator (same fields the CPU estimator fills)
++  q->chest.nof_re             = n;
++  q->chest.rsrp               = meas.rsrp;
++  q->chest.rsrp_dbm           = srsran_convert_power_to_dB(meas.rsrp);
++  q->chest.noise_estimate     = meas.noise;
++  q->chest.noise_estimate_dbm = srsran_convert_power_to_dB(meas.noise);
++  q->chest.snr_db             = meas.sinr_db;
++  q->chest.cfo                = meas.cfo_hz;
++  q->chest.sync_error         = meas.ta_us;
++  q->dmrs_pdsch.csi.rsrp      = meas.rsrp;
++  q->dmrs_pdsch.csi.rsrp_dB   = q->chest.rsrp_dbm;
++  q->dmrs_pdsch.csi.epre      = meas.epre;
++  q->dmrs_pdsch.csi.epre_dB   = srsran_convert_power_to_dB(meas.epre);
++  q->dmrs_pdsch.csi.n0        = meas.noise;
++  q->dmrs_pdsch.csi.n0_dB     = q->chest.noise_estimate_dbm;
++  q->dmrs_pdsch.csi.snr_dB    = meas.sinr_db;
++  q->dmrs_pdsch.csi.cfo_hz    = meas.cfo_hz;
++  q->dmrs_pdsch.csi.delay_us  = meas.ta_us;
++#ifdef UEDL_TRACE
++  srsran_ue_dl_cuda_timing_t t = {};
++  srsran_ue_dl_cuda_get_timing((srsran_ue_dl_cuda_t*)q->cuda, &t);
++  st_ev("uedl", "GPDSCH", slot->idx, ST_US(st_gp0__), n, res->tb[0].crc);
++  st_ev("uedl", "GPT", slot->idx, (long long)t.e2e_launch_us, (long long)(t.rm_launch_us + t.ldpc_launch_us), (long long)t.wait_us);
++  st_ev("uedl", "GPG", slot->idx, (long long)t.gpu_span_us, (long long)t.unpack_us, Qm);
++#endif
++  q->cuda_pdsch_count++;
++  return 1;
++}
++
++void srsran_ue_dl_nr_set_cuda_mode(srsran_ue_dl_nr_t* q, uint32_t mode)
++{
++  if (q != NULL && q->cuda != NULL) {
++    srsran_ue_dl_cuda_set_mode((srsran_ue_dl_cuda_t*)q->cuda, mode);
++  }
++}
++#else
++void srsran_ue_dl_nr_set_cuda_mode(srsran_ue_dl_nr_t* q, uint32_t mode) {}
++#endif // SRSRAN_LDPC_CUDA
++
+ int srsran_ue_dl_nr_decode_pdsch(srsran_ue_dl_nr_t*         q,
+                                  const srsran_slot_cfg_t*   slot,
+                                  const srsran_sch_cfg_nr_t* cfg,
+                                  srsran_pdsch_res_nr_t*     res)
+ {
++#ifdef SRSRAN_LDPC_CUDA
++  if (ue_dl_nr_decode_pdsch_cuda(q, slot, cfg, res) > 0) {
++    if (SRSRAN_DEBUG_ENABLED && get_srsran_verbose_level() >= SRSRAN_VERBOSE_INFO && !is_handler_registered()) {
++      char str[512];
++      srsran_ue_dl_nr_pdsch_info(q, cfg, res, str, sizeof(str));
++      INFO("PDSCH (gpu): %s", str);
++    }
++    return SRSRAN_SUCCESS;
++  }
++#endif
+   if (srsran_dmrs_sch_estimate(&q->dmrs_pdsch, slot, cfg, &cfg->grant, q->sf_symbols[0], &q->chest) < SRSRAN_SUCCESS) {
+     return SRSRAN_ERROR;
+   }
+diff --git a/lib/src/phy/utils/phy_logger.c b/lib/src/phy/utils/phy_logger.c
+index 920b4dd..7ec784c 100644
+--- a/lib/src/phy/utils/phy_logger.c
++++ b/lib/src/phy/utils/phy_logger.c
+@@ -26,6 +26,7 @@
+ #include <stdarg.h>
+ #include <stdbool.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <string.h>
+ #include <sys/types.h>
+ /*********************************************************************
+@@ -46,9 +47,20 @@ void srsran_phy_log_print(phy_logger_level_t log_level, const char* format, ...)
+   char    tmp[256];
+   va_list args;
+   va_start(args, format);
+-  if (phy_log_handler) {
++  static int stderr_echo = -1;
++  if (stderr_echo < 0) {
++    const char* e = getenv("SRSRAN_PHY_LOG_STDERR"); /* local S4 diagnostic */
++    stderr_echo   = (e != NULL && e[0] != '0') ? 1 : 0;
++  }
++  if (phy_log_handler || stderr_echo) {
+     if (vsnprintf(tmp, 256, format, args) > 0) {
+-      phy_log_handler(log_level, callback_ctx, tmp);
++      if (stderr_echo && log_level == LOG_LEVEL_ERROR_S) {
++        fprintf(stderr, "[PHYLIB ERROR] %s\n", tmp);
++        fflush(stderr);
++      }
++      if (phy_log_handler) {
++        phy_log_handler(log_level, callback_ctx, tmp);
++      }
+     }
+   }
+   va_end(args);
+diff --git a/lib/src/radio/radio.cc b/lib/src/radio/radio.cc
+index 8124185..1bea649 100644
+--- a/lib/src/radio/radio.cc
++++ b/lib/src/radio/radio.cc
+@@ -32,7 +32,7 @@ namespace srsran {
+ 
+ radio::radio()
+ {
+-  zeros.resize(SRSRAN_SF_LEN_MAX, 0);
++  zeros.resize(4 * SRSRAN_SF_LEN_MAX, 0); /* local S4: 61.44 MHz slot = 61440 samples > SRSRAN_SF_LEN_MAX */
+   for (uint32_t i = 0; i < SRSRAN_MAX_CHANNELS; i++) {
+     dummy_buffers[i].resize(SRSRAN_SF_LEN_MAX * SRSRAN_NOF_SF_X_FRAME, 0);
+   }
+@@ -580,7 +580,7 @@ bool radio::tx_dev(const uint32_t& device_idx, rf_buffer_interface& buffer, cons
+       uint32_t gap_nsamples = abs(past_nsamples);
+       while (gap_nsamples > 0) {
+         // Transmission cannot exceed SRSRAN_SF_LEN_MAX (zeros buffer size limitation)
+-        uint32_t nzeros = SRSRAN_MIN(gap_nsamples, SRSRAN_SF_LEN_MAX);
++        uint32_t nzeros = SRSRAN_MIN(gap_nsamples, (uint32_t)zeros.size()); /* local S4 */
+ 
+         // Zeros transmission
+         int ret = srsran_rf_send_timed2(rf_device,
+diff --git a/srsue/hdr/phy/prach.h b/srsue/hdr/phy/prach.h
+index 84fd37b..5dc8c35 100644
+--- a/srsue/hdr/phy/prach.h
++++ b/srsue/hdr/phy/prach.h
+@@ -61,6 +61,7 @@ private:
+   srsran_cfo_t          cfo_h            = {};
+   srsran_prach_cfg_t    cfg              = {};
+   cf_t*                 signal_buffer    = nullptr;
++  uint32_t              signal_buffer_len = 0;
+   int                   preamble_idx     = -1;
+   uint32_t              len              = 0;
+   int                   allowed_subframe = 0;
+diff --git a/srsue/src/phy/nr/slot_sync.cc b/srsue/src/phy/nr/slot_sync.cc
+index 3028223..89ec3d8 100644
+--- a/srsue/src/phy/nr/slot_sync.cc
++++ b/srsue/src/phy/nr/slot_sync.cc
+@@ -24,7 +24,9 @@
+ namespace srsue {
+ namespace nr {
+ 
+-slot_sync::slot_sync(srslog::basic_logger& logger_) : logger(logger_), sfn_sync_buff(1) {}
++// local S4: rf_buffer_t(n) allocates n * SRSRAN_SF_LEN_MAX (30720) samples; a 61.44 MHz slot is 61440 samples,
++// so the 1-subframe buffer overflowed on 4096-FFT carriers (ASan, 2026-10-27). 4 subframes cover 122.88 MHz.
++slot_sync::slot_sync(srslog::basic_logger& logger_) : logger(logger_), sfn_sync_buff(4) {}
+ 
+ slot_sync::~slot_sync()
+ {
+diff --git a/srsue/src/phy/prach.cc b/srsue/src/phy/prach.cc
+index e8f6098..133fe87 100644
+--- a/srsue/src/phy/prach.cc
++++ b/srsue/src/phy/prach.cc
+@@ -50,7 +50,9 @@ void prach::init(uint32_t max_prb)
+ 
+   srsran_cfo_set_tol(&cfo_h, 0);
+ 
+-  signal_buffer = srsran_vec_cf_malloc(SRSRAN_MAX(MAX_LEN_SF * 30720U, SRSRAN_PRACH_MAX_LEN));
++  int sf_len_max = srsran_symbol_sz(max_prb) > 0 ? (int)SRSRAN_SF_LEN(srsran_symbol_sz(max_prb)) : 30720;
++  signal_buffer_len = SRSRAN_MAX(MAX_LEN_SF * (uint32_t)sf_len_max, SRSRAN_PRACH_MAX_LEN); /* local S4: 61440/sf at 270 PRB */
++  signal_buffer     = srsran_vec_cf_malloc(signal_buffer_len);
+   if (!signal_buffer) {
+     perror("malloc");
+     return;
+@@ -200,7 +202,7 @@ cf_t* prach::generate(float cfo, uint32_t* nof_sf, float* target_power)
+ {
+   std::lock_guard<std::mutex> lock(mutex);
+   if (!cell_initiated || preamble_idx < 0 || !nof_sf || unsigned(preamble_idx) >= max_preambles ||
+-      !srsran_cell_isvalid(&cell) || len >= MAX_LEN_SF * 30720 || len == 0) {
++      !srsran_cell_isvalid(&cell) || len >= signal_buffer_len || len == 0) {
+     Error("PRACH: Invalid parameters: cell_initiated=%d, preamble_idx=%d, cell.nof_prb=%d, len=%d",
+           cell_initiated,
+           preamble_idx,

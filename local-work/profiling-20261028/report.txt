@@ -1,0 +1,243 @@
+Spark CUDA gNB / GPU channel timing investigation — 2026-10-28
+Evidence and scripts: this directory. Source base: RAN_benchmark 364391bccd3abd5fb73946e50c3a4c95ce649551; opt-in instrumentation.patch.
+
+RTX 5090 historical audit
+All 52 saved-file SHA256 checks match. The 2026-10-13 N64 result is a synthetic, sequential, channel-only benchmark: no real gNB/UE processes and no ZMQ.
+model_mix_latency: median run-level p50 = 59.089 us; median run-level p99 = 1195.940 us.
+gpu_process_us: median run-level p50 = 50.876 us; median run-level p99 = 537.693 us.
+node:gnb0:call_us: median run-level p50 = 1197.816 us; median run-level p99 = 1338.493 us.
+node:gnb0:host_prep_us: median run-level p50 = 658.086 us; median run-level p99 = 794.679 us.
+node:gnb0:h2d_us: median run-level p50 = 444.959 us; median run-level p99 = 450.432 us.
+node:gnb0:kernel_us: median run-level p50 = 67.808 us; median run-level p99 = 71.967 us.
+One block represents 1 ms. Each receiver completed about 1,278–1,282 calls in the requested 10 s sequential benchmark, approximately 128 blocks/s. This describes that benchmark, not the concurrent broker capacity.
+The aggregate median is dominated by 64 light UE-destination calls. The gNB destination combines 64 incoming streams. gpu_process_us excludes CPU preparation. A claim that these records prove 64 live UEs at real time is unsupported; the records themselves are internally consistent.
+At 64 inputs, one block contains 64 * 23,040 * 8 = 11,796,480 input bytes. Host preparation largely packs these IQ buffers; it is channel-emulator work, not the gNB MAC scheduler.
+
+Timing definitions and normalization
+Channel wall intervals are entry/packing, model/control, receiver preparation, CUDA submission, stream-completion wait, and output/recording. Their sum is the channel call. The broker process interval additionally includes the profiling callback and CSV recording overhead.
+CUDA H2D/kernel/D2H event intervals overlap host submission and completion waiting. Do not add them to host wall intervals. The kernel event interval spans multiple kernels and their gaps/competition; it is not a single pure arithmetic kernel.
+Every reported mean normalized to one radio millisecond is sum(elapsed_us) / (sum(samples) / sample_rate_hz * 1000). Receiver calls can process fragments; a function call is not necessarily a radio slot.
+CPU thread time can include active CUDA completion waiting and polling. It is not equal to useful preparation time. room_us is output headroom waiting; data_us waits for common input IQ. Those waits can arise from radio compute, transport, or broker-thread scheduling.
+
+Live 20 MHz UE sweep
+cuda-u1-c1-bw20-a1x1
+  01-test1: radio/wall ratio=0.9975413052676428; valid radio segments=30; scheduler decision={'count': 30000, 'max': 46.0, 'mean': 8.9502, 'p50': 8.0, 'p95': 18.0, 'p99': 26.0}; runtime={'rx_starvations': 10, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+  02-test2: radio/wall ratio=0.9974796039111141; valid radio segments=30; scheduler decision={'count': 30000, 'max': 46.0, 'mean': 8.901533333333333, 'p50': 8.0, 'p95': 18.0, 'p99': 26.0}; runtime={'rx_starvations': 9, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+  gNB receiver broker: calls/radio_ms=1.2672
+    room_us: 20.862 us per radio ms
+    align_us: 0.036 us per radio ms
+    data_us: 18.512 us per radio ms
+    read_us: 0.138 us per radio ms
+    process_us: 64.650 us per radio ms
+    commit_pace_us: 892.245 us per radio ms
+    push_us: 2.686 us per radio ms
+  gNB receiver channel: calls/radio_ms=1.2672
+    entry_pack_us: 0.897 us per radio ms
+    model_control_us: 0.531 us per radio ms
+    rx_prep_us: 0.239 us per radio ms
+    submit_us: 29.789 us per radio ms
+    sync_wait_us: 25.291 us per radio ms
+    output_record_us: 0.747 us per radio ms
+    call_us: 57.493 us per radio ms
+    thread_cpu_us: 55.597 us per radio ms
+    h2d_event_us: 7.439 us per radio ms
+    kernel_event_us: 37.432 us per radio ms
+    d2h_event_us: 1.467 us per radio ms
+cuda-u16-c1-bw20-a1x1
+  01-test1: radio/wall ratio=0.43720287475833164; valid radio segments=9; scheduler decision={'count': 9000, 'max': 151.0, 'mean': 40.641555555555556, 'p50': 38.0, 'p95': 59.0, 'p99': 70.0}; runtime={'rx_starvations': 554, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 1}
+  02-test2: radio/wall ratio=0.42353887471645424; valid radio segments=3; scheduler decision={'count': 3001, 'max': 93.0, 'mean': 41.51416194601799, 'p50': 39.0, 'p95': 62.0, 'p99': 72.0}; runtime={'rx_starvations': 479, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 1}
+cuda-u16-c1-bw20-a1x1-control
+  01-test1: radio/wall ratio=0.4501545584742642; valid radio segments=11; scheduler decision={'count': 11000, 'max': 94.0, 'mean': 38.29818181818182, 'p50': 36.0, 'p95': 57.0, 'p99': 68.0}; runtime={'rx_starvations': 311, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+  02-test2: radio/wall ratio=0.45189399396968455; valid radio segments=0; scheduler decision={'count': 0, 'max': None, 'mean': None, 'p50': None, 'p95': None, 'p99': None}; runtime={'rx_starvations': 285, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+cuda-u16-c1-bw20-a1x1-cpu-sampled
+  01-test1: radio/wall ratio=0.4474545133862951; valid radio segments=4; scheduler decision={'count': 4000, 'max': 94.0, 'mean': 40.84425, 'p50': 39.0, 'p95': 60.0, 'p99': 70.0}; runtime={'rx_starvations': 398, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+  02-test2: radio/wall ratio=0.4545188847995228; valid radio segments=5; scheduler decision={'count': 5000, 'max': 95.0, 'mean': 39.7064, 'p50': 38.0, 'p95': 57.0, 'p99': 69.0}; runtime={'rx_starvations': 228, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+cuda-u16-c1-bw20-a1x1-trace-only
+  01-test1: radio/wall ratio=0.4452659765037127; valid radio segments=30; scheduler decision={'count': 29995, 'max': 129.0, 'mean': 42.37979663277213, 'p50': 40.0, 'p95': 63.0, 'p99': 73.0}; runtime={'rx_starvations': 373, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+  02-test2: radio/wall ratio=0.4469775822813307; valid radio segments=30; scheduler decision={'count': 30005, 'max': 117.0, 'mean': 41.6121646392268, 'p50': 39.0, 'p95': 62.0, 'p99': 72.0}; runtime={'rx_starvations': 408, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+  gNB receiver broker: calls/radio_ms=2.1043
+    room_us: 462.292 us per radio ms
+    align_us: 0.064 us per radio ms
+    data_us: 1575.908 us per radio ms
+    read_us: 3.910 us per radio ms
+    process_us: 174.226 us per radio ms
+    commit_pace_us: 5.347 us per radio ms
+    push_us: 3.766 us per radio ms
+  gNB receiver channel: calls/radio_ms=2.1043
+    entry_pack_us: 2.223 us per radio ms
+    model_control_us: 14.143 us per radio ms
+    rx_prep_us: 0.954 us per radio ms
+    submit_us: 61.095 us per radio ms
+    sync_wait_us: 83.496 us per radio ms
+    output_record_us: 1.387 us per radio ms
+    call_us: 163.298 us per radio ms
+    thread_cpu_us: 160.274 us per radio ms
+    h2d_event_us: 17.576 us per radio ms
+    kernel_event_us: 109.357 us per radio ms
+    d2h_event_us: 2.362 us per radio ms
+cuda-u4-c1-bw20-a1x1
+  01-test1: radio/wall ratio=0.9886705354639159; valid radio segments=30; scheduler decision={'count': 30023, 'max': 65.0, 'mean': 14.026413083302801, 'p50': 13.0, 'p95': 26.0, 'p99': 34.0}; runtime={'rx_starvations': 34, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+  02-test2: radio/wall ratio=0.989366876595561; valid radio segments=30; scheduler decision={'count': 30017, 'max': 47.0, 'mean': 14.013459039877402, 'p50': 13.0, 'p95': 24.0, 'p99': 29.0}; runtime={'rx_starvations': 23, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+  gNB receiver broker: calls/radio_ms=1.6609
+    room_us: 36.673 us per radio ms
+    align_us: 0.050 us per radio ms
+    data_us: 116.227 us per radio ms
+    read_us: 0.481 us per radio ms
+    process_us: 104.323 us per radio ms
+    commit_pace_us: 739.794 us per radio ms
+    push_us: 2.366 us per radio ms
+  gNB receiver channel: calls/radio_ms=1.6609
+    entry_pack_us: 1.776 us per radio ms
+    model_control_us: 1.751 us per radio ms
+    rx_prep_us: 0.597 us per radio ms
+    submit_us: 44.677 us per radio ms
+    sync_wait_us: 38.582 us per radio ms
+    output_record_us: 0.962 us per radio ms
+    call_us: 88.345 us per radio ms
+    thread_cpu_us: 80.320 us per radio ms
+    h2d_event_us: 11.057 us per radio ms
+    kernel_event_us: 58.056 us per radio ms
+    d2h_event_us: 1.885 us per radio ms
+cuda-u8-c1-bw20-a1x1
+  01-test1: radio/wall ratio=0.8946010778941035; valid radio segments=30; scheduler decision={'count': 30022, 'max': 70.0, 'mean': 19.88355206182133, 'p50': 19.0, 'p95': 33.0, 'p99': 38.0}; runtime={'rx_starvations': 294, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+  02-test2: radio/wall ratio=0.93019305280751; valid radio segments=3; scheduler decision={'count': 3000, 'max': 52.0, 'mean': 17.184, 'p50': 16.0, 'p95': 29.0, 'p99': 35.0}; runtime={'rx_starvations': 200, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+  gNB receiver broker: calls/radio_ms=1.8580
+    room_us: 254.259 us per radio ms
+    align_us: 0.054 us per radio ms
+    data_us: 531.211 us per radio ms
+    read_us: 2.016 us per radio ms
+    process_us: 163.202 us per radio ms
+    commit_pace_us: 125.211 us per radio ms
+    push_us: 6.493 us per radio ms
+  gNB receiver channel: calls/radio_ms=1.8580
+    entry_pack_us: 3.375 us per radio ms
+    model_control_us: 5.075 us per radio ms
+    rx_prep_us: 1.441 us per radio ms
+    submit_us: 54.402 us per radio ms
+    sync_wait_us: 57.064 us per radio ms
+    output_record_us: 1.178 us per radio ms
+    call_us: 122.535 us per radio ms
+    thread_cpu_us: 110.331 us per radio ms
+    h2d_event_us: 14.113 us per radio ms
+    kernel_event_us: 79.091 us per radio ms
+    d2h_event_us: 2.140 us per radio ms
+cuda-u8-c1-bw20-a1x1-control
+  01-test1: radio/wall ratio=0.9295782479222292; valid radio segments=30; scheduler decision={'count': 30019, 'max': 62.0, 'mean': 19.638362370498683, 'p50': 18.0, 'p95': 32.0, 'p99': 38.0}; runtime={'rx_starvations': 41, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+  02-test2: radio/wall ratio=0.937765480173535; valid radio segments=2; scheduler decision={'count': 1999, 'max': 41.0, 'mean': 17.2376188094047, 'p50': 16.0, 'p95': 29.0, 'p99': 34.0}; runtime={'rx_starvations': 91, 'tx_queue_overflows': 0, 'tx_sequence_gaps': 0, 'zmq_errors': 0}
+cuda-u8-c1-bw20-a1x1-nsys
+The many-recorder perf run at 16 UEs timed out in replay and is retained as failed diagnostic evidence. The trace-only repeat completes both windows. The tracing-off reference isolates measurement overhead; fairness/traffic/health verdicts remain separate from sample progress.
+
+Live bandwidth and antenna ports: one OAI UE, 1 Mb/s DL
+cuda-u1-c1-bw100-a2x2: ratio=0.684; health={'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+  gnb0: calls/radio_ms=2.0000; room_us=8.63 us/radio_ms, align_us=0.06 us/radio_ms, data_us=1297.09 us/radio_ms, read_us=2.91 us/radio_ms, process_us=123.62 us/radio_ms, commit_pace_us=0.62 us/radio_ms, push_us=25.77 us/radio_ms
+  ue0: calls/radio_ms=2.0000; room_us=18.05 us/radio_ms, align_us=0.06 us/radio_ms, data_us=1297.00 us/radio_ms, read_us=3.02 us/radio_ms, process_us=114.41 us/radio_ms, commit_pace_us=0.59 us/radio_ms, push_us=25.92 us/radio_ms
+cuda-u1-c1-bw100-a4x1: ratio=0.4911; health={'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+  gnb0: calls/radio_ms=2.0000; room_us=30.39 us/radio_ms, align_us=0.07 us/radio_ms, data_us=1816.67 us/radio_ms, read_us=2.57 us/radio_ms, process_us=121.39 us/radio_ms, commit_pace_us=0.57 us/radio_ms, push_us=60.63 us/radio_ms
+  ue0: calls/radio_ms=1.9998; room_us=4.12 us/radio_ms, align_us=0.06 us/radio_ms, data_us=1882.70 us/radio_ms, read_us=2.80 us/radio_ms, process_us=130.30 us/radio_ms, commit_pace_us=0.55 us/radio_ms, push_us=12.40 us/radio_ms
+cuda-u1-c1-bw100-a4x4: ratio=0.3392; health={'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': ['pusch_ko_ratio 0.1725 > 0.1'], 'result': 'fail'}
+  gnb0: calls/radio_ms=1.9994; room_us=82.63 us/radio_ms, align_us=0.12 us/radio_ms, data_us=2508.71 us/radio_ms, read_us=13.09 us/radio_ms, process_us=269.43 us/radio_ms, commit_pace_us=1.21 us/radio_ms, push_us=67.27 us/radio_ms
+  ue0: calls/radio_ms=2.0000; room_us=61.12 us/radio_ms, align_us=0.06 us/radio_ms, data_us=2538.04 us/radio_ms, read_us=13.02 us/radio_ms, process_us=274.11 us/radio_ms, commit_pace_us=1.19 us/radio_ms, push_us=55.52 us/radio_ms
+cuda-u1-c1-bw20-a2x2: ratio=0.9999; health={'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+  ue0: calls/radio_ms=1.0000; room_us=42.38 us/radio_ms, align_us=0.03 us/radio_ms, data_us=125.26 us/radio_ms, read_us=0.33 us/radio_ms, process_us=42.48 us/radio_ms, commit_pace_us=779.30 us/radio_ms, push_us=8.74 us/radio_ms
+  gnb0: calls/radio_ms=1.0000; room_us=33.59 us/radio_ms, align_us=0.03 us/radio_ms, data_us=753.87 us/radio_ms, read_us=0.32 us/radio_ms, process_us=40.95 us/radio_ms, commit_pace_us=161.33 us/radio_ms, push_us=8.76 us/radio_ms
+cuda-u1-c1-bw20-a4x4: ratio=0.9997; health={'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+  ue0: calls/radio_ms=1.0000; room_us=92.63 us/radio_ms, align_us=0.03 us/radio_ms, data_us=308.70 us/radio_ms, read_us=1.17 us/radio_ms, process_us=61.22 us/radio_ms, commit_pace_us=516.06 us/radio_ms, push_us=18.68 us/radio_ms
+  gnb0: calls/radio_ms=1.0097; room_us=49.70 us/radio_ms, align_us=0.03 us/radio_ms, data_us=567.73 us/radio_ms, read_us=1.11 us/radio_ms, process_us=60.50 us/radio_ms, commit_pace_us=302.81 us/radio_ms, push_us=16.87 us/radio_ms
+cuda-u1-c1-bw50-a2x2: ratio=0.9973; health={'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+  gnb0: calls/radio_ms=1.0000; room_us=85.93 us/radio_ms, align_us=0.03 us/radio_ms, data_us=667.21 us/radio_ms, read_us=1.33 us/radio_ms, process_us=64.76 us/radio_ms, commit_pace_us=157.21 us/radio_ms, push_us=24.53 us/radio_ms
+  ue0: calls/radio_ms=1.0000; room_us=77.11 us/radio_ms, align_us=0.03 us/radio_ms, data_us=738.89 us/radio_ms, read_us=1.35 us/radio_ms, process_us=59.30 us/radio_ms, commit_pace_us=98.97 us/radio_ms, push_us=24.86 us/radio_ms
+cuda-u1-c1-bw50-a4x4: ratio=0.5131; health={'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+  gnb0: calls/radio_ms=1.0000; room_us=169.93 us/radio_ms, align_us=0.03 us/radio_ms, data_us=1580.70 us/radio_ms, read_us=5.69 us/radio_ms, process_us=134.19 us/radio_ms, commit_pace_us=0.66 us/radio_ms, push_us=53.74 us/radio_ms
+  ue0: calls/radio_ms=1.0000; room_us=168.00 us/radio_ms, align_us=0.03 us/radio_ms, data_us=1579.44 us/radio_ms, read_us=6.45 us/radio_ms, process_us=136.93 us/radio_ms, commit_pace_us=0.59 us/radio_ms, push_us=53.65 us/radio_ms
+Ports are antenna ports, not the number of spatial layers: the OAI gate is capped at DL rank 2. The 100 MHz four-UE-antenna case fails its PUSCH health bound.
+
+Broker boundary and diagnostic controls
+boundary/u1-c1-bw100-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.945750/0.955854/0.965958; broker return code=0
+boundary/u1-c1-bw100-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.961625/0.965917/0.970208; broker return code=0
+boundary/u1-c1-bw100-a2x2-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.913583/0.914427/0.915292; broker return code=0
+boundary/u1-c1-bw100-a2x2-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.908875/0.909094/0.909333; broker return code=0
+boundary/u1-c1-bw100-a4x4-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.500917/0.501302/0.501667; broker return code=0
+boundary/u1-c1-bw100-a4x4-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.481083/0.481339/0.481583; broker return code=0
+boundary/u1-c1-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.999917/0.999917/0.999917; broker return code=0
+boundary/u1-c1-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.999833/0.999917/1.000000; broker return code=0
+boundary/u1-c1-bw20-a2x2-r0-trace0: minimum/mean/maximum received sample-rate ratio=1.000000/1.000000/1.000000; broker return code=0
+boundary/u1-c1-bw20-a2x2-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.999917/0.999958/1.000000; broker return code=0
+boundary/u1-c1-bw20-a4x4-r0-trace0: minimum/mean/maximum received sample-rate ratio=1.000000/1.000000/1.000000; broker return code=0
+boundary/u1-c1-bw20-a4x4-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.999083/0.999500/0.999917; broker return code=0
+boundary/u1-c1-bw50-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=1.000000/1.000000/1.000000; broker return code=0
+boundary/u1-c1-bw50-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=1.000000/1.000000/1.000000; broker return code=0
+boundary/u1-c1-bw50-a2x2-r0-trace0: minimum/mean/maximum received sample-rate ratio=1.000000/1.000000/1.000000; broker return code=0
+boundary/u1-c1-bw50-a2x2-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.999417/0.999521/0.999583; broker return code=0
+boundary/u1-c1-bw50-a4x4-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.940833/0.954354/0.967917; broker return code=0
+boundary/u1-c1-bw50-a4x4-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.963250/0.963531/0.963750; broker return code=0
+boundary/u16-c1-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.999583/0.999922/1.000000; broker return code=0
+boundary/u16-c1-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.999250/0.999613/1.000000; broker return code=0
+boundary/u2-c1-bw100-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.999417/0.999653/0.999917; broker return code=0
+boundary/u2-c1-bw100-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.998083/0.998514/0.998833; broker return code=0
+boundary/u2-c1-bw50-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=1.000000/1.000000/1.000000; broker return code=0
+boundary/u2-c1-bw50-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.999750/0.999778/0.999833; broker return code=0
+boundary/u24-c1-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.660583/0.723877/0.727667; broker return code=0
+boundary/u24-c1-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.664917/0.704267/0.706583; broker return code=0
+boundary/u32-c1-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.494000/0.519457/0.521000; broker return code=0
+boundary/u32-c1-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.481583/0.483568/0.484083; broker return code=0
+boundary/u4-c1-bw100-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.780208/0.803192/0.809000; broker return code=0
+boundary/u4-c1-bw100-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.780417/0.801108/0.806333; broker return code=0
+boundary/u4-c1-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=1.000000/1.000000/1.000000; broker return code=0
+boundary/u4-c1-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.999250/0.999467/0.999667; broker return code=0
+boundary/u4-c1-bw50-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=1.000000/1.000000/1.000000; broker return code=0
+boundary/u4-c1-bw50-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.999500/0.999817/1.000000; broker return code=0
+boundary/u4-c2-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=1.000000/1.000000/1.000000; broker return code=0
+boundary/u4-c2-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.999000/0.999367/1.000000; broker return code=0
+boundary/u4-c4-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.828667/0.863425/0.905083; broker return code=0
+boundary/u4-c4-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.859917/0.881671/0.896917; broker return code=0
+boundary/u64-c1-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.239000/0.241319/0.247750; broker return code=0
+boundary/u64-c1-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.237750/0.239647/0.242583; broker return code=0
+boundary/u8-c1-bw100-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.461250/0.478213/0.480667; broker return code=0
+boundary/u8-c1-bw100-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.438917/0.440269/0.440792; broker return code=0
+boundary/u8-c1-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=1.000000/1.000000/1.000000; broker return code=0
+boundary/u8-c1-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.999750/0.999889/1.000000; broker return code=0
+boundary/u8-c1-bw50-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.863167/0.885111/0.888750; broker return code=0
+boundary/u8-c1-bw50-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.853333/0.867315/0.870000; broker return code=0
+matched-boundary/u1-c1-bw100-a4x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.699000/0.700133/0.704500; broker return code=0
+matched-boundary/u1-c1-bw100-a4x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.602667/0.608483/0.631750; broker return code=0
+matched-boundary/u1-c1-bw100-a4x4-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.443250/0.443500/0.443750; broker return code=0
+matched-boundary/u1-c1-bw100-a4x4-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.451333/0.453646/0.455917; broker return code=0
+matched-boundary/u1-c1-bw50-a4x4-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.934667/0.934771/0.934917; broker return code=0
+matched-boundary/u1-c1-bw50-a4x4-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.921750/0.922667/0.923583; broker return code=0
+diagnostic-io4/u24-c1-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.873417/0.876087/0.884750; broker return code=0
+diagnostic-io4/u24-c1-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.876417/0.879167/0.885083; broker return code=0
+diagnostic-live-budget/u16-c1-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.482083/0.508181/0.892000; broker return code=0
+diagnostic-live-budget/u16-c1-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.534750/0.556912/0.872667; broker return code=0
+diagnostic-live-budget-blocking/u16-c1-bw20-a1x1-r0-trace0: minimum/mean/maximum received sample-rate ratio=0.721417/0.776255/0.780250; broker return code=0
+diagnostic-live-budget-blocking/u16-c1-bw20-a1x1-r1-trace1: minimum/mean/maximum received sample-rate ratio=0.724083/0.743221/0.744917; broker return code=0
+multi-broker/c2-u4-bw20-r0: minimum/mean/maximum received sample-rate ratio=0.999267/0.999833/1.000000; broker return code=[0, 0]
+multi-broker/c2-u4-bw20-r1: minimum/mean/maximum received sample-rate ratio=0.999267/0.999713/1.000000; broker return code=[0, 0]
+multi-broker/c4-u4-bw20-r0: minimum/mean/maximum received sample-rate ratio=0.946933/0.951240/0.953267; broker return code=[0, 0, 0, 0]
+multi-broker/c4-u4-bw20-r1: minimum/mean/maximum received sample-rate ratio=0.948533/0.951000/0.953400; broker return code=[0, 0, 0, 0]
+Main boundary: fixed 8-tap channel, two ZMQ I/O threads, blocking broker waits, broker cores 5–14 and synthetic radios on big cores 15–19. Each point has one tracing-off reference and one detailed-trace run of 12 wall seconds; these are paired observations, not statistical confidence intervals.
+Bandwidth maps to the existing radio rates (20/50/100 MHz -> 23.04/61.44/122.88 MS/s); sample rate is not an independent sweep axis. Batch durations are 1/1/0.5 ms in the main synthetic grid.
+Matched-topology controls preserve the live OAI model, configured batch and queues, changing only endpoint addresses. Synthetic source/request chunking is not the full real-radio execution pattern. These controls preserve a configured 1 ms batch at 100 MHz; do not silently compare them with the 0.5 ms generic grid as if only the model changed.
+The live-budget diagnostic uses broker cores 15–16 and radio placement corresponding to the live recipe; gNB proxy uses 5–12 and UE proxies use 13,14,17–19. Report minimum as well as mean progress because independent synthetic sources/sinks do not share the real stack feedback loop.
+The UE allocation is three big cores (17–19) plus two little cores (13–14), not five big cores. The gNB allocation 5–12 also spans CPU classes. The main synthetic grid instead gives endpoint proxies five big cores (15–19).
+Multi-broker controls have independent CUDA contexts and two I/O threads per process. A single broker with multiple cells and multiple brokers also differ in total I/O workers; their difference does not isolate CUDA context switching alone.
+
+CPU and GPU profiles
+thread-runtime-steady-summary.json: {"window": "16 UE diagnostic second policy, post warmup until replay failure", "duration_s": 7.860603332, "groups": {"ocudu-gpu-chann": {"cpu_seconds": 15.721094304, "runnable_wait_seconds": 188.790684336, "mean_cores": 1.9999857059318151}, "gnb": {"cpu_seconds": 14.661977424, "runnable_wait_seconds": 0.551609456, "mean_cores": 1.8652483536870577}, "srsue": {"cpu_seconds": 35.235293888, "runnable_wait_seconds": 215.500957616, "mean_cores": 4.482517740662403}}}
+two-cell-summary.json: {"window_wall_seconds": 22, "window": "anchor + 8 to 30 wall seconds", "receivers": [{"node": "ue0", "file": "broker-2463673-2463729.csv", "ratio": 0.8676363636363637, "calls": 19088, "mean_process_us": 109.79091036253143}, {"node": "ue3", "file": "broker-2463675-2463721.csv", "ratio": 0.8898636363636364, "calls": 19577, "mean_process_us": 110.91558282678655}, {"node": "ue2", "file": "broker-2463675-2463720.csv", "ratio": 0.8898636363636364, "calls": 19577, "mean_process_us": 110.24684078255095}, {"node": "gnb0", "file": "broker-2463673-2463728.csv", "ratio": 0.8676363636363637, "calls": 19088, "mean_process_us": 120.38295305951384}, {"node": "ue1", "file": "broker-2463673-2463730.csv", "ratio": 0.8676363636363637, "calls": 19088, "mean_process_us": 111.78348276404023}, {"node": "gnb1", "file": "broker-2463675-2463719.csv", "ratio": 0.8898636363636364, "calls": 19577, "mean_process_us": 118.2724727486336}]}
+two-cell-control-summary.json: {"definition": "mean gate per-second scheduler slots metric in valid post-warmup wall-time segments, divided by 1000", "results": {"instrumented": {"a": 0.854759635506142, "b": 0.8704614548282488}, "control": {"a": 0.8670886440074231, "b": 0.8765238769121272}}}
+Nsight /workspace/gpuch/profile-20261028/nsys-boundary/u1-c1-bw100-a4x4-r0-trace1/timeline.nsys-rep: kernels=142778; kernel union fraction over activity span=0.3423358444029821; matched runtime correlations=142778; post-API kernel-start delay={'count': 142778, 'mean': 150.69070629928981, 'p50': 154.608, 'p99': 428.112, 'max': 709.728, 'sum': 21515317.664}
+  Highest summed CUDA API times: [('cudaStreamSynchronize_v3020', {'count': 17850, 'mean': 219.26124907563025, 'p50': 173.856, 'p99': 530.864, 'max': 727.136, 'sum': 3913813.296}), ('cudaLaunchKernel_v7000', {'count': 142784, 'mean': 5.846515351860153, 'p50': 4.208, 'p99': 29.232, 'max': 1013.328, 'sum': 834788.848}), ('cudaMemcpyAsync_v3020', {'count': 107092, 'mean': 4.6335472304187055, 'p50': 3.056, 'p99': 24.784, 'max': 207.504, 'sum': 496215.84}), ('cudaEventRecord_v3020', {'count': 71392, 'mean': 4.608041909457643, 'p50': 2.576, 'p99': 24.256, 'max': 355.904, 'sum': 328977.328}), ('cuKernelGetName', {'count': 142784, 'mean': 0.136818691169879, 'p50': 0.08, 'p99': 0.8, 'max': 15.232, 'sum': 19535.52}), ('cudaHostAlloc_v3020', {'count': 8, 'mean': 1542.53, 'p50': 904.416, 'p99': 5191.12, 'max': 5191.12, 'sum': 12340.24}), ('cudaMalloc_v3020', {'count': 14, 'mean': 70.69714285714285, 'p50': 2.176, 'p99': 424.768, 'max': 424.768, 'sum': 989.76}), ('cuLibraryLoadData', {'count': 2, 'mean': 334.208, 'p50': 75.408, 'p99': 593.008, 'max': 593.008, 'sum': 668.416})]
+  Copy activities by CUPTI kind: {'1': {'count': 107092, 'bytes': 11355688, 'activity_us': 51661.76000002861}}
+Nsight /workspace/gpuch/profile-20261028/nsys-boundary/u16-c1-bw20-a1x1-r0-trace1/timeline.nsys-rep: kernels=807400; kernel union fraction over activity span=0.3091014181113084; matched runtime correlations=807400; post-API kernel-start delay={'count': 807400, 'mean': 8.808417141441664, 'p50': 0.0, 'p99': 149.248, 'max': 635.376, 'sum': 7111916.0}
+  Highest summed CUDA API times: [('cudaLaunchKernel_v7000', {'count': 807400, 'mean': 7.672272915531335, 'p50': 5.552, 'p99': 34.736, 'max': 3771.6, 'sum': 6194593.152}), ('cudaMemcpyAsync_v3020', {'count': 484477, 'mean': 6.6611978195043315, 'p50': 4.416, 'p99': 29.472, 'max': 3154.928, 'sum': 3227197.136}), ('cudaEventRecord_v3020', {'count': 645920, 'mean': 4.673958162001486, 'p50': 3.28, 'p99': 21.648, 'max': 1131.728, 'sum': 3019003.056}), ('cudaStreamSynchronize_v3020', {'count': 161496, 'mean': 18.570231733293703, 'p50': 6.96, 'p99': 228.56, 'max': 2140.8, 'sum': 2999018.144}), ('cuKernelGetName', {'count': 807401, 'mean': 0.1397663267694739, 'p50': 0.096, 'p99': 0.592, 'max': 174.8, 'sum': 112847.472}), ('cudaHostAlloc_v3020', {'count': 68, 'mean': 152.99882352941177, 'p50': 1.824, 'p99': 4164.032, 'max': 4164.032, 'sum': 10403.92}), ('cudaStreamCreateWithFlags_v5000', {'count': 17, 'mean': 44.22870588235294, 'p50': 2.624, 'p99': 161.072, 'max': 161.072, 'sum': 751.888}), ('cudaMalloc_v3020', {'count': 119, 'mean': 5.56853781512605, 'p50': 1.36, 'p99': 149.936, 'max': 184.0, 'sum': 662.6560000000001})]
+  Copy activities by CUPTI kind: {'1': {'count': 484477, 'bytes': 14112896, 'activity_us': 197246.75200054454}}
+Nsight activity fractions are time with at least one captured kernel running, not SM occupancy. Post-API start delay includes ordered dependencies on earlier kernels in the same stream; it is not exclusively inter-process GPU contention. The successful captures are synthetic broker controls, not the complete MPS live stack.
+Full live-stack launch under Nsight failed at unshare with Invalid argument before measurement. Live channel timings instead use receiver-local CUDA events and host timers. No complete live-stack GPU scheduling timeline is claimed.
+The steady-window software cpu-clock event was unsupported on this kernel. A single hardware-cycle collector captured the second policy after applied update k >= 120 (past the 10-radio-second warmup), pinned to auxiliary cores 0–4. Its PMUs are separate for CPU classes; 59 lost samples and unresolved kernel symbols limit exact CPU percentage attribution.
+
+Validation and practical limits
+Release CUDA processing, runtime-update parity, matrix history and broker tests: 4/4 pass. The full initial suite also exposes a CPU parallel-reference parity failure reproduced in the pre-existing Spark binary. Production source and system tuning were not changed.
+The Sionna channel trace is computed before measurement and replayed at 10 Hz; the ray-tracing solver is not an active GPU tenant during the timed RAN window. Thus these tests do not measure concurrent online ray-tracing load.
+Real-time speed, deadline misses, connectivity and traffic validity are distinct. Preserve all failures; a near-1 sample ratio does not establish strict every-slot real-time qualification.
+Historical PR10 two-cell CUDA 0.53 is not reproduced: the instrumented run advances at about 0.868/0.890 by IQ sample progress, and the tracing-off repeat reports about 0.867/0.877 by the gate scheduler-slot metric. Do not treat the old two-cell slowdown as a universal GPU-sharing result.
+The direct measured result at 16 UEs is that most elapsed time is waiting around IQ exchange. The two-core broker allocation is itself a limit in its synthetic control; scheduler decision time alone is far smaller than the full cycle. A statement that MAC is the confirmed primary bottleneck would overstate these measurements.

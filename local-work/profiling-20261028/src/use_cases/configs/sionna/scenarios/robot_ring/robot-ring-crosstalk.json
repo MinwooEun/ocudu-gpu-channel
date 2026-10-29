@@ -1,0 +1,119 @@
+{
+  "name": "robot_ring_crosstalk",
+  "description": "robot-ring.json plus UE-to-UE crosstalk both ways, for a TDD cell where both robots share one carrier. At 2-4 m the crosstalk path sits at the adapter's +20 dB clamp (R1 sweep: physical -47 dB), i.e. 20+ dB above the gNB signal, so use it only when that interference is the point of the run.",
+  "scene": "robot_ring",
+  "simple_road": false,
+  "solver": {
+    "max_depth": 3,
+    "samples_per_source": 200000,
+    "seed": 42,
+    "path_polylines": 6,
+    "propagation": {
+      "los": true,
+      "specular_reflection": true,
+      "diffuse_reflection": false,
+      "refraction": true,
+      "diffraction": false
+    }
+  },
+  "nodes": {
+    "gnb0": {
+      "start_m": [
+        15.0,
+        0.0,
+        8.0
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue0": {
+      "mobility": "robot",
+      "route_m": [
+        [
+          2.0,
+          -2.5,
+          0.4
+        ],
+        [
+          2.0,
+          2.5,
+          0.4
+        ]
+      ],
+      "route_mode": "pingpong",
+      "speed_mps": 1.0,
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue1": {
+      "mobility": "robot",
+      "route_m": [
+        [
+          -2.0,
+          2.5,
+          0.4
+        ],
+        [
+          -2.0,
+          -2.5,
+          0.4
+        ]
+      ],
+      "route_mode": "pingpong",
+      "speed_mps": 1.0,
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    }
+  },
+  "links": [
+    {
+      "from": "gnb0",
+      "to": "ue0",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "gnb0",
+      "to": "ue1",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue0",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue1",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue0",
+      "to": "ue1",
+      "direction": "crosstalk",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue1",
+      "to": "ue0",
+      "direction": "crosstalk",
+      "model": "sionna_rt"
+    }
+  ]
+}

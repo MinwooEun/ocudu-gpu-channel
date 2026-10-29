@@ -1,0 +1,429 @@
+diff --git a/include/ocudu_gpu_channel/physical_link.h b/include/ocudu_gpu_channel/physical_link.h
+index f0eee2a..c88055c 100644
+--- a/include/ocudu_gpu_channel/physical_link.h
++++ b/include/ocudu_gpu_channel/physical_link.h
+@@ -33,6 +33,7 @@
+ #include <algorithm>
+ #include <chrono>
+ #include <complex>
++#include <cstdio>
+ #include <iostream>
+ #include <cstdint>
+ #include <stdexcept>
+@@ -211,9 +212,43 @@ inline LinkSnapOutcome snap_physical_link(PhysicalLinkRuntime& link,
+   // return). The slot counter is the link's, so take_effect_at_slot names the
+   // same slot for every lane.
+   const std::uint64_t snap_idx = link.next_slot;
+-  const bool values_changed =
+-      snap_mutable_params(link.live, link.live_seqno, link.control, snap_idx);
++  const std::uint64_t snap_sample = link.clock.slot_start_samples;
++  link.control.current_sample.store(snap_sample, std::memory_order_relaxed);
++  // Opt-in sample gate: an update committed with take_effect_at_sample waits
++  // for the first slot that starts at or after that sample. The seqno is read
++  // first (acquire), so a target written before the bump is visible here.
++  const bool update_pending =
++      link.control.seqno.load(std::memory_order_acquire) != link.live_seqno;
++  const std::uint64_t sample_gate =
++      link.control.take_effect_at_sample.load(std::memory_order_acquire);
++  bool values_changed = false;
++  if (update_pending && sample_gate > snap_sample) {
++    link.control.current_slot.store(snap_idx, std::memory_order_relaxed);
++  } else {
++    values_changed =
++        snap_mutable_params(link.live, link.live_seqno, link.control, snap_idx);
++  }
+   link.next_slot = snap_idx + 1;
++  if (values_changed) {
++    // Logged only for tagged (sample-indexed) updates, so untagged callers see
++    // the broker output they always saw. The line is formatted before
++    // applied_seqno is published: a caller that waits for it may commit the
++    // next update at once, which rewrites the tag and digest read here.
++    if (link.control.pending_tag[0] != '\0') {
++      char line[384];
++      std::snprintf(line, sizeof(line),
++                    "event=control_sample_applied link_id=%s tag=%s seqno=%u slot=%llu sample=%llu "
++                    "target_sample=%llu count=%zu digest=%016llx unix_ns=%lld",
++                    link_id.c_str(), link.control.pending_tag, static_cast<unsigned>(link.live_seqno),
++                    static_cast<unsigned long long>(snap_idx), static_cast<unsigned long long>(snap_sample),
++                    static_cast<unsigned long long>(sample_gate), count,
++                    static_cast<unsigned long long>(link.control.pending_digest),
++                    static_cast<long long>(std::chrono::duration_cast<std::chrono::nanoseconds>(
++                        std::chrono::system_clock::now().time_since_epoch()).count()));
++      emit_evidence_line(line);
++    }
++    link.control.applied_seqno.store(link.live_seqno, std::memory_order_release);
++  }
+ 
+   bool profile_activated = false;
+   bool matrix_profile_activated = false;
+diff --git a/include/ocudu_gpu_channel/processing.h b/include/ocudu_gpu_channel/processing.h
+index 36712f2..9489626 100644
+--- a/include/ocudu_gpu_channel/processing.h
++++ b/include/ocudu_gpu_channel/processing.h
+@@ -122,6 +122,14 @@ public:
+   virtual ProcessorTimings last_timings() const = 0;
+   virtual const char* backend_name() const = 0;
+ 
++  // Restart destination `dst_key`'s receiver-model AWGN counters at zero, so
++  // the noise drawn for the next sample is the draw for counter 0. Called only
++  // from that destination's producer thread, between two process calls.
++  // Returns false when the backend's noise is not counter-indexed (the CPU
++  // reference draws from a stateful generator), so a caller cannot mistake a
++  // no-op for a reset.
++  virtual bool reset_receiver_noise(const std::string& /*dst_key*/) { return false; }
++
+   // Phase 3 C3: return a non-owning map from link_id (e.g. "ue0-gnb0") to
+   // the BrokerLinkControl the backend allocated for that link. The broker
+   // hands this to the ControlServer so REQs can find the right shadow.
+diff --git a/include/ocudu_gpu_channel/runtime_control.h b/include/ocudu_gpu_channel/runtime_control.h
+index a3f8fec..d4fe3c5 100644
+--- a/include/ocudu_gpu_channel/runtime_control.h
++++ b/include/ocudu_gpu_channel/runtime_control.h
+@@ -31,6 +31,8 @@
+ 
+ #include <atomic>
+ #include <cstdint>
++#include <string>
++#include <unistd.h>
+ 
+ namespace ocg {
+ 
+@@ -240,6 +242,30 @@ struct BrokerLinkControl {
+   // updates apply now.
+   std::atomic<std::uint64_t> current_slot{0};
+ 
++  // Sample-indexed control (opt-in; all zero unless a batch_commit names
++  // take_effect_at_sample). A slot index counts serve calls, whose sizes
++  // vary with how the radios request, so "slot k" is not the same instant of
++  // the IQ stream in two runs. The link clock (samples since the broker
++  // started) is: a gated update applies to the first sample >= this target,
++  // and the broker producer splits a call at the target so it lands exactly.
++  // Written by the control thread before the seqno release-store.
++  std::atomic<std::uint64_t> take_effect_at_sample{0};
++  // Receiver-noise epoch: at this sample of the destination node's stream
++  // the node's receiver AWGN counters restart at 0, so the noise realisation
++  // is indexed by samples since the epoch rather than since broker start.
++  // Cleared by the producer once handled. 0 = none.
++  std::atomic<std::uint64_t> noise_epoch_at_sample{0};
++  // Caller's label for the pending update and the digest of the profile the
++  // control thread decoded, both logged when the update takes effect. The
++  // tag is written before the seqno bump and read after observing it.
++  static constexpr std::size_t kTagCapacity = 96;
++  char pending_tag[kTagCapacity] = {};
++  std::uint64_t pending_digest = 0;
++  // Start sample of the slot the link is processing, and the seqno of the
++  // last update that took effect: what `link_clock` reports.
++  std::atomic<std::uint64_t> current_sample{0};
++  std::atomic<std::uint32_t> applied_seqno{0};
++
+   std::atomic<std::uint32_t> seqno{0};        // bumped after every shadow write
+ 
+   // v3.0 telemetry snapshot — written by the backend snap path each
+@@ -402,7 +428,68 @@ inline void init_broker_link_control(BrokerLinkControl& ctl,
+   ctl.matrix_profile_pending = false;
+   ctl.take_effect_at_slot = 0;
+   ctl.current_slot.store(0, std::memory_order_relaxed);
++  ctl.take_effect_at_sample.store(0, std::memory_order_relaxed);
++  ctl.noise_epoch_at_sample.store(0, std::memory_order_relaxed);
++  ctl.pending_tag[0] = '\0';
++  ctl.pending_digest = 0;
++  ctl.current_sample.store(0, std::memory_order_relaxed);
++  ctl.applied_seqno.store(0, std::memory_order_relaxed);
+   ctl.seqno.store(0, std::memory_order_relaxed);
+ }
+ 
++// Evidence lines (sample-indexed control) are written with one write(2) of
++// the complete line, never through std::cout: several producer threads print
++// concurrently, and stream insertions from different threads interleave
++// inside one line, which a log parser then silently misses.
++inline void emit_evidence_line(std::string line)
++{
++  line.push_back('\n');
++  const char* data = line.data();
++  std::size_t left = line.size();
++  while (left > 0) {
++    const ssize_t n = ::write(STDOUT_FILENO, data, left);
++    if (n <= 0) return;
++    data += n;
++    left -= static_cast<std::size_t>(n);
++  }
++}
++
++// FNV-1a over the named fields of a decoded matrix profile (never padding
++// bytes). Two runs that decoded the same request bytes produce the same
++// value; it is the broker-side half of the identical-channel evidence.
++inline std::uint64_t matrix_profile_digest(const MatrixProfileShadow& profile)
++{
++  std::uint64_t hash = 1469598103934665603ULL;
++  const auto mix = [&hash](const void* data, std::size_t size) {
++    const auto* bytes = static_cast<const unsigned char*>(data);
++    for (std::size_t i = 0; i != size; ++i) {
++      hash ^= bytes[i];
++      hash *= 1099511628211ULL;
++    }
++  };
++  const auto mix_value = [&mix](auto value) { mix(&value, sizeof(value)); };
++  mix_value(profile.nt);
++  mix_value(profile.nr);
++  mix_value(profile.lane_count);
++  for (int lane = 0; lane < profile.lane_count; ++lane) {
++    const ProfileShadow& p = profile.lanes[lane];
++    mix_value(p.n_taps);
++    mix_value(p.fading_enabled);
++    mix_value(p.fading_f_d_max_hz);
++    mix_value(p.fading_spectrum);
++    mix_value(p.fading_grid_us);
++    mix_value(p.force);
++    for (int tap = 0; tap < p.n_taps; ++tap) {
++      const TapSpec& t = p.taps[tap];
++      mix_value(t.delay_samples);
++      mix_value(t.gain_db);
++      mix_value(t.phase_rad);
++      mix_value(t.is_los);
++      mix_value(t.los_k_db);
++      mix_value(t.los_angle_rad);
++    }
++  }
++  return hash;
++}
++
+ }  // namespace ocg
+diff --git a/src/broker.cpp b/src/broker.cpp
+index 31e53e1..6c877e1 100644
+--- a/src/broker.cpp
++++ b/src/broker.cpp
+@@ -1143,6 +1143,10 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
+       // One batch is the whole run-ahead the RX ring grants (`rx_high_water`),
+       // so it is also the most lateness this producer may ever spend at once.
+       RealTimePacer pacer(rate, batch_duration);
++      // Samples this node has produced since the broker started: the same
++      // count every incoming link's clock holds, since each call advances all
++      // of them together. Used only by the opt-in sample-indexed control.
++      std::uint64_t node_sample = 0;
+ 
+       while (!stop_requested.load()) {
+         // (A) Output room. Every RX row must be able to take at least one
+@@ -1270,6 +1274,20 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
+         if (count == 0) {
+           break; // stop requested while waiting for lane data
+         }
++        // Opt-in sample-indexed control: a call never straddles a pending
++        // take_effect_at_sample or noise epoch of an incoming link, so the
++        // update starts exactly at its target sample instead of at whichever
++        // call boundary follows it. Inert (no target set) for every caller
++        // that does not name one.
++        for (BrokerLinkControl* ctl : node_controls[n]) {
++          for (const std::uint64_t target :
++               {ctl->take_effect_at_sample.load(std::memory_order_acquire),
++                ctl->noise_epoch_at_sample.load(std::memory_order_acquire)}) {
++            if (target > node_sample && target < node_sample + count) {
++              count = static_cast<std::size_t>(target - node_sample);
++            }
++          }
++        }
+         trace.add(HopEvent::ProduceDataReady, count);
+         const auto t_read_start = std::chrono::steady_clock::now();
+         const double data_us =
+@@ -1317,6 +1335,28 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
+           row_in_ring[r] = !tail.empty();
+           rows[r] = row_in_ring[r] ? tail : std::span<IqSample>(row_storage[r].data(), count);
+         }
++        // Receiver-noise epoch (opt-in): restart this node's receiver AWGN
++        // counters at the requested sample, so the noise added at sample k
++        // after the epoch is the same draw in every run.
++        {
++          bool reset = false;
++          std::uint64_t missed = 0;
++          for (BrokerLinkControl* ctl : node_controls[n]) {
++            std::uint64_t epoch = ctl->noise_epoch_at_sample.load(std::memory_order_acquire);
++            if (epoch == 0 || epoch > node_sample) continue;
++            if (epoch == node_sample) reset = true; else missed = epoch;
++            ctl->noise_epoch_at_sample.compare_exchange_strong(epoch, 0, std::memory_order_acq_rel);
++          }
++          if (reset) {
++            const bool supported = processor_->reset_receiver_noise(node.id);
++            emit_evidence_line("event=noise_epoch node=" + node.id + " sample=" + std::to_string(node_sample) +
++                               " applied=" + (supported ? "1" : "0"));
++          }
++          if (missed != 0) {
++            emit_evidence_line("event=noise_epoch_missed node=" + node.id + " target_sample=" +
++                               std::to_string(missed) + " sample=" + std::to_string(node_sample));
++          }
++        }
+         diag.state.store("process");
+         const auto t_process_start = std::chrono::steady_clock::now();
+         const double read_us =
+@@ -1368,6 +1408,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
+         for (std::size_t k = 0; k != incoming.size(); ++k) {
+           links[incoming[k]].cursor.fetch_add(count);
+         }
++        node_sample += count;
+ 
+         // (G) Throttle: cap the production cadence at the node sample rate so
+         // the lock-step radio runs at real time, not faster. The pacer refuses
+diff --git a/src/control_server.cpp b/src/control_server.cpp
+index 65b20ee..080a985 100644
+--- a/src/control_server.cpp
++++ b/src/control_server.cpp
+@@ -5,8 +5,10 @@
+ #include <unistd.h>
+ 
+ #include <algorithm>
++#include <cctype>
+ #include <chrono>
+ #include <cmath>
++#include <cstdio>
+ #include <cstring>
+ #include <iostream>
+ #include <optional>
+@@ -1185,6 +1187,39 @@ std::string handle_batch_commit(
+   }
+   const std::uint64_t apply_at = static_cast<std::uint64_t>(tea);
+ 
++  // Opt-in sample-indexed timing (single-cell scheduler benchmark): the
++  // update takes effect at this sample of each link's stream, the label is
++  // logged when it does, and noise_epoch restarts the destination's
++  // receiver-noise counters at the same sample. Omitted, all three are inert.
++  double tas_value = 0.0;
++  bool noise_epoch = false;
++  std::string tag;
++  try {
++    tas_value = get_number(fields, "take_effect_at_sample", 0.0);
++    noise_epoch = get_bool(fields, "noise_epoch", false);
++    tag = get_string(fields, "tag", "");
++  } catch (const std::exception& e) {
++    return emit_rejection(ctx, e.what());
++  }
++  if (!std::isfinite(tas_value) || tas_value < 0.0 || tas_value > 9.0e15 ||
++      tas_value != std::floor(tas_value)) {
++    return emit_rejection(ctx, "batch_commit: take_effect_at_sample must be a non-negative integer");
++  }
++  const std::uint64_t apply_at_sample = static_cast<std::uint64_t>(tas_value);
++  if (tag.size() >= BrokerLinkControl::kTagCapacity) {
++    return emit_rejection(ctx, "batch_commit: tag is too long");
++  }
++  for (const char c : tag) {
++    if (!(std::isalnum(static_cast<unsigned char>(c)) || c == ':' || c == '=' || c == ';' ||
++          c == '.' || c == '_' || c == '-')) {
++      return emit_rejection(ctx, "batch_commit: tag may contain only [A-Za-z0-9:=;._-]");
++    }
++  }
++  if (noise_epoch && apply_at_sample == 0) {
++    return emit_rejection(ctx, "batch_commit: noise_epoch needs take_effect_at_sample > 0");
++  }
++  std::uint64_t late_links = 0;
++
+   // Apply staged ops in order. Per-link single-writer invariant holds:
+   // each ctl is written serially within this control thread, then its
+   // seqno bumped. The plan's "same per-link slot index" guarantee falls
+@@ -1204,6 +1239,20 @@ std::string handle_batch_commit(
+     }
+     BrokerLinkControl& ctl = *it_ctl->second;
+     ctl.take_effect_at_slot = apply_at;
++    // Everything the snap reads after observing the seqno bump is written
++    // before it: the sample gate, the label, the decoded-profile digest.
++    ctl.take_effect_at_sample.store(apply_at_sample, std::memory_order_release);
++    std::snprintf(ctl.pending_tag, BrokerLinkControl::kTagCapacity, "%s", tag.c_str());
++    ctl.pending_digest = op.kind == ControlServer::StagedOp::Kind::MatrixProfileSwap
++                             ? matrix_profile_digest(op.matrix_profile)
++                             : 0;
++    if (noise_epoch) {
++      ctl.noise_epoch_at_sample.store(apply_at_sample, std::memory_order_release);
++    }
++    if (apply_at_sample != 0 &&
++        apply_at_sample <= ctl.current_sample.load(std::memory_order_relaxed)) {
++      ++late_links;
++    }
+     if (op.kind == ControlServer::StagedOp::Kind::Scalar) {
+       const ParamSpec* spec = find_param_spec(op.param);
+       if (spec == nullptr) continue;   // shouldn't happen — validated at stage time
+@@ -1242,6 +1291,10 @@ std::string handle_batch_commit(
+     o << "event=control_batch_commit id=" << bid
+       << " link_count=" << applied_count
+       << " apply_at_slot=" << apply_at;
++    if (apply_at_sample != 0 || !tag.empty() || noise_epoch) {
++      o << " apply_at_sample=" << apply_at_sample << " tag=" << (tag.empty() ? "-" : tag)
++        << " noise_epoch=" << (noise_epoch ? 1 : 0) << " late_links=" << late_links;
++    }
+     ctx.logger(o.str());
+   }
+ 
+@@ -1251,7 +1304,11 @@ std::string handle_batch_commit(
+       << "\",\"backend\":\""
+       << json_escape(ctx.backend_name.empty() ? "unknown" : ctx.backend_name)
+       << "\",\"link_count\":" << applied_count
+-      << ",\"apply_at_slot\":" << apply_at << ",\"links\":[";
++      << ",\"apply_at_slot\":" << apply_at;
++  if (apply_at_sample != 0) {
++    rep << ",\"apply_at_sample\":" << apply_at_sample << ",\"late_links\":" << late_links;
++  }
++  rep << ",\"links\":[";
+   bool first = true;
+   for (const auto& [link_id, seqno] : committed_seqnos) {
+     if (!first) rep << ',';
+@@ -1295,6 +1352,32 @@ std::string handle_batch_abort(
+   return std::string("{\"ok\":true,\"dropped_ops\":") + std::to_string(dropped) + "}";
+ }
+ 
++// Sample-indexed control: where every link is in its IQ stream, and which
++// update it has taken. Read-only; a sender pacing traffic on radio time and a
++// replayer waiting for an update to land both poll it.
++std::string handle_link_clock(HandlerContext& ctx)
++{
++  std::vector<std::string> ids;
++  ids.reserve(ctx.link_map.size());
++  for (const auto& [link_id, ctl] : ctx.link_map) {
++    if (ctl != nullptr) ids.push_back(link_id);
++  }
++  std::sort(ids.begin(), ids.end());
++  std::ostringstream rep;
++  rep << "{\"ok\":true,\"links\":[";
++  for (std::size_t i = 0; i != ids.size(); ++i) {
++    const BrokerLinkControl& ctl = *ctx.link_map.at(ids[i]);
++    if (i != 0) rep << ',';
++    rep << "{\"link_id\":\"" << json_escape(ids[i]) << "\""
++        << ",\"sample\":" << ctl.current_sample.load(std::memory_order_relaxed)
++        << ",\"slot\":" << ctl.current_slot.load(std::memory_order_relaxed)
++        << ",\"seqno\":" << ctl.seqno.load(std::memory_order_acquire)
++        << ",\"applied_seqno\":" << ctl.applied_seqno.load(std::memory_order_relaxed) << '}';
++  }
++  rep << "]}";
++  return rep.str();
++}
++
+ }  // namespace
+ 
+ std::string ControlServer::handle_message(const std::string& request_body)
+@@ -1331,6 +1414,7 @@ std::string ControlServer::handle_message(const std::string& request_body)
+   if (type_str == "batch_begin")  return handle_batch_begin  (ctx, fields);
+   if (type_str == "batch_commit") return handle_batch_commit (ctx, fields);
+   if (type_str == "batch_abort")  return handle_batch_abort  (ctx, fields);
++  if (type_str == "link_clock")   return handle_link_clock   (ctx);
+   return emit_rejection(ctx, std::string("unknown message type: ") + type_str);
+ }
+ 
+diff --git a/src/cuda_backend.cu b/src/cuda_backend.cu
+index 6c0b962..3bccdfd 100644
+--- a/src/cuda_backend.cu
++++ b/src/cuda_backend.cu
+@@ -1034,6 +1034,20 @@ public:
+     }
+   }
+ 
++  bool reset_receiver_noise(const std::string& dst_key) override
++  {
++    auto sp_it = superpose_states_.find(dst_key);
++    if (sp_it == superpose_states_.end()) {
++      return false;
++    }
++    // The AWGN draw is Philox(seed, counter + idx): zeroing the counter makes
++    // the next sample's noise the draw for index 0, whatever the call sizes.
++    for (auto& rx : sp_it->second.rx_models) {
++      std::fill(rx.noise_counter.begin(), rx.noise_counter.end(), 0ULL);
++    }
++    return true;
++  }
++
+   void process_superposition(const std::string& dst_key,
+                              const std::vector<SuperpositionInput>& inputs,
+                              const ModelConfig* rx_model,

@@ -1,0 +1,17 @@
+{
+  "download_mbps": 30,
+  "video_on_mbps": 40,
+  "video_on_mean_s": 0.2,
+  "video_off_mean_s": 0.8,
+  "expected_mean_total_dl_mbps": 38.16,
+  "peak_total_dl_mbps": 70.16,
+  "scheduler_settings": "unchanged defaults",
+  "policy_order": [
+    "rr",
+    "qos",
+    "qos",
+    "rr"
+  ],
+  "measurement_s": 120,
+  "design_reason": "Brief congestion with average demand below measured cell capacity, to avoid persistent queue buildup. All runs retained."
+}

@@ -1,0 +1,2 @@
+loopback: cpu_threads=1 tx_pulls=1348 rx_requests=1338 tx_queue_overflows=0 tx_sequence_gaps=0 rx_starvations=0 zmq_errors=0 gnb_received=15045120 ue_received=15782400
+loopback: cpu_threads=24 tx_pulls=1309 rx_requests=1297 tx_queue_overflows=0 tx_sequence_gaps=0 rx_starvations=0 zmq_errors=0 gnb_received=14699520 ue_received=15183360

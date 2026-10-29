@@ -1,0 +1,238 @@
+# Sionna RT-driven 2-gNB / 2-UE topology, four antennas per cell.
+#
+# The Sionna counterpart of topology.multi-gnb.cuda.yaml. That file is the
+# static gate's, and it hand-tunes the cells apart: `serving` carries
+# path_loss 6 dB + phase + cfo + awgn and `intercell` carries path_loss 20 dB,
+# so the served cell starts 14 dB ahead of its neighbour whatever the geometry
+# says. A profile_swap replaces a link's TDL *taps* and nothing else, so under
+# Sionna those static steps survive the swap and sit on top of the ray-traced
+# channel -- the run then measures the hand-tuning, not the scene.
+#
+# Here every link is a bare routing anchor. The bridge's matrix_profile_swap
+# supplies the whole channel, so the only thing deciding which cell is stronger
+# at a given moment is the ray tracing. -100 dB is the pre-swap value on
+# purpose: the gate waits for the bridge to commit real profiles before it
+# starts the radios, and a quiet anchor makes starting early fail loudly
+# instead of quietly running on a placeholder.
+#
+# Nodes:  gnb0, gnb1, ue0, ue1
+# Edges:  gnb0->ue0, gnb1->ue1     downlink, each UE's nearer cell
+#         gnb0->ue1, gnb1->ue0     downlink from the other cell -- co-channel
+#                                  interference, not a second serving link
+#         ue0->gnb0, ue1->gnb1     uplink
+#         ue0->gnb1, ue1->gnb0     uplink into the other cell
+#         (no UE<->UE edge: FDD cells, a UE never hears another UE's uplink carrier)
+#
+# Every receiver sums all of its incoming edges and then applies its rx_model
+# once to that sum:
+#   ue0  RX = noise_floor( ch(gnb0->ue0) + ch(gnb1->ue0) + ch(ue1->ue0) )
+#   ue1  RX = noise_floor( ch(gnb1->ue1) + ch(gnb0->ue1) + ch(ue0->ue1) )
+#   gnb0 RX = noise_floor( ch(ue0->gnb0) + ch(ue1->gnb0) )
+#   gnb1 RX = noise_floor( ch(ue1->gnb1) + ch(ue0->gnb1) )
+#
+# The model names are labels only -- all three link models are byte-identical
+# anchors. They are kept distinct so the telemetry topic and the dashboard
+# legend still say which role an edge plays.
+#
+# On the noise floor: `noise_power` is converted to an SNR against a reference
+# power of 1.0 and the backend then derives sigma from the running input power,
+# so this is a fixed SNR against the summed receive power, not an absolute
+# thermal floor. It bounds the achievable SINR at every receiver; it does not
+# by itself make a distant cell undetectable.
+runtime:
+  backend: cuda
+  gpu_device: 0
+  batch_samples: 23040
+  queue_samples: 2457600
+# Each cell carries FOUR antennas and each srsUE keeps one, so per UE the
+# downlink is a 1x4 row and the uplink a 4x1 column: still rank-1 MISO/SIMO,
+# never 2x2. That makes every device a `port` and every radio a `radio_nodes`
+# entry -- declaring radio_nodes at all means every device must be claimed by
+# one, and links then name radio nodes rather than devices.
+#
+# Ports pair tx even / rx odd, the same convention the 4T4R gNB fixture's ZMQ
+# device_args use, and the two cells take disjoint blocks (gnb0 3000-3007,
+# gnb1 3010-3017) so a stale socket from one cell cannot land on the other.
+# The UEs keep the ports they always had.
+devices:
+  - id: gnb0_p0
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:3000
+    rx_endpoint: tcp://*:3001
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+    rx_model: noise_floor
+  - id: gnb0_p1
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:3002
+    rx_endpoint: tcp://*:3003
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+    rx_model: noise_floor
+  - id: gnb0_p2
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:3004
+    rx_endpoint: tcp://*:3005
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+    rx_model: noise_floor
+  - id: gnb0_p3
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:3006
+    rx_endpoint: tcp://*:3007
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+    rx_model: noise_floor
+  - id: gnb1_p0
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:3010
+    rx_endpoint: tcp://*:3011
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+    rx_model: noise_floor
+  - id: gnb1_p1
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:3012
+    rx_endpoint: tcp://*:3013
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+    rx_model: noise_floor
+  - id: gnb1_p2
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:3014
+    rx_endpoint: tcp://*:3015
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+    rx_model: noise_floor
+  - id: gnb1_p3
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:3016
+    rx_endpoint: tcp://*:3017
+    tx_carrier: n3-dl
+    rx_carrier: n3-ul
+    rx_model: noise_floor
+  - id: ue0_p0
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:3101
+    rx_endpoint: tcp://*:3100
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
+    rx_model: noise_floor
+  - id: ue1_p0
+    role: port
+    sample_rate_hz: 23040000
+    tx_endpoint: tcp://127.0.0.1:3103
+    rx_endpoint: tcp://*:3102
+    tx_carrier: n3-ul
+    rx_carrier: n3-dl
+    rx_model: noise_floor
+
+radio_nodes:
+  - id: gnb0
+    tx_ports:
+      - gnb0_p0
+      - gnb0_p1
+      - gnb0_p2
+      - gnb0_p3
+    rx_ports:
+      - gnb0_p0
+      - gnb0_p1
+      - gnb0_p2
+      - gnb0_p3
+  - id: gnb1
+    tx_ports:
+      - gnb1_p0
+      - gnb1_p1
+      - gnb1_p2
+      - gnb1_p3
+    rx_ports:
+      - gnb1_p0
+      - gnb1_p1
+      - gnb1_p2
+      - gnb1_p3
+  - id: ue0
+    tx_ports:
+      - ue0_p0
+    rx_ports:
+      - ue0_p0
+  - id: ue1
+    tx_ports:
+      - ue1_p0
+    rx_ports:
+      - ue1_p0
+links:
+  - from: gnb0
+    to: ue0
+    model: serving
+  - from: gnb1
+    to: ue1
+    model: serving
+  - from: gnb0
+    to: ue1
+    model: intercell
+  - from: gnb1
+    to: ue0
+    model: intercell
+  - from: ue0
+    to: gnb0
+    model: serving
+  - from: ue1
+    to: gnb1
+    model: serving
+  - from: ue0
+    to: gnb1
+    model: intercell
+  - from: ue1
+    to: gnb0
+    model: intercell
+models:
+  serving:
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: -100.0
+            phase_rad: 0.0
+  intercell:
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: -100.0
+            phase_rad: 0.0
+  # Receiver noise, applied once to the superposed sum at each node.
+  #
+  # `noise_power` is absolute: mutable_params.cpp keeps awgn_snr_db at its
+  # default and the backend's AWGN path bypasses the live SNR knob whenever a
+  # chain names an explicit noise_power. It therefore has to be chosen against
+  # the emulator's actual sample scale, not copied from another topology --
+  # topology.graph.cuda.yaml's 0.01 puts this scene's serving link at -24.8 dB
+  # and no UE can attach through it.
+  #
+  # Derived by measurement on this stack:
+  #   P_tx  = 1.87e-4   ocudu-zmq-sink on gnb0's TX endpoint, 46080 samples
+  #   gain  = -7.5 dB   strongest gnb0->ue0 tap over a run (Sionna status)
+  #   P_rx  = 3.33e-5   = P_tx * 10^(gain/10)
+  #   noise = 1.05e-7   = P_rx / 10^(25/10), i.e. 25 dB SNR at the best
+  #                       serving geometry -- the same figure the static
+  #                       topology used to guarantee with `snr_db: 25`.
+  # At the weakest serving geometry seen (-16.3 dB) this leaves 16.2 dB, and
+  # the strongest inter-cell tap (-7.8 dB) lands within 0.3 dB of the serving
+  # one, so the interference-limited stretches are real rather than masked.
+  #
+  # The measurement covered 2 ms of gNB downlink, so it is an order-of-
+  # magnitude figure; the uplink was not measured separately and rides on the
+  # assumption that srsUE's ZMQ output sits at a comparable scale.
+  noise_floor:
+    chain:
+      - type: awgn
+        noise_power: 1.05e-7

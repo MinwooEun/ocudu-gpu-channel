@@ -1,0 +1,107 @@
+--- a/src/cuda_backend.cu
++++ b/src/cuda_backend.cu
+@@ -1,3 +1,4 @@
++#include "profile_trace.h"
+ #include "ocudu_gpu_channel/backend.h"
+ #include "ocudu_gpu_channel/cuda_backend.h"
+ #include "ocudu_gpu_channel/delay.h"
+@@ -1055,6 +1056,9 @@
+                              std::span<std::span<IqSample>> outputs) override
+   {
+     const auto call_start = std::chrono::steady_clock::now();
++    ocg_profile::Range profile_range(dst_key.c_str());
++    const double profile_cpu_start = ocg_profile::enabled() ? ocg_profile::cpu_us() : 0;
++    const long long profile_start_ns = ocg_profile::enabled() ? ocg_profile::now_ns() : 0;
+     if (outputs.empty()) {
+       return;
+     }
+@@ -1161,6 +1165,7 @@
+         }
+       }
+     }
++    const auto profile_pack_end = std::chrono::steady_clock::now();
+     // M4.2 -- one snap per LINK per slot, before any of its edges is staged.
+     // Running it per edge (as it did) meant a 2x2 link could take a swap in
+     // four different slots, which is two channel matrices in one slot and
+@@ -1331,6 +1336,7 @@
+       total_steps += nsteps;
+     }
+ 
++    const auto profile_model_end = std::chrono::steady_clock::now();
+     // Every edge of this node has now been staged against its link's slot-start
+     // time, so each link's clock moves on by one slot -- once per link, not
+     // once per lane. A link has a single destination node, so this thread is
+@@ -1502,6 +1508,7 @@
+             "cudaMemcpyAsync superpose D2H");
+     }
+     check(cudaEventRecord(sp.d2h_done, sp.stream), "cudaEventRecord superpose d2h_done");
++    const auto profile_submit_end = std::chrono::steady_clock::now();
+     check(cudaStreamSynchronize(sp.stream), "cudaStreamSynchronize superpose");
+     const auto out_start = std::chrono::steady_clock::now();
+     for (std::size_t r = 0; !sp.zc_direct && r != sp.rows; ++r) {
+@@ -1511,6 +1518,21 @@
+ 
+     record_timings(sp.h2d_start, sp.h2d_done, sp.kernel_done, sp.d2h_done, call_start, total_start, out_start,
+                    sp.use_device_channel, sp.zc_in || sp.zc_out || sp.zc_meta || sp.zc_direct_in);
++    if (ocg_profile::enabled()) {
++      const auto end = std::chrono::steady_clock::now();
++      const auto us=[](auto d){return std::chrono::duration<double,std::micro>(d).count();};
++      float h=0,k=0,d=0;
++      cudaEventElapsedTime(&h,sp.h2d_start,sp.h2d_done);
++      cudaEventElapsedTime(&k,sp.h2d_done,sp.kernel_done);
++      cudaEventElapsedTime(&d,sp.kernel_done,sp.d2h_done);
++      thread_local ocg_profile::Writer w("channel","start_ns,node,samples,rate_hz,lanes,sources,rows,direct_in,zero_in,zero_out,entry_pack_us,model_control_us,rx_prep_us,submit_us,sync_wait_us,output_record_us,call_us,thread_cpu_us,h2d_event_us,kernel_event_us,d2h_event_us");
++      fprintf(w.f,"%lld,%s,%zu,%llu,%d,%zu,%zu,%d,%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",
++        profile_start_ns,dst_key.c_str(),count,(unsigned long long)sample_rate_hz,link_count,sp.num_sources,sp.rows,direct_in,sp.zc_in,sp.zc_out,
++        us(profile_pack_end-call_start),us(profile_model_end-profile_pack_end),us(total_start-profile_model_end),
++        us(profile_submit_end-total_start),us(out_start-profile_submit_end),us(end-out_start),us(end-call_start),
++        ocg_profile::cpu_us()-profile_cpu_start,h*1000.,k*1000.,d*1000.);
++    }
++
+   }
+ 
+   ProcessorTimings last_timings() const override
+--- a/src/broker.cpp
++++ b/src/broker.cpp
+@@ -1,3 +1,4 @@
++#include "profile_trace.h"
+ #include "ocudu_gpu_channel/broker.h"
+ #include "ocudu_gpu_channel/timing_metrics.h"
+ #include "ocudu_gpu_channel/pacing.h"
+@@ -1449,6 +1450,10 @@
+             std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t_push_start).count();
+         trace.add(HopEvent::ProducePushed, count);
+ 
++        if (ocg_profile::enabled()) {
++          thread_local ocg_profile::Writer w("broker","end_ns,node,samples,rate_hz,room_us,align_us,data_us,read_us,process_us,commit_pace_us,push_us");
++          fprintf(w.f,"%lld,%s,%zu,%llu,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",ocg_profile::now_ns(),node.id.c_str(),count,(unsigned long long)rate,room_us,align_us,data_us,read_us,process_us,throttle_us,push_us);
++        }
+         store_us(diag.stage_us_bits[kProducerStageRoom], room_us);
+         store_us(diag.stage_us_bits[kProducerStageAlign], align_us);
+         store_us(diag.stage_us_bits[kProducerStageData], data_us);
+--- a/src/profile_trace.h
++++ b/src/profile_trace.h
+@@ -0,0 +1,23 @@
++#pragma once
++#include <cstdio>
++#include <cstdlib>
++#include <ctime>
++#include <unistd.h>
++#include <sys/syscall.h>
++#include <nvtx3/nvToolsExt.h>
++namespace ocg_profile {
++inline bool enabled() { static bool v = std::getenv("OCG_PROFILE_DIR") != nullptr; return v; }
++inline double cpu_us() { timespec t{}; clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t); return t.tv_sec*1e6+t.tv_nsec/1e3; }
++inline long long now_ns() { timespec t{}; clock_gettime(CLOCK_MONOTONIC, &t); return t.tv_sec*1000000000LL+t.tv_nsec; }
++struct Writer {
++ FILE* f=nullptr;
++ Writer(const char* kind, const char* columns) {
++  if (!enabled()) return;
++  char path[2048]; snprintf(path,sizeof(path),"%s/%s-%d-%ld.csv",std::getenv("OCG_PROFILE_DIR"),kind,getpid(),syscall(SYS_gettid));
++  f=fopen(path,"w"); if (!f) { perror(path); std::abort(); }
++  setvbuf(f,nullptr,_IOFBF,1024*1024); fprintf(f,"%s\n",columns);
++ }
++ ~Writer() { if(f) fclose(f); }
++};
++struct Range { bool on; explicit Range(const char* n):on(enabled()) {if(on) nvtxRangePushA(n);} ~Range(){if(on)nvtxRangePop();} };
++}

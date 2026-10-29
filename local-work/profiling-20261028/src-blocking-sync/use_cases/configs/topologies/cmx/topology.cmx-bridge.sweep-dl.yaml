@@ -1,0 +1,54 @@
+# CMX500 (through the USRP bridge) <-> GPU channel broker <-> ZMQ srsUE, 11.52 MS/s, 0.5 ms batches, no pacing.
+# DL SNR sweep: live path loss on the DL link in front of a fixed absolute noise floor at the UE receiver, so the
+# signal fades into a constant thermal floor. UL passthrough. Change the loss with the control plane, e.g.
+#   ocudu-control-req --endpoint tcp://127.0.0.1:5559 \
+#     --message '{"type":"scalar","link_id":"gnb0>ue0:dl","param":"path_loss_db","value":20}'
+runtime:
+  backend: cuda
+  gpu_device: 0
+  batch_samples: 5760
+  queue_samples: 11520
+  pacing: false
+devices:
+  - id: gnb0
+    role: gnb
+    sample_rate_hz: 11520000
+    tx_endpoint: tcp://127.0.0.1:2000
+    rx_endpoint: tcp://127.0.0.1:2001
+  - id: ue0
+    role: ue
+    sample_rate_hz: 11520000
+    tx_endpoint: tcp://127.0.0.1:2101
+    rx_endpoint: tcp://127.0.0.1:2100
+    # srsRAN ZMQ TX sends a transmit gap as one zero payload of up to 3072000 samples
+    tx_queue_samples: 3072000
+    rx_model: ue_noise_floor
+links:
+  - from: gnb0
+    to: ue0
+    model: dl
+  - from: ue0
+    to: gnb0
+    model: passthrough
+models:
+  dl:
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: 0.0
+            phase_rad: 0.0
+      - type: path_loss
+        path_loss_db: 0
+  passthrough:
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: 0.0
+            phase_rad: 0.0
+  # -92.6 dBfs: 40 dB below the CMX DL power seen at the UE with 0 dB path loss (-52.6 dBfs, measured 2026-10-06)
+  ue_noise_floor:
+    chain:
+      - type: awgn
+        noise_power: 5.5e-10

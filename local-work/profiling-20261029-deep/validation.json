@@ -1,0 +1,20 @@
+{
+  "yield": {
+    "wire_dropped": 0,
+    "scheduler_dropped": 0,
+    "scheduler_overrun": 0,
+    "time_partition_sums": true,
+    "clock": "CLOCK_MONOTONIC / tracefs mono",
+    "represented_radio_ms": 847.9993923611131
+  },
+  "eight": {
+    "wire_dropped": 0,
+    "scheduler_dropped": 0,
+    "scheduler_overrun": 0,
+    "time_partition_sums": true,
+    "clock": "CLOCK_MONOTONIC / tracefs mono",
+    "represented_radio_ms": 1811.0000434027659
+  },
+  "scope": "Three post-readiness gaps, 20 MHz 1x1 UE-count axis; not a completed attribution of every scaling axis.",
+  "cpu7_exclusion": "Mixed CPU classes and auxiliary analysis contention; exploratory result excluded from pure core-count causal conclusions."
+}

@@ -1,0 +1,12 @@
+START cuda-two-cell-control
+END cuda-two-cell-control 0
+START u16-c1-bw20-a1x1-r0-trace0
+END u16-c1-bw20-a1x1-r0-trace0 0.7214166666666667 rc 0
+START u16-c1-bw20-a1x1-r1-trace1
+END u16-c1-bw20-a1x1-r1-trace1 0.7240833333333333 rc 0
+START u16-c1-bw20-a1x1-r0-trace1
+END u16-c1-bw20-a1x1-r0-trace1 0.9970833333333333 rc 0
+START u1-c1-bw100-a4x4-r0-trace1
+END u1-c1-bw100-a4x4-r0-trace1 0.46558333333333335 rc 0
+START cuda-u16-c1-bw20-a1x1-cpu-sampled
+END cuda-u16-c1-bw20-a1x1-cpu-sampled 0

@@ -1,0 +1,742 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index caeb687..fb01db4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -37,6 +37,7 @@ add_library(ocudu_gpu_channel_lib
+   src/mutable_params.cpp
+   src/processing.cpp
+   src/ring.cpp
++  src/sample_executor.cpp
+ )
+ 
+ # The GPU backend is the primary target; it is compiled in whenever the build
+@@ -151,6 +152,11 @@ if(OCUDU_GPU_CHANNEL_BUILD_TESTS)
+   target_link_libraries(test_processing PRIVATE ocudu_gpu_channel_lib)
+   add_test(NAME processing COMMAND test_processing)
+ 
++  add_executable(test_cpu_parallel tests/core/test_cpu_parallel.cpp)
++  target_link_libraries(test_cpu_parallel PRIVATE ocudu_gpu_channel_lib)
++  add_test(NAME cpu_parallel COMMAND test_cpu_parallel)
++  set_tests_properties(cpu_parallel PROPERTIES TIMEOUT 60)
++
+   add_executable(test_ring tests/core/test_ring.cpp)
+   target_link_libraries(test_ring PRIVATE ocudu_gpu_channel_lib)
+   add_test(NAME ring COMMAND test_ring)
+diff --git a/apps/ocudu_gpu_channel_bench.cpp b/apps/ocudu_gpu_channel_bench.cpp
+index 2c9e2a0..b94fe5f 100644
+--- a/apps/ocudu_gpu_channel_bench.cpp
++++ b/apps/ocudu_gpu_channel_bench.cpp
+@@ -172,6 +172,7 @@ int main(int argc, char** argv)
+     const bool refresh = env_on("OCG_BENCH_REFRESH");
+     const bool threaded = env_on("OCG_BENCH_THREADS");
+     std::cout << "bench_knobs,pace=" << pace << ",refresh=" << refresh << ",threads=" << threaded << "\n";
++    std::cout << "cpu_sample_workers," << config.runtime.cpu_threads << "\n";
+     // Refresh writes a private copy of each lane's input per destination, so
+     // concurrent node threads never write a buffer another thread reads.
+     std::unordered_map<std::string, std::vector<ocg::IqBuffer>> fresh_inputs;
+diff --git a/docs/reference/backends.md b/docs/reference/backends.md
+index eee0f75..69e3c66 100644
+--- a/docs/reference/backends.md
++++ b/docs/reference/backends.md
+@@ -66,6 +66,8 @@ There are two backends behind a common `ChannelProcessor` interface (`include/oc
+ 
+ Bit-exactness contract: for any single edge, `process_superposition` on CPU and CUDA produces identical `cf32` output within 1e-3 per sample. This is enforced by tests and matters because it lets us debug regressions on the CPU path before reproducing on the GPU. The shared inline implementation of `apply_tdl_step` + `apply_tdl_step_fading` in `include/ocudu_gpu_channel/delay.h` and the counter-based Philox RNG are what make this practical.
+ 
++`runtime.cpu_threads` defaults to `1` for the serial CPU reference. Set it to `24` to share 24 persistent sample workers across all receiving nodes. Workers evaluate disjoint sample ranges within each TDL edge; fading-grid preparation, edge accumulation, CFO and noise remain on the calling thread. Calls join their workers before updating delay history or returning. This option preserves serial IQ output and does not change CUDA execution. It is separate from `OCG_BENCH_THREADS`, which selects concurrent receiving-node calls in the benchmark. Worker scheduling uses the OS; 24 workers does not imply continuous use of all 24 cores or a 24× speedup.
++
+ **Both backends implement the same step surface.** The CPU backend's `process_superposition` calls the same `apply_tdl_step_fading` helper as the device-channel kernel, so multi-tap convolution + Jakes Doppler + Rician LOS all work on CPU too — just slower. The 1e-3 parity tolerance accommodates one cycle of trig precision difference (`std::cos(float)` on CPU vs `__sincosf` on GPU); pre-trig angles are computed in `double` and reduced mod 2π on both sides so long-running parity holds. The CPU backend is therefore the trust anchor: every feature CUDA ships, CPU runs first and the test suite asserts they match.
+ 
+ (section-15)=
+diff --git a/docs/reference/configuration.md b/docs/reference/configuration.md
+index df98c47..cbf7594 100644
+--- a/docs/reference/configuration.md
++++ b/docs/reference/configuration.md
+@@ -9,6 +9,7 @@ Use space-indented block-style YAML as in the runnable example below. Flow mappi
+ | `runtime` field | Default | Accepted value and meaning |
+ |---|---|---|
+ | `backend` | `cuda` | `cuda` or `cpu`; the selected backend must be built and available |
++| `cpu_threads` | `1` | Positive CPU TDL sample-worker count; one preserves the serial reference. A pool is shared across receiving nodes; CUDA does not use it. Requires restart |
+ | `gpu_device` | `0` | Nonnegative CUDA device index |
+ | `batch_samples` | `auto` | Positive sample count; `auto` resolves one millisecond at each device's sample rate |
+ | `queue_samples` | `614400` | Positive per-TX-ring capacity; each device needs at least two batches |
+diff --git a/include/ocudu_gpu_channel/config.h b/include/ocudu_gpu_channel/config.h
+index a2c5f6c..7d4a05c 100644
+--- a/include/ocudu_gpu_channel/config.h
++++ b/include/ocudu_gpu_channel/config.h
+@@ -94,6 +94,9 @@ struct TapSpec {
+ 
+ struct RuntimeConfig {
+   Backend backend = Backend::Cuda;
++  // CPU TDL sample workers, shared across receiving nodes. One keeps the
++  // serial reference; CUDA processing does not use this pool.
++  std::size_t cpu_threads = 1;
+   int gpu_device = 0;
+   bool batch_samples_auto = true;
+   std::size_t batch_samples = 0;
+diff --git a/include/ocudu_gpu_channel/cpu_backend.h b/include/ocudu_gpu_channel/cpu_backend.h
+index 14e623a..446c16d 100644
+--- a/include/ocudu_gpu_channel/cpu_backend.h
++++ b/include/ocudu_gpu_channel/cpu_backend.h
+@@ -7,6 +7,7 @@
+ #include "ocudu_gpu_channel/mutable_params.h"
+ #include "ocudu_gpu_channel/processing.h"
+ #include "ocudu_gpu_channel/runtime_control.h"
++#include "ocudu_gpu_channel/sample_executor.h"
+ #include <array>
+ #include <complex>
+ #include <set>
+@@ -44,6 +45,7 @@ public:
+   std::unordered_map<std::string, BrokerLinkControl*> collect_control_links() override;
+ 
+ private:
++  std::unique_ptr<SampleExecutor> sample_executor_;
+   // Per-model-step running state (CFO phase, delay history, AWGN RNG).
+   // Fat-struct pattern: one struct serves every step type; the field set used
+   // depends on `step.type` at runtime. `delay_line` is shared by IntegerDelay /
+diff --git a/include/ocudu_gpu_channel/delay.h b/include/ocudu_gpu_channel/delay.h
+index 53d20aa..cf0cc36 100644
+--- a/include/ocudu_gpu_channel/delay.h
++++ b/include/ocudu_gpu_channel/delay.h
+@@ -2,6 +2,7 @@
+ 
+ #include "ocudu_gpu_channel/config.h"
+ #include "ocudu_gpu_channel/iq.h"
++#include "ocudu_gpu_channel/sample_executor.h"
+ #include <algorithm>
+ #include <array>
+ #include <cmath>
+@@ -111,7 +112,8 @@ inline void apply_tdl_step(const IqSample* in,
+                            std::size_t count,
+                            const std::vector<TapSpec>& taps,
+                            const std::vector<std::array<float, kTdlFracFilterTaps>>& polyphase,
+-                           std::vector<IqSample>& delay_line)
++                           std::vector<IqSample>& delay_line,
++                           SampleExecutor* executor = nullptr)
+ {
+   const auto count_pd = static_cast<std::ptrdiff_t>(count);
+   const auto ring_size = static_cast<std::ptrdiff_t>(delay_line.size());
+@@ -134,31 +136,35 @@ inline void apply_tdl_step(const IqSample* in,
+     }
+     return delay_line[static_cast<std::size_t>(ring_idx)];
+   };
+-  for (std::size_t n = 0; n != count; ++n) {
+-    IqSample acc{0.0F, 0.0F};
+-    for (std::size_t k = 0; k != taps.size(); ++k) {
+-      const TapSpec& tap = taps[k];
+-      const std::ptrdiff_t tau_int =
+-          static_cast<std::ptrdiff_t>(std::floor(tap.delay_samples));
+-      const auto& h = polyphase[k];
+-      IqSample x{0.0F, 0.0F};
+-      for (int i = 0; i < kTdlFracFilterTaps; ++i) {
+-        const std::ptrdiff_t read_idx =
+-            static_cast<std::ptrdiff_t>(n) - tau_int + 3 - i;
+-        const IqSample s = read(read_idx);
+-        x.i += h[static_cast<std::size_t>(i)] * s.i;
+-        x.q += h[static_cast<std::size_t>(i)] * s.q;
++  const auto calculate = [&](std::size_t begin, std::size_t end) {
++    for (std::size_t n = begin; n != end; ++n) {
++      IqSample acc{0.0F, 0.0F};
++      for (std::size_t k = 0; k != taps.size(); ++k) {
++        const TapSpec& tap = taps[k];
++        const std::ptrdiff_t tau_int =
++            static_cast<std::ptrdiff_t>(std::floor(tap.delay_samples));
++        const auto& h = polyphase[k];
++        IqSample x{0.0F, 0.0F};
++        for (int i = 0; i < kTdlFracFilterTaps; ++i) {
++          const std::ptrdiff_t read_idx =
++              static_cast<std::ptrdiff_t>(n) - tau_int + 3 - i;
++          const IqSample s = read(read_idx);
++          x.i += h[static_cast<std::size_t>(i)] * s.i;
++          x.q += h[static_cast<std::size_t>(i)] * s.q;
++        }
++        const float gain = static_cast<float>(std::pow(10.0, tap.gain_db / 20.0));
++        const float cos_phi = static_cast<float>(std::cos(tap.phase_rad));
++        const float sin_phi = static_cast<float>(std::sin(tap.phase_rad));
++        const float rotated_i = x.i * cos_phi - x.q * sin_phi;
++        const float rotated_q = x.i * sin_phi + x.q * cos_phi;
++        acc.i += gain * rotated_i;
++        acc.q += gain * rotated_q;
+       }
+-      const float gain = static_cast<float>(std::pow(10.0, tap.gain_db / 20.0));
+-      const float cos_phi = static_cast<float>(std::cos(tap.phase_rad));
+-      const float sin_phi = static_cast<float>(std::sin(tap.phase_rad));
+-      const float rotated_i = x.i * cos_phi - x.q * sin_phi;
+-      const float rotated_q = x.i * sin_phi + x.q * cos_phi;
+-      acc.i += gain * rotated_i;
+-      acc.q += gain * rotated_q;
++      out[n] = acc;
+     }
+-    out[n] = acc;
+-  }
++  };
++  if (executor) executor->for_each_range(count, calculate);
++  else calculate(0, count);
+   // Roll the ring forward: the new tail is the last `delay_line.size()` samples
+   // of the current slot's input. If the slot is shorter than the ring, shift
+   // the existing tail left and append all of the current slot at the end.
+@@ -374,10 +380,11 @@ inline void apply_tdl_step_fading(const IqSample* in,
+                                   std::uint64_t sample_rate_hz,
+                                   std::uint64_t slot_start_samples,
+                                   const FadingGrid& grid,
+-                                  std::complex<float> los_coefficient = {1.0F, 0.0F})
++                                  std::complex<float> los_coefficient = {1.0F, 0.0F},
++                                  SampleExecutor* executor = nullptr)
+ {
+   if (!fading.enabled) {
+-    apply_tdl_step(in, out, count, taps, polyphase, delay_line);
++    apply_tdl_step(in, out, count, taps, polyphase, delay_line, executor);
+     return;
+   }
+   using complex_f = std::complex<float>;
+@@ -441,56 +448,72 @@ inline void apply_tdl_step_fading(const IqSample* in,
+   };
+ 
+   const float grid_stride_f = static_cast<float>(grid_stride);
+-  for (std::size_t n = 0; n != count; ++n) {
+-    // Linear interpolation index for sample n into the coarse grid.
+-    const std::size_t g_floor = n / grid_stride;
+-    const std::size_t g_ceil_idx = std::min(g_floor + 1, grid_count - 1);
+-    const float frac =
+-        static_cast<float>(n - g_floor * grid_stride) / grid_stride_f;
+-
+-    IqSample acc{0.0F, 0.0F};
+-    for (std::size_t k = 0; k != n_taps; ++k) {
+-      // g_k(t_n) -- Rayleigh component interpolated from the grid.
+-      const complex_f* row = grid.tap(k);
+-      const complex_f g_rayleigh = row[g_floor] * (1.0F - frac) + row[g_ceil_idx] * frac;
+-      complex_f g_k = g_rayleigh;
+-      if (taps[k].is_los) {
+-        g_k = los_factor[k] * (los_coefficient * los_current[k]) +
+-              rayleigh_factor[k] * g_rayleigh;
++  const bool has_los = std::any_of(taps.begin(), taps.end(), [](const auto& tap) { return tap.is_los; });
++  const auto calculate = [&](std::size_t begin, std::size_t end) {
++    // Reproduce the serial recurrence exactly at each range boundary. This
++    // avoids changing the LOS realization when the worker count changes.
++    auto range_los = los_current;
++    if (has_los) {
++      for (std::size_t n = 0; n != begin; ++n) {
++        for (std::size_t k = 0; k != n_taps; ++k) {
++          if (taps[k].is_los) range_los[k] *= los_step[k];
++        }
+       }
+-      // Polyphase convolution against the tap-modulated input. Read the 8 tap
+-      // samples around (n - tau_int) then apply static phase + gain, then
+-      // multiply by the time-varying complex g_k(t_n).
+-      const TapSpec& tap = taps[k];
+-      const std::ptrdiff_t tau_int =
+-          static_cast<std::ptrdiff_t>(std::floor(tap.delay_samples));
+-      const auto& h = polyphase[k];
+-      IqSample x{0.0F, 0.0F};
+-      for (int i = 0; i < kTdlFracFilterTaps; ++i) {
+-        const std::ptrdiff_t read_idx =
+-            static_cast<std::ptrdiff_t>(n) - tau_int + 3 - i;
+-        const IqSample s = read(read_idx);
+-        x.i += h[static_cast<std::size_t>(i)] * s.i;
+-        x.q += h[static_cast<std::size_t>(i)] * s.q;
+-      }
+-      const float gain = static_cast<float>(std::pow(10.0, tap.gain_db / 20.0));
+-      const float cos_phi_s = static_cast<float>(std::cos(tap.phase_rad));
+-      const float sin_phi_s = static_cast<float>(std::sin(tap.phase_rad));
+-      const float static_i = x.i * cos_phi_s - x.q * sin_phi_s;
+-      const float static_q = x.i * sin_phi_s + x.q * cos_phi_s;
+-      const float xi = static_i * g_k.real() - static_q * g_k.imag();
+-      const float xq = static_i * g_k.imag() + static_q * g_k.real();
+-      acc.i += gain * xi;
+-      acc.q += gain * xq;
+     }
+-    out[n] = acc;
+-    // Advance per-sample LOS phase accumulators after consuming sample n.
+-    for (std::size_t k = 0; k != n_taps; ++k) {
+-      if (taps[k].is_los) {
+-        los_current[k] *= los_step[k];
++    for (std::size_t n = begin; n != end; ++n) {
++      // Linear interpolation index for sample n into the coarse grid.
++      const std::size_t g_floor = n / grid_stride;
++      const std::size_t g_ceil_idx = std::min(g_floor + 1, grid_count - 1);
++      const float frac =
++          static_cast<float>(n - g_floor * grid_stride) / grid_stride_f;
++
++      IqSample acc{0.0F, 0.0F};
++      for (std::size_t k = 0; k != n_taps; ++k) {
++        // g_k(t_n) -- Rayleigh component interpolated from the grid.
++        const complex_f* row = grid.tap(k);
++        const complex_f g_rayleigh = row[g_floor] * (1.0F - frac) + row[g_ceil_idx] * frac;
++        complex_f g_k = g_rayleigh;
++        if (taps[k].is_los) {
++          g_k = los_factor[k] * (los_coefficient * range_los[k]) +
++                rayleigh_factor[k] * g_rayleigh;
++        }
++        // Polyphase convolution against the tap-modulated input. Read the 8 tap
++        // samples around (n - tau_int) then apply static phase + gain, then
++        // multiply by the time-varying complex g_k(t_n).
++        const TapSpec& tap = taps[k];
++        const std::ptrdiff_t tau_int =
++            static_cast<std::ptrdiff_t>(std::floor(tap.delay_samples));
++        const auto& h = polyphase[k];
++        IqSample x{0.0F, 0.0F};
++        for (int i = 0; i < kTdlFracFilterTaps; ++i) {
++          const std::ptrdiff_t read_idx =
++              static_cast<std::ptrdiff_t>(n) - tau_int + 3 - i;
++          const IqSample s = read(read_idx);
++          x.i += h[static_cast<std::size_t>(i)] * s.i;
++          x.q += h[static_cast<std::size_t>(i)] * s.q;
++        }
++        const float gain = static_cast<float>(std::pow(10.0, tap.gain_db / 20.0));
++        const float cos_phi_s = static_cast<float>(std::cos(tap.phase_rad));
++        const float sin_phi_s = static_cast<float>(std::sin(tap.phase_rad));
++        const float static_i = x.i * cos_phi_s - x.q * sin_phi_s;
++        const float static_q = x.i * sin_phi_s + x.q * cos_phi_s;
++        const float xi = static_i * g_k.real() - static_q * g_k.imag();
++        const float xq = static_i * g_k.imag() + static_q * g_k.real();
++        acc.i += gain * xi;
++        acc.q += gain * xq;
++      }
++      out[n] = acc;
++      // Advance per-sample LOS phase accumulators after consuming sample n.
++      for (std::size_t k = 0; k != n_taps; ++k) {
++        if (taps[k].is_los) {
++          range_los[k] *= los_step[k];
++        }
+       }
+     }
+-  }
++
++  };
++  if (executor) executor->for_each_range(count, calculate);
++  else calculate(0, count);
+ 
+   // Roll the cross-slot ring forward (same as the static apply_tdl_step). The
+   // tap-modulated samples are written to `out`; the ring stores raw input so
+diff --git a/src/config.cpp b/src/config.cpp
+index 4425a0f..1ca2aeb 100644
+--- a/src/config.cpp
++++ b/src/config.cpp
+@@ -118,6 +118,8 @@ void apply_runtime(RuntimeConfig& runtime, const std::string& key, const std::st
+ {
+   if (key == "backend") {
+     runtime.backend = parse_backend(value);
++  } else if (key == "cpu_threads") {
++    runtime.cpu_threads = parse_size(value, key);
+   } else if (key == "gpu_device") {
+     runtime.gpu_device = static_cast<int>(parse_u64(value, key));
+   } else if (key == "batch_samples") {
+@@ -779,6 +781,9 @@ std::vector<std::string> validate_config(const TopologyConfig& config)
+   if (!config.runtime.batch_samples_auto && config.runtime.batch_samples == 0) {
+     errors.emplace_back("runtime.batch_samples must be greater than zero or auto");
+   }
++  if (config.runtime.cpu_threads == 0) {
++    errors.emplace_back("runtime.cpu_threads must be greater than zero");
++  }
+ 
+   std::set<std::string> device_ids;
+   if (config.devices.empty()) {
+diff --git a/src/cpu_backend.cpp b/src/cpu_backend.cpp
+index 240f5e9..95b0b12 100644
+--- a/src/cpu_backend.cpp
++++ b/src/cpu_backend.cpp
+@@ -154,6 +154,11 @@ void CpuChannelProcessor::refresh_lane_grids(LinkState& state, const ModelConfig
+ 
+ void CpuChannelProcessor::prepare(const TopologyConfig& config)
+ {
++  if (config.runtime.cpu_threads == 0) {
++    throw std::invalid_argument("runtime.cpu_threads must be greater than zero");
++  }
++  sample_executor_ = config.runtime.cpu_threads > 1
++      ? std::make_unique<SampleExecutor>(config.runtime.cpu_threads) : nullptr;
+   // State is keyed by the SAME resolved lane table the broker drives serves
+   // from, so a key can never be missing at serve time -- process_superposition
+   // must never insert into the map concurrently.
+@@ -421,11 +426,11 @@ ocg::PhysicalLinkRuntime* CpuChannelProcessor::apply_chain_to_link(const std::st
+                                 state.link->clock.slot_start_samples,
+                                 state.link->fading.lane_grids[static_cast<std::size_t>(state.lane_index)]
+                                                         [step_index],
+-                                state.los_coefficient);
++                                state.los_coefficient, sample_executor_.get());
+         } else {
+           apply_tdl_step(current.data(), next.data(), current.size(),
+                          effective_taps, effective_polyphase,
+-                         step_state.delay_line);
++                         step_state.delay_line, sample_executor_.get());
+         }
+         break;
+       }
+diff --git a/tests/core/test_broker.cpp b/tests/core/test_broker.cpp
+index 81039dd..e31c498 100644
+--- a/tests/core/test_broker.cpp
++++ b/tests/core/test_broker.cpp
+@@ -144,10 +144,11 @@ void run_sink(void* context, std::string endpoint, std::atomic<bool>& stop, std:
+   zmq_close(socket);
+ }
+ 
+-void scenario_loopback()
++void scenario_loopback(std::size_t cpu_threads = 1)
+ {
+   ocg::TopologyConfig config;
+   config.runtime.backend = ocg::Backend::Cpu;
++  config.runtime.cpu_threads = cpu_threads;
+   config.runtime.batch_samples_auto = false;
+   // Use OCUDU's real 1 ms slot unit so the test exercises a representative
+   // batch size rather than a tiny one whose sub-slot timing is dominated by
+@@ -197,7 +198,7 @@ void scenario_loopback()
+   zmq_ctx_shutdown(context);
+   zmq_ctx_destroy(context);
+ 
+-  std::cout << "loopback: tx_pulls=" << stats.tx_pulls << " rx_requests=" << stats.rx_requests
++  std::cout << "loopback: cpu_threads=" << cpu_threads << " tx_pulls=" << stats.tx_pulls << " rx_requests=" << stats.rx_requests
+             << " tx_queue_overflows=" << stats.tx_queue_overflows << " tx_sequence_gaps=" << stats.tx_sequence_gaps
+             << " rx_starvations=" << stats.rx_starvations << " zmq_errors=" << stats.zmq_errors
+             << " gnb_received=" << gnb_received.load() << " ue_received=" << ue_received.load() << "\n";
+@@ -779,6 +780,7 @@ int main()
+   scenario_relay_knobs_bit_identical();
+   scenario_pacer_drops_unrecoverable_debt();
+   scenario_loopback();
++  scenario_loopback(24);
+   scenario_multi_ue_lockstep();
+   scenario_multi_ue_lockstep_wedge_fails_fast();
+   std::cout << "test_broker OK\n";
+diff --git a/tests/core/test_config.cpp b/tests/core/test_config.cpp
+index 90d3200..a496525 100644
+--- a/tests/core/test_config.cpp
++++ b/tests/core/test_config.cpp
+@@ -69,6 +69,7 @@ models:
+   require(config.models.count("clean") == 1, "expected clean model");
+   require(ocg::resolve_batch_samples(config.runtime, 23040000) == 23040, "auto batch should resolve to 1 ms");
+   require(ocg::validate_config(config).empty(), "config should validate");
++  require(config.runtime.cpu_threads == 1, "CPU defaults to the serial reference");
+   require(config.runtime.pacing, "existing topologies must keep pacing enabled");
+   require(config.devices[0].tx_queue_samples == 0 && config.devices[1].tx_queue_samples == 0,
+           "existing devices must inherit the runtime queue size");
+@@ -79,12 +80,19 @@ models:
+   std::ifstream baseline(path);
+   std::string live_radio_text((std::istreambuf_iterator<char>(baseline)), std::istreambuf_iterator<char>());
+   const auto runtime_pos = live_radio_text.find("  backend: cpu\n");
+-  live_radio_text.insert(runtime_pos, "  pacing: false\n  cuda_host_memory: copy\n  cuda_stream_priority: high\n");
++  live_radio_text.insert(runtime_pos, "  cpu_threads: 24\n  pacing: false\n  cuda_host_memory: copy\n  cuda_stream_priority: high\n");
+   const auto ue_pos = live_radio_text.find("  - id: ue0\n") + std::string("  - id: ue0\n").size();
+   live_radio_text.insert(ue_pos, "    tx_queue_samples: 4000000\n    tx_scale_db: -7.0\n");
+   { std::ofstream live_radio_file(live_radio_path); live_radio_file << live_radio_text; }
+   auto live_radio = ocg::load_config_file(live_radio_path);
+   std::remove(live_radio_path);
++  require(live_radio.runtime.cpu_threads == 24, "CPU worker count parses");
++  auto invalid_workers = live_radio;
++  invalid_workers.runtime.cpu_threads = 0;
++  const auto worker_errors = ocg::validate_config(invalid_workers);
++  require(std::any_of(worker_errors.begin(), worker_errors.end(), [](const auto& error) {
++    return error.find("cpu_threads") != std::string::npos;
++  }), "zero CPU workers must be rejected");
+   require(!live_radio.runtime.pacing, "live radio must be able to supply the clock");
+   require(live_radio.runtime.cuda_host_memory == ocg::CudaHostMemory::Copy &&
+               live_radio.runtime.cuda_stream_priority == ocg::CudaStreamPriority::High,
+diff --git a/include/ocudu_gpu_channel/sample_executor.h b/include/ocudu_gpu_channel/sample_executor.h
+new file mode 100644
+index 0000000..2ba6306
+--- /dev/null
++++ b/include/ocudu_gpu_channel/sample_executor.h
+@@ -0,0 +1,26 @@
++#pragma once
++
++#include <cstddef>
++#include <functional>
++#include <memory>
++
++namespace ocg {
++
++// Persistent CPU workers shared by all receiving nodes of one processor.
++// Each call joins its disjoint sample ranges before returning or rethrowing.
++class SampleExecutor {
++public:
++  explicit SampleExecutor(std::size_t threads);
++  ~SampleExecutor();
++  SampleExecutor(const SampleExecutor&) = delete;
++  SampleExecutor& operator=(const SampleExecutor&) = delete;
++
++  void for_each_range(std::size_t count,
++                      const std::function<void(std::size_t, std::size_t)>& fn);
++
++private:
++  struct Impl;
++  std::unique_ptr<Impl> impl_;
++};
++
++} // namespace ocg
+diff --git a/src/sample_executor.cpp b/src/sample_executor.cpp
+new file mode 100644
+index 0000000..a4357a5
+--- /dev/null
++++ b/src/sample_executor.cpp
+@@ -0,0 +1,106 @@
++#include "ocudu_gpu_channel/sample_executor.h"
++#include <algorithm>
++#include <condition_variable>
++#include <exception>
++#include <list>
++#include <mutex>
++#include <stdexcept>
++#include <thread>
++#include <vector>
++
++namespace ocg {
++
++struct SampleExecutor::Impl {
++  struct Job {
++    std::function<void(std::size_t, std::size_t)> fn;
++    std::mutex mutex;
++    std::condition_variable done;
++    std::size_t remaining = 0;
++    std::exception_ptr error;
++  };
++  struct Task {
++    std::shared_ptr<Job> job;
++    std::size_t begin, end;
++  };
++  std::size_t threads;
++  std::mutex mutex;
++  std::condition_variable ready;
++  std::list<Task> queue;
++  bool stopping = false;
++  std::vector<std::thread> workers;
++
++  explicit Impl(std::size_t n) : threads(n)
++  {
++    if (n == 0) throw std::invalid_argument("CPU worker count must be positive");
++    if (n == 1) return;
++    try {
++      for (std::size_t i = 0; i < n; ++i) {
++        workers.emplace_back([this] {
++          for (;;) {
++            Task task;
++            {
++              std::unique_lock lock(mutex);
++              ready.wait(lock, [this] { return stopping || !queue.empty(); });
++              if (queue.empty()) return;
++              task = std::move(queue.front());
++              queue.pop_front();
++            }
++            std::exception_ptr error;
++            try { task.job->fn(task.begin, task.end); }
++            catch (...) { error = std::current_exception(); }
++            {
++              std::lock_guard lock(task.job->mutex);
++              if (error && !task.job->error) task.job->error = error;
++              if (--task.job->remaining == 0) task.job->done.notify_one();
++            }
++          }
++        });
++      }
++    } catch (...) {
++      stop();
++      throw;
++    }
++  }
++  void stop()
++  {
++    {
++      std::lock_guard lock(mutex);
++      stopping = true;
++    }
++    ready.notify_all();
++    for (auto& worker : workers) if (worker.joinable()) worker.join();
++  }
++  ~Impl() { stop(); }
++};
++
++SampleExecutor::SampleExecutor(std::size_t threads) : impl_(std::make_unique<Impl>(threads)) {}
++SampleExecutor::~SampleExecutor() = default;
++
++void SampleExecutor::for_each_range(
++    std::size_t count, const std::function<void(std::size_t, std::size_t)>& fn)
++{
++  if (count == 0) return;
++  if (impl_->threads == 1) { fn(0, count); return; }
++  auto job = std::make_shared<Impl::Job>();
++  job->fn = fn;
++  const std::size_t ranges = std::min(count, impl_->threads);
++  job->remaining = ranges;
++  std::list<Impl::Task> tasks;
++  const std::size_t chunk = count / ranges, extra = count % ranges;
++  std::size_t begin = 0;
++  for (std::size_t i = 0; i < ranges; ++i) {
++    const auto end = begin + chunk + (i < extra ? 1 : 0);
++    tasks.push_back({job, begin, end});
++    begin = end;
++  }
++  {
++    std::lock_guard lock(impl_->mutex);
++    impl_->queue.splice(impl_->queue.end(), tasks);
++  }
++  impl_->ready.notify_all();
++  std::unique_lock lock(job->mutex);
++  job->done.wait(lock, [&] { return job->remaining == 0; });
++  if (job->error) std::rethrow_exception(job->error);
++}
++
++} // namespace ocg
+diff --git a/tests/core/test_cpu_parallel.cpp b/tests/core/test_cpu_parallel.cpp
+new file mode 100644
+index 0000000..5082989
+--- /dev/null
++++ b/tests/core/test_cpu_parallel.cpp
+@@ -0,0 +1,163 @@
++#include "ocudu_gpu_channel/cpu_backend.h"
++#include "ocudu_gpu_channel/sample_executor.h"
++#include <array>
++#include <atomic>
++#include <cstdint>
++#include <vector>
++#include <barrier>
++#include <bit>
++#include <iostream>
++#include <mutex>
++#include <set>
++#include <stdexcept>
++#include <thread>
++
++namespace {
++void require(bool value, const char* message) { if (!value) throw std::runtime_error(message); }
++
++void executor_checks()
++{
++  ocg::SampleExecutor pool(24);
++  std::barrier ready(24);
++  std::mutex mutex;
++  std::set<std::thread::id> ids;
++  pool.for_each_range(24, [&](std::size_t begin, std::size_t end) {
++    require(end == begin + 1, "each worker must own one range");
++    { std::lock_guard lock(mutex); ids.insert(std::this_thread::get_id()); }
++    ready.arrive_and_wait();
++  });
++  require(ids.size() == 24, "24 distinct workers must execute concurrently");
++  bool threw = false;
++  std::atomic<int> completed = 0;
++  try {
++    pool.for_each_range(24, [&](std::size_t begin, std::size_t) {
++      ++completed;
++      if (begin == 7) throw std::runtime_error("worker failure");
++    });
++  } catch (const std::runtime_error&) { threw = true; }
++  require(threw && completed == 24, "join all ranges and propagate worker errors");
++  std::vector<unsigned> hits(131);
++  pool.for_each_range(hits.size(), [&](std::size_t begin, std::size_t end) {
++    for (auto i = begin; i < end; ++i) ++hits[i];
++  });
++  for (auto n : hits) require(n == 1, "uneven ranges must cover samples exactly once");
++  pool.for_each_range(0, [](auto, auto) { throw std::runtime_error("empty range"); });
++  try { ocg::SampleExecutor invalid(0); require(false, "reject zero workers"); }
++  catch (const std::invalid_argument&) {}
++}
++
++ocg::TopologyConfig fixture(bool fading, bool los)
++{
++  ocg::TopologyConfig c;
++  c.runtime.backend = ocg::Backend::Cpu;
++  c.runtime.batch_samples_auto = false;
++  c.runtime.batch_samples = 137;
++  c.runtime.queue_samples = 4096;
++  c.devices = {
++      {.id="a", .sample_rate_hz=23040000, .tx_endpoint="txa", .rx_endpoint="rxa"},
++      {.id="b", .sample_rate_hz=23040000, .tx_endpoint="txb", .rx_endpoint="rxb"},
++      {.id="c", .sample_rate_hz=23040000, .tx_endpoint="txc", .rx_endpoint="rxc"}};
++  ocg::ModelConfig model;
++  model.id = "channel";
++  ocg::ModelStep tdl;
++  tdl.type = ocg::ModelStepType::Tdl;
++  tdl.taps = {{.delay_samples=0, .gain_db=-2, .phase_rad=0.3, .is_los=los, .los_k_db=6, .los_angle_rad=0.2},
++              {.delay_samples=7.25, .gain_db=-8, .phase_rad=-0.7},
++              {.delay_samples=34.5, .gain_db=-11, .phase_rad=1.2}};
++  tdl.taps_declared = true;
++  tdl.fading_enabled = fading;
++  tdl.fading_f_d_max_hz = 100;
++  model.chain = {tdl,
++      {.type=ocg::ModelStepType::Cfo, .params={{"cfo_hz",125}}},
++      {.type=ocg::ModelStepType::Awgn, .params={{"noise_power",0.00001}}}};
++  c.models.emplace(model.id, model);
++  c.links = {{.from="a", .to="b", .model="channel"},
++             {.from="c", .to="b", .model="channel"},
++             {.from="b", .to="a", .model="channel"},
++             {.from="b", .to="c", .model="channel"}};
++  const auto errors = ocg::validate_config(c);
++  for (const auto& error : errors) std::cerr << error << '\n';
++  require(errors.empty(), "fixture validates");
++  return c;
++}
++
++void backend_checks(bool fading, bool los)
++{
++  auto c = fixture(fading, los);
++  ocg::CpuChannelProcessor serial, parallel;
++  serial.prepare(c);
++  c.runtime.cpu_threads = 24;
++  parallel.prepare(c);
++  auto sc = serial.collect_control_links(), pc = parallel.collect_control_links();
++  const auto topology = ocg::resolve_topology(c);
++  std::uint64_t fingerprint = 14695981039346656037ULL;
++  for (unsigned batch = 0; batch < 20; ++batch) {
++    const std::size_t count = std::array<std::size_t,4>{1,7,137,509}[batch % 4];
++    if (batch == 5 || batch == 12) {
++      for (auto* controls : {&sc, &pc}) {
++        for (auto& [key, control] : *controls) {
++          control->shadow.tap0_gain_db = -4;
++          control->shadow.tap0_phase_rad = 0.8;
++          // A profile replacement exercises history resets while workers join.
++          if (batch == 12) {
++            control->shadow_profile.n_taps = 3;
++            control->shadow_profile.fading_enabled = fading;
++            control->shadow_profile.fading_f_d_max_hz = 100;
++            for (int k = 0; k < 3; ++k) {
++              control->shadow_profile.taps[k] = c.models.at("channel").chain[0].taps[k];
++              control->shadow_profile.taps[k].delay_samples += 2;
++            }
++            control->profile_pending = true;
++          }
++          control->seqno.fetch_add(1, std::memory_order_release);
++        }
++      }
++    }
++    std::array<ocg::IqBuffer,3> input;
++    for (unsigned port=0;port<3;++port) {
++      input[port].resize(count);
++      for (std::size_t i=0;i<count;++i) input[port][i] = {
++          float((i+batch+port)%31)/31, float((2*i+batch+port)%23)/23};
++    }
++    std::array<std::vector<ocg::SuperpositionInput>,3> lanes;
++    for (const auto& lane : topology.lanes) {
++      auto index = static_cast<std::size_t>(lane.dst_node[0]-'a');
++      const auto source = static_cast<std::size_t>(lane.src_device[0]-'a');
++      lanes[index].push_back({.link_key=lane.key, .model=ocg::find_model(c,lane.model_id),
++          .samples=input[source], .rx_port=lane.rx_port, .tx_port=lane.tx_port});
++    }
++    std::array<ocg::IqBuffer,3> expected{ocg::IqBuffer(count),ocg::IqBuffer(count),ocg::IqBuffer(count)};
++    std::array<ocg::IqBuffer,3> actual{ocg::IqBuffer(count),ocg::IqBuffer(count),ocg::IqBuffer(count)};
++    for (int i=0;i<3;++i) serial.process_superposition(std::string(1, static_cast<char>('a'+i)),lanes[i],nullptr,23040000,std::span(expected[i]));
++    // Distinct receiving nodes share one pool without sharing sample outputs.
++    std::exception_ptr errors[3];
++    std::thread t[3];
++    for (int i=0;i<3;++i) t[i]=std::thread([&,i] {
++      try { parallel.process_superposition(std::string(1, static_cast<char>('a'+i)),lanes[i],nullptr,23040000,std::span(actual[i])); }
++      catch (...) { errors[i]=std::current_exception(); }
++    });
++    for (auto& worker:t) worker.join();
++    for (auto& error:errors) if(error) std::rethrow_exception(error);
++    for (int row=0;row<3;++row) for(std::size_t i=0;i<count;++i) {
++      for (float value : {expected[row][i].i, expected[row][i].q}) {
++        fingerprint ^= std::bit_cast<std::uint32_t>(value);
++        fingerprint *= 1099511628211ULL;
++      }
++      require(std::bit_cast<std::uint32_t>(expected[row][i].i)==std::bit_cast<std::uint32_t>(actual[row][i].i) &&
++              std::bit_cast<std::uint32_t>(expected[row][i].q)==std::bit_cast<std::uint32_t>(actual[row][i].q),
++              "parallel CPU must match serial IQ bit-for-bit across batches and updates");
++    }
++  }
++  std::cout << "IQ fingerprint fading=" << fading << " los=" << los << ": " << fingerprint << '\n';
++}
++}
++int main()
++{
++  try {
++    executor_checks();
++    backend_checks(false,false);
++    backend_checks(true,false);
++    backend_checks(true,true);
++    std::cout << "24-worker execution and serial/parallel CPU IQ parity passed\n";
++  } catch(const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
++}

@@ -1,0 +1,247 @@
+diff --git a/apps/services/worker_manager/worker_manager.cpp b/apps/services/worker_manager/worker_manager.cpp
+index e6a1ddc13d..28fdc17864 100644
+--- a/apps/services/worker_manager/worker_manager.cpp
++++ b/apps/services/worker_manager/worker_manager.cpp
+@@ -3,6 +3,26 @@
+ // Portions of this file may implement 3GPP specifications, which may be subject to additional licensing requirements.
+ 
+ #include "worker_manager.h"
++#include <cstdlib>
++
++namespace {
++
++/// Local patch (ocudu-zmq-lower-phy-profile): with a threaded lower PHY over ZMQ the SCHED_FIFO lower-PHY
++/// workers starve the SCHED_OTHER "radio" worker that carries every ZMQ request and reply (measured: 370 ms
++/// of run-queue wait per 2 s on five shared cores). OCUDU_ZMQ_RADIO_RT_PRIO=k gives the radio worker real-time
++/// priority max()-k; unset or empty keeps the stock non-real-time radio worker.
++ocudu::os_thread_realtime_priority zmq_radio_worker_priority()
++{
++  if (const char* value = std::getenv("OCUDU_ZMQ_RADIO_RT_PRIO"); (value != nullptr) && (*value != '\0')) {
++    int below_max = std::atoi(value);
++    if (below_max >= 0) {
++      return ocudu::os_thread_realtime_priority::max() - below_max;
++    }
++  }
++  return ocudu::os_thread_realtime_priority::no_realtime();
++}
++
++} // namespace
+ #include "ocudu/adt/byte_buffer.h"
+ #include "ocudu/adt/mpmc_queue.h"
+ #include "ocudu/ocudulog/ocudulog.h"
+@@ -543,7 +563,8 @@ void worker_manager::create_lower_phy_executors(const worker_manager_config::ru_
+                      task_worker_queue_size,
+                      concurrent_queue_policy::lockfree_mpmc,
+                      std::chrono::microseconds{50},
+-                     affinity_mng.front().calcute_affinity_mask(sched_affinity_mask_types::ru));
++                     affinity_mng.front().calcute_affinity_mask(sched_affinity_mask_types::ru),
++                     zmq_radio_worker_priority()); // local patch: OCUDU_ZMQ_RADIO_RT_PRIO
+ 
+   switch (config.profile) {
+     case worker_manager_config::ru_sdr_config::lower_phy_thread_profile::sequential: {
+diff --git a/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config.h b/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config.h
+index c824fa8ac4..00fd0c9283 100644
+--- a/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config.h
++++ b/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config.h
+@@ -76,6 +76,33 @@ enum class lower_phy_thread_profile {
+   triple
+ };
+ 
++/// Local patch (ocudu-gpu-channel, ocudu-zmq-lower-phy-profile): with a ZMQ radio the application
++/// forces the blocking (sequential) lower PHY, so the DL baseband is produced one block per received
++/// UL block and the lock-step loop through an external channel emulator serialises the two radios.
++/// OCUDU_ZMQ_LOWER_PHY_PROFILE=single|dual|triple keeps that threaded profile with ZMQ instead, so the
++/// DL runs ahead of UL reception up to rx_to_tx_max_delay. Unset or empty keeps the stock behaviour.
++#include <cstdlib>
++#include <optional>
++#include <string_view>
++inline std::optional<lower_phy_thread_profile> zmq_lower_phy_profile_override()
++{
++  const char* value = std::getenv("OCUDU_ZMQ_LOWER_PHY_PROFILE");
++  if (value == nullptr || *value == '\0') {
++    return std::nullopt;
++  }
++  std::string_view name(value);
++  if (name == "single") {
++    return lower_phy_thread_profile::single;
++  }
++  if (name == "dual") {
++    return lower_phy_thread_profile::dual;
++  }
++  if (name == "triple") {
++    return lower_phy_thread_profile::triple;
++  }
++  return std::nullopt;
++}
++
+ /// Expert threads configuration of the SDR Radio Unit.
+ struct ru_sdr_unit_expert_threads_config {
+   ru_sdr_unit_expert_threads_config()
+diff --git a/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config_cli11_schema.cpp b/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config_cli11_schema.cpp
+index e08415a4e3..94e5e13983 100644
+--- a/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config_cli11_schema.cpp
++++ b/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config_cli11_schema.cpp
+@@ -296,7 +296,9 @@ void ocudu::autoderive_ru_sdr_parameters_after_parsing(CLI::App&           app,
+ 
+   // Set the lower PHY to blocking for ZMQ.
+   if (parsed_cfg.device_driver == "zmq") {
+-    parsed_cfg.expert_execution_cfg.threads.execution_profile = lower_phy_thread_profile::blocking;
++    // Local patch: OCUDU_ZMQ_LOWER_PHY_PROFILE keeps a threaded lower PHY (see ru_sdr_config.h).
++    parsed_cfg.expert_execution_cfg.threads.execution_profile =
++        zmq_lower_phy_profile_override().value_or(lower_phy_thread_profile::blocking);
+ 
+     // Default TX/RX gains to 0 dB for ZMQ if not explicitly configured. The non-zero defaults are tuned for USRP
+     // hardware and cause clipping with ZMQ.
+diff --git a/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config_translator.cpp b/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config_translator.cpp
+index d2f73e17c0..404635fae9 100644
+--- a/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config_translator.cpp
++++ b/apps/units/flexible_o_du/split_8/helpers/ru_sdr_config_translator.cpp
+@@ -250,7 +250,8 @@ void ocudu::fill_sdr_worker_manager_config(worker_manager_config& config, const
+   auto& sdr_cfg = config.ru_sdr_cfg.emplace();
+ 
+   sdr_cfg.nof_cells = ru_cfg.expert_execution_cfg.cell_affinities.size();
+-  sdr_cfg.profile   = (ru_cfg.device_driver != "zmq")
++  // Local patch: OCUDU_ZMQ_LOWER_PHY_PROFILE keeps the parsed profile with ZMQ (see ru_sdr_config.h).
++  sdr_cfg.profile   = ((ru_cfg.device_driver != "zmq") || zmq_lower_phy_profile_override().has_value())
+                           ? static_cast<worker_manager_config::ru_sdr_config::lower_phy_thread_profile>(
+                               ru_cfg.expert_execution_cfg.threads.execution_profile)
+                           : worker_manager_config::ru_sdr_config::lower_phy_thread_profile::sequential;
+diff --git a/apps/units/flexible_o_du/split_8/split_8_o_du_application_unit_impl.cpp b/apps/units/flexible_o_du/split_8/split_8_o_du_application_unit_impl.cpp
+index 64f7fadd4a..e6d0a0b781 100644
+--- a/apps/units/flexible_o_du/split_8/split_8_o_du_application_unit_impl.cpp
++++ b/apps/units/flexible_o_du/split_8/split_8_o_du_application_unit_impl.cpp
+@@ -5,6 +5,7 @@
+ #include "split_8_o_du_application_unit_impl.h"
+ #include "apps/units/flexible_o_du/o_du_high/o_du_high_unit_config_translators.h"
+ #include "apps/units/flexible_o_du/o_du_low/du_low_config_translator.h"
++#include "apps/units/flexible_o_du/split_8/helpers/ru_sdr_config.h"
+ #include "apps/units/flexible_o_du/split_8/helpers/ru_sdr_config_translator.h"
+ #include "split_8_o_du_factory.h"
+ #include "split_8_o_du_unit_cli11_schema.h"
+@@ -84,7 +85,9 @@ void split_8_o_du_application_unit_impl::dump_config(YAML::Node& node) const
+ 
+ void split_8_o_du_application_unit_impl::fill_worker_manager_config(worker_manager_config& config)
+ {
+-  bool is_blocking_mode_enable = unit_cfg.ru_cfg.device_driver == "zmq";
++  // Local patch: OCUDU_ZMQ_LOWER_PHY_PROFILE keeps the non-blocking worker layout with ZMQ.
++  bool is_blocking_mode_enable =
++      (unit_cfg.ru_cfg.device_driver == "zmq") && !zmq_lower_phy_profile_override().has_value();
+   fill_du_high_worker_manager_config(config, unit_cfg.odu_high_cfg.du_high_cfg.config, is_blocking_mode_enable);
+   std::vector<du_low_cell_config> cell_params;
+   cell_params.reserve(unit_cfg.odu_high_cfg.du_high_cfg.config.cells_cfg.size());
+diff --git a/lib/phy/lower/lower_phy_baseband_processor.cpp b/lib/phy/lower/lower_phy_baseband_processor.cpp
+index d9d537a61e..4fb4e4c039 100644
+--- a/lib/phy/lower/lower_phy_baseband_processor.cpp
++++ b/lib/phy/lower/lower_phy_baseband_processor.cpp
+@@ -3,6 +3,22 @@
+ // Portions of this file may implement 3GPP specifications, which may be subject to additional licensing requirements.
+ 
+ #include "lower_phy_baseband_processor.h"
++#include <cstdlib>
++
++namespace {
++
++std::chrono::microseconds lphy_dl_wait_timeout(std::chrono::microseconds stock)
++{
++  if (const char* value = std::getenv("OCUDU_LPHY_DL_WAIT_MS"); (value != nullptr) && (*value != '\0')) {
++    double ms = std::atof(value);
++    if (ms > 0.0) {
++      return std::chrono::microseconds(static_cast<long>(ms * 1000.0));
++    }
++  }
++  return stock;
++}
++
++} // namespace
+ #include "ocudu/adt/interval.h"
+ #include "ocudu/instrumentation/traces/ru_traces.h"
+ #include "ocudu/ran/slot_point_extended.h"
+@@ -78,7 +94,11 @@ void lower_phy_baseband_processor::dl_process(baseband_gateway_timestamp timesta
+   // received timestamp.
+   {
+     // Calculate maximum waiting time to avoid deadlock.
+-    std::chrono::microseconds timeout_duration = 2 * slot_duration;
++    // Local patch (ocudu-zmq-lower-phy-profile): with a ZMQ radio the reception chain is paced by the
++    // peer, not by a clock, so a 2-slot wall-clock escape lets the DL run ahead of the UL timeline when
++    // the lock-step loop is slower than real time. OCUDU_LPHY_DL_WAIT_MS (milliseconds, > 0) replaces
++    // the 2-slot bound; unset or empty keeps the stock behaviour.
++    std::chrono::microseconds timeout_duration = lphy_dl_wait_timeout(2 * slot_duration);
+     // Maximum time point to wait for.
+     std::chrono::time_point<std::chrono::steady_clock> wait_until_tp =
+         std::chrono::steady_clock::now() + timeout_duration;
+diff --git a/lib/phy/lower/lower_phy_factory.cpp b/lib/phy/lower/lower_phy_factory.cpp
+index 21f01b2092..33eaa29331 100644
+--- a/lib/phy/lower/lower_phy_factory.cpp
++++ b/lib/phy/lower/lower_phy_factory.cpp
+@@ -4,6 +4,25 @@
+ 
+ #include "ocudu/phy/lower/lower_phy_factory.h"
+ #include "lower_phy_impl.h"
++#include <algorithm>
++#include <cmath>
++#include <cstdlib>
++
++namespace {
++
++/// Local patch (ocudu-gpu-channel, ocudu-zmq-lower-phy-profile): the DL baseband may run ahead of the
++/// last received UL timestamp by 1 ms (plus the TX time offset). OCUDU_LPHY_RX_TO_TX_MAX_MS scales that
++/// bound for ZMQ lock-step experiments; unset or empty keeps 1 ms. Values below 0.5 ms are clamped.
++unsigned lphy_rx_to_tx_max_samples(double samples_per_ms)
++{
++  double ms = 1.0;
++  if (const char* value = std::getenv("OCUDU_LPHY_RX_TO_TX_MAX_MS"); (value != nullptr) && (*value != '\0')) {
++    ms = std::max(0.5, std::atof(value));
++  }
++  return static_cast<unsigned>(std::lround(samples_per_ms * ms));
++}
++
++} // namespace
+ 
+ using namespace ocudu;
+ 
+@@ -97,7 +116,9 @@ public:
+     int tx_time_offset = get_tx_time_offset(config.time_alignment_calibration, config.ta_offset, config.srate);
+ 
+     // Maximum time delay between reception and transmission in samples (1ms plus the time offset).
+-    unsigned rx_to_tx_max_delay = config.srate.to_kHz() + tx_time_offset;
++    // Local patch: OCUDU_LPHY_RX_TO_TX_MAX_MS scales the 1 ms.
++    unsigned rx_to_tx_max_delay =
++        lphy_rx_to_tx_max_samples(static_cast<double>(config.srate.to_kHz())) + tx_time_offset;
+ 
+     // Prepare downlink processor configuration.
+     downlink_processor_configuration dl_proc_config = {.sector_id               = config.sector_id,
+diff --git a/lib/radio/zmq/radio_session_zmq_impl.cpp b/lib/radio/zmq/radio_session_zmq_impl.cpp
+index b44cb545ee..10d912babb 100644
+--- a/lib/radio/zmq/radio_session_zmq_impl.cpp
++++ b/lib/radio/zmq/radio_session_zmq_impl.cpp
+@@ -3,6 +3,8 @@
+ 
+ #include "radio_session_zmq_impl.h"
+ #include "ocudu/support/math/math_utils.h"
++#include <cstdlib>
++#include <sched.h>
+ 
+ using namespace ocudu;
+ 
+@@ -31,6 +33,21 @@ radio_session_zmq_impl::radio_session_zmq_impl(const radio_configuration::radio&
+     return;
+   }
+ 
++  // Local patch (ocudu-zmq-lower-phy-profile): the libzmq I/O thread does the socket work for every channel
++  // and is starved by the SCHED_FIFO lower-PHY workers in a threaded profile. OCUDU_ZMQ_IO_RT_PRIO=k runs it
++  // with SCHED_FIFO at (max - k); unset or empty keeps the stock SCHED_OTHER I/O thread.
++  if (const char* value = std::getenv("OCUDU_ZMQ_IO_RT_PRIO"); (value != nullptr) && (*value != '\0')) {
++    int below_max = std::atoi(value);
++    int prio      = sched_get_priority_max(SCHED_FIFO) - std::max(below_max, 0);
++    int policy    = SCHED_FIFO;
++    if ((::zmq_ctx_set(zmq_context, ZMQ_THREAD_SCHED_POLICY, policy) != 0) ||
++        (::zmq_ctx_set(zmq_context, ZMQ_THREAD_PRIORITY, prio) != 0)) {
++      logger.warning("Failed to set the ZMQ I/O thread scheduling. {}.", ::zmq_strerror(::zmq_errno()));
++    } else {
++      logger.info("ZMQ I/O thread scheduling set to SCHED_FIFO priority {}.", prio);
++    }
++  }
++
+   unsigned nof_streams = config.tx_streams.size();
+ 
+   // Debug log level is only available if verbose keyword is in the device arguments.

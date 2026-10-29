@@ -1,0 +1,94 @@
+{
+  "name": "ocudu-native-rank1-sutd",
+  "description": "One OCUDU gNB (4T4R) on the parapet of SUTD Building 2 and one car UE shuttling along the drop-off in front of it, on OpenStreetMap geometry of the SUTD campus. This is the shape run-ocudu-sionna-rank1.sh runs: exactly one gNB and one single-port UE, one downlink and one uplink.",
+  "scene": "sionna_SUTD_test",
+  "simple_road": false,
+  "solver": {
+    "max_depth": 3,
+    "samples_per_source": 200000,
+    "seed": 42,
+    "path_polylines": 6,
+    "propagation": {
+      "los": true,
+      "specular_reflection": true,
+      "diffuse_reflection": false,
+      "refraction": false,
+      "diffraction": false
+    }
+  },
+  "nodes": {
+    "gnb0": {
+      "start_m": [
+        -151.28,
+        -57.99,
+        30.5
+      ],
+      "mobility": "fixed",
+      "tx_array": {
+        "rows": 1,
+        "cols": 4,
+        "pattern": "iso",
+        "polarization": "V"
+      },
+      "rx_array": {
+        "rows": 1,
+        "cols": 4,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue0": {
+      "start_m": [
+        -150.229,
+        -48.078,
+        1.5
+      ],
+      "mobility": "car",
+      "route_m": [
+        [
+          -150.229,
+          -48.078,
+          1.5
+        ],
+        [
+          -137.472,
+          -47.193,
+          1.5
+        ],
+        [
+          -75.0,
+          -36.07,
+          1.5
+        ]
+      ],
+      "route_mode": "pingpong",
+      "speed_mps": 8.33,
+      "tx_array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      },
+      "rx_array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    }
+  },
+  "links": [
+    {
+      "from": "gnb0",
+      "to": "ue0",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue0",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    }
+  ]
+}

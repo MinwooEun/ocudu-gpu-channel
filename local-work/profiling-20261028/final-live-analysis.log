@@ -1,0 +1,31 @@
+2504597, /workspace/ocudu-spark-ranb/builds/ocudu-gpu-channel-single-cell/ocudu-gpu-channel
+{
+  "label": "cuda-u16-c1-bw20-a1x1-cpu-sampled",
+  "rc": 0,
+  "wall_s": 514.3001750279218
+}cuda-u1-c1-bw100-a4x4 0.3392 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': ['pusch_ko_ratio 0.1725 > 0.1'], 'result': 'fail'}
+cuda-u1-c1-bw20-a4x4 0.9997 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+cuda-u1-c1-bw100-a4x1 0.4911 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+cuda-u1-c1-bw50-a4x4 0.5131 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+cuda-u1-c1-bw50-a2x2 0.9973 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+cuda-u1-c1-bw20-a2x2 0.9999 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+cuda-u1-c1-bw100-a2x2 0.684 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+cuda-u16-c1-bw20-a1x1-trace-only ratios [0.4452659765037127, 0.4469775822813307]
+  01-test1 complete True call {'mean': 77.97898534571387, 'p50': 74.418, 'p99': 279.754, 'max': 9391.527} CPU 76.50623489286706
+  02-test2 complete True call {'mean': 77.24571151123422, 'p50': 72.946, 'p99': 274.567, 'max': 1950.466} CPU 75.84192453062481
+cuda-u1-c1-bw20-a1x1 ratios [0.9975413052676428, 0.9974796039111141]
+  01-test1 complete True call {'mean': 45.59169068452222, 'p50': 40.209, 'p99': 180.007, 'max': 459.122} CPU 44.15072122925892
+  02-test2 complete True call {'mean': 45.157855534222406, 'p50': 39.842, 'p99': 194.663, 'max': 592.932} CPU 43.607832286855896
+cuda-u8-c1-bw20-a1x1-nsys ratios []
+cuda-u16-c1-bw20-a1x1 ratios [0.43720287475833164, 0.42353887471645424]
+  01-test1 complete False call {'mean': 82.10066660525669, 'p50': 85.089, 'p99': 278.435, 'max': 1173.307} CPU 80.68591304347827
+  02-test2 complete False call {'mean': 77.07840037793788, 'p50': 69.553, 'p99': 280.546, 'max': 1162.584} CPU 75.66795889925594
+cuda-u8-c1-bw20-a1x1-control ratios [0.9295782479222292, 0.937765480173535]
+cuda-u8-c1-bw20-a1x1 ratios [0.8946010778941035, 0.93019305280751]
+  01-test1 complete True call {'mean': 64.71284159666857, 'p50': 58.849, 'p99': 256.613, 'max': 790.654} CPU 59.793551822323465
+  02-test2 complete True call {'mean': 67.20963950291234, 'p50': 58.801, 'p99': 304.452, 'max': 1041.102} CPU 58.96556767121305
+cuda-u4-c1-bw20-a1x1 ratios [0.9886705354639159, 0.989366876595561]
+  01-test1 complete True call {'mean': 54.073372158731495, 'p50': 47.313, 'p99': 204.438, 'max': 5410.482} CPU 48.80757997722768
+  02-test2 complete True call {'mean': 52.39067655956803, 'p50': 46.77, 'p99': 193.556, 'max': 881.188} CPU 47.95277693103052
+cuda-u16-c1-bw20-a1x1-control ratios [0.4501545584742642, 0.45189399396968455]
+cuda-u16-c1-bw20-a1x1-cpu-sampled ratios [0.4474545133862951, 0.4545188847995228]

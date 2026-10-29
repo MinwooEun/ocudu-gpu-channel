@@ -1,0 +1,5 @@
+REMOTE_USER=your-user
+REMOTE_HOST=your-host
+REMOTE_SSH_KEY=~/.ssh/your-key
+REMOTE_WORKSPACE=~/your-workspace
+REMOTE_OCUDU_ROOT=~/your-workspace/ocudu

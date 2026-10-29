@@ -1,0 +1,20 @@
+{
+  "duration_s": 261.772674885,
+  "groups": {
+    "gnb": {
+      "cpu_seconds": 342.911117648,
+      "runnable_wait_seconds": 10.251232336,
+      "mean_cores": 1.309957648553827
+    },
+    "srsue": {
+      "cpu_seconds": 345.05372409600005,
+      "runnable_wait_seconds": 1796.8340294079999,
+      "mean_cores": 1.318142637491046
+    },
+    "ocudu-gpu-chann": {
+      "cpu_seconds": 179.13145008,
+      "runnable_wait_seconds": 2143.53297328,
+      "mean_cores": 0.6843015611109703
+    }
+  }
+}

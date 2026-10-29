@@ -1,0 +1,19 @@
+{
+  "radio_ms": 30000.00021701389,
+  "room_us_per_radio_ms": 624.4324592829828,
+  "parts_us_per_radio_ms": {
+    "before_gnb_request": 1.3564414901877786,
+    "request_to_broker_receive": 9.980458761136727,
+    "request_received_to_row_pop": 281.1292895997013,
+    "row_pop_to_send_and_release": 6.527760119446179,
+    "room_released_to_producer_observed": 325.43850931251075
+  },
+  "negative_parts": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "max_release_timestamp_race_us": 353.822
+}

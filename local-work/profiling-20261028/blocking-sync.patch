@@ -1,0 +1,45 @@
+--- a/src/cuda_backend.cu
++++ b/src/cuda_backend.cu
+@@ -1,4 +1,5 @@
+ #include "profile_trace.h"
++#include <cstring>
+ #include "ocudu_gpu_channel/backend.h"
+ #include "ocudu_gpu_channel/cuda_backend.h"
+ #include "ocudu_gpu_channel/delay.h"
+@@ -399,6 +400,7 @@
+   cudaEvent_t h2d_done = nullptr;
+   cudaEvent_t kernel_done = nullptr;
+   cudaEvent_t d2h_done = nullptr;
++  bool blocking_completion = false;
+   // Receiver-model state, one per output ROW. Sibling rows must not share the
+   // receiver chain's CFO phase and AWGN counters.
+   //
+@@ -763,7 +765,14 @@
+       check(cudaEventCreate(&sp.h2d_start), "cudaEventCreate superpose h2d_start");
+       check(cudaEventCreate(&sp.h2d_done), "cudaEventCreate superpose h2d_done");
+       check(cudaEventCreate(&sp.kernel_done), "cudaEventCreate superpose kernel_done");
+-      check(cudaEventCreate(&sp.d2h_done), "cudaEventCreate superpose d2h_done");
++      const char* blocking = std::getenv("OCG_CUDA_BLOCKING_SYNC");
++      sp.blocking_completion = blocking != nullptr && std::strcmp(blocking, "1") == 0;
++      check(cudaEventCreateWithFlags(&sp.d2h_done,
++                                    sp.blocking_completion ? cudaEventBlockingSync : cudaEventDefault),
++            "cudaEventCreateWithFlags superpose d2h_done");
++      if (sp.blocking_completion) {
++        std::cout << "event=cuda_completion_wait node=" << node.id << " mode=blocking_event\n";
++      }
+ 
+       // Row boundaries. The resolved lane table is already stable-sorted by
+       // (destination node, rx_port), so walking this node's lanes in order
+@@ -1509,7 +1518,11 @@
+     }
+     check(cudaEventRecord(sp.d2h_done, sp.stream), "cudaEventRecord superpose d2h_done");
+     const auto profile_submit_end = std::chrono::steady_clock::now();
+-    check(cudaStreamSynchronize(sp.stream), "cudaStreamSynchronize superpose");
++    if (sp.blocking_completion) {
++      check(cudaEventSynchronize(sp.d2h_done), "cudaEventSynchronize superpose");
++    } else {
++      check(cudaStreamSynchronize(sp.stream), "cudaStreamSynchronize superpose");
++    }
+     const auto out_start = std::chrono::steady_clock::now();
+     for (std::size_t r = 0; !sp.zc_direct && r != sp.rows; ++r) {
+       const IqSample* row = sp.host_output + r * count;

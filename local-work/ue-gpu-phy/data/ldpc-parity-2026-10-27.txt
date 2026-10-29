@@ -1,0 +1,90 @@
+===== SNR 0 dB
+BG1 Z=2   K=44    N=136   snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 1/16 identical= 0 cpu=   802 us gpu=   402 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=3   K=66    N=204   snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=   813 us gpu=   374 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=16  K=352   N=1088  snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=   813 us gpu=   696 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=24  K=528   N=1632  snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  1003 us gpu=  3973 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=64  K=1408  N=4352  snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  1367 us gpu=  1313 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=112 K=2464  N=7616  snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  2075 us gpu=  1843 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=208 K=4576  N=14144 snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  3475 us gpu=  3124 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=384 K=8448  N=26112 snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  5876 us gpu=  5015 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=2   K=20    N=104   snr=0.0 dB: cpu_ok= 2/16 gpu_ok= 4/16 identical= 7 cpu=   480 us gpu=   365 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=3   K=30    N=156   snr=0.0 dB: cpu_ok= 4/16 gpu_ok= 5/16 identical= 9 cpu=   490 us gpu=   305 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=16  K=160   N=832   snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 3/16 identical= 0 cpu=   480 us gpu=   469 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=24  K=240   N=1248  snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 1/16 identical= 0 cpu=   583 us gpu=   463 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=64  K=640   N=3328  snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 3/16 identical= 0 cpu=   784 us gpu=   858 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=112 K=1120  N=5824  snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 1/16 identical= 0 cpu=  1166 us gpu=  1089 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=208 K=2080  N=10816 snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  2046 us gpu=  1794 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=384 K=3840  N=19968 snr=0.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  3406 us gpu=  2860 us (16 CB, avg_iter 10.0) PASS
+RESULT fails=0
+===== SNR 1 dB
+BG1 Z=2   K=44    N=136   snr=1.0 dB: cpu_ok= 3/16 gpu_ok= 1/16 identical= 3 cpu=   820 us gpu=   411 us (16 CB, avg_iter 10.0) FAIL
+BG1 Z=3   K=66    N=204   snr=1.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=   813 us gpu=   377 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=16  K=352   N=1088  snr=1.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=   814 us gpu=   703 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=24  K=528   N=1632  snr=1.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=   994 us gpu=   904 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=64  K=1408  N=4352  snr=1.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  1360 us gpu=  1316 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=112 K=2464  N=7616  snr=1.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  2082 us gpu=  1860 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=208 K=4576  N=14144 snr=1.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  3492 us gpu=  3316 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=384 K=8448  N=26112 snr=1.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  5947 us gpu=  5030 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=2   K=20    N=104   snr=1.0 dB: cpu_ok= 7/16 gpu_ok=10/16 identical=10 cpu=   487 us gpu=   361 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=3   K=30    N=156   snr=1.0 dB: cpu_ok= 6/16 gpu_ok= 7/16 identical= 8 cpu=   494 us gpu=   304 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=16  K=160   N=832   snr=1.0 dB: cpu_ok= 4/16 gpu_ok=12/16 identical= 4 cpu=   478 us gpu=   473 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=24  K=240   N=1248  snr=1.0 dB: cpu_ok= 1/16 gpu_ok=15/16 identical= 1 cpu=   592 us gpu=   459 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=64  K=640   N=3328  snr=1.0 dB: cpu_ok= 0/16 gpu_ok=16/16 identical= 0 cpu=   797 us gpu=   848 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=112 K=1120  N=5824  snr=1.0 dB: cpu_ok= 0/16 gpu_ok=16/16 identical= 0 cpu=  1180 us gpu=  1085 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=208 K=2080  N=10816 snr=1.0 dB: cpu_ok= 0/16 gpu_ok=16/16 identical= 0 cpu=  2066 us gpu=  1796 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=384 K=3840  N=19968 snr=1.0 dB: cpu_ok= 0/16 gpu_ok=16/16 identical= 0 cpu=  3414 us gpu=  2815 us (16 CB, avg_iter 10.0) PASS
+RESULT fails=1
+===== SNR 2 dB
+BG1 Z=2   K=44    N=136   snr=2.0 dB: cpu_ok= 6/16 gpu_ok= 6/16 identical= 5 cpu=   819 us gpu=   410 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=3   K=66    N=204   snr=2.0 dB: cpu_ok= 8/16 gpu_ok= 3/16 identical= 4 cpu=   813 us gpu=   376 us (16 CB, avg_iter 10.0) FAIL
+BG1 Z=16  K=352   N=1088  snr=2.0 dB: cpu_ok= 2/16 gpu_ok= 1/16 identical= 0 cpu=   814 us gpu=   700 us (16 CB, avg_iter 10.0) FAIL
+BG1 Z=24  K=528   N=1632  snr=2.0 dB: cpu_ok= 0/16 gpu_ok= 2/16 identical= 0 cpu=   988 us gpu=   900 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=64  K=1408  N=4352  snr=2.0 dB: cpu_ok= 0/16 gpu_ok= 1/16 identical= 0 cpu=  1365 us gpu=  4365 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=112 K=2464  N=7616  snr=2.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  2068 us gpu=  1873 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=208 K=4576  N=14144 snr=2.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  3459 us gpu=  3115 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=384 K=8448  N=26112 snr=2.0 dB: cpu_ok= 0/16 gpu_ok= 0/16 identical= 0 cpu=  5939 us gpu=  5040 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=2   K=20    N=104   snr=2.0 dB: cpu_ok=11/16 gpu_ok=14/16 identical=11 cpu=   480 us gpu=   363 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=3   K=30    N=156   snr=2.0 dB: cpu_ok=12/16 gpu_ok=14/16 identical=12 cpu=   489 us gpu=   304 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=16  K=160   N=832   snr=2.0 dB: cpu_ok= 8/16 gpu_ok=16/16 identical= 8 cpu=   476 us gpu=   476 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=24  K=240   N=1248  snr=2.0 dB: cpu_ok= 8/16 gpu_ok=16/16 identical= 8 cpu=   578 us gpu=   460 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=64  K=640   N=3328  snr=2.0 dB: cpu_ok= 3/16 gpu_ok=16/16 identical= 3 cpu=   791 us gpu=   849 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=112 K=1120  N=5824  snr=2.0 dB: cpu_ok= 2/16 gpu_ok=16/16 identical= 2 cpu=  1178 us gpu=  1082 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=208 K=2080  N=10816 snr=2.0 dB: cpu_ok= 0/16 gpu_ok=16/16 identical= 0 cpu=  2054 us gpu=  1802 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=384 K=3840  N=19968 snr=2.0 dB: cpu_ok= 0/16 gpu_ok=16/16 identical= 0 cpu=  3412 us gpu=  2897 us (16 CB, avg_iter 10.0) PASS
+RESULT fails=2
+===== SNR 3 dB
+BG1 Z=2   K=44    N=136   snr=3.0 dB: cpu_ok=10/16 gpu_ok=12/16 identical= 9 cpu=   834 us gpu=   411 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=3   K=66    N=204   snr=3.0 dB: cpu_ok=15/16 gpu_ok=13/16 identical=13 cpu=   812 us gpu=   395 us (16 CB, avg_iter 10.0) FAIL
+BG1 Z=16  K=352   N=1088  snr=3.0 dB: cpu_ok=11/16 gpu_ok=14/16 identical=10 cpu=   819 us gpu=  1846 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=24  K=528   N=1632  snr=3.0 dB: cpu_ok= 8/16 gpu_ok=16/16 identical= 8 cpu=   990 us gpu= 18873 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=64  K=1408  N=4352  snr=3.0 dB: cpu_ok=10/16 gpu_ok=16/16 identical=10 cpu=  1347 us gpu=  1403 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=112 K=2464  N=7616  snr=3.0 dB: cpu_ok= 2/16 gpu_ok=16/16 identical= 2 cpu=  2103 us gpu=  1845 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=208 K=4576  N=14144 snr=3.0 dB: cpu_ok= 0/16 gpu_ok=16/16 identical= 0 cpu=  3488 us gpu=  3153 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=384 K=8448  N=26112 snr=3.0 dB: cpu_ok= 0/16 gpu_ok=16/16 identical= 0 cpu=  5904 us gpu=  5146 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=2   K=20    N=104   snr=3.0 dB: cpu_ok=13/16 gpu_ok=16/16 identical=13 cpu=   485 us gpu=   366 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=3   K=30    N=156   snr=3.0 dB: cpu_ok=14/16 gpu_ok=16/16 identical=14 cpu=   494 us gpu=   303 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=16  K=160   N=832   snr=3.0 dB: cpu_ok=12/16 gpu_ok=16/16 identical=12 cpu=   486 us gpu=   472 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=24  K=240   N=1248  snr=3.0 dB: cpu_ok=15/16 gpu_ok=16/16 identical=15 cpu=   595 us gpu=   457 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=64  K=640   N=3328  snr=3.0 dB: cpu_ok=15/16 gpu_ok=16/16 identical=15 cpu=   781 us gpu=   861 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=112 K=1120  N=5824  snr=3.0 dB: cpu_ok=13/16 gpu_ok=16/16 identical=13 cpu=  1192 us gpu=  1090 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=208 K=2080  N=10816 snr=3.0 dB: cpu_ok= 8/16 gpu_ok=16/16 identical= 8 cpu=  2045 us gpu=  1866 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=384 K=3840  N=19968 snr=3.0 dB: cpu_ok=10/16 gpu_ok=16/16 identical=10 cpu=  3401 us gpu=  2896 us (16 CB, avg_iter 10.0) PASS
+RESULT fails=1
+===== SNR 5 dB
+BG1 Z=2   K=44    N=136   snr=5.0 dB: cpu_ok=15/16 gpu_ok=16/16 identical=15 cpu=   872 us gpu=   423 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=3   K=66    N=204   snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=   821 us gpu=   386 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=16  K=352   N=1088  snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=   816 us gpu=  2365 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=24  K=528   N=1632  snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=   984 us gpu=   901 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=64  K=1408  N=4352  snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=  1357 us gpu=  4060 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=112 K=2464  N=7616  snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=  2073 us gpu=  1889 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=208 K=4576  N=14144 snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=  3457 us gpu=  3188 us (16 CB, avg_iter 10.0) PASS
+BG1 Z=384 K=8448  N=26112 snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=  5896 us gpu=  5024 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=2   K=20    N=104   snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=   483 us gpu=   367 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=3   K=30    N=156   snr=5.0 dB: cpu_ok=14/16 gpu_ok=16/16 identical=14 cpu=   494 us gpu=   306 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=16  K=160   N=832   snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=   477 us gpu=   473 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=24  K=240   N=1248  snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=   592 us gpu=   466 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=64  K=640   N=3328  snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=   790 us gpu=   858 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=112 K=1120  N=5824  snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=  1179 us gpu=  1085 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=208 K=2080  N=10816 snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=  2050 us gpu=  1813 us (16 CB, avg_iter 10.0) PASS
+BG2 Z=384 K=3840  N=19968 snr=5.0 dB: cpu_ok=16/16 gpu_ok=16/16 identical=16 cpu=  3401 us gpu=  2840 us (16 CB, avg_iter 10.0) PASS
+RESULT fails=0

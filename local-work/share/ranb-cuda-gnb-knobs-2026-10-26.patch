@@ -1,0 +1,133 @@
+ 4 files changed, 74 insertions(+), 5 deletions(-)
+diff --git a/use_cases/ran_benchmark/run-ocudu-scheduler-benchmark-inner.sh b/use_cases/ran_benchmark/run-ocudu-scheduler-benchmark-inner.sh
+index 76e3173..2d0572c 100755
+--- a/use_cases/ran_benchmark/run-ocudu-scheduler-benchmark-inner.sh
++++ b/use_cases/ran_benchmark/run-ocudu-scheduler-benchmark-inner.sh
+@@ -353,8 +353,9 @@ for index in "${!cells[@]}"; do
+     capture_args=(--wire-capture-dir "${log_dir}/wire-${cell}"
+                   --wire-capture-samples "${wire_capture%%:*}" --wire-capture-skip "${wire_capture##*:}")
+   fi
++  if [[ "${OCUDU_NATIVE_SB_BROKER_IN_MPS:-0}" == 1 ]]; then broker_mps_env=(env); else broker_mps_env=(env -u CUDA_MPS_PIPE_DIRECTORY); fi  # local knob 2026-10-26
+   start_group "broker-${cell}" "${log_dir}/broker-${cell}.log" \
+-    env -u CUDA_MPS_PIPE_DIRECTORY "CUDA_VISIBLE_DEVICES=${physical_gpu}" "${broker_pin[@]}" \
++    "${broker_mps_env[@]}" "CUDA_VISIBLE_DEVICES=${physical_gpu}" "${broker_pin[@]}" \
+     "${broker}" --config "${config_dir}/topology-${cell}.yaml" --duration "${broker_duration}s" \
+     --control-endpoint "${control_endpoints[index]}" \
+     --telemetry-endpoint "${telemetry_endpoints[index]}" --telemetry-rate-hz 500 "${capture_args[@]}"
+diff --git a/use_cases/ran_benchmark/run-ocudu-scheduler-benchmark.sh b/use_cases/ran_benchmark/run-ocudu-scheduler-benchmark.sh
+index 1873732..bc11088 100755
+--- a/use_cases/ran_benchmark/run-ocudu-scheduler-benchmark.sh
++++ b/use_cases/ran_benchmark/run-ocudu-scheduler-benchmark.sh
+@@ -246,6 +246,36 @@ if [[ -n "${gnb_rx_gain}" ]]; then
+   done
+ fi
+ for gnb_id in gnb0 gnb1; do
++  # Local knob (2026-10-26): CUDA-accelerated OCUDU gNB, same keys as scripts/cuda/render-cuda-1x1-configs.py.
++  if [[ -n "${OCUDU_NATIVE_SB_GNB_ACCELERATION:-}" ]]; then
++    /usr/bin/python3 - "${config_dir}/${gnb_id}.yaml" "${OCUDU_NATIVE_SB_GNB_ACCELERATION}" "${OCUDU_NATIVE_CUDA_GRID_MODE:-}" <<'PY2' || usage_error "could not append the CUDA acceleration keys to ${gnb_id}.yaml"
++import sys
++path, stage, override = sys.argv[1:]
++stages = ("disabled", "low-phy-rx", "low-phy-tx", "pusch", "pdsch", "prach", "all")
++if stage not in stages: raise SystemExit(f"unknown CUDA acceleration stage: {stage}")
++index = stages.index(stage)
++upper = {"pusch_acceleration_mode": "disabled", "pdsch_acceleration_mode": "disabled", "prach_acceleration_mode": "disabled", "srs_acceleration_mode": "disabled"}
++lower = {"low_phy_rx_acceleration_mode": "disabled", "low_phy_tx_acceleration_mode": "disabled", "low_phy_prach_demodulation_acceleration_mode": "disabled"}
++order = [("lower", "low_phy_rx_acceleration_mode"), ("lower", "low_phy_tx_acceleration_mode"), ("upper", "pusch_acceleration_mode"), ("upper", "pdsch_acceleration_mode"), ("upper", "prach_acceleration_mode"), ("upper", "srs_acceleration_mode")]
++for where, key in order[:index]: (upper if where == "upper" else lower)[key] = "enabled"
++if index >= 5: lower["low_phy_prach_demodulation_acceleration_mode"] = "enabled"
++import os
++if os.environ.get("OCUDU_NATIVE_SB_CUDA_LOWER") in ("disabled", "enabled"):
++    lower["low_phy_rx_acceleration_mode"] = lower["low_phy_tx_acceleration_mode"] = os.environ["OCUDU_NATIVE_SB_CUDA_LOWER"]
++if os.environ.get("OCUDU_NATIVE_SB_CUDA_LOWER_PRACH") in ("disabled", "enabled"): lower["low_phy_prach_demodulation_acceleration_mode"] = os.environ["OCUDU_NATIVE_SB_CUDA_LOWER_PRACH"]
++ul_grid = "managed" if index >= 1 else "pinned"; dl_grid = "managed" if index >= 2 else "pinned"
++if override:
++    if override not in ("auto", "pinned", "managed"): raise SystemExit(f"invalid OCUDU_NATIVE_CUDA_GRID_MODE: {override}")
++    ul_grid = dl_grid = override
++text = open(path).read()
++if "expert_phy:" in text or "  expert_cfg:" in text: raise SystemExit("gnb yaml already carries expert settings")
++if text.count("ru_sdr:\n") != 1: raise SystemExit("expected exactly one ru_sdr section")
++ru = "".join(f"    {k}: {v}\n" for k, v in lower.items())
++text = text.replace("ru_sdr:\n", "ru_sdr:\n  expert_cfg:\n" + ru, 1)
++text += "\nexpert_phy:\n" + "".join(f"  {k}: {v}\n" for k, v in upper.items()) + f"  ul_cuda_visible_grid_mode: {ul_grid}\n  dl_cuda_visible_grid_mode: {dl_grid}\n"
++open(path, "w").write(text)
++PY2
++  fi
+   "${gnb_binary}" -c "${config_dir}/${gnb_id}.yaml" --dryrun >"${log_dir}/${gnb_id}-dryrun.log" 2>&1 || {
+     tail -20 "${log_dir}/${gnb_id}-dryrun.log" >&2; usage_error "${gnb_id} dry run failed"
+   }
+diff --git a/use_cases/ran_benchmark/run-single-cell-policy-inner.sh b/use_cases/ran_benchmark/run-single-cell-policy-inner.sh
+index 8c5252d..497beae 100755
+--- a/use_cases/ran_benchmark/run-single-cell-policy-inner.sh
++++ b/use_cases/ran_benchmark/run-single-cell-policy-inner.sh
+@@ -14,7 +14,7 @@ set -uo pipefail
+ repo_root="" native_root="" run_root="" parent_netns="" parent_mntns="" outer_uid=""
+ gnb="" broker="" ue_count="" policy="" channel_bundle="" traffic_bundle="" sionna_python=""
+ link_adaptation="amc_olla" fixed_dl_mcs="" fixed_ul_mcs=""
+-attach_timeout="240" drain_seconds="6" gnb_start_timeout="20"
++attach_timeout="240" drain_seconds="6" gnb_start_timeout="${SINGLE_CELL_GNB_START_TIMEOUT:-20}"  # local knob: the CUDA gNB needs ~60-120 s
+ cpus_gnb="" cpus_broker="" cpus_ues="" cpus_aux=""
+ 
+ usage_error() { printf 'error: %s\n' "$1" >&2; exit 2; }
+@@ -228,7 +228,10 @@ PY
+ 
+ # --- broker -----------------------------------------------------------------
+ mapfile -t broker_pin < <(pin "${cpus_broker}")
+-start_group broker "${log_dir}/broker.log" env -u CUDA_MPS_PIPE_DIRECTORY "CUDA_VISIBLE_DEVICES=${OCUDU_NATIVE_GPU_DEVICE:-0}" \
++# Local knob (2026-10-26): SINGLE_CELL_BROKER_IN_MPS=1 keeps the broker inside the MPS server the caller set up
++# (one GPU context shared with a CUDA gNB) instead of its own context; default unchanged.
++if [[ "${SINGLE_CELL_BROKER_IN_MPS:-0}" == 1 ]]; then broker_mps_env=(env); else broker_mps_env=(env -u CUDA_MPS_PIPE_DIRECTORY); fi
++start_group broker "${log_dir}/broker.log" "${broker_mps_env[@]}" "CUDA_VISIBLE_DEVICES=${OCUDU_NATIVE_GPU_DEVICE:-0}" \
+   "${broker_pin[@]}" "${broker}" --config "${config_dir}/topology.yaml" --duration 10800s \
+   --control-endpoint "${control_endpoint}" --telemetry-endpoint "${telemetry_endpoint}" --telemetry-rate-hz 50
+ broker_pid="${started_pid}"
+diff --git a/use_cases/ran_benchmark/run-single-cell-policy.sh b/use_cases/ran_benchmark/run-single-cell-policy.sh
+index 044f9ab..cbc5d79 100755
+--- a/use_cases/ran_benchmark/run-single-cell-policy.sh
++++ b/use_cases/ran_benchmark/run-single-cell-policy.sh
+@@ -166,9 +166,44 @@ if [[ -n "${SINGLE_CELL_GNB_MAIN_POOL:-}" || -n "${SINGLE_CELL_GNB_MAIN_POOL_CPU
+     [[ -n "${SINGLE_CELL_GNB_RU_CPUS:-}" ]] && printf '  cell_affinities:\n    - ru_cpus: %s\n      ru_pinning: mask\n' "${SINGLE_CELL_GNB_RU_CPUS}"
+     true; } >>"${config_dir}/gnb0.yaml"
+ fi
+-printf 'event=local_knobs ue_rx_sleep=%s log_level=%s pcap=%s broker_env=%s ue_phy_threads=%s gnb_main_pool=%s quiet_logs=%s gnb_binary=%s rx_to_tx_max_ms=%s\n' "${SINGLE_CELL_UE_RX_SLEEP:-true}" \
++# Local knob (2026-10-26): CUDA-accelerated OCUDU gNB. SINGLE_CELL_GNB_ACCELERATION=<stage> appends the
++# acceleration keys scripts/cuda/render-cuda-1x1-configs.py would render (cumulative stages: low-phy-rx,
++# low-phy-tx, pusch, pdsch, prach, all); SINGLE_CELL_CUDA_GRID_MODE=auto|pinned|managed overrides the grid policy.
++# Pair it with SINGLE_CELL_GNB_BINARY=<CUDA gNB build>, SINGLE_CELL_GNB_START_TIMEOUT (the CUDA gNB starts slower)
++# and, for one MPS server over gNB and broker, SINGLE_CELL_MPS=on (the caller re-executes the benchmark under
++# scripts/cuda/with-cuda-mps.py; the inner runner keeps the broker outside MPS as it does today).
++if [[ -n "${SINGLE_CELL_GNB_ACCELERATION:-}" ]]; then
++  /usr/bin/python3 - "${config_dir}/gnb0.yaml" "${SINGLE_CELL_GNB_ACCELERATION}" "${SINGLE_CELL_CUDA_GRID_MODE:-}" <<'PY2' || usage_error "could not append the CUDA acceleration keys to gnb0.yaml"
++import sys
++path, stage, override = sys.argv[1:]
++stages = ("disabled", "low-phy-rx", "low-phy-tx", "pusch", "pdsch", "prach", "all")
++if stage not in stages: raise SystemExit(f"unknown CUDA acceleration stage: {stage}")
++index = stages.index(stage)
++upper = {"pusch_acceleration_mode": "disabled", "pdsch_acceleration_mode": "disabled", "prach_acceleration_mode": "disabled", "srs_acceleration_mode": "disabled"}
++lower = {"low_phy_rx_acceleration_mode": "disabled", "low_phy_tx_acceleration_mode": "disabled", "low_phy_prach_demodulation_acceleration_mode": "disabled"}
++order = [("lower", "low_phy_rx_acceleration_mode"), ("lower", "low_phy_tx_acceleration_mode"), ("upper", "pusch_acceleration_mode"), ("upper", "pdsch_acceleration_mode"), ("upper", "prach_acceleration_mode"), ("upper", "srs_acceleration_mode")]
++for where, key in order[:index]: (upper if where == "upper" else lower)[key] = "enabled"
++if index >= 5: lower["low_phy_prach_demodulation_acceleration_mode"] = "enabled"
++import os
++if os.environ.get("SINGLE_CELL_CUDA_LOWER") in ("disabled", "enabled"):
++    lower["low_phy_rx_acceleration_mode"] = lower["low_phy_tx_acceleration_mode"] = os.environ["SINGLE_CELL_CUDA_LOWER"]
++if os.environ.get("SINGLE_CELL_CUDA_LOWER_PRACH") in ("disabled", "enabled"): lower["low_phy_prach_demodulation_acceleration_mode"] = os.environ["SINGLE_CELL_CUDA_LOWER_PRACH"]
++ul_grid = "managed" if index >= 1 else "pinned"; dl_grid = "managed" if index >= 2 else "pinned"
++if override:
++    if override not in ("auto", "pinned", "managed"): raise SystemExit(f"invalid SINGLE_CELL_CUDA_GRID_MODE: {override}")
++    ul_grid = dl_grid = override
++text = open(path).read()
++if "expert_phy:" in text or "  expert_cfg:" in text: raise SystemExit("gnb0.yaml already carries expert settings")
++if text.count("ru_sdr:\n") != 1: raise SystemExit("expected exactly one ru_sdr section")
++ru = "".join(f"    {k}: {v}\n" for k, v in lower.items())
++text = text.replace("ru_sdr:\n", "ru_sdr:\n  expert_cfg:\n" + ru, 1)
++text += "\nexpert_phy:\n" + "".join(f"  {k}: {v}\n" for k, v in upper.items()) + f"  ul_cuda_visible_grid_mode: {ul_grid}\n  dl_cuda_visible_grid_mode: {dl_grid}\n"
++open(path, "w").write(text)
++PY2
++fi
++printf 'event=local_knobs ue_rx_sleep=%s log_level=%s pcap=%s broker_env=%s ue_phy_threads=%s gnb_main_pool=%s quiet_logs=%s gnb_binary=%s rx_to_tx_max_ms=%s gnb_acceleration=%s mps=%s lower_prach=%s\n' "${SINGLE_CELL_UE_RX_SLEEP:-true}" \
+   "${SINGLE_CELL_LOG_LEVEL:-default}" "${SINGLE_CELL_PCAP:-on}" "${OCG_BROKER_SPIN:-unset}" "${SINGLE_CELL_UE_PHY_THREADS:-3}" "${SINGLE_CELL_GNB_MAIN_POOL:-auto}" "${SINGLE_CELL_QUIET_LOGS:-0}" \
+-  "${gnb_binary}" "${OCUDU_LPHY_RX_TO_TX_MAX_MS:-unset}" | tee "${log_dir}/local-knobs.log"
++  "${gnb_binary}" "${OCUDU_LPHY_RX_TO_TX_MAX_MS:-unset}" "${SINGLE_CELL_GNB_ACCELERATION:-none}" "${SINGLE_CELL_MPS:-off}" "${SINGLE_CELL_CUDA_LOWER_PRACH:-stage}" | tee "${log_dir}/local-knobs.log"
+ "${gnb_binary}" -c "${config_dir}/gnb0.yaml" --dryrun >"${log_dir}/gnb0-dryrun.log" 2>&1 || {
+   tail -20 "${log_dir}/gnb0-dryrun.log" >&2; usage_error "gnb0 dry run failed"; }
+ 

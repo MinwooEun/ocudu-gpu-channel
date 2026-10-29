@@ -1,0 +1,8 @@
+[
+  "docs/upstream/followup-2026-10-01-ue-crosstalk.md",
+  "scripts/native/build-ocudu-gnb-local.sh",
+  "scripts/native/ocudu-gnb-local-patches.lock.json",
+  "scripts/native/patches/oai-zmq-neon-convert.patch",
+  "scripts/native/patches/ocudu-zmq-lower-phy-profile-cuda.patch",
+  "scripts/native/patches/ocudu-zmq-lower-phy-profile.patch"
+]

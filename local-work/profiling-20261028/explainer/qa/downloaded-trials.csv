@@ -1,0 +1,11 @@
+trial,ratio,kpi_valid,measurement_segments,rx_starvations,strict_pass
+baseline,0.4515283212796943,30,30,254,false
+baseline-repeat,0.4507894944873964,8,30,320,false
+sleep,0.3761644466215071,26,30,419,false
+poll10,0.23251771372626787,30,30,60489,false
+broker4,0.43309533966981595,30,30,521,false
+broker4-spin,0.44612467886551477,4,30,1006,false
+ue5big-shared,0.3787952417264738,6,30,1010,false
+ue5big-spin,0.47495925056011296,30,30,312,false
+ue5big-spin-repeat,0.47094738450470414,1,30,195,false
+cuda-blocking-sleep,0.40123326378046315,30,30,325,false

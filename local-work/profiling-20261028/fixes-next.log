@@ -1,0 +1,6 @@
+START poll10
+END poll10 rc 0 ratio 0.23251771372626787 valid_segments 30 gate passed
+START broker4
+END broker4 rc 0 ratio 0.43309533966981595 valid_segments 30 gate passed
+START ue5big-shared
+END ue5big-shared rc 0 ratio 0.3787952417264738 valid_segments 6 gate passed

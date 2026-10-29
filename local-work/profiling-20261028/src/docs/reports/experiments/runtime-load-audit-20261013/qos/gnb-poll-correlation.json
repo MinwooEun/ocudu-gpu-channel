@@ -1,0 +1,106 @@
+[
+  {
+    "port": 2000,
+    "peer": "gnb",
+    "stage": "responder_pre_reply",
+    "start_ns": 265332413658820,
+    "end_ns": 265332419078691,
+    "ms": 5.419871,
+    "samples": 23040,
+    "owner": "gnb",
+    "gnb_rx_successful_calls_during_tx_wait": 8,
+    "gnb_rx_poll_gaps_overlapping_ms": []
+  },
+  {
+    "port": 2000,
+    "peer": "gnb",
+    "stage": "responder_pre_reply",
+    "start_ns": 265338431949653,
+    "end_ns": 265338437293337,
+    "ms": 5.343684,
+    "samples": 23040,
+    "owner": "gnb",
+    "gnb_rx_successful_calls_during_tx_wait": 10,
+    "gnb_rx_poll_gaps_overlapping_ms": []
+  },
+  {
+    "port": 2000,
+    "peer": "gnb",
+    "stage": "responder_pre_reply",
+    "start_ns": 265339933664582,
+    "end_ns": 265339939066932,
+    "ms": 5.40235,
+    "samples": 23040,
+    "owner": "gnb",
+    "gnb_rx_successful_calls_during_tx_wait": 8,
+    "gnb_rx_poll_gaps_overlapping_ms": []
+  },
+  {
+    "port": 2000,
+    "peer": "gnb",
+    "stage": "responder_pre_reply",
+    "start_ns": 265339960977910,
+    "end_ns": 265339967071760,
+    "ms": 6.09385,
+    "samples": 46080,
+    "owner": "gnb",
+    "gnb_rx_successful_calls_during_tx_wait": 7,
+    "gnb_rx_poll_gaps_overlapping_ms": [
+      3.465806
+    ]
+  },
+  {
+    "port": 2000,
+    "peer": "gnb",
+    "stage": "responder_pre_reply",
+    "start_ns": 265339971743436,
+    "end_ns": 265339979058711,
+    "ms": 7.315275,
+    "samples": 23040,
+    "owner": "gnb",
+    "gnb_rx_successful_calls_during_tx_wait": 8,
+    "gnb_rx_poll_gaps_overlapping_ms": []
+  },
+  {
+    "port": 2000,
+    "peer": "gnb",
+    "stage": "responder_pre_reply",
+    "start_ns": 265339980067216,
+    "end_ns": 265339985968259,
+    "ms": 5.901043,
+    "samples": 23040,
+    "owner": "gnb",
+    "gnb_rx_successful_calls_during_tx_wait": 5,
+    "gnb_rx_poll_gaps_overlapping_ms": [
+      2.903073
+    ]
+  },
+  {
+    "port": 2000,
+    "peer": "gnb",
+    "stage": "responder_pre_reply",
+    "start_ns": 265339988717773,
+    "end_ns": 265339995021483,
+    "ms": 6.30371,
+    "samples": 23040,
+    "owner": "gnb",
+    "gnb_rx_successful_calls_during_tx_wait": 4,
+    "gnb_rx_poll_gaps_overlapping_ms": [
+      3.362356
+    ]
+  },
+  {
+    "port": 2000,
+    "peer": "gnb",
+    "stage": "responder_pre_reply",
+    "start_ns": 265339999743003,
+    "end_ns": 265340005106013,
+    "ms": 5.36301,
+    "samples": 69120,
+    "owner": "gnb",
+    "gnb_rx_successful_calls_during_tx_wait": 4,
+    "gnb_rx_poll_gaps_overlapping_ms": [
+      3.121249
+    ]
+  }
+]

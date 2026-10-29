@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>채널 에뮬레이터 zero-copy</title>
+<style>
+:root{
+  --bg:#fbfbf9; --panel:#ffffff; --ink:#1d1f23; --muted:#5d636e; --line:#e3e4e0;
+  --accent:#2f5d8a; --ok:#2e7d4f; --warn:#a36a00; --bad:#b23b3b; --chip:#eef2f6; --code:#f3f3ef;
+  --surface-1:#fcfcfb; --grid:#e6e6e2;
+  --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15171b; --panel:#1c1f24; --ink:#e7e8ea; --muted:#a2a7b0; --line:#2e3239;
+    --accent:#7fb0e0; --ok:#6cc08f; --warn:#e0b25a; --bad:#e58585; --chip:#252a31; --code:#23272d;
+    --surface-1:#1a1a19; --grid:#2c2c2a;
+    --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15171b; --panel:#1c1f24; --ink:#e7e8ea; --muted:#a2a7b0; --line:#2e3239;
+  --accent:#7fb0e0; --ok:#6cc08f; --warn:#e0b25a; --bad:#e58585; --chip:#252a31; --code:#23272d;
+  --surface-1:#1a1a19; --grid:#2c2c2a;
+  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:1080px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:28px;line-height:1.25;margin:0 0 6px}
+h2{font-size:20px;margin:44px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:8px 0}
+.sub{color:var(--muted);margin:0 0 22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card .label{color:var(--muted);font-size:13px;margin:0 0 4px}
+.card .big{font-size:26px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.2}
+.card .big small{font-size:15px;font-weight:500;color:var(--muted)}
+.card .delta{font-size:14px;font-weight:600;color:var(--ok);margin-top:2px}
+.card .kv{color:var(--muted);font-size:13px;margin-top:6px}
+.chip{display:inline-block;background:var(--chip);border-radius:999px;padding:1px 9px;font-size:12px;margin:2px 4px 2px 0;white-space:nowrap}
+.chip.ok{color:var(--ok)} .chip.bad{color:var(--bad)} .chip.muted{color:var(--muted)}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel);margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.02em;background:var(--panel);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.strong{font-weight:650}
+.gone{color:var(--muted);text-decoration:line-through}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px;word-break:break-word}
+ul,ol{margin:6px 0 6px 22px;padding:0}
+li{margin:4px 0}
+.note{border-left:3px solid var(--accent);padding:8px 12px;background:var(--panel);border-radius:0 8px 8px 0;margin:14px 0}
+.note.warn{border-left-color:var(--warn)}
+footer{margin-top:44px;color:var(--muted);font-size:13px}
+
+/* chart */
+.viz{background:var(--surface-1);border:1px solid var(--line);border-radius:10px;padding:16px 16px 12px;margin:12px 0}
+.viz h3{margin:0 0 2px}
+.viz .cap{color:var(--muted);font-size:13px;margin:0 0 10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink);margin:0 0 12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.rows{display:grid;gap:14px}
+.row{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center}
+.row .name{font-size:13px;color:var(--ink);line-height:1.3}
+.row .name small{display:block;color:var(--muted);font-size:12px}
+.bars{display:grid;gap:2px;position:relative}
+.bars::before{content:"";position:absolute;left:0;top:-2px;bottom:-2px;border-left:1px solid var(--muted)}
+.bar{display:flex;align-items:center;gap:8px;height:14px;cursor:default}
+.bar i{display:block;height:10px;border-radius:0 4px 4px 0;min-width:2px}
+.bar b{font-weight:500;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar:hover b,.bar:focus b{color:var(--ink)}
+.bar:hover i{filter:brightness(1.08)}
+.s1 i,.sw.s1{background:var(--series-1)} .s2 i,.sw.s2{background:var(--series-2)} .s3 i,.sw.s3{background:var(--series-3)}
+.axis{display:grid;grid-template-columns:150px 1fr;gap:10px;margin-top:6px;font-size:11px;color:var(--muted)}
+.ticks{position:relative;height:14px}
+.ticks span{position:absolute;transform:translateX(-50%);font-variant-numeric:tabular-nums}
+.ticks span:first-child{transform:none}
+#tip{position:fixed;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.12);opacity:0;transition:opacity .08s;z-index:10;max-width:260px}
+@media (max-width:560px){
+  .row,.axis{grid-template-columns:96px 1fr}
+  .card .big{font-size:22px}
+}
+
+/* path diagram */
+.path{display:grid;gap:6px;margin:10px 0}
+.step{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:14px}
+.step .n{color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px}
+.step .who{color:var(--muted);font-size:12px}
+.step.cut{border-style:dashed}
+.step.cut .what{color:var(--muted);text-decoration:line-through}
+.step.faster{border-left:3px solid var(--ok)}
+.step.cut{border-left:3px solid var(--ok)}
+</style>
+</head>
+<body>
+<main>
+<h1>채널 에뮬레이터 zero-copy 최적화</h1>
+<p class="sub">통합 GPU(DGX Spark GB10)에서 디스크리트 GPU용으로 짜여 있던 CPU↔GPU 복사를 걷어낸 작업 · 2026-09-27 · 브랜치 <code>gb10-zero-copy</code> (<code>a07b8a9</code> 위 로컬 커밋 <code>6fab580</code>, <code>0a6f281</code>, push 안 함)</p>
+
+<div class="grid">
+  <div class="card">
+    <p class="label">emulator 호출 · 기본 2 edge</p>
+    <div class="big">46.6 → 25.9 <small>µs</small></div>
+    <div class="delta">−44%</div>
+    <p class="kv">슬롯 하나를 처리하는 호출 전체, p50</p>
+  </div>
+  <div class="card">
+    <p class="label">gNB 노드 · UE 64명 fan-in</p>
+    <div class="big">934 → 177 <small>µs</small></div>
+    <div class="delta">−81% · 500 µs 슬롯 예산 안</div>
+    <p class="kv">copy일 때는 슬롯 예산의 1.9배</p>
+  </div>
+  <div class="card">
+    <p class="label">라이브 브로커 지연 (gNB·UE 실제 attach)</p>
+    <div class="big">60–65 → 40 <small>µs</small></div>
+    <div class="delta">p99 105 → 80 µs</div>
+    <p class="kv">legacy 1×1 게이트, copy/zero-copy 짝 측정</p>
+  </div>
+  <div class="card">
+    <p class="label">브로커가 슬롯 하나에 쓰는 시간</p>
+    <div class="big">~120 → ~60 <small>µs</small></div>
+    <div class="delta">ring 읽기 + emulator + ring 쓰기</div>
+    <p class="kv">ring 단계 30–40 µs → 4–14 µs 포함</p>
+  </div>
+</div>
+
+<h2>왜 했나</h2>
+<p>emulator의 CUDA 백엔드는 RTX 5090 같은 디스크리트 GPU를 기준으로 짜여 있었다. 슬롯(1 ms, 23,040샘플, 방향당 184 KB)마다 IQ를 pinned 버퍼에 모아 <code>cudaMemcpyAsync</code>로 GPU에 올리고, 결과를 다시 내려받았다. GB10은 CPU와 GPU가 같은 DRAM을 쓰지만, 코드가 복사를 직접 요청하니 복사는 그대로 일어났다.</p>
+<p>그래서 09-26 측정에서 5090과 GB10의 emulator 처리 시간이 같았다(44.8 vs 43.6 µs). GB10은 복사가 조금 빠른 대신 GPU 계산이 2배 느렸다. 이번 작업의 목표는 통합 GPU에서만 쓰는 경로를 따로 만들어 이 복사를 없애는 것이었다. 출력은 복사 경로와 bit 단위로 같아야 한다는 조건을 걸었다.</p>
+
+<h2>정확히 한 일</h2>
+<ol>
+  <li><b>설정 노브 <code>runtime.cuda_host_memory: copy | zero_copy | auto</code></b>. 기본값은 <code>copy</code>로, 기존 동작과 같다. <code>auto</code>는 <code>cudaDevAttrIntegrated</code>인 장치에서만 zero-copy를 고른다. <span class="chip muted">6fab580</span></li>
+  <li><b>입력·출력 버퍼를 mapped 메모리로.</b> <code>cudaHostAllocMapped</code>로 잡고 GPU가 같은 메모리를 직접 읽고 쓰게 했다. 슬롯마다 하던 H2D·D2H IQ 복사가 사라졌다. <span class="chip muted">6fab580</span></li>
+  <li><b>출력 직접 쓰기(direct).</b> 장치가 pageable 메모리에 접근할 수 있으면, 커널이 호출자(브로커)의 출력 버퍼에 바로 쓴다. 마지막 CPU 복사도 사라졌다. <span class="chip muted">6fab580</span></li>
+  <li><b>메타데이터 mapped화를 시험하고 뺐다.</b> H2D는 1.5 µs 줄지만 모든 GPU 스레드가 그 값을 호스트 메모리에서 다시 읽어 커널이 8 µs 느려졌다. 측정으로 확인하고 기본값에서 제외했다. <span class="chip muted">6fab580</span></li>
+  <li><b>입력 직접 읽기(direct_in).</b> 채널 커널이 소스 IQ를 한 버퍼에서 찾던 방식을, 소스별 포인터 표(<code>DeviceSourceTable</code>, <code>__grid_constant__</code> 커널 파라미터, 최대 128개)로 바꿨다. GPU가 브로커 입력 버퍼를 그대로 읽으므로, CPU가 UE들의 IQ를 한 버퍼로 모으는 복사와 그 H2D가 사라졌다. 사용자가 많을 때 남던 최대 병목이다. <span class="chip muted">0a6f281</span></li>
+  <li><b>브로커 ring 복사 수정.</b> <code>IqRing::push/read</code>가 샘플을 하나씩, 샘플마다 나머지 연산(<code>%</code>)을 하며 복사하고 있었다. wrap 전후 최대 두 번의 블록 복사로 바꿨다. 동작은 같고 CPU 백엔드도 혜택을 받는다. <span class="chip muted">0a6f281</span></li>
+  <li><b>계측 추가.</b> <code>ProcessorTimings</code>에 <code>host_prep_us</code>, <code>host_out_us</code>, <code>call_us</code>, <code>zero_copy</code>를 넣었다. 벤치에는 같은 행, <code>cuda_zero_copy</code>(실제로 돈 모드), <code>--per-node</code>를 넣었다. 이 계측 덕분에 남은 병목이 CPU 입력 모으기라는 것을 찾았다.</li>
+  <li><b>검증 장치.</b> copy와 zero-copy 조합 10가지를 4슬롯 동안 bit 단위로 비교한다. 3-UE fan-in과 ring 무작위 참조 모델 비교도 넣었다. 음성 대조군 3개(일부러 틀린 코드)가 모두 실패하는 것을 확인했다.</li>
+  <li><b>라이브 러너.</b> <code>OCUDU_NATIVE_CHANNEL_BUILD</code>로 브로커 빌드 폴더를 바꿀 수 있게 해서, 두 번째 소스 트리로 게이트를 돌릴 수 있게 했다.</li>
+  <li><b>문서.</b> README에 노브와 벤치 출력을 적었다. <code>ZERO_COPY_MILESTONES.md</code>에 단계별(Z0–Z8) 계획·근거·로그 위치를 남겼다.</li>
+</ol>
+
+<h2>무엇을 없앴나 — 슬롯 하나의 IQ 경로</h2>
+<p>라이브 브로커에서 한 방향 IQ(184 KB)가 거치는 단계다. 초록 테두리는 이번 작업으로 사라졌거나 빨라진 단계다.</p>
+<div class="path">
+  <div class="step"><span class="n">1</span><span class="what">ZMQ 수신 → TX ring</span><span class="who">브로커 CPU 복사 · 같은 ring 수정 적용(따로 측정 안 함)</span></div>
+  <div class="step faster"><span class="n">2</span><span class="what">TX ring → 입력 창 (<code>read_us</code>)</span><span class="who">30–40 → 5–11 µs</span></div>
+  <div class="step cut"><span class="n">3</span><span class="what">입력 창 → 스테이징 버퍼로 모으기 (<code>host_prep</code>)</span><span class="who">제거 · GPU가 입력 창을 직접 읽음</span></div>
+  <div class="step cut"><span class="n">4</span><span class="what">스테이징 → GPU 메모리 (H2D)</span><span class="who">제거</span></div>
+  <div class="step"><span class="n">5</span><span class="what">GPU 커널 (TDL·페이딩·중첩·수신 잡음)</span><span class="who">호스트 메모리를 직접 읽고 씀</span></div>
+  <div class="step cut"><span class="n">6</span><span class="what">GPU 메모리 → 출력 스테이징 (D2H)</span><span class="who">제거</span></div>
+  <div class="step cut"><span class="n">7</span><span class="what">출력 스테이징 → 호출자 행 (<code>host_out</code>)</span><span class="who">제거 · GPU가 호출자 행에 직접 씀</span></div>
+  <div class="step faster"><span class="n">8</span><span class="what">호출자 행 → RX ring (<code>push_us</code>)</span><span class="who">30–40 → 4–14 µs</span></div>
+  <div class="step"><span class="n">9</span><span class="what">RX ring → ZMQ 응답</span><span class="who">브로커 CPU 복사 · 같은 ring 수정 적용(따로 측정 안 함)</span></div>
+</div>
+<p>남은 GPU 쪽 복사는 슬롯마다 올리는 작은 step 메타데이터(약 3 µs)뿐이다.</p>
+
+<h2>단계별로 줄어든 과정 (기본 2 edge, GB10)</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>단계</th><th>바꾼 것</th><th class="num">호출 p50</th><th class="num">copy 대비</th></tr></thead>
+  <tbody>
+    <tr><td>copy (기존)</td><td>pinned 스테이징 + H2D/D2H</td><td class="num">46.6 µs</td><td class="num">—</td></tr>
+    <tr><td>Z3</td><td>입력·출력 mapped</td><td class="num">36.8 µs</td><td class="num">−21%</td></tr>
+    <tr><td>Z5</td><td>+ 출력 direct</td><td class="num">31.8 µs</td><td class="num">−32%</td></tr>
+    <tr><td class="strong">Z8</td><td class="strong">+ 입력 direct (현재 기본 zero-copy)</td><td class="num strong">25.9 µs</td><td class="num strong">−44%</td></tr>
+  </tbody>
+</table></div>
+<p class="note">Z3·Z5 수치는 <code>zc-final</code>, Z8은 <code>zc-z8</code> 실행이다(Spark, 코어 5-8 고정, 5 s × 3회 중앙값). 두 실행의 copy가 46.1과 46.6 µs, Z5가 31.8과 32.1 µs로 실행 간 차이는 1 µs 안쪽이다.</p>
+
+<div class="viz" id="viz">
+  <h3>사용자·대역폭이 늘수록 더 줄어든다</h3>
+  <p class="cap">gNB 노드 emulator 호출 시간(p50). 막대 길이는 설정마다 copy를 100%로 둔 비율이고, 오른쪽 글자는 실제 시간이다.</p>
+  <div class="legend">
+    <span><i class="sw s1"></i>copy (기존)</span>
+    <span><i class="sw s2"></i>Z5 · 입력·출력 zero-copy + 출력 direct</span>
+    <span><i class="sw s3"></i>Z8 · + 입력 direct (최종)</span>
+  </div>
+  <div class="rows" id="rows"></div>
+  <div class="axis"><span></span><div class="ticks"><span style="left:0">0%</span><span style="left:20.5%">25%</span><span style="left:41%">50%</span><span style="left:61.5%">75%</span><span style="left:82%">100% = copy</span></div></div>
+</div>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>설정</th><th class="num">copy</th><th class="num">Z5</th><th class="num">Z8</th><th class="num">Z8 절감</th><th class="num">CPU 입력 모으기: copy → Z8</th></tr></thead>
+  <tbody id="tbody"></tbody>
+</table></div>
+<ul>
+  <li><b>대역폭:</b> 없앤 복사들이 모두 바이트 수에 비례한다. 그래서 122.88 MS/s(100 MHz급)에서는 −74%까지 줄었다.</li>
+  <li><b>사용자 수:</b> gNB 하나가 UE N명의 업링크를 한 호출에서 합친다. copy에서는 N명의 IQ를 CPU가 모으는 복사(N64에서 524 µs)가 호출의 절반을 넘었다. Z8에서 이 복사가 사라져 N64에서도 177 µs다.</li>
+  <li><b>슬롯 예산(30 kHz, 500 µs):</b> Z5까지 넘던 N64(714 µs)와 N16 @ 92 MS/s(646 µs)가 177·145 µs로 예산 안에 들어왔다.</li>
+  <li><b>TDL-A(23탭)</b>는 GPU 계산이 대부분이라 −19%에 그친다. 복사를 없애는 작업으로는 GPU 계산 시간을 줄일 수 없다.</li>
+</ul>
+
+<h2>어느 버퍼가 얼마를 줄였나 (기본 2 edge)</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>zero-copy로 바꾼 부분</th><th class="num">호출</th><th class="num">H2D</th><th class="num">GPU 커널</th><th class="num">D2H</th><th class="num">출력 복사</th><th>판단</th></tr></thead>
+  <tbody>
+    <tr><td>없음 (copy)</td><td class="num">46.4</td><td class="num">8.5</td><td class="num">13.4</td><td class="num">11.6</td><td class="num">4.7</td><td></td></tr>
+    <tr><td>입력만</td><td class="num">42.1</td><td class="num">2.8</td><td class="num">18.0</td><td class="num">8.5</td><td class="num">4.8</td><td>H2D −6, 커널 +4.6</td></tr>
+    <tr><td>출력만</td><td class="num">38.8</td><td class="num">10.5</td><td class="num">15.4</td><td class="num">0.8</td><td class="num">5.7</td><td>D2H −11, 커널 +2 · 이득 가장 큼</td></tr>
+    <tr><td>메타데이터만</td><td class="num">48.4</td><td class="num">7.0</td><td class="num">21.3</td><td class="num">7.8</td><td class="num">4.8</td><td><span class="chip bad">역효과 · 제외</span></td></tr>
+    <tr><td>입력 + 출력</td><td class="num">36.8</td><td class="num">3.3</td><td class="num">20.7</td><td class="num">0.8</td><td class="num">5.6</td><td></td></tr>
+    <tr><td>+ 출력 direct</td><td class="num">31.8</td><td class="num">3.2</td><td class="num">20.8</td><td class="num">1.0</td><td class="num">0.4</td><td>Z5 기본</td></tr>
+    <tr><td class="strong">+ 입력 direct</td><td class="num strong">25.9</td><td class="num">3.2</td><td class="num">16.8</td><td class="num">0.8</td><td class="num">0.4</td><td><span class="chip ok">Z8 기본</span></td></tr>
+  </tbody>
+</table></div>
+<p>단위는 µs(p50)다. 호스트 매핑 메모리를 GPU가 읽으면 커널이 느려진다(읽기 +4.6~8, 쓰기 +2). 반대로 입력을 호출자의 pageable 메모리에서 바로 읽은 Z8은 커널이 오히려 빨라졌다(20.8 → 16.8). 이 비용 차이의 원인은 추정이고 프로파일러로 확인하지 않았다.</p>
+
+<h2>라이브 결과 (gNB·UE 실제 attach)</h2>
+<p>legacy 1×1 게이트: CPU OCUDU gNB ↔ emulator ↔ srsUE. 같은 날 copy와 zero-copy를 번갈아 2회씩 돌렸고, 4회 모두 RRC·PDU 세션·핑이 통과했으며 오류 카운터는 0이었다.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>실행</th><th>모드</th><th class="num">gNB p50 / p99</th><th class="num">UE p50 / p99</th><th class="num">ring 읽기 / 쓰기</th><th class="num">emulator 처리</th></tr></thead>
+  <tbody>
+    <tr><td>090009Z</td><td>copy</td><td class="num">65 / 105</td><td class="num">60 / 105</td><td class="num">5.6 / 3.8</td><td class="num">57.8</td></tr>
+    <tr><td>090056Z</td><td class="strong">zero-copy</td><td class="num strong">40 / 80</td><td class="num strong">40 / 80</td><td class="num">10.9 / 11.1</td><td class="num">37.4</td></tr>
+    <tr><td>090144Z</td><td>copy</td><td class="num">65 / 105</td><td class="num">65 / 105</td><td class="num">5.9 / 3.5</td><td class="num">57.2</td></tr>
+    <tr><td>090229Z</td><td class="strong">zero-copy</td><td class="num strong">40 / 80</td><td class="num strong">40 / 80</td><td class="num">10.5 / 13.8</td><td class="num">39.1</td></tr>
+  </tbody>
+</table></div>
+<p>단위는 µs다. 지연은 브로커 히스토그램 값이라 5 µs 단위이고, 단계 시간은 초당 스냅샷의 중앙값이다. 작업 전(09-26~27 오전)에는 ring 읽기·쓰기가 각각 30–40 µs였다. 그래서 브로커의 슬롯당 시간(ring 읽기 + emulator + ring 쓰기)이 약 115–135 µs에서 zero-copy 약 60 µs가 됐다.</p>
+
+<h2>검증</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>항목</th><th>결과</th></tr></thead>
+  <tbody>
+    <tr><td>단위 테스트 (RTX 5090, GB10)</td><td><span class="chip ok">12/12</span> 두 플랫폼 모두</td></tr>
+    <tr><td>copy vs zero-copy bit 단위 동일</td><td><span class="chip ok">통과</span> 조합 10가지 × 4슬롯. device-channel 경로(페이딩 TDL + CFO + AWGN, 공유 소스, 수신 잡음), host-stage 경로, 서로 다른 IQ의 3-UE fan-in</td></tr>
+    <tr><td>음성 대조군 (일부러 틀린 코드)</td><td><span class="chip ok">3/3 실패 확인</span> 채워지지 않은 버퍼 읽기, 항상 0번 소스 읽기, ring wrap 한 칸 밀기</td></tr>
+    <tr><td>ring 무작위 참조 비교</td><td><span class="chip ok">통과</span> 용량 5종 × 4000 연산(push·read·discard)</td></tr>
+    <tr><td>GPU 9단계 합성 시퀀스 (zero-copy 기본 빌드)</td><td><span class="chip ok">9/9</span> 3회(Z3·Z5·Z8 코드). 수치가 copy 실행과 같음(TDL-A 3.33, 2×2 상관 9.54)</td></tr>
+    <tr><td>라이브 attach 게이트</td><td><span class="chip ok">12/12 통과</span> copy 6회 + zero-copy 6회(Z3·Z5·Z8 코드). 빌드 폴더 설정 오류로 게이트가 시작 전에 멈춘 첫 시도 4회는 제외</td></tr>
+    <tr><td>RTX 5090 zero-copy (대조군)</td><td><span class="chip muted">예상대로 느림</span> 기본 44.7 → 48.5 µs, TDL-A 43배. copy 경로 수치는 변화 없음</td></tr>
+  </tbody>
+</table></div>
+
+<h2>한계와 남은 일</h2>
+<ul>
+  <li><b>기본값은 아직 <code>copy</code>다.</b> Jetson Orin(Z6)을 검증하지 않아서 <code>auto</code>를 기본으로 바꾸는 건 보류했다. 지금은 설정에 <code>cuda_host_memory: auto</code> 또는 <code>zero_copy</code>를 명시해야 이 경로를 탄다.</li>
+  <li><b>디스크리트 GPU에서는 쓰면 안 된다.</b> 5090에서 zero-copy는 모든 접근이 PCIe를 건너 TDL-A가 43배 느려진다. <code>auto</code>는 이 경우 copy를 고른다.</li>
+  <li><b>원인을 확인하지 않은 관측 세 가지.</b> mapped 메모리 커널 비용과 pageable 읽기가 더 싼 이유, zero-copy에서 ring 단계가 copy보다 5–10 µs 긴 이유, 라이브 커널·H2D가 벤치보다 5–7 µs 큰 이유. 모두 nsys나 ncu로 확인하지 않았다.</li>
+  <li><b>MIMO 출력(행 2개 이상)은 출력 direct를 쓰지 않는다.</b> 소스가 128개를 넘는 노드는 입력 direct 대신 예전 모으기 방식으로 돌아간다.</li>
+  <li><b>다음 후보.</b> 라이브와 벤치의 차이 분리, step 메타데이터 H2D(3–8 µs) 제거, ring을 거치지 않는 경로(브로커 구조 변경).</li>
+</ul>
+
+<h2>파일과 재현</h2>
+<ul>
+  <li>코드: <code>~/ocudu-work/ocudu-cuda-pr</code> (worktree, 브랜치 <code>gb10-zero-copy</code>)</li>
+  <li>계획과 근거: <code>ZERO_COPY_MILESTONES.md</code> (같은 폴더)</li>
+  <li>측정 표: <code>~/ocudu-work/perf-platform/compare-zc.md</code>, <code>compare-zc-scale.md</code>, <code>compare-zc-z8.md</code></li>
+  <li>측정 스크립트: <code>perf-zc-compare.sh</code>, <code>zc-scale.py</code>, <code>zc-final.py</code>, <code>zc-z8.py</code>, 분석 <code>analyze-zc*.py</code> (같은 폴더)</li>
+  <li>Spark 원본 결과와 로그: <code>/workspace/gpuch/</code>(<code>zc-scale-*</code>, <code>zc-final-*</code>, <code>zc-z8-*</code>, <code>zc9-live-*.log</code>), 게이트 로그 <code>/workspace/ocudu-spark/results/logs/ocudu-interop/2026092[7]T0*</code></li>
+  <li>측정 조건: Spark 컨테이너, GB10 sm_121, CUDA 13.0.88, 빅 코어 5-8 고정, 측정 중 다른 GPU 프로세스 없음</li>
+</ul>
+
+<footer>작성 2026-09-27. 수치는 모두 이 날 Spark에서 잰 p50 중앙값이며, 표기한 곳만 p99다.</footer>
+</main>
+<div id="tip" role="tooltip"></div>
+<script>
+const data = [
+  {name:"기본 2 edge", sub:"23.04 MS/s", v:[46.6, 32.1, 25.9], prep:[2.0, 0.1]},
+  {name:"TDL-A 23탭", sub:"23.04 MS/s", v:[95.9, 82.0, 77.9], prep:[2.0, 0.1]},
+  {name:"기본 1 링크", sub:"122.88 MS/s", v:[122.8, 64.6, 31.5], prep:[21.7, 0.1]},
+  {name:"UE 4명 → gNB", sub:"23.04 MS/s", v:[77.4, 54.8, 32.1], prep:[18.5, 0.4]},
+  {name:"UE 16명 → gNB", sub:"23.04 MS/s", v:[213.0, 146.7, 48.0], prep:[98.7, 1.5]},
+  {name:"UE 64명 → gNB", sub:"23.04 MS/s", v:[934.4, 713.8, 176.7], prep:[523.7, 7.1]},
+  {name:"UE 4명 → gNB", sub:"92.16 MS/s", v:[230.2, 136.7, 40.4], prep:[91.9, 0.4]},
+  {name:"UE 16명 → gNB", sub:"92.16 MS/s", v:[926.1, 646.4, 144.7], prep:[507.5, 1.5]},
+];
+const series = ["copy", "Z5", "Z8"];
+const fmt = x => x >= 100 ? x.toFixed(0) : x.toFixed(1);
+const rows = document.getElementById("rows");
+const tbody = document.getElementById("tbody");
+const tip = document.getElementById("tip");
+for (const d of data) {
+  const row = document.createElement("div");
+  row.className = "row";
+  const bars = d.v.map((v, i) => {
+    const pct = 100 * v / d.v[0];
+    const label = `${fmt(v)} µs` + (i ? ` · ${pct.toFixed(0)}%` : "");
+    const tipText = `${d.name} (${d.sub}) · ${series[i]}: ${fmt(v)} µs` + (i ? `, copy 대비 −${(100 - pct).toFixed(0)}%` : "");
+    return `<div class="bar s${i + 1}" tabindex="0" data-tip="${tipText}"><i style="width:calc(${pct.toFixed(2)}% * 0.82)"></i><b>${label}</b></div>`;
+  }).join("");
+  row.innerHTML = `<div class="name">${d.name}<small>${d.sub}</small></div><div class="bars">${bars}</div>`;
+  rows.appendChild(row);
+  const cut = 100 * (1 - d.v[2] / d.v[0]);
+  tbody.insertAdjacentHTML("beforeend",
+    `<tr><td>${d.name} · ${d.sub}</td><td class="num">${fmt(d.v[0])}</td><td class="num">${fmt(d.v[1])}</td>` +
+    `<td class="num strong">${fmt(d.v[2])}</td><td class="num">−${cut.toFixed(0)}%</td>` +
+    `<td class="num">${d.prep[0].toFixed(1)} → ${d.prep[1].toFixed(1)}</td></tr>`);
+}
+const show = (el, x, y) => {
+  tip.textContent = el.dataset.tip;
+  tip.style.opacity = 1;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(window.innerWidth - w - 8, x + 12) + "px";
+  tip.style.top = Math.max(8, y - h - 10) + "px";
+};
+rows.addEventListener("mousemove", e => {
+  const el = e.target.closest(".bar");
+  if (el) show(el, e.clientX, e.clientY); else tip.style.opacity = 0;
+});
+rows.addEventListener("mouseleave", () => { tip.style.opacity = 0; });
+rows.addEventListener("focusin", e => {
+  const el = e.target.closest(".bar");
+  if (el) { const r = el.getBoundingClientRect(); show(el, r.left + 40, r.top); }
+});
+rows.addEventListener("focusout", () => { tip.style.opacity = 0; });
+</script>
+</body>
+</html>

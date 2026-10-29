@@ -1,0 +1,2675 @@
+[
+  {
+    "label": "cuda-u1-c1-bw100-a4x4",
+    "report": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T082358Z",
+    "rank": {
+      "csi1_payloads": {
+        "0000000000": 13,
+        "0000011111": 1360
+      },
+      "dl_decisions": {
+        "ri1_new": 3190
+      },
+      "dl_rx_mbps_air_time": 2.95,
+      "dl_tbs_bytes_by_rank": {
+        "ri1": 3923841
+      },
+      "harq_ack": {
+        "ack": 3011,
+        "nack": 3
+      },
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [
+          "pusch_ko_ratio 0.1725 > 0.1"
+        ],
+        "result": "fail"
+      },
+      "iperf_dl": {
+        "intervals_mbps": [
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          0.99,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01
+        ],
+        "lost_percent": 0,
+        "offered_bits_per_second": 1000247.59426998,
+        "packets": 2892,
+        "received_mbps": 1.0
+      },
+      "iperf_ul": {},
+      "nack_ratio": 0.001,
+      "pdsch_modulations": {
+        "64QAM": 3272,
+        "QPSK": 10
+      },
+      "pusch_crc": {
+        "KO": 94,
+        "OK": 451
+      },
+      "pusch_modulation_crc": {
+        "64QAM_KO": 94,
+        "64QAM_OK": 447,
+        "QPSK_OK": 4
+      },
+      "realtime_factor": 0.3392,
+      "srs_indications": {},
+      "srs_tpmi_samples": [],
+      "tbs_bytes_per_newtx_by_rank": {
+        "ri1": 1230.0
+      },
+      "ul_decisions": {
+        "newtx": 453,
+        "retx": 92
+      },
+      "ul_newtx_tbs_bytes_per_prb_max": null,
+      "ul_newtx_tbs_bytes_per_prb_p50": null,
+      "ul_ri_reports": []
+    },
+    "run": {
+      "attach_elapsed_s": 17,
+      "broker_status": 0,
+      "broker_stop_line": "event=stop tx_pulls=476227 rx_requests=476628 rx_starvations=20 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0",
+      "gnb_alive": 1,
+      "iperf_ok": 1,
+      "log_dir": "/workspace/ocudu-spark/results/logs/oai-2x2/20261028T082358Z",
+      "nrue_alive": 1,
+      "open5gs_alive": 1,
+      "path": "broker",
+      "pdu_session_established": 1,
+      "ping_ok": 1,
+      "report_dir": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T082358Z",
+      "rrc_connected": 1,
+      "status": "passed",
+      "timestamp": "20261028T082358Z"
+    },
+    "receivers": [
+      {
+        "kind": "broker",
+        "node": "gnb0",
+        "calls": 20359,
+        "sample_counts": [
+          32,
+          61440,
+          122880
+        ],
+        "represented_radio_ms": 10182.500260416668,
+        "calls_per_radio_ms": 1.9994107026093915,
+        "metrics": {
+          "room_us": {
+            "mean": 41.32940778034285,
+            "p50": 0.128,
+            "p99": 797.665,
+            "max": 2263.988
+          },
+          "align_us": {
+            "mean": 0.06002352767817672,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 627.569
+          },
+          "data_us": {
+            "mean": 1254.724498501891,
+            "p50": 1026.642,
+            "p99": 3736.823,
+            "max": 5171.659
+          },
+          "read_us": {
+            "mean": 6.546530821749595,
+            "p50": 0.88,
+            "p99": 211.168,
+            "max": 907.666
+          },
+          "process_us": {
+            "mean": 134.75294744339112,
+            "p50": 119.744,
+            "p99": 362.657,
+            "max": 1511.299
+          },
+          "commit_pace_us": {
+            "mean": 0.6047683579743602,
+            "p50": 0.464,
+            "p99": 3.088,
+            "max": 110.048
+          },
+          "push_us": {
+            "mean": 33.645597033253104,
+            "p50": 0.432,
+            "p99": 343.2,
+            "max": 1251.587
+          }
+        }
+      },
+      {
+        "kind": "broker",
+        "node": "ue0",
+        "calls": 20364,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 10182.0,
+        "calls_per_radio_ms": 2.0,
+        "metrics": {
+          "room_us": {
+            "mean": 30.56220757218621,
+            "p50": 0.08,
+            "p99": 804.738,
+            "max": 2329.604
+          },
+          "align_us": {
+            "mean": 0.028440826949518758,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 0.832
+          },
+          "data_us": {
+            "mean": 1269.0184837949323,
+            "p50": 1088.29,
+            "p99": 3640.407,
+            "max": 5699.516
+          },
+          "read_us": {
+            "mean": 6.509347426831663,
+            "p50": 0.784,
+            "p99": 227.744,
+            "max": 449.489
+          },
+          "process_us": {
+            "mean": 137.0558429090552,
+            "p50": 122.209,
+            "p99": 345.745,
+            "max": 4666.857
+          },
+          "commit_pace_us": {
+            "mean": 0.593892015321155,
+            "p50": 0.464,
+            "p99": 2.64,
+            "max": 20.288
+          },
+          "push_us": {
+            "mean": 27.76066190335887,
+            "p50": 0.368,
+            "p99": 143.889,
+            "max": 727.538
+          }
+        }
+      },
+      {
+        "kind": "channel",
+        "node": "gnb0",
+        "calls": 20359,
+        "sample_counts": [
+          32,
+          61440,
+          122880
+        ],
+        "represented_radio_ms": 10182.500260416668,
+        "calls_per_radio_ms": 1.9994107026093915,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 1.2053980057959626,
+            "p50": 0.864,
+            "p99": 5.472,
+            "max": 372.865
+          },
+          "model_control_us": {
+            "mean": 2.060814430964193,
+            "p50": 1.776,
+            "p99": 7.088,
+            "max": 343.841
+          },
+          "rx_prep_us": {
+            "mean": 0.04697455670710742,
+            "p50": 0.032,
+            "p99": 0.224,
+            "max": 2.592
+          },
+          "submit_us": {
+            "mean": 29.716776855444767,
+            "p50": 27.872,
+            "p99": 54.928,
+            "max": 500.721
+          },
+          "sync_wait_us": {
+            "mean": 94.10256328896311,
+            "p50": 83.185,
+            "p99": 288.304,
+            "max": 624.561
+          },
+          "output_record_us": {
+            "mean": 0.8316898177710104,
+            "p50": 0.704,
+            "p99": 2.992,
+            "max": 24.192
+          },
+          "call_us": {
+            "mean": 127.96421695564615,
+            "p50": 115.201,
+            "p99": 327.536,
+            "max": 647.873
+          },
+          "thread_cpu_us": {
+            "mean": 127.16881890073186,
+            "p50": 115.392,
+            "p99": 310.064,
+            "max": 648.416
+          },
+          "h2d_event_us": {
+            "mean": 7.355344368583919,
+            "p50": 5.92,
+            "p99": 35.456,
+            "max": 448.736
+          },
+          "kernel_event_us": {
+            "mean": 106.33238646298935,
+            "p50": 97.536,
+            "p99": 242.112,
+            "max": 605.504
+          },
+          "d2h_event_us": {
+            "mean": 1.301129525025787,
+            "p50": 0.96,
+            "p99": 10.368,
+            "max": 126.272
+          }
+        }
+      },
+      {
+        "kind": "channel",
+        "node": "ue0",
+        "calls": 20364,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 10182.0,
+        "calls_per_radio_ms": 2.0,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 1.0446628854841877,
+            "p50": 0.864,
+            "p99": 3.504,
+            "max": 471.473
+          },
+          "model_control_us": {
+            "mean": 2.1407805932036927,
+            "p50": 1.92,
+            "p99": 6.944,
+            "max": 35.52
+          },
+          "rx_prep_us": {
+            "mean": 0.03635277941465331,
+            "p50": 0.032,
+            "p99": 0.144,
+            "max": 1.904
+          },
+          "submit_us": {
+            "mean": 30.266271115694362,
+            "p50": 28.784,
+            "p99": 51.984,
+            "max": 537.073
+          },
+          "sync_wait_us": {
+            "mean": 96.9170301512473,
+            "p50": 84.784,
+            "p99": 288.576,
+            "max": 644.769
+          },
+          "output_record_us": {
+            "mean": 0.9012030544097427,
+            "p50": 0.736,
+            "p99": 3.456,
+            "max": 22.752
+          },
+          "call_us": {
+            "mean": 131.30630057945393,
+            "p50": 117.728,
+            "p99": 320.545,
+            "max": 675.073
+          },
+          "thread_cpu_us": {
+            "mean": 131.4257843252799,
+            "p50": 118.16,
+            "p99": 315.024,
+            "max": 675.568
+          },
+          "h2d_event_us": {
+            "mean": 6.982816735415439,
+            "p50": 5.728,
+            "p99": 31.776,
+            "max": 233.888
+          },
+          "kernel_event_us": {
+            "mean": 110.36044942054606,
+            "p50": 99.776,
+            "p99": 245.344,
+            "max": 639.168
+          },
+          "d2h_event_us": {
+            "mean": 1.4427153800824986,
+            "p50": 0.96,
+            "p99": 10.496,
+            "max": 185.888
+          }
+        }
+      }
+    ],
+    "timing_window": {
+      "start_monotonic_ns": 2928369379543552.0,
+      "end_monotonic_ns": 2928399380676608.0,
+      "definition": "iperf timestamp (integer wall seconds) and measured iperf duration; at most 1 second start resolution"
+    }
+  },
+  {
+    "label": "cuda-u1-c1-bw20-a4x4",
+    "report": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T082038Z",
+    "rank": {
+      "csi1_payloads": {
+        "0000000000": 5,
+        "0000011111": 4048
+      },
+      "dl_decisions": {
+        "ri1_new": 3299
+      },
+      "dl_rx_mbps_air_time": 1.0,
+      "dl_tbs_bytes_by_rank": {
+        "ri1": 3924868
+      },
+      "harq_ack": {
+        "ack": 3204
+      },
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "iperf_dl": {
+        "intervals_mbps": [
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "lost_percent": 0,
+        "offered_bits_per_second": 1000116.4243425374,
+        "packets": 2886,
+        "received_mbps": 1.0
+      },
+      "iperf_ul": {},
+      "nack_ratio": 0.0,
+      "pdsch_modulations": {
+        "64QAM": 3289,
+        "QPSK": 10
+      },
+      "pusch_crc": {
+        "OK": 1446
+      },
+      "pusch_modulation_crc": {
+        "64QAM_OK": 1444,
+        "QPSK_OK": 2
+      },
+      "realtime_factor": 0.9997,
+      "srs_indications": {},
+      "srs_tpmi_samples": [],
+      "tbs_bytes_per_newtx_by_rank": {
+        "ri1": 1189.7
+      },
+      "ul_decisions": {
+        "newtx": 1446
+      },
+      "ul_newtx_tbs_bytes_per_prb_max": null,
+      "ul_newtx_tbs_bytes_per_prb_p50": null,
+      "ul_ri_reports": []
+    },
+    "run": {
+      "attach_elapsed_s": 13,
+      "broker_status": 0,
+      "broker_stop_line": "event=stop tx_pulls=659430 rx_requests=671128 rx_starvations=8 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0",
+      "gnb_alive": 1,
+      "iperf_ok": 1,
+      "log_dir": "/workspace/ocudu-spark/results/logs/oai-2x2/20261028T082038Z",
+      "nrue_alive": 1,
+      "open5gs_alive": 1,
+      "path": "broker",
+      "pdu_session_established": 1,
+      "ping_ok": 1,
+      "report_dir": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T082038Z",
+      "rrc_connected": 1,
+      "status": "passed",
+      "timestamp": "20261028T082038Z"
+    },
+    "receivers": [
+      {
+        "kind": "channel",
+        "node": "ue0",
+        "calls": 29991,
+        "sample_counts": [
+          23040
+        ],
+        "represented_radio_ms": 29991.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 0.7074674068887333,
+            "p50": 0.64,
+            "p99": 2.224,
+            "max": 148.336
+          },
+          "model_control_us": {
+            "mean": 0.9776841719182422,
+            "p50": 0.912,
+            "p99": 2.64,
+            "max": 11.04
+          },
+          "rx_prep_us": {
+            "mean": 0.02799299789936981,
+            "p50": 0.032,
+            "p99": 0.096,
+            "max": 5.968
+          },
+          "submit_us": {
+            "mean": 22.447958820979625,
+            "p50": 21.568,
+            "p99": 33.408,
+            "max": 66.832
+          },
+          "sync_wait_us": {
+            "mean": 32.79016394918476,
+            "p50": 29.009,
+            "p99": 148.448,
+            "max": 341.457
+          },
+          "output_record_us": {
+            "mean": 0.6095214230935947,
+            "p50": 0.608,
+            "p99": 0.832,
+            "max": 3.696
+          },
+          "call_us": {
+            "mean": 57.560788769964326,
+            "p50": 53.12,
+            "p99": 171.184,
+            "max": 366.673
+          },
+          "thread_cpu_us": {
+            "mean": 57.872574038878334,
+            "p50": 53.488,
+            "p99": 170.336,
+            "max": 367.232
+          },
+          "h2d_event_us": {
+            "mean": 4.979669900970291,
+            "p50": 4.032,
+            "p99": 20.224,
+            "max": 173.888
+          },
+          "kernel_event_us": {
+            "mean": 42.38415097862692,
+            "p50": 39.936,
+            "p99": 104.768,
+            "max": 352.8
+          },
+          "d2h_event_us": {
+            "mean": 1.192878396852389,
+            "p50": 0.96,
+            "p99": 9.664,
+            "max": 168.608
+          }
+        }
+      },
+      {
+        "kind": "broker",
+        "node": "ue0",
+        "calls": 29990,
+        "sample_counts": [
+          23040
+        ],
+        "represented_radio_ms": 29990.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "room_us": {
+            "mean": 92.62555918639546,
+            "p50": 47.329,
+            "p99": 348.193,
+            "max": 446.673
+          },
+          "align_us": {
+            "mean": 0.029233777925975327,
+            "p50": 0.032,
+            "p99": 0.048,
+            "max": 2.704
+          },
+          "data_us": {
+            "mean": 308.70372170723573,
+            "p50": 149.424,
+            "p99": 1280.212,
+            "max": 4218.253
+          },
+          "read_us": {
+            "mean": 1.1724353451150384,
+            "p50": 0.4,
+            "p99": 2.56,
+            "max": 132.816
+          },
+          "process_us": {
+            "mean": 61.219764021340445,
+            "p50": 56.144,
+            "p99": 188.545,
+            "max": 932.099
+          },
+          "commit_pace_us": {
+            "mean": 516.0603168389463,
+            "p50": 654.386,
+            "p99": 901.043,
+            "max": 1030.819
+          },
+          "push_us": {
+            "mean": 18.67561850616872,
+            "p50": 4.544,
+            "p99": 50.4,
+            "max": 338.545
+          }
+        }
+      },
+      {
+        "kind": "channel",
+        "node": "gnb0",
+        "calls": 30281,
+        "sample_counts": [
+          36,
+          23004,
+          23040
+        ],
+        "represented_radio_ms": 29990.0,
+        "calls_per_radio_ms": 1.0097032344114705,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 0.6693257488193917,
+            "p50": 0.608,
+            "p99": 2.304,
+            "max": 128.144
+          },
+          "model_control_us": {
+            "mean": 0.8715946302962253,
+            "p50": 0.816,
+            "p99": 2.56,
+            "max": 9.424
+          },
+          "rx_prep_us": {
+            "mean": 0.027186552623757472,
+            "p50": 0.032,
+            "p99": 0.064,
+            "max": 2.672
+          },
+          "submit_us": {
+            "mean": 21.041828176084014,
+            "p50": 20.608,
+            "p99": 28.4,
+            "max": 95.585
+          },
+          "sync_wait_us": {
+            "mean": 33.422681978798586,
+            "p50": 29.361,
+            "p99": 133.425,
+            "max": 326.161
+          },
+          "output_record_us": {
+            "mean": 0.5902018757636802,
+            "p50": 0.576,
+            "p99": 0.992,
+            "max": 5.296
+          },
+          "call_us": {
+            "mean": 56.62281896238565,
+            "p50": 52.432,
+            "p99": 154.545,
+            "max": 345.905
+          },
+          "thread_cpu_us": {
+            "mean": 57.00485294409035,
+            "p50": 52.848,
+            "p99": 154.8,
+            "max": 346.208
+          },
+          "h2d_event_us": {
+            "mean": 4.6562277335623,
+            "p50": 3.84,
+            "p99": 22.88,
+            "max": 230.944
+          },
+          "kernel_event_us": {
+            "mean": 42.1446668207787,
+            "p50": 39.68,
+            "p99": 95.168,
+            "max": 296.064
+          },
+          "d2h_event_us": {
+            "mean": 1.1601836134870052,
+            "p50": 0.832,
+            "p99": 7.968,
+            "max": 103.04
+          }
+        }
+      },
+      {
+        "kind": "broker",
+        "node": "gnb0",
+        "calls": 30281,
+        "sample_counts": [
+          36,
+          23004,
+          23040
+        ],
+        "represented_radio_ms": 29989.0015625,
+        "calls_per_radio_ms": 1.0097368509215436,
+        "metrics": {
+          "room_us": {
+            "mean": 49.21942003236353,
+            "p50": 41.744,
+            "p99": 211.393,
+            "max": 2420.647
+          },
+          "align_us": {
+            "mean": 0.028679204781876425,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 2.608
+          },
+          "data_us": {
+            "mean": 562.2591959314422,
+            "p50": 601.33,
+            "p99": 1256.627,
+            "max": 7615.094
+          },
+          "read_us": {
+            "mean": 1.0985399425382254,
+            "p50": 0.4,
+            "p99": 3.232,
+            "max": 115.136
+          },
+          "process_us": {
+            "mean": 59.91587989168125,
+            "p50": 55.44,
+            "p99": 158.192,
+            "max": 909.539
+          },
+          "commit_pace_us": {
+            "mean": 299.8920022786566,
+            "p50": 218.993,
+            "p99": 902.531,
+            "max": 1004.611
+          },
+          "push_us": {
+            "mean": 16.703727485882236,
+            "p50": 1.424,
+            "p99": 46.32,
+            "max": 133.616
+          }
+        }
+      }
+    ],
+    "timing_window": {
+      "start_monotonic_ns": 2928164379543552.0,
+      "end_monotonic_ns": 2928194380677376.0,
+      "definition": "iperf timestamp (integer wall seconds) and measured iperf duration; at most 1 second start resolution"
+    }
+  },
+  {
+    "label": "cuda-u1-c1-bw100-a4x1",
+    "report": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T082537Z",
+    "rank": {
+      "csi1_payloads": {
+        "000001111": 2002
+      },
+      "dl_decisions": {
+        "ri1_new": 3291
+      },
+      "dl_rx_mbps_air_time": 2.04,
+      "dl_tbs_bytes_by_rank": {
+        "ri1": 3925684
+      },
+      "harq_ack": {
+        "ack": 3215,
+        "nack": 11
+      },
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "iperf_dl": {
+        "intervals_mbps": [
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "lost_percent": 0,
+        "offered_bits_per_second": 1000097.4280817156,
+        "packets": 2889,
+        "received_mbps": 1.0
+      },
+      "iperf_ul": {},
+      "nack_ratio": 0.0034,
+      "pdsch_modulations": {
+        "64QAM": 3281,
+        "QPSK": 10
+      },
+      "pusch_crc": {
+        "OK": 774
+      },
+      "pusch_modulation_crc": {
+        "64QAM_OK": 772,
+        "QPSK_OK": 2
+      },
+      "realtime_factor": 0.4911,
+      "srs_indications": {},
+      "srs_tpmi_samples": [],
+      "tbs_bytes_per_newtx_by_rank": {
+        "ri1": 1192.9
+      },
+      "ul_decisions": {
+        "newtx": 774
+      },
+      "ul_newtx_tbs_bytes_per_prb_max": null,
+      "ul_newtx_tbs_bytes_per_prb_p50": null,
+      "ul_ri_reports": []
+    },
+    "run": {
+      "attach_elapsed_s": 14,
+      "broker_status": 0,
+      "broker_stop_line": "event=stop tx_pulls=407389 rx_requests=415802 rx_starvations=11 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0",
+      "gnb_alive": 1,
+      "iperf_ok": 1,
+      "log_dir": "/workspace/ocudu-spark/results/logs/oai-2x2/20261028T082537Z",
+      "nrue_alive": 1,
+      "open5gs_alive": 1,
+      "path": "broker",
+      "pdu_session_established": 1,
+      "ping_ok": 1,
+      "report_dir": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T082537Z",
+      "rrc_connected": 1,
+      "status": "passed",
+      "timestamp": "20261028T082537Z"
+    },
+    "receivers": [
+      {
+        "kind": "channel",
+        "node": "gnb0",
+        "calls": 29481,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 14740.5,
+        "calls_per_radio_ms": 2.0,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 0.5738197143923205,
+            "p50": 0.4,
+            "p99": 2.064,
+            "max": 299.504
+          },
+          "model_control_us": {
+            "mean": 0.39318296529968455,
+            "p50": 0.352,
+            "p99": 0.784,
+            "max": 37.985
+          },
+          "rx_prep_us": {
+            "mean": 0.026362267222957158,
+            "p50": 0.032,
+            "p99": 0.048,
+            "max": 2.176
+          },
+          "submit_us": {
+            "mean": 20.884406159899598,
+            "p50": 19.248,
+            "p99": 48.88,
+            "max": 401.36
+          },
+          "sync_wait_us": {
+            "mean": 34.390488416268106,
+            "p50": 30.304,
+            "p99": 164.64,
+            "max": 480.257
+          },
+          "output_record_us": {
+            "mean": 0.5593019232726163,
+            "p50": 0.528,
+            "p99": 0.768,
+            "max": 157.457
+          },
+          "call_us": {
+            "mean": 56.82756144635528,
+            "p50": 51.6,
+            "p99": 189.136,
+            "max": 502.865
+          },
+          "thread_cpu_us": {
+            "mean": 56.16173291272345,
+            "p50": 51.824,
+            "p99": 182.432,
+            "max": 341.472
+          },
+          "h2d_event_us": {
+            "mean": 4.8675667718191375,
+            "p50": 3.808,
+            "p99": 30.208,
+            "max": 206.336
+          },
+          "kernel_event_us": {
+            "mean": 42.72221105118551,
+            "p50": 40.0,
+            "p99": 117.568,
+            "max": 329.28
+          },
+          "d2h_event_us": {
+            "mean": 1.1424133509718124,
+            "p50": 0.864,
+            "p99": 6.24,
+            "max": 190.976
+          }
+        }
+      },
+      {
+        "kind": "channel",
+        "node": "ue0",
+        "calls": 29478,
+        "sample_counts": [
+          61440,
+          122880
+        ],
+        "represented_radio_ms": 14740.5,
+        "calls_per_radio_ms": 1.9997964790882263,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 0.4560393513806907,
+            "p50": 0.4,
+            "p99": 0.944,
+            "max": 7.2
+          },
+          "model_control_us": {
+            "mean": 0.2481697876382387,
+            "p50": 0.224,
+            "p99": 0.528,
+            "max": 5.296
+          },
+          "rx_prep_us": {
+            "mean": 0.025554583078906304,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 2.928
+          },
+          "submit_us": {
+            "mean": 20.411650824343578,
+            "p50": 19.76,
+            "p99": 30.384,
+            "max": 400.033
+          },
+          "sync_wait_us": {
+            "mean": 40.40012300698826,
+            "p50": 36.64,
+            "p99": 163.744,
+            "max": 342.753
+          },
+          "output_record_us": {
+            "mean": 0.5279193975167922,
+            "p50": 0.528,
+            "p99": 0.752,
+            "max": 5.248
+          },
+          "call_us": {
+            "mean": 62.06945695094647,
+            "p50": 58.24,
+            "p99": 183.536,
+            "max": 431.969
+          },
+          "thread_cpu_us": {
+            "mean": 62.326343985345005,
+            "p50": 58.544,
+            "p99": 183.008,
+            "max": 361.312
+          },
+          "h2d_event_us": {
+            "mean": 4.538883777732546,
+            "p50": 3.776,
+            "p99": 25.152,
+            "max": 192.352
+          },
+          "kernel_event_us": {
+            "mean": 49.07792604654318,
+            "p50": 46.912,
+            "p99": 119.456,
+            "max": 407.616
+          },
+          "d2h_event_us": {
+            "mean": 1.1639335097360743,
+            "p50": 0.864,
+            "p99": 8.192,
+            "max": 168.512
+          }
+        }
+      },
+      {
+        "kind": "broker",
+        "node": "gnb0",
+        "calls": 29481,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 14740.5,
+        "calls_per_radio_ms": 2.0,
+        "metrics": {
+          "room_us": {
+            "mean": 15.197121976866457,
+            "p50": 0.112,
+            "p99": 486.033,
+            "max": 2344.996
+          },
+          "align_us": {
+            "mean": 0.03561839829042434,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 185.776
+          },
+          "data_us": {
+            "mean": 908.3374839727283,
+            "p50": 945.569,
+            "p99": 1900.516,
+            "max": 9375.152
+          },
+          "read_us": {
+            "mean": 1.2871972456836607,
+            "p50": 0.32,
+            "p99": 35.344,
+            "max": 119.184
+          },
+          "process_us": {
+            "mean": 60.69516637834538,
+            "p50": 54.096,
+            "p99": 198.544,
+            "max": 5413.338
+          },
+          "commit_pace_us": {
+            "mean": 0.284622265187748,
+            "p50": 0.256,
+            "p99": 1.168,
+            "max": 100.208
+          },
+          "push_us": {
+            "mean": 30.31551131237068,
+            "p50": 0.272,
+            "p99": 213.152,
+            "max": 963.169
+          }
+        }
+      },
+      {
+        "kind": "broker",
+        "node": "ue0",
+        "calls": 29478,
+        "sample_counts": [
+          61440,
+          122880
+        ],
+        "represented_radio_ms": 14740.5,
+        "calls_per_radio_ms": 1.9997964790882263,
+        "metrics": {
+          "room_us": {
+            "mean": 2.0621269760499357,
+            "p50": 0.048,
+            "p99": 28.816,
+            "max": 1666.707
+          },
+          "align_us": {
+            "mean": 0.028202184680100415,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 0.048
+          },
+          "data_us": {
+            "mean": 941.4449229934188,
+            "p50": 918.242,
+            "p99": 1845.763,
+            "max": 5776.458
+          },
+          "read_us": {
+            "mean": 1.4004136644277088,
+            "p50": 0.144,
+            "p99": 46.561,
+            "max": 412.976
+          },
+          "process_us": {
+            "mean": 65.15898643055839,
+            "p50": 60.656,
+            "p99": 188.864,
+            "max": 8956.608
+          },
+          "commit_pace_us": {
+            "mean": 0.2751631386118461,
+            "p50": 0.256,
+            "p99": 1.12,
+            "max": 183.52
+          },
+          "push_us": {
+            "mean": 6.199288825564828,
+            "p50": 0.096,
+            "p99": 28.176,
+            "max": 343.264
+          }
+        }
+      }
+    ],
+    "timing_window": {
+      "start_monotonic_ns": 2928465379543552.0,
+      "end_monotonic_ns": 2928495380686592.0,
+      "definition": "iperf timestamp (integer wall seconds) and measured iperf duration; at most 1 second start resolution"
+    }
+  },
+  {
+    "label": "cuda-u1-c1-bw50-a4x4",
+    "report": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T082218Z",
+    "rank": {
+      "csi1_payloads": {
+        "0000000000": 12,
+        "0000011111": 2111
+      },
+      "dl_decisions": {
+        "ri1_new": 3359
+      },
+      "dl_rx_mbps_air_time": 1.95,
+      "dl_tbs_bytes_by_rank": {
+        "ri1": 3936872
+      },
+      "harq_ack": {
+        "ack": 3251
+      },
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "iperf_dl": {
+        "intervals_mbps": [
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          0.99,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "lost_percent": 0,
+        "offered_bits_per_second": 1000199.0348159181,
+        "packets": 2890,
+        "received_mbps": 1.0
+      },
+      "iperf_ul": {},
+      "nack_ratio": 0.0,
+      "pdsch_modulations": {
+        "64QAM": 3349,
+        "QPSK": 10
+      },
+      "pusch_crc": {
+        "OK": 807
+      },
+      "pusch_modulation_crc": {
+        "64QAM_OK": 805,
+        "QPSK_OK": 2
+      },
+      "realtime_factor": 0.5131,
+      "srs_indications": {},
+      "srs_tpmi_samples": [],
+      "tbs_bytes_per_newtx_by_rank": {
+        "ri1": 1172.0
+      },
+      "ul_decisions": {
+        "newtx": 807
+      },
+      "ul_newtx_tbs_bytes_per_prb_max": null,
+      "ul_newtx_tbs_bytes_per_prb_p50": null,
+      "ul_ri_reports": []
+    },
+    "run": {
+      "attach_elapsed_s": 14,
+      "broker_status": 0,
+      "broker_stop_line": "event=stop tx_pulls=357067 rx_requests=359064 rx_starvations=38 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0",
+      "gnb_alive": 1,
+      "iperf_ok": 1,
+      "log_dir": "/workspace/ocudu-spark/results/logs/oai-2x2/20261028T082218Z",
+      "nrue_alive": 1,
+      "open5gs_alive": 1,
+      "path": "broker",
+      "pdu_session_established": 1,
+      "ping_ok": 1,
+      "report_dir": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T082218Z",
+      "rrc_connected": 1,
+      "status": "passed",
+      "timestamp": "20261028T082218Z"
+    },
+    "receivers": [
+      {
+        "kind": "broker",
+        "node": "gnb0",
+        "calls": 15409,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 15409.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "room_us": {
+            "mean": 169.929946394964,
+            "p50": 104.4,
+            "p99": 764.818,
+            "max": 2784.839
+          },
+          "align_us": {
+            "mean": 0.02853929521708093,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 3.056
+          },
+          "data_us": {
+            "mean": 1580.6964469465897,
+            "p50": 1460.451,
+            "p99": 4099.146,
+            "max": 6138.879
+          },
+          "read_us": {
+            "mean": 5.693983321435525,
+            "p50": 0.976,
+            "p99": 182.128,
+            "max": 395.873
+          },
+          "process_us": {
+            "mean": 134.1858682588098,
+            "p50": 122.817,
+            "p99": 323.745,
+            "max": 6619.311
+          },
+          "commit_pace_us": {
+            "mean": 0.657638003764034,
+            "p50": 0.48,
+            "p99": 2.368,
+            "max": 231.953
+          },
+          "push_us": {
+            "mean": 53.743641183723796,
+            "p50": 7.44,
+            "p99": 156.753,
+            "max": 676.801
+          }
+        }
+      },
+      {
+        "kind": "broker",
+        "node": "ue0",
+        "calls": 15409,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 15409.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "room_us": {
+            "mean": 168.00483120254395,
+            "p50": 120.016,
+            "p99": 950.178,
+            "max": 2261.43
+          },
+          "align_us": {
+            "mean": 0.028553767278863003,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 0.432
+          },
+          "data_us": {
+            "mean": 1579.4409409436043,
+            "p50": 1432.66,
+            "p99": 3825.385,
+            "max": 6183.359
+          },
+          "read_us": {
+            "mean": 6.451655201505614,
+            "p50": 0.96,
+            "p99": 217.633,
+            "max": 474.497
+          },
+          "process_us": {
+            "mean": 136.9297918748783,
+            "p50": 125.312,
+            "p99": 322.689,
+            "max": 3594.217
+          },
+          "commit_pace_us": {
+            "mean": 0.5923825037315854,
+            "p50": 0.48,
+            "p99": 2.416,
+            "max": 8.624
+          },
+          "push_us": {
+            "mean": 53.64830566552015,
+            "p50": 88.432,
+            "p99": 148.065,
+            "max": 650.194
+          }
+        }
+      },
+      {
+        "kind": "channel",
+        "node": "gnb0",
+        "calls": 15409,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 15409.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 1.2817162697125057,
+            "p50": 1.168,
+            "p99": 4.592,
+            "max": 22.384
+          },
+          "model_control_us": {
+            "mean": 2.579194042442728,
+            "p50": 2.384,
+            "p99": 7.44,
+            "max": 19.504
+          },
+          "rx_prep_us": {
+            "mean": 0.06855629826724642,
+            "p50": 0.032,
+            "p99": 0.304,
+            "max": 3.408
+          },
+          "submit_us": {
+            "mean": 31.930886494905575,
+            "p50": 30.64,
+            "p99": 51.6,
+            "max": 323.985
+          },
+          "sync_wait_us": {
+            "mean": 91.3285755078201,
+            "p50": 82.193,
+            "p99": 279.489,
+            "max": 558.081
+          },
+          "output_record_us": {
+            "mean": 0.9991879421117529,
+            "p50": 0.896,
+            "p99": 3.776,
+            "max": 10.768
+          },
+          "call_us": {
+            "mean": 128.1881165552599,
+            "p50": 117.632,
+            "p99": 316.0,
+            "max": 583.377
+          },
+          "thread_cpu_us": {
+            "mean": 128.31847984943863,
+            "p50": 117.984,
+            "p99": 315.472,
+            "max": 583.856
+          },
+          "h2d_event_us": {
+            "mean": 8.102932052696476,
+            "p50": 7.296,
+            "p99": 28.992,
+            "max": 202.72
+          },
+          "kernel_event_us": {
+            "mean": 104.6253799727432,
+            "p50": 96.864,
+            "p99": 246.56,
+            "max": 544.672
+          },
+          "d2h_event_us": {
+            "mean": 1.280496333311701,
+            "p50": 0.928,
+            "p99": 9.6,
+            "max": 161.12
+          }
+        }
+      },
+      {
+        "kind": "channel",
+        "node": "ue0",
+        "calls": 15409,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 15409.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 1.2049195924459732,
+            "p50": 1.12,
+            "p99": 3.232,
+            "max": 14.832
+          },
+          "model_control_us": {
+            "mean": 2.147410344603803,
+            "p50": 1.984,
+            "p99": 5.792,
+            "max": 15.328
+          },
+          "rx_prep_us": {
+            "mean": 0.06738730611980012,
+            "p50": 0.032,
+            "p99": 0.288,
+            "max": 5.232
+          },
+          "submit_us": {
+            "mean": 32.839542540073985,
+            "p50": 31.488,
+            "p99": 52.816,
+            "max": 305.073
+          },
+          "sync_wait_us": {
+            "mean": 94.25443409695633,
+            "p50": 84.304,
+            "p99": 284.897,
+            "max": 551.985
+          },
+          "output_record_us": {
+            "mean": 0.9025576611071452,
+            "p50": 0.832,
+            "p99": 2.592,
+            "max": 6.848
+          },
+          "call_us": {
+            "mean": 131.41625154130702,
+            "p50": 120.369,
+            "p99": 315.953,
+            "max": 585.793
+          },
+          "thread_cpu_us": {
+            "mean": 131.68642222078006,
+            "p50": 120.704,
+            "p99": 316.496,
+            "max": 586.112
+          },
+          "h2d_event_us": {
+            "mean": 7.5490718411318065,
+            "p50": 6.464,
+            "p99": 29.888,
+            "max": 166.656
+          },
+          "kernel_event_us": {
+            "mean": 109.97888091375171,
+            "p50": 101.728,
+            "p99": 246.784,
+            "max": 551.04
+          },
+          "d2h_event_us": {
+            "mean": 1.2734812122785386,
+            "p50": 0.896,
+            "p99": 10.272,
+            "max": 131.936
+          }
+        }
+      }
+    ],
+    "timing_window": {
+      "start_monotonic_ns": 2928266379543552.0,
+      "end_monotonic_ns": 2928296379831552.0,
+      "definition": "iperf timestamp (integer wall seconds) and measured iperf duration; at most 1 second start resolution"
+    }
+  },
+  {
+    "label": "cuda-u1-c1-bw50-a2x2",
+    "report": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T081719Z",
+    "rank": {
+      "csi1_payloads": {
+        "0000000": 1,
+        "1001111": 3664,
+        "1011111": 332
+      },
+      "dl_decisions": {
+        "ri1_new": 10,
+        "ri2_new": 3358
+      },
+      "dl_rx_mbps_air_time": 1.0,
+      "dl_tbs_bytes_by_rank": {
+        "ri1": 628,
+        "ri2": 4021290
+      },
+      "harq_ack": {
+        "ack": 3250
+      },
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "iperf_dl": {
+        "intervals_mbps": [
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "lost_percent": 0,
+        "offered_bits_per_second": 1000175.4191121021,
+        "packets": 2887,
+        "received_mbps": 1.0
+      },
+      "iperf_ul": {},
+      "nack_ratio": 0.0,
+      "pdsch_modulations": {
+        "64QAM": 3358,
+        "QPSK": 10
+      },
+      "pusch_crc": {
+        "OK": 1424
+      },
+      "pusch_modulation_crc": {
+        "64QAM_OK": 1422,
+        "QPSK_OK": 2
+      },
+      "realtime_factor": 0.9973,
+      "srs_indications": {},
+      "srs_tpmi_samples": [],
+      "tbs_bytes_per_newtx_by_rank": {
+        "ri1": 62.8,
+        "ri2": 1197.5
+      },
+      "ul_decisions": {
+        "newtx": 1424
+      },
+      "ul_newtx_tbs_bytes_per_prb_max": null,
+      "ul_newtx_tbs_bytes_per_prb_p50": null,
+      "ul_ri_reports": []
+    },
+    "run": {
+      "attach_elapsed_s": 14,
+      "broker_status": 0,
+      "broker_stop_line": "event=stop tx_pulls=327173 rx_requests=327546 rx_starvations=12 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0",
+      "gnb_alive": 1,
+      "iperf_ok": 1,
+      "log_dir": "/workspace/ocudu-spark/results/logs/oai-2x2/20261028T081719Z",
+      "nrue_alive": 1,
+      "open5gs_alive": 1,
+      "path": "broker",
+      "pdu_session_established": 1,
+      "ping_ok": 1,
+      "report_dir": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T081719Z",
+      "rrc_connected": 1,
+      "status": "passed",
+      "timestamp": "20261028T081719Z"
+    },
+    "receivers": [
+      {
+        "kind": "broker",
+        "node": "gnb0",
+        "calls": 29921,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 29921.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "room_us": {
+            "mean": 85.93040025400221,
+            "p50": 42.784,
+            "p99": 356.994,
+            "max": 2889.916
+          },
+          "align_us": {
+            "mean": 0.028718458607666857,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 7.696
+          },
+          "data_us": {
+            "mean": 667.2121887637445,
+            "p50": 630.867,
+            "p99": 1523.334,
+            "max": 8136.049
+          },
+          "read_us": {
+            "mean": 1.3286723371545068,
+            "p50": 0.176,
+            "p99": 42.624,
+            "max": 124.32
+          },
+          "process_us": {
+            "mean": 64.75791758296849,
+            "p50": 57.537,
+            "p99": 219.408,
+            "max": 5593.687
+          },
+          "commit_pace_us": {
+            "mean": 157.2050199525417,
+            "p50": 123.952,
+            "p99": 539.378,
+            "max": 761.411
+          },
+          "push_us": {
+            "mean": 24.532727515791585,
+            "p50": 36.976,
+            "p99": 112.033,
+            "max": 537.794
+          }
+        }
+      },
+      {
+        "kind": "channel",
+        "node": "gnb0",
+        "calls": 29920,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 29920.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 0.7656182820855615,
+            "p50": 0.496,
+            "p99": 7.584,
+            "max": 193.952
+          },
+          "model_control_us": {
+            "mean": 0.33788355614973264,
+            "p50": 0.288,
+            "p99": 0.8,
+            "max": 19.088
+          },
+          "rx_prep_us": {
+            "mean": 0.02605788770053476,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 16.56
+          },
+          "submit_us": {
+            "mean": 24.534742078877006,
+            "p50": 23.168,
+            "p99": 50.929,
+            "max": 213.457
+          },
+          "sync_wait_us": {
+            "mean": 34.00386049465241,
+            "p50": 29.552,
+            "p99": 181.681,
+            "max": 321.089
+          },
+          "output_record_us": {
+            "mean": 0.5845592580213904,
+            "p50": 0.56,
+            "p99": 0.848,
+            "max": 139.136
+          },
+          "call_us": {
+            "mean": 60.25272155748663,
+            "p50": 54.8,
+            "p99": 206.337,
+            "max": 351.361
+          },
+          "thread_cpu_us": {
+            "mean": 59.66299732620321,
+            "p50": 54.96,
+            "p99": 201.728,
+            "max": 337.872
+          },
+          "h2d_event_us": {
+            "mean": 5.043550802139038,
+            "p50": 4.0,
+            "p99": 31.808,
+            "max": 215.648
+          },
+          "kernel_event_us": {
+            "mean": 45.567890909090906,
+            "p50": 42.464,
+            "p99": 123.008,
+            "max": 326.144
+          },
+          "d2h_event_us": {
+            "mean": 1.196194652406417,
+            "p50": 0.96,
+            "p99": 8.8,
+            "max": 156.192
+          }
+        }
+      },
+      {
+        "kind": "broker",
+        "node": "ue0",
+        "calls": 29921,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 29921.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "room_us": {
+            "mean": 77.1115160255339,
+            "p50": 50.0,
+            "p99": 294.385,
+            "max": 850.1
+          },
+          "align_us": {
+            "mean": 0.0284333077103038,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 2.16
+          },
+          "data_us": {
+            "mean": 738.8937403830085,
+            "p50": 701.107,
+            "p99": 1539.11,
+            "max": 4017.489
+          },
+          "read_us": {
+            "mean": 1.3508465626148858,
+            "p50": 0.176,
+            "p99": 43.904,
+            "max": 139.68
+          },
+          "process_us": {
+            "mean": 59.29584348785134,
+            "p50": 52.673,
+            "p99": 216.913,
+            "max": 5095.894
+          },
+          "commit_pace_us": {
+            "mean": 98.9680601918385,
+            "p50": 0.336,
+            "p99": 483.954,
+            "max": 651.875
+          },
+          "push_us": {
+            "mean": 24.85593268941546,
+            "p50": 38.64,
+            "p99": 179.953,
+            "max": 430.945
+          }
+        }
+      },
+      {
+        "kind": "channel",
+        "node": "ue0",
+        "calls": 29921,
+        "sample_counts": [
+          61440
+        ],
+        "represented_radio_ms": 29921.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 0.8028799839577554,
+            "p50": 0.496,
+            "p99": 9.552,
+            "max": 175.153
+          },
+          "model_control_us": {
+            "mean": 0.3461664048661475,
+            "p50": 0.32,
+            "p99": 0.72,
+            "max": 6.432
+          },
+          "rx_prep_us": {
+            "mean": 0.02515002840814144,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 1.904
+          },
+          "submit_us": {
+            "mean": 22.46305578022125,
+            "p50": 21.68,
+            "p99": 36.688,
+            "max": 172.801
+          },
+          "sync_wait_us": {
+            "mean": 31.343997192607198,
+            "p50": 26.464,
+            "p99": 185.409,
+            "max": 354.866
+          },
+          "output_record_us": {
+            "mean": 0.5645385180976572,
+            "p50": 0.544,
+            "p99": 0.848,
+            "max": 12.272
+          },
+          "call_us": {
+            "mean": 55.54578790815815,
+            "p50": 49.92,
+            "p99": 209.201,
+            "max": 376.962
+          },
+          "thread_cpu_us": {
+            "mean": 55.59901821463186,
+            "p50": 50.256,
+            "p99": 207.248,
+            "max": 377.344
+          },
+          "h2d_event_us": {
+            "mean": 4.845758898432539,
+            "p50": 4.0,
+            "p99": 25.248,
+            "max": 230.336
+          },
+          "kernel_event_us": {
+            "mean": 41.210340296113095,
+            "p50": 37.76,
+            "p99": 135.616,
+            "max": 323.296
+          },
+          "d2h_event_us": {
+            "mean": 1.1733041007987701,
+            "p50": 0.96,
+            "p99": 10.112,
+            "max": 121.312
+          }
+        }
+      }
+    ],
+    "timing_window": {
+      "start_monotonic_ns": 2927966379543808.0,
+      "end_monotonic_ns": 2927996379642624.0,
+      "definition": "iperf timestamp (integer wall seconds) and measured iperf duration; at most 1 second start resolution"
+    }
+  },
+  {
+    "label": "cuda-u1-c1-bw20-a2x2",
+    "report": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T081539Z",
+    "rank": {
+      "csi1_payloads": {
+        "0000000": 1,
+        "1001111": 3892,
+        "1011111": 66
+      },
+      "dl_decisions": {
+        "ri1_new": 10,
+        "ri2_new": 3394
+      },
+      "dl_rx_mbps_air_time": 1.0,
+      "dl_tbs_bytes_by_rank": {
+        "ri1": 628,
+        "ri2": 4030700
+      },
+      "harq_ack": {
+        "ack": 3271
+      },
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "iperf_dl": {
+        "intervals_mbps": [
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "lost_percent": 0,
+        "offered_bits_per_second": 1000073.3780625307,
+        "packets": 2887,
+        "received_mbps": 1.0
+      },
+      "iperf_ul": {},
+      "nack_ratio": 0.0,
+      "pdsch_modulations": {
+        "64QAM": 3394,
+        "QPSK": 10
+      },
+      "pusch_crc": {
+        "OK": 1526
+      },
+      "pusch_modulation_crc": {
+        "64QAM_OK": 1524,
+        "QPSK_OK": 2
+      },
+      "realtime_factor": 0.9999,
+      "srs_indications": {},
+      "srs_tpmi_samples": [],
+      "tbs_bytes_per_newtx_by_rank": {
+        "ri1": 62.8,
+        "ri2": 1187.6
+      },
+      "ul_decisions": {
+        "newtx": 1526
+      },
+      "ul_newtx_tbs_bytes_per_prb_max": null,
+      "ul_newtx_tbs_bytes_per_prb_p50": null,
+      "ul_ri_reports": []
+    },
+    "run": {
+      "attach_elapsed_s": 14,
+      "broker_status": 0,
+      "broker_stop_line": "event=stop tx_pulls=321582 rx_requests=322096 rx_starvations=7 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0",
+      "gnb_alive": 1,
+      "iperf_ok": 1,
+      "log_dir": "/workspace/ocudu-spark/results/logs/oai-2x2/20261028T081539Z",
+      "nrue_alive": 1,
+      "open5gs_alive": 1,
+      "path": "broker",
+      "pdu_session_established": 1,
+      "ping_ok": 1,
+      "report_dir": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T081539Z",
+      "rrc_connected": 1,
+      "status": "passed",
+      "timestamp": "20261028T081539Z"
+    },
+    "receivers": [
+      {
+        "kind": "channel",
+        "node": "gnb0",
+        "calls": 29999,
+        "sample_counts": [
+          23040
+        ],
+        "represented_radio_ms": 29999.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 0.4502262408746958,
+            "p50": 0.4,
+            "p99": 0.72,
+            "max": 27.024
+          },
+          "model_control_us": {
+            "mean": 0.2637382246074869,
+            "p50": 0.256,
+            "p99": 0.4,
+            "max": 14.432
+          },
+          "rx_prep_us": {
+            "mean": 0.024918763958798627,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 0.096
+          },
+          "submit_us": {
+            "mean": 18.557738924630822,
+            "p50": 18.272,
+            "p99": 22.401,
+            "max": 70.736
+          },
+          "sync_wait_us": {
+            "mean": 18.5268088269609,
+            "p50": 15.376,
+            "p99": 114.145,
+            "max": 292.594
+          },
+          "output_record_us": {
+            "mean": 0.5187643588119604,
+            "p50": 0.512,
+            "p99": 0.64,
+            "max": 22.416
+          },
+          "call_us": {
+            "mean": 38.342195339844665,
+            "p50": 35.136,
+            "p99": 133.185,
+            "max": 310.674
+          },
+          "thread_cpu_us": {
+            "mean": 38.555393446448214,
+            "p50": 35.408,
+            "p99": 133.696,
+            "max": 311.008
+          },
+          "h2d_event_us": {
+            "mean": 4.422538884629487,
+            "p50": 3.648,
+            "p99": 25.952,
+            "max": 232.32
+          },
+          "kernel_event_us": {
+            "mean": 25.6186384879496,
+            "p50": 24.256,
+            "p99": 70.72,
+            "max": 253.952
+          },
+          "d2h_event_us": {
+            "mean": 1.0796594553151773,
+            "p50": 0.96,
+            "p99": 6.688,
+            "max": 160.032
+          }
+        }
+      },
+      {
+        "kind": "channel",
+        "node": "ue0",
+        "calls": 29999,
+        "sample_counts": [
+          23040
+        ],
+        "represented_radio_ms": 29999.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 0.5553839461315377,
+            "p50": 0.512,
+            "p99": 0.896,
+            "max": 25.488
+          },
+          "model_control_us": {
+            "mean": 0.28363665455515186,
+            "p50": 0.272,
+            "p99": 0.464,
+            "max": 22.417
+          },
+          "rx_prep_us": {
+            "mean": 0.025661188706290212,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 20.208
+          },
+          "submit_us": {
+            "mean": 21.067936664555486,
+            "p50": 20.4,
+            "p99": 47.136,
+            "max": 107.072
+          },
+          "sync_wait_us": {
+            "mean": 17.03897493249775,
+            "p50": 14.496,
+            "p99": 91.521,
+            "max": 292.209
+          },
+          "output_record_us": {
+            "mean": 0.5832619420647355,
+            "p50": 0.56,
+            "p99": 0.784,
+            "max": 36.16
+          },
+          "call_us": {
+            "mean": 39.55485532851095,
+            "p50": 36.593,
+            "p99": 112.145,
+            "max": 311.265
+          },
+          "thread_cpu_us": {
+            "mean": 39.140803360112,
+            "p50": 36.784,
+            "p99": 112.208,
+            "max": 311.536
+          },
+          "h2d_event_us": {
+            "mean": 4.680744824827494,
+            "p50": 4.0,
+            "p99": 23.84,
+            "max": 229.664
+          },
+          "kernel_event_us": {
+            "mean": 26.40833627787593,
+            "p50": 25.088,
+            "p99": 65.216,
+            "max": 253.568
+          },
+          "d2h_event_us": {
+            "mean": 1.0769617653921797,
+            "p50": 0.928,
+            "p99": 6.304,
+            "max": 165.728
+          }
+        }
+      },
+      {
+        "kind": "broker",
+        "node": "ue0",
+        "calls": 29999,
+        "sample_counts": [
+          23040
+        ],
+        "represented_radio_ms": 29999.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "room_us": {
+            "mean": 42.37554398479949,
+            "p50": 24.576,
+            "p99": 128.064,
+            "max": 165.969
+          },
+          "align_us": {
+            "mean": 0.028434681156038536,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 4.848
+          },
+          "data_us": {
+            "mean": 125.25596796559886,
+            "p50": 0.192,
+            "p99": 999.829,
+            "max": 2600.764
+          },
+          "read_us": {
+            "mean": 0.3267218573952465,
+            "p50": 0.144,
+            "p99": 0.896,
+            "max": 61.328
+          },
+          "process_us": {
+            "mean": 42.47771012367079,
+            "p50": 39.009,
+            "p99": 115.617,
+            "max": 313.489
+          },
+          "commit_pace_us": {
+            "mean": 779.3017419580652,
+            "p50": 919.077,
+            "p99": 941.653,
+            "max": 985.957
+          },
+          "push_us": {
+            "mean": 8.74490419680656,
+            "p50": 14.384,
+            "p99": 22.32,
+            "max": 85.921
+          }
+        }
+      },
+      {
+        "kind": "broker",
+        "node": "gnb0",
+        "calls": 29998,
+        "sample_counts": [
+          23040
+        ],
+        "represented_radio_ms": 29998.0,
+        "calls_per_radio_ms": 1.0,
+        "metrics": {
+          "room_us": {
+            "mean": 33.58509310620708,
+            "p50": 23.536,
+            "p99": 77.216,
+            "max": 155.344
+          },
+          "align_us": {
+            "mean": 0.029213247549836657,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 3.52
+          },
+          "data_us": {
+            "mean": 753.8734678311887,
+            "p50": 872.053,
+            "p99": 1153.702,
+            "max": 2630.349
+          },
+          "read_us": {
+            "mean": 0.31933292219481296,
+            "p50": 0.176,
+            "p99": 0.528,
+            "max": 45.792
+          },
+          "process_us": {
+            "mean": 40.9485701380092,
+            "p50": 37.424,
+            "p99": 136.433,
+            "max": 3196.0
+          },
+          "commit_pace_us": {
+            "mean": 161.32562920861392,
+            "p50": 0.192,
+            "p99": 938.628,
+            "max": 971.061
+          },
+          "push_us": {
+            "mean": 8.760302920194679,
+            "p50": 2.416,
+            "p99": 20.912,
+            "max": 102.56
+          }
+        }
+      }
+    ],
+    "timing_window": {
+      "start_monotonic_ns": 2927867379543296.0,
+      "end_monotonic_ns": 2927897380572416.0,
+      "definition": "iperf timestamp (integer wall seconds) and measured iperf duration; at most 1 second start resolution"
+    }
+  },
+  {
+    "label": "cuda-u1-c1-bw100-a2x2",
+    "report": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T081858Z",
+    "rank": {
+      "csi1_payloads": {
+        "0000000": 43,
+        "1001111": 81,
+        "1011111": 2730
+      },
+      "dl_decisions": {
+        "ri1_new": 10,
+        "ri2_new": 3188
+      },
+      "dl_rx_mbps_air_time": 1.46,
+      "dl_tbs_bytes_by_rank": {
+        "ri1": 670,
+        "ri2": 4008207
+      },
+      "harq_ack": {
+        "ack": 3109
+      },
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "iperf_dl": {
+        "intervals_mbps": [
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.01,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "lost_percent": 0,
+        "offered_bits_per_second": 1000082.5766031182,
+        "packets": 2888,
+        "received_mbps": 1.0
+      },
+      "iperf_ul": {},
+      "nack_ratio": 0.0,
+      "pdsch_modulations": {
+        "64QAM": 3188,
+        "QPSK": 10
+      },
+      "pusch_crc": {
+        "OK": 1043
+      },
+      "pusch_modulation_crc": {
+        "64QAM_OK": 1041,
+        "QPSK_OK": 2
+      },
+      "realtime_factor": 0.684,
+      "srs_indications": {},
+      "srs_tpmi_samples": [],
+      "tbs_bytes_per_newtx_by_rank": {
+        "ri1": 67.0,
+        "ri2": 1257.3
+      },
+      "ul_decisions": {
+        "newtx": 1043
+      },
+      "ul_newtx_tbs_bytes_per_prb_max": null,
+      "ul_newtx_tbs_bytes_per_prb_p50": null,
+      "ul_ri_reports": []
+    },
+    "run": {
+      "attach_elapsed_s": 14,
+      "broker_status": 0,
+      "broker_stop_line": "event=stop tx_pulls=471957 rx_requests=472785 rx_starvations=11 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0",
+      "gnb_alive": 1,
+      "iperf_ok": 1,
+      "log_dir": "/workspace/ocudu-spark/results/logs/oai-2x2/20261028T081858Z",
+      "nrue_alive": 1,
+      "open5gs_alive": 1,
+      "path": "broker",
+      "pdu_session_established": 1,
+      "ping_ok": 1,
+      "report_dir": "/workspace/ocudu-spark/results/reports/oai-2x2/20261028T081858Z",
+      "rrc_connected": 1,
+      "status": "passed",
+      "timestamp": "20261028T081858Z"
+    },
+    "receivers": [
+      {
+        "kind": "broker",
+        "node": "gnb0",
+        "calls": 41055,
+        "sample_counts": [
+          32,
+          61408,
+          61440
+        ],
+        "represented_radio_ms": 20527.0,
+        "calls_per_radio_ms": 2.0000487163248404,
+        "metrics": {
+          "room_us": {
+            "mean": 4.317336548532457,
+            "p50": 0.064,
+            "p99": 69.216,
+            "max": 3207.675
+          },
+          "align_us": {
+            "mean": 0.0283909876994276,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 2.928
+          },
+          "data_us": {
+            "mean": 648.5304013153087,
+            "p50": 538.61,
+            "p99": 1835.75,
+            "max": 2988.09
+          },
+          "read_us": {
+            "mean": 1.4565080988917305,
+            "p50": 0.16,
+            "p99": 47.44,
+            "max": 110.4
+          },
+          "process_us": {
+            "mean": 61.80891116794544,
+            "p50": 56.656,
+            "p99": 190.145,
+            "max": 9449.298
+          },
+          "commit_pace_us": {
+            "mean": 0.311437827304835,
+            "p50": 0.272,
+            "p99": 1.248,
+            "max": 164.417
+          },
+          "push_us": {
+            "mean": 12.886646644744854,
+            "p50": 0.144,
+            "p99": 61.777,
+            "max": 179.233
+          }
+        }
+      },
+      {
+        "kind": "channel",
+        "node": "gnb0",
+        "calls": 41055,
+        "sample_counts": [
+          32,
+          61408,
+          61440
+        ],
+        "represented_radio_ms": 20527.0,
+        "calls_per_radio_ms": 2.0000487163248404,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 0.4894198270612593,
+            "p50": 0.464,
+            "p99": 0.944,
+            "max": 65.616
+          },
+          "model_control_us": {
+            "mean": 0.33731689197418097,
+            "p50": 0.304,
+            "p99": 0.736,
+            "max": 6.128
+          },
+          "rx_prep_us": {
+            "mean": 0.02515654609669955,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 2.896
+          },
+          "submit_us": {
+            "mean": 23.63872492997199,
+            "p50": 23.2,
+            "p99": 37.12,
+            "max": 78.816
+          },
+          "sync_wait_us": {
+            "mean": 33.49693891121666,
+            "p50": 29.104,
+            "p99": 167.264,
+            "max": 330.129
+          },
+          "output_record_us": {
+            "mean": 0.5464990378760199,
+            "p50": 0.544,
+            "p99": 0.768,
+            "max": 6.304
+          },
+          "call_us": {
+            "mean": 58.53405614419681,
+            "p50": 53.856,
+            "p99": 186.993,
+            "max": 350.321
+          },
+          "thread_cpu_us": {
+            "mean": 58.87434358786993,
+            "p50": 54.208,
+            "p99": 187.44,
+            "max": 350.688
+          },
+          "h2d_event_us": {
+            "mean": 5.128894215077335,
+            "p50": 4.128,
+            "p99": 26.496,
+            "max": 231.872
+          },
+          "kernel_event_us": {
+            "mean": 44.62861702594081,
+            "p50": 41.888,
+            "p99": 115.232,
+            "max": 333.728
+          },
+          "d2h_event_us": {
+            "mean": 1.1526321276336622,
+            "p50": 0.992,
+            "p99": 7.168,
+            "max": 165.536
+          }
+        }
+      },
+      {
+        "kind": "broker",
+        "node": "ue0",
+        "calls": 41055,
+        "sample_counts": [
+          61440,
+          122880
+        ],
+        "represented_radio_ms": 20528.0,
+        "calls_per_radio_ms": 1.9999512860483242,
+        "metrics": {
+          "room_us": {
+            "mean": 9.026029375228353,
+            "p50": 0.064,
+            "p99": 277.585,
+            "max": 889.939
+          },
+          "align_us": {
+            "mean": 0.028271586895627816,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 2.512
+          },
+          "data_us": {
+            "mean": 648.5176272317623,
+            "p50": 550.642,
+            "p99": 1803.606,
+            "max": 9776.387
+          },
+          "read_us": {
+            "mean": 1.5079255632687858,
+            "p50": 0.192,
+            "p99": 48.688,
+            "max": 183.201
+          },
+          "process_us": {
+            "mean": 57.2061416392644,
+            "p50": 51.84,
+            "p99": 178.848,
+            "max": 7150.648
+          },
+          "commit_pace_us": {
+            "mean": 0.2929539885519425,
+            "p50": 0.256,
+            "p99": 1.264,
+            "max": 10.384
+          },
+          "push_us": {
+            "mean": 12.959575423212764,
+            "p50": 0.144,
+            "p99": 66.768,
+            "max": 92.081
+          }
+        }
+      },
+      {
+        "kind": "channel",
+        "node": "ue0",
+        "calls": 41054,
+        "sample_counts": [
+          61440,
+          122880
+        ],
+        "represented_radio_ms": 20527.5,
+        "calls_per_radio_ms": 1.9999512848617709,
+        "metrics": {
+          "entry_pack_us": {
+            "mean": 0.47394811711404494,
+            "p50": 0.432,
+            "p99": 1.008,
+            "max": 15.936
+          },
+          "model_control_us": {
+            "mean": 0.2872011009889414,
+            "p50": 0.256,
+            "p99": 0.672,
+            "max": 16.624
+          },
+          "rx_prep_us": {
+            "mean": 0.025923417937350805,
+            "p50": 0.032,
+            "p99": 0.032,
+            "max": 2.128
+          },
+          "submit_us": {
+            "mean": 21.1888168266186,
+            "p50": 20.512,
+            "p99": 34.064,
+            "max": 64.416
+          },
+          "sync_wait_us": {
+            "mean": 31.550445437716178,
+            "p50": 27.168,
+            "p99": 155.696,
+            "max": 320.993
+          },
+          "output_record_us": {
+            "mean": 0.5486248842987285,
+            "p50": 0.528,
+            "p99": 0.8,
+            "max": 5.36
+          },
+          "call_us": {
+            "mean": 54.074959784673844,
+            "p50": 49.216,
+            "p99": 175.328,
+            "max": 339.937
+          },
+          "thread_cpu_us": {
+            "mean": 54.36784410776051,
+            "p50": 49.536,
+            "p99": 175.664,
+            "max": 340.4
+          },
+          "h2d_event_us": {
+            "mean": 4.862185414332343,
+            "p50": 3.936,
+            "p99": 26.912,
+            "max": 219.904
+          },
+          "kernel_event_us": {
+            "mean": 40.42902557607054,
+            "p50": 37.6,
+            "p99": 102.688,
+            "max": 319.968
+          },
+          "d2h_event_us": {
+            "mean": 1.1788072295026064,
+            "p50": 0.992,
+            "p99": 8.032,
+            "max": 168.576
+          }
+        }
+      }
+    ],
+    "timing_window": {
+      "start_monotonic_ns": 2928066379543808.0,
+      "end_monotonic_ns": 2928096380577792.0,
+      "definition": "iperf timestamp (integer wall seconds) and measured iperf duration; at most 1 second start resolution"
+    }
+  }
+]

@@ -1,0 +1,48 @@
+{
+  "window_wall_seconds": 22,
+  "window": "anchor + 8 to 30 wall seconds",
+  "receivers": [
+    {
+      "node": "ue0",
+      "file": "broker-2463673-2463729.csv",
+      "ratio": 0.8676363636363637,
+      "calls": 19088,
+      "mean_process_us": 109.79091036253143
+    },
+    {
+      "node": "ue3",
+      "file": "broker-2463675-2463721.csv",
+      "ratio": 0.8898636363636364,
+      "calls": 19577,
+      "mean_process_us": 110.91558282678655
+    },
+    {
+      "node": "ue2",
+      "file": "broker-2463675-2463720.csv",
+      "ratio": 0.8898636363636364,
+      "calls": 19577,
+      "mean_process_us": 110.24684078255095
+    },
+    {
+      "node": "gnb0",
+      "file": "broker-2463673-2463728.csv",
+      "ratio": 0.8676363636363637,
+      "calls": 19088,
+      "mean_process_us": 120.38295305951384
+    },
+    {
+      "node": "ue1",
+      "file": "broker-2463673-2463730.csv",
+      "ratio": 0.8676363636363637,
+      "calls": 19088,
+      "mean_process_us": 111.78348276404023
+    },
+    {
+      "node": "gnb1",
+      "file": "broker-2463675-2463719.csv",
+      "ratio": 0.8898636363636364,
+      "calls": 19577,
+      "mean_process_us": 118.2724727486336
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "common_measurement_grid_points": 1200,
+  "exact_profile_digests": 1081,
+  "positions_equal": true,
+  "tap_structure_equal": true,
+  "max_tap_difference": {
+    "gain_db": 0.011130258999997977,
+    "phase_rad": 0.0004352050000000496,
+    "delay_samples": 0.0
+  },
+  "all_fanout_acknowledged": true
+}

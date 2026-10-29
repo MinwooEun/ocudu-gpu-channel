@@ -1,0 +1,142 @@
+{
+  "name": "two-cell-multi-gnb",
+  "scene": "sionna_simple_test",
+  "nodes": {
+    "gnb0": {
+      "start_m": [
+        32.5,
+        10.5,
+        60.0
+      ],
+      "mobility": "fixed",
+      "tx_array": {
+        "rows": 1,
+        "cols": 4,
+        "pattern": "iso",
+        "polarization": "V"
+      },
+      "rx_array": {
+        "rows": 1,
+        "cols": 4,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "gnb1": {
+      "start_m": [
+        32.5,
+        45.0,
+        60.0
+      ],
+      "mobility": "fixed",
+      "tx_array": {
+        "rows": 1,
+        "cols": 4,
+        "pattern": "iso",
+        "polarization": "V"
+      },
+      "rx_array": {
+        "rows": 1,
+        "cols": 4,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue0": {
+      "start_m": [
+        -70.0,
+        0.0,
+        1.5
+      ],
+      "velocity_mps": [
+        13.888888889,
+        0.0,
+        0.0
+      ],
+      "route_x_m": [
+        -82.0,
+        82.0
+      ],
+      "mobility": "car",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue1": {
+      "start_m": [
+        20.0,
+        8.0,
+        1.5
+      ],
+      "velocity_mps": [
+        -1.4,
+        0.0,
+        0.0
+      ],
+      "route_x_m": [
+        -82.0,
+        82.0
+      ],
+      "mobility": "pedestrian",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    }
+  },
+  "links": [
+    {
+      "from": "gnb0",
+      "to": "ue0",
+      "direction": "downlink",
+      "model": "serving"
+    },
+    {
+      "from": "gnb1",
+      "to": "ue1",
+      "direction": "downlink",
+      "model": "serving"
+    },
+    {
+      "from": "gnb0",
+      "to": "ue1",
+      "direction": "downlink",
+      "model": "intercell"
+    },
+    {
+      "from": "gnb1",
+      "to": "ue0",
+      "direction": "downlink",
+      "model": "intercell"
+    },
+    {
+      "from": "ue0",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "serving"
+    },
+    {
+      "from": "ue1",
+      "to": "gnb1",
+      "direction": "uplink",
+      "model": "serving"
+    },
+    {
+      "from": "ue0",
+      "to": "gnb1",
+      "direction": "uplink",
+      "model": "intercell"
+    },
+    {
+      "from": "ue1",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "intercell"
+    }
+  ]
+}

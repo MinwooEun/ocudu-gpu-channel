@@ -1,0 +1,354 @@
+{
+  "sample_rate_hz": 23040000,
+  "samples_per_radio_slot": 23040,
+  "method": "IQ acquired counter counts cf32 samples successfully copied from each radio TX into its broker ring. Compare samples at monotonic heartbeat t=60 and t=130; per-port counts, not message or producer-call counts. Independently unwrap gNB SFN.slot and divide endpoint slot progress by wall time inside each 120-second measurement. Heartbeat comparison uses an interior window rather than exactly the same 120-second endpoints.",
+  "heartbeat_timing_bound": "Integer seconds imply conservative 69\u201371 s elapsed for the selected nominal 70 s window; both bounds remain below nominal rate.",
+  "runs": [
+    {
+      "run": "20261013T094409Z",
+      "measurement_anchor_unix_ms": 1791884712833,
+      "measurement_seconds": 120,
+      "cells": {
+        "a": {
+          "iq_sample_progress": {
+            "gnb0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1095621420,
+              "to_samples": 2568338220,
+              "sample_delta": 1472716800,
+              "samples_per_s": 21038811.42857143,
+              "fraction_of_realtime": 0.9131428571428571,
+              "conservative_fraction_bounds": [
+                0.9002816901408451,
+                0.9263768115942028
+              ],
+              "input_waits_over_5_ms_in_window": 0
+            },
+            "ue0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1095667213,
+              "to_samples": 2568360973,
+              "sample_delta": 1472693760,
+              "samples_per_s": 21038482.285714287,
+              "fraction_of_realtime": 0.9131285714285715,
+              "conservative_fraction_bounds": [
+                0.9002676056338028,
+                0.9263623188405797
+              ],
+              "input_waits_over_5_ms_in_window": 3
+            },
+            "ue1_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1095621134,
+              "to_samples": 2568384014,
+              "sample_delta": 1472762880,
+              "samples_per_s": 21039469.714285713,
+              "fraction_of_realtime": 0.9131714285714285,
+              "conservative_fraction_bounds": [
+                0.9003098591549296,
+                0.9264057971014492
+              ],
+              "input_waits_over_5_ms_in_window": 2
+            }
+          },
+          "heartbeat_excerpts": [
+            "event=heartbeat t=60 dev=gnb0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=47503 idle=82 room_stall=0 last=23040 acquired=1095621420] producer[state=wait_room slots=76228 stall=419342 last=23040] rep[state=wait_row replies=76228 idle=50 row_spin=351872 last=23040] starvations=1 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue0_p0 ring=46079/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=47596 idle=82 room_stall=0 last=23040 acquired=1095667213] producer[state=wait_data slots=47563 stall=427769 last=23040] rep[state=wait_req replies=47563 idle=82 row_spin=320923 last=23040] starvations=0 starvations_total=6 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue1_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=47584 idle=82 room_stall=0 last=23040 acquired=1095621134] producer[state=wait_room slots=47562 stall=427664 last=23040] rep[state=wait_row replies=47562 idle=82 row_spin=333231 last=23040] starvations=0 starvations_total=6 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=gnb0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=111409 idle=82 room_stall=0 last=23040 acquired=2568338220] producer[state=process slots=153945 stall=838728 last=23040] rep[state=wait_row replies=153945 idle=50 row_spin=745474 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=111585 idle=82 room_stall=0 last=23040 acquired=2568360973] producer[state=wait_data slots=111483 stall=845555 last=23040] rep[state=wait_row replies=111483 idle=82 row_spin=712985 last=23040] starvations=0 starvations_total=9 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue1_p0 ring=46081/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=111584 idle=82 room_stall=0 last=23040 acquired=2568384014] producer[state=wait_data slots=111482 stall=845386 last=23040] rep[state=wait_row replies=111482 idle=82 row_spin=725256 last=23040] starvations=0 starvations_total=8 gaps=0 gaps_total=0 overflows=0 overflows_total=0"
+          ],
+          "independent_slot_progress": {
+            "first": {
+              "wall_unix_s": 1791884712.83358,
+              "absolute_slot": 28273,
+              "line": "2026-10-13T09:45:12.833580 [SCHED   ] [I] [   779.3] Slot decisions pci=1 t=13us (1 PDSCH, 0 PUSCHs, 0 PUCCHs): DL: ue=0 c-rnti=0x4601 h_id=2 ss_id=2 rb=[0..54) k1=4 cw[0]: newtx=true rv=0 tbs=4097 ri"
+            },
+            "last": {
+              "wall_unix_s": 1791884832.831989,
+              "absolute_slot": 137973,
+              "line": "2026-10-13T09:47:12.831989 [SCHED   ] [I] [   485.3] Slot decisions pci=1 t=15us (1 PDSCH, 0 PUSCHs, 1 PUCCH): DL: ue=1 c-rnti=0x4602 h_id=4 ss_id=2 rb=[0..96) k1=4 cw[0]: newtx=true rv=0 tbs=7429 ri="
+            },
+            "elapsed_wall_seconds": 119.99840903282166,
+            "slot_delta": 109700,
+            "slots_per_s": 914.1787869037092,
+            "logged_decisions": 109631,
+            "wrapped_late_lines": 0
+          },
+          "reported_slots_per_s": 914.1777908236132,
+          "priority_warnings": [
+            "Warning: Scheduling priority of thread \"main_pool#1\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#0\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#2\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#3\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#4\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"io_broker_epoll\" not changed. Cause: Not enough privileges."
+          ],
+          "log_sha256": {
+            "broker": "b32556ecf279febba9dd1b1cdf595cf0103c7083fdc6714258ef532f2131f66b"
+          }
+        },
+        "b": {
+          "iq_sample_progress": {
+            "gnb1_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1090575660,
+              "to_samples": 2545551660,
+              "sample_delta": 1454976000,
+              "samples_per_s": 20785371.42857143,
+              "fraction_of_realtime": 0.9021428571428571,
+              "conservative_fraction_bounds": [
+                0.8894366197183099,
+                0.9152173913043479
+              ],
+              "input_waits_over_5_ms_in_window": 2
+            },
+            "ue2_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1090575373,
+              "to_samples": 2545551373,
+              "sample_delta": 1454976000,
+              "samples_per_s": 20785371.42857143,
+              "fraction_of_realtime": 0.9021428571428571,
+              "conservative_fraction_bounds": [
+                0.8894366197183099,
+                0.9152173913043479
+              ],
+              "input_waits_over_5_ms_in_window": 6
+            },
+            "ue3_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1090621454,
+              "to_samples": 2545551374,
+              "sample_delta": 1454929920,
+              "samples_per_s": 20784713.14285714,
+              "fraction_of_realtime": 0.9021142857142856,
+              "conservative_fraction_bounds": [
+                0.8894084507042255,
+                0.9151884057971015
+              ],
+              "input_waits_over_5_ms_in_window": 7
+            }
+          },
+          "heartbeat_excerpts": [
+            "event=heartbeat t=60 dev=gnb1_p0 ring=23040/2457600 rx_ring=23040/46080 puller[state=recv_reply pulls=47294 idle=83 room_stall=0 last=23040 acquired=1090575660] producer[state=wait_room slots=57863 stall=431787 last=23040] rep[state=wait_row replies=57862 idle=51 row_spin=364525 last=23040] starvations=0 starvations_total=0 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue2_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=47364 idle=82 room_stall=0 last=23040 acquired=1090575373] producer[state=wait_room slots=47338 stall=433532 last=23040] rep[state=wait_req replies=47338 idle=82 row_spin=333593 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue3_p0 ring=69121/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=47370 idle=83 room_stall=0 last=23040 acquired=1090621454] producer[state=wait_room slots=47338 stall=433652 last=23040] rep[state=wait_req replies=47338 idle=82 row_spin=342269 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=gnb1_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=110429 idle=83 room_stall=0 last=23040 acquired=2545551660] producer[state=wait_data slots=130361 stall=864141 last=23040] rep[state=wait_row replies=130361 idle=51 row_spin=762341 last=23040] starvations=1 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue2_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=110581 idle=82 room_stall=0 last=23040 acquired=2545551373] producer[state=wait_data slots=110488 stall=853596 last=23040] rep[state=wait_row replies=110488 idle=82 row_spin=739690 last=23040] starvations=0 starvations_total=8 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue3_p0 ring=23041/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=110600 idle=83 room_stall=0 last=23040 acquired=2545551374] producer[state=wait_data slots=110488 stall=853501 last=23040] rep[state=wait_req replies=110488 idle=82 row_spin=743396 last=23040] starvations=0 starvations_total=9 gaps=0 gaps_total=0 overflows=0 overflows_total=0"
+          ],
+          "independent_slot_progress": {
+            "first": {
+              "wall_unix_s": 1791884712.834055,
+              "absolute_slot": 28272,
+              "line": "2026-10-13T09:45:12.834055 [SCHED   ] [I] [   779.2] Slot decisions pci=2 t=17us (1 PDSCH, 0 PUSCHs, 0 PUCCHs): DL: ue=0 c-rnti=0x4601 h_id=0 ss_id=2 rb=[0..96) k1=4 cw[0]: newtx=true rv=0 tbs=7429 ri"
+            },
+            "last": {
+              "wall_unix_s": 1791884832.832736,
+              "absolute_slot": 136963,
+              "line": "2026-10-13T09:47:12.832736 [SCHED   ] [I] [   384.3] Slot decisions pci=2 t=11us (2 PDSCHs, 0 PUSCHs, 1 PUCCH): DL: ue=1 c-rnti=0x4602 h_id=7 ss_id=2 rb=[0..7) k1=4 cw[0]: newtx=true rv=0 tbs=576 ri=1"
+            },
+            "elapsed_wall_seconds": 119.99868106842041,
+            "slot_delta": 108691,
+            "slots_per_s": 905.7682887199982,
+            "logged_decisions": 108609,
+            "wrapped_late_lines": 0
+          },
+          "reported_slots_per_s": 905.7659791541523,
+          "priority_warnings": [
+            "Warning: Scheduling priority of thread \"main_pool#0\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#1\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#2\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#3\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#4\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"io_broker_epoll\" not changed. Cause: Not enough privileges."
+          ],
+          "log_sha256": {
+            "broker": "ecb012ae2b3c2114400aa39141d44704b9f077dc935243265be213b2e7cd7eca"
+          }
+        }
+      }
+    },
+    {
+      "run": "20261013T094837Z",
+      "measurement_anchor_unix_ms": 1791884939249,
+      "measurement_seconds": 120,
+      "cells": {
+        "a": {
+          "iq_sample_progress": {
+            "gnb0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1149350700,
+              "to_samples": 2614118700,
+              "sample_delta": 1464768000,
+              "samples_per_s": 20925257.14285714,
+              "fraction_of_realtime": 0.9082142857142856,
+              "conservative_fraction_bounds": [
+                0.8954225352112676,
+                0.9213768115942028
+              ],
+              "input_waits_over_5_ms_in_window": 4
+            },
+            "ue0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1149350413,
+              "to_samples": 2614118413,
+              "sample_delta": 1464768000,
+              "samples_per_s": 20925257.14285714,
+              "fraction_of_realtime": 0.9082142857142856,
+              "conservative_fraction_bounds": [
+                0.8954225352112676,
+                0.9213768115942028
+              ],
+              "input_waits_over_5_ms_in_window": 8
+            },
+            "ue1_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1149350413,
+              "to_samples": 2614164494,
+              "sample_delta": 1464814081,
+              "samples_per_s": 20925915.442857143,
+              "fraction_of_realtime": 0.9082428577628968,
+              "conservative_fraction_bounds": [
+                0.8954507048366588,
+                0.921405797730475
+              ],
+              "input_waits_over_5_ms_in_window": 8
+            }
+          },
+          "heartbeat_excerpts": [
+            "event=heartbeat t=60 dev=gnb0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=49857 idle=56 room_stall=0 last=23040 acquired=1149350700] producer[state=process slots=62086 stall=394881 last=23040] rep[state=wait_row replies=62086 idle=24 row_spin=353295 last=23040] starvations=0 starvations_total=1 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=49918 idle=56 room_stall=0 last=23040 acquired=1149350413] producer[state=wait_data slots=49918 stall=390726 last=23040] rep[state=wait_row replies=49918 idle=56 row_spin=315997 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue1_p0 ring=23040/2457600 rx_ring=23040/46080 puller[state=recv_reply pulls=49966 idle=56 room_stall=0 last=23040 acquired=1149350413] producer[state=wait_room slots=49902 stall=390894 last=23040] rep[state=wait_row replies=49901 idle=56 row_spin=325166 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=gnb0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=113421 idle=56 room_stall=0 last=23040 acquired=2614118700] producer[state=wait_data slots=137357 stall=819891 last=23040] rep[state=wait_row replies=137357 idle=24 row_spin=748714 last=23040] starvations=0 starvations_total=5 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=113644 idle=56 room_stall=0 last=23040 acquired=2614118413] producer[state=wait_data slots=113494 stall=807305 last=23040] rep[state=wait_row replies=113494 idle=56 row_spin=703843 last=23040] starvations=0 starvations_total=10 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue1_p0 ring=46081/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=113589 idle=56 room_stall=0 last=23040 acquired=2614164494] producer[state=wait_data slots=113477 stall=806925 last=23040] rep[state=wait_row replies=113477 idle=56 row_spin=705678 last=23040] starvations=0 starvations_total=10 gaps=0 gaps_total=0 overflows=0 overflows_total=0"
+          ],
+          "independent_slot_progress": {
+            "first": {
+              "wall_unix_s": 1791884939.249135,
+              "absolute_slot": 12146,
+              "line": "2026-10-13T09:48:59.249135 [SCHED   ] [I] [   190.6] Slot decisions pci=1 t=14us (1 PDSCH, 0 PUSCHs, 2 PUCCHs): DL: ue=0 c-rnti=0x4601 h_id=3 ss_id=2 rb=[0..60) k1=4 cw[0]: newtx=true rv=0 tbs=4992 ri"
+            },
+            "last": {
+              "wall_unix_s": 1791885059.248015,
+              "absolute_slot": 121559,
+              "line": "2026-10-13T09:50:59.248015 [SCHED   ] [I] [   891.9] Slot decisions pci=1 t=14us (1 PDSCH, 0 PUSCHs, 2 PUCCHs): DL: ue=0 c-rnti=0x4601 h_id=2 ss_id=2 rb=[0..2) k1=4 cw[0]: newtx=true rv=0 tbs=169 ri=1"
+            },
+            "elapsed_wall_seconds": 119.99887990951538,
+            "slot_delta": 109413,
+            "slots_per_s": 911.7835106669528,
+            "logged_decisions": 109407,
+            "wrapped_late_lines": 0
+          },
+          "reported_slots_per_s": 911.7859559075666,
+          "priority_warnings": [
+            "Warning: Scheduling priority of thread \"main_pool#0\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#1\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#2\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#3\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#4\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"io_broker_epoll\" not changed. Cause: Not enough privileges."
+          ],
+          "log_sha256": {
+            "broker": "ba725bdd6f91522a8c20152257525c365524228aea4f168bd9cb2210efd8ad65"
+          }
+        },
+        "b": {
+          "iq_sample_progress": {
+            "gnb1_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1133245740,
+              "to_samples": 2586816300,
+              "sample_delta": 1453570560,
+              "samples_per_s": 20765293.714285713,
+              "fraction_of_realtime": 0.9012714285714285,
+              "conservative_fraction_bounds": [
+                0.8885774647887325,
+                0.9143333333333333
+              ],
+              "input_waits_over_5_ms_in_window": 1
+            },
+            "ue2_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1133222413,
+              "to_samples": 2586839053,
+              "sample_delta": 1453616640,
+              "samples_per_s": 20765952.0,
+              "fraction_of_realtime": 0.9013,
+              "conservative_fraction_bounds": [
+                0.8886056338028169,
+                0.9143623188405797
+              ],
+              "input_waits_over_5_ms_in_window": 3
+            },
+            "ue3_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1133268493,
+              "to_samples": 2586792974,
+              "sample_delta": 1453524481,
+              "samples_per_s": 20764635.442857143,
+              "fraction_of_realtime": 0.9012428577628968,
+              "conservative_fraction_bounds": [
+                0.8885492963859546,
+                0.9143043484551127
+              ],
+              "input_waits_over_5_ms_in_window": 2
+            }
+          },
+          "heartbeat_excerpts": [
+            "event=heartbeat t=60 dev=gnb1_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=49176 idle=56 room_stall=0 last=23040 acquired=1133245740] producer[state=wait_data slots=53789 stall=410847 last=23040] rep[state=wait_row replies=53789 idle=24 row_spin=357185 last=23040] starvations=0 starvations_total=1 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue2_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=49217 idle=56 room_stall=0 last=23040 acquired=1133222413] producer[state=wait_data slots=49189 stall=405265 last=23040] rep[state=wait_row replies=49189 idle=56 row_spin=331584 last=23040] starvations=0 starvations_total=3 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue3_p0 ring=46080/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=49261 idle=56 room_stall=0 last=23040 acquired=1133268493] producer[state=process slots=49191 stall=404991 last=23040] rep[state=wait_row replies=49191 idle=56 row_spin=331129 last=23040] starvations=0 starvations_total=4 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=gnb1_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=112255 idle=56 room_stall=0 last=23040 acquired=2586816300] producer[state=wait_data slots=122479 stall=852763 last=23040] rep[state=wait_row replies=122479 idle=24 row_spin=767945 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue2_p0 ring=46079/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=112459 idle=56 room_stall=0 last=23040 acquired=2586839053] producer[state=process slots=112278 stall=838307 last=23040] rep[state=wait_row replies=112278 idle=56 row_spin=742918 last=23040] starvations=0 starvations_total=6 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue3_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=112389 idle=56 room_stall=0 last=23040 acquired=2586792974] producer[state=process slots=112280 stall=838085 last=23040] rep[state=wait_row replies=112280 idle=56 row_spin=735957 last=23040] starvations=0 starvations_total=6 gaps=0 gaps_total=0 overflows=0 overflows_total=0"
+          ],
+          "independent_slot_progress": {
+            "first": {
+              "wall_unix_s": 1791884939.249845,
+              "absolute_slot": 12119,
+              "line": "2026-10-13T09:48:59.249845 [SCHED   ] [I] [   187.9] Slot decisions pci=2 t=17us (2 PDSCHs, 0 PUSCHs, 1 PUCCH): DL: ue=1 c-rnti=0x4602 h_id=0 ss_id=2 rb=[0..3) k1=4 cw[0]: newtx=true rv=0 tbs=253 ri=1"
+            },
+            "last": {
+              "wall_unix_s": 1791885059.247838,
+              "absolute_slot": 120177,
+              "line": "2026-10-13T09:50:59.247838 [SCHED   ] [I] [   753.7] Slot decisions pci=2 t=20us (2 PDSCHs, 0 PUSCHs, 2 PUCCHs): DL: ue=1 c-rnti=0x4602 h_id=3 ss_id=2 rb=[0..13) k1=4 cw[0]: newtx=true rv=0 tbs=1089 r"
+            },
+            "elapsed_wall_seconds": 119.99799299240112,
+            "slot_delta": 108058,
+            "slots_per_s": 900.4983942259998,
+            "logged_decisions": 108059,
+            "wrapped_late_lines": 0
+          },
+          "reported_slots_per_s": 900.5050848109545,
+          "priority_warnings": [
+            "Warning: Scheduling priority of thread \"main_pool#0\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#1\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#2\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#3\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#4\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"io_broker_epoll\" not changed. Cause: Not enough privileges."
+          ],
+          "log_sha256": {
+            "broker": "0bfd2abc650c86548b2dd232e763d2a5d4a122b98262f49779e8d5072d203774"
+          }
+        }
+      }
+    }
+  ]
+}

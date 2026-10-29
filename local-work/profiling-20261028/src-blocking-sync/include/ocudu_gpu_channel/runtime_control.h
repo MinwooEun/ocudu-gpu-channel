@@ -1,0 +1,495 @@
+#pragma once
+// Runtime-mutable channel parameters — host-side shadow buffer and
+// snap-at-slot-boundary helper.
+//
+// v1 (landed): per-link scalar shadow + atomic seqno + snap helper. See
+//   docs/history/designs/runtime-mutable-channel.md.
+// v2 (in-progress): adds ProfileShadow (multi-tap), take_effect_at_slot
+//   deterministic timing, and per-link current_slot counter. See
+//   docs/history/designs/runtime-mutable-channel-v2.md.
+//
+// Concurrency model (unchanged across v1 → v2):
+//   - The ZMQ control plane runs on a dedicated thread.
+//     It is the *only* writer to each link's BrokerLinkControl shadow
+//     fields (scalars, profile, take_effect_at_slot).
+//   - Each per-link server thread is the only reader; it observes a snap
+//     point at the start of every serve, copies shadow → live if seqno
+//     advanced (and the take_effect_at_slot gate has elapsed), and treats
+//     `live` as the canonical params for that slot.
+//   - Pairing: the control thread writes shadow then bumps seqno with
+//     memory_order_release; the server thread loads seqno with
+//     memory_order_acquire and only then reads shadow. This ordering
+//     guarantees the server observes a fully-written shadow whenever it
+//     observes the seqno bump.
+//
+// When no control plane is wired, snap is a single relaxed load +
+// branch-not-taken. Cost is negligible.
+
+#include "ocudu_gpu_channel/config.h"
+#include "ocudu_gpu_channel/device_channel.h"
+#include "ocudu_gpu_channel/mutable_params.h"
+
+#include <atomic>
+#include <cstdint>
+#include <string>
+#include <unistd.h>
+
+namespace ocg {
+
+// v3.0 TM1: snapshot of per-link state the telemetry thread publishes.
+// Written by the backend's snap hot path at the end of every serve;
+// read by the telemetry thread on its own cadence (default 20 Hz —
+// see ControlServerConfig::telemetry_rate_hz). Torn-read protection
+// via the seqlock pattern on telemetry_write_seq (see write helper
+// below) — readers loop until the pre/post seq agree, no locking.
+struct TelemetrySnapshot {
+  std::uint64_t slot              = 0;
+  std::uint32_t live_seqno        = 0;
+  MutableParams live;
+  bool          profile_active    = false;
+  bool          matrix_profile_active = false;
+  int           nt = 1;
+  int           nr = 1;
+  std::uint64_t warmup_until_slot = 0;
+
+  // Latched boundaries for the most recent profile warmup cycle. Unlike
+  // warmup_until_slot (which returns to zero as soon as warmup completes),
+  // these remain in the snapshot until the next profile activation. This
+  // lets a slower telemetry publisher report a short warmup that began and
+  // ended entirely between two PUB ticks without stretching it to the
+  // subscriber's observation interval.
+  std::uint64_t warmup_event_seq      = 0;
+  std::uint32_t warmup_profile_seqno  = 0;
+  std::uint64_t warmup_begin_slot     = 0;
+  std::uint64_t warmup_end_slot       = 0;
+  std::uint64_t warmup_begin_unix_ns  = 0;
+  std::uint64_t warmup_end_unix_ns    = 0;
+
+  // Broker-observed timing for the most recent destination superposition
+  // containing this edge. Every edge feeding the same destination receives
+  // the same values: the backend shapes and sums those edges in one call, so
+  // there is no truthful per-edge execution time. `slot_deadline_us` is the
+  // wall-clock duration represented by `processed_samples` at
+  // `sample_rate_hz`; `channel_process_us` is the wall time spent inside
+  // ChannelProcessor::process_superposition(). Zero means that no IQ serve
+  // has completed yet.
+  std::uint64_t processed_samples  = 0;
+  std::uint64_t sample_rate_hz     = 0;
+  double        slot_deadline_us   = 0.0;
+  double        channel_process_us = 0.0;
+
+  // Run-cumulative receiver-scoped timing statistics. These are updated for
+  // every completed process_superposition() call, not at the slower telemetry
+  // publication cadence, so short deadline misses cannot disappear between
+  // PUB samples. Percentiles are derived from a fixed 1 us histogram owned by
+  // the destination server thread.
+  std::uint64_t slot_process_count        = 0;
+  std::uint64_t slot_deadline_miss_count  = 0;
+  double        slot_process_max_us       = 0.0;
+  double        slot_process_p95_us       = 0.0;
+  double        slot_process_p99_us       = 0.0;
+
+  // Fixed-duration nominal-slot statistics reconstructed from the arbitrary
+  // process calls above. A call crossing a nominal boundary contributes wall
+  // time to each side in proportion to its overlapping sample count. These
+  // values therefore preserve total measured process time but are estimates,
+  // because fixed CUDA launch overhead cannot be divided after the fact.
+  std::uint64_t nominal_slot_samples             = 0;
+  std::uint64_t nominal_pending_samples          = 0;
+  double        nominal_pending_estimated_us     = 0.0;
+  double        nominal_latest_estimated_us      = 0.0;
+  std::uint64_t nominal_slot_count               = 0;
+  std::uint64_t nominal_deadline_miss_count      = 0;
+  double        nominal_process_max_us           = 0.0;
+  double        nominal_process_p95_us           = 0.0;
+  double        nominal_process_p99_us           = 0.0;
+
+  // Fragment diagnostics remain separate from deadline performance. A
+  // fragment call has a sample count different from nominal_slot_samples; a
+  // fragmented nominal slot is any reconstructed slot touched by a call that
+  // was not exactly aligned to one nominal boundary.
+  std::uint64_t fragment_call_count              = 0;
+  std::uint64_t fragment_sample_count            = 0;
+  std::uint64_t fragment_min_samples             = 0;
+  std::uint64_t fragment_max_samples             = 0;
+  std::uint64_t fragmented_nominal_slot_count    = 0;
+};
+
+// v2 ProfileShadow — the multi-tap payload a `profile_swap` REQ writes.
+// Stored max-sized (kDeviceMaxTaps) so the shadow → live copy is a single
+// POD memcpy, no heap allocation in the hot path. Only the first
+// `n_taps` entries of `taps[]` are meaningful; the rest are zero-padded.
+struct ProfileShadow {
+  int        n_taps = 0;
+  TapSpec    taps[kDeviceMaxTaps]{};
+  bool       fading_enabled = false;
+  float      fading_f_d_max_hz = 0.0F;
+  int        fading_spectrum = 0;            // 0=Jakes (only one implemented)
+  float      fading_grid_us = 100.0F;
+  // v2.0-F3 eligibility override. When false (default), the snap path
+  // refuses to apply a profile to a link whose chain does not start with
+  // a tdl step (the new taps would have nothing to flow through). force
+  // = true accepts the profile + snaps it; on a non-tdl-leading chain
+  // the snapped profile is stored but kernel output is unchanged until
+  // a YAML reload re-establishes the dispatch.
+  bool       force = false;
+};
+
+// One complete, physical-link-scoped MIMO channel update. Lane order is the
+// canonical row-major topology order: lane = rx_port * nt + tx_port. The
+// dimensions are fixed when the topology is prepared; a runtime request may
+// replace every lane profile, but may never resize the link or omit a lane.
+// This is deliberately a bounded POD shadow so the control thread can publish
+// it with the same release/acquire seqno contract as scalar profile_swap.
+struct MatrixProfileShadow {
+  int           nt = 0;
+  int           nr = 0;
+  int           lane_count = 0;
+  ProfileShadow lanes[kMaxCorrelatedLanes]{};
+};
+
+// Only gain/phase changes can reuse a matrix's input history. Compare named
+// fields (not POD bytes/padding), and do not hide delay changes with a tolerance.
+inline bool matrix_history_compatible(const MatrixProfileShadow& before,
+                                      const MatrixProfileShadow& after)
+{
+  if (before.nt != after.nt || before.nr != after.nr ||
+      before.lane_count != after.lane_count) return false;
+  for (int lane = 0; lane < before.lane_count; ++lane) {
+    const auto& a = before.lanes[lane];
+    const auto& b = after.lanes[lane];
+    if (a.n_taps != b.n_taps || a.fading_enabled != b.fading_enabled ||
+        a.fading_f_d_max_hz != b.fading_f_d_max_hz ||
+        a.fading_spectrum != b.fading_spectrum ||
+        a.fading_grid_us != b.fading_grid_us || a.force != b.force) return false;
+    for (int tap = 0; tap < a.n_taps; ++tap) {
+      const auto& x = a.taps[tap];
+      const auto& y = b.taps[tap];
+      if (x.delay_samples != y.delay_samples || x.is_los != y.is_los ||
+          x.los_k_db != y.los_k_db || x.los_angle_rad != y.los_angle_rad) return false;
+    }
+  }
+  return true;
+}
+
+// One BrokerLinkControl per emulator link. The shadow buffer is initialised
+// in prepare() to mirror the per-link YAML state; the seqno starts at 0 so
+// the first server-thread snap on the first slot is a no-op (live already
+// matches shadow, both already match YAML).
+// M4.4: a staged spatial-correlation swap.
+//
+// It holds the FACTOR, not the correlation matrix. The LDL^H runs on the
+// control thread while it is validating the REQ -- the same routine
+// validate_config uses, so load time and runtime cannot come to disagree about
+// which matrices are acceptable -- and the serve path only ever copies. That is
+// the promise M3 made when it put the factorisation in prepare(): never on the
+// hot path.
+struct CorrelationShadow {
+  int lanes = 0;  // 0 means "no correlation": the link goes back to iid
+  float mixing_re[kMaxCorrelatedLanes * kMaxCorrelatedLanes] = {};
+  float mixing_im[kMaxCorrelatedLanes * kMaxCorrelatedLanes] = {};
+};
+
+struct BrokerLinkControl {
+  // v1 scalar shadow (unchanged accessor surface for back-compat).
+  MutableParams              shadow;
+
+  // v2 profile-swap shadow. `profile_pending` is set by the control
+  // thread when shadow_profile holds a new profile to apply; cleared by
+  // the snap path after the refresh runs. Both writes are paired with
+  // seqno's release-store.
+  ProfileShadow              shadow_profile;
+  bool                       profile_pending = false;
+
+  // Full Nr x Nt profile replacement used by externally generated channel
+  // matrices such as Sionna RT. Unlike profile_swap, each lane has its own
+  // taps. It snaps once at the physical-link boundary, so a slot can never
+  // observe a mixture of old and new channel-matrix rows.
+  MatrixProfileShadow        shadow_matrix_profile;
+  bool                       matrix_profile_pending = false;
+  // Immutable after prepare; CUDA host staging cannot apply dynamic matrices.
+  bool                       matrix_profile_supported = true;
+
+  // M4.4 correlation-swap shadow, gated by the same seqno and slot rules as
+  // the scalar and profile shadows.
+  CorrelationShadow          shadow_correlation;
+  bool                       correlation_pending = false;
+
+  // Set at prepare() so the control thread can check a swap's dimensions
+  // without reaching into the topology: a correlation is Nr x Nr and Nt x Nt,
+  // and neither may change at runtime.
+  int                        nt_hint = 1;
+  int                        nr_hint = 1;
+  // Whether the link's model declares a fixed_mimo matrix. A fixed matrix is
+  // folded into each lane's TAP weights at load time, so a tap-scope runtime
+  // update -- addressed at the link, as everything is since M4.2 -- would write
+  // one value over every lane and erase the matrix. Rejected rather than
+  // silently destructive.
+  bool                       fixed_mimo_declared = false;
+  // Whether the link's model declared a spatial_correlation block at load.
+  // Declaring it -- even as `kind: iid` -- is the opt-in that makes the link
+  // runtime-correlatable; a link that never declared one keeps the untouched
+  // pre-M3 path, and a swap REQ against it is rejected rather than silently
+  // enabling machinery its topology never asked for.
+  bool                       correlation_declared = false;
+
+  // v2 deterministic-timing knob. 0 = "apply at next slot boundary"
+  // (v1 semantics, preserved when omitted from the REQ).
+  std::uint64_t              take_effect_at_slot = 0;
+
+  // v2 per-link slot counter, written by the snap path before each gate
+  // check; read by the control thread to know whether scheduled-in-past
+  // updates apply now.
+  std::atomic<std::uint64_t> current_slot{0};
+
+  // Sample-indexed control (opt-in; all zero unless a batch_commit names
+  // take_effect_at_sample). A slot index counts serve calls, whose sizes
+  // vary with how the radios request, so "slot k" is not the same instant of
+  // the IQ stream in two runs. The link clock (samples since the broker
+  // started) is: a gated update applies to the first sample >= this target,
+  // and the broker producer splits a call at the target so it lands exactly.
+  // Written by the control thread before the seqno release-store.
+  std::atomic<std::uint64_t> take_effect_at_sample{0};
+  // Receiver-noise epoch: at this sample of the destination node's stream
+  // the node's receiver AWGN counters restart at 0, so the noise realisation
+  // is indexed by samples since the epoch rather than since broker start.
+  // Cleared by the producer once handled. 0 = none.
+  std::atomic<std::uint64_t> noise_epoch_at_sample{0};
+  // Caller's label for the pending update and the digest of the profile the
+  // control thread decoded, both logged when the update takes effect. The
+  // tag is written before the seqno bump and read after observing it.
+  static constexpr std::size_t kTagCapacity = 96;
+  char pending_tag[kTagCapacity] = {};
+  std::uint64_t pending_digest = 0;
+  // Start sample of the slot the link is processing, and the seqno of the
+  // last update that took effect: what `link_clock` reports.
+  std::atomic<std::uint64_t> current_sample{0};
+  std::atomic<std::uint32_t> applied_seqno{0};
+
+  std::atomic<std::uint32_t> seqno{0};        // bumped after every shadow write
+
+  // v3.0 telemetry snapshot — written by the backend snap path each
+  // slot; read by the optional telemetry-publisher thread. Seqlock
+  // ordering: writer pre-bumps to an odd value, writes the POD, post-
+  // bumps to the next even value. Readers do (load, copy, load) and
+  // retry if either pre-load was odd or pre != post.
+  TelemetrySnapshot          telemetry;
+  std::atomic<std::uint64_t> telemetry_write_seq{0};
+
+  // v3.1: per-link count of force-inert warnings. Bumped by the
+  // backend snap path whenever a profile_swap with force=true is
+  // observed on a chain that does NOT start with a tdl step. The
+  // profile is still stored in shadow_profile + snapped to live, but
+  // the kernel never reads the new taps because the per-edge tdl
+  // routing isn't there — force=true is the "I know what I'm doing"
+  // escape hatch and v3.1's job is to make the inertness visible.
+  // ControlServer::stats() aggregates by summing across link_map.
+  std::atomic<std::uint64_t> force_inert_warnings{0};
+
+  // v2.2 follow-on: hints the backend writes at prepare() so the
+  // ControlServer can compute a prospective warmup window at REQ
+  // time and reject overlong swaps. Both fields are 0 on a link
+  // whose chain has no leading tdl (warmup never fires for those).
+  int dl_size_samples_hint = 0;
+  int slot_count_hint      = 0;
+
+  BrokerLinkControl() = default;
+
+  // Non-copyable / non-movable: BrokerLinkControl is pinned by reference
+  // for the life of the broker. std::atomic is non-copyable; we also do not
+  // want callers to accidentally lose the seqno relationship by moving.
+  BrokerLinkControl(const BrokerLinkControl&) = delete;
+  BrokerLinkControl(BrokerLinkControl&&) = delete;
+  BrokerLinkControl& operator=(const BrokerLinkControl&) = delete;
+  BrokerLinkControl& operator=(BrokerLinkControl&&) = delete;
+};
+
+// Snap the per-link mutable params from shadow into live, if the control
+// thread has bumped seqno since the last snap. Called once per slot per link
+// from each backend's hot path, immediately before the chain executes (CPU)
+// or build_steps generates the per-slot GpuStep array (CUDA).
+//
+// `slot_idx` (v2.1+) is the link's current slot index, written into
+// ctl.current_slot so the control thread can know how far the link has
+// progressed (used by REP "applied_at_slot" replies). It also gates the
+// snap: when ctl.take_effect_at_slot > slot_idx, the snap is deferred
+// (live_seqno is NOT bumped) and the next slot retries. take_effect_at_
+// slot == 0 means "apply ASAP" — preserves v1 semantics for callers that
+// pass the default.
+//
+// Returns true if `live` was updated this call (caller may want to log it
+// or trigger downstream recomputation of derived fields, e.g. tap-0 fields
+// once tap-0 mutability lands in a follow-on commit, or profile refresh
+// once v2 lands).
+inline bool snap_mutable_params(MutableParams& live,
+                                std::uint32_t& live_seqno,
+                                BrokerLinkControl& ctl,
+                                std::uint64_t slot_idx = 0)
+{
+  // Update the per-link slot counter unconditionally so the control
+  // thread can read it for scheduled-in-past detection / REP enrichment.
+  ctl.current_slot.store(slot_idx, std::memory_order_relaxed);
+
+  // Acquire-load pairs with the control thread's release-store on bump.
+  const std::uint32_t observed = ctl.seqno.load(std::memory_order_acquire);
+  if (observed == live_seqno) {
+    return false;
+  }
+  // v2.1 take_effect_at_slot gate. Deferred snaps leave live_seqno alone
+  // so subsequent slots will re-check until the gate opens.
+  if (ctl.take_effect_at_slot > slot_idx) {
+    return false;
+  }
+  live = ctl.shadow;
+  live_seqno = observed;
+  return true;
+}
+
+// v2.0-F3: snap the pending profile shadow into the caller's live profile
+// storage. Caller is responsible for: (a) deciding whether to call this
+// (typically when snap_mutable_params returned true AND ctl.profile_pending
+// is set), and (b) the eligibility check (chain has leading tdl OR
+// ctl.shadow_profile.force is true). Eligibility check is outside this
+// helper because the chain shape lives on the backend's per-link state,
+// not on BrokerLinkControl.
+//
+// Returns true if the profile was copied. ctl.profile_pending is NOT
+// cleared — it remains a "this link has been profile-swapped at least
+// once" marker. Subsequent snap calls re-copy idempotently when seqno
+// advances; cost is one ~1KB memcpy on the rare seqno-bump path.
+inline bool snap_profile_from_shadow(ProfileShadow& live_profile,
+                                     BrokerLinkControl& ctl)
+{
+  if (!ctl.profile_pending) return false;
+  live_profile = ctl.shadow_profile;
+  return true;
+}
+
+inline bool snap_matrix_profile_from_shadow(MatrixProfileShadow& live_profile,
+                                            BrokerLinkControl& ctl)
+{
+  if (!ctl.matrix_profile_pending) return false;
+  live_profile = ctl.shadow_matrix_profile;
+  return true;
+}
+
+// v3.0 TM1: publish a telemetry snapshot into ctl.telemetry using the
+// seqlock pattern. Single-writer (the per-link backend snap path and the
+// immediately enclosing broker server thread are the same thread);
+// no locking. Readers call read_telemetry_snapshot() which retries on
+// observed concurrent write.
+inline void publish_telemetry_snapshot(BrokerLinkControl& ctl,
+                                       const TelemetrySnapshot& snap)
+{
+  const std::uint64_t pre = ctl.telemetry_write_seq.load(std::memory_order_relaxed);
+  // Pre-bump to an odd value so any concurrent reader sees the
+  // in-progress marker and retries.
+  ctl.telemetry_write_seq.store(pre + 1, std::memory_order_release);
+  ctl.telemetry = snap;
+  // Post-bump to the next even value; readers compare pre vs post and
+  // accept only if both even and equal.
+  ctl.telemetry_write_seq.store(pre + 2, std::memory_order_release);
+}
+
+// Read the published telemetry snapshot using the seqlock pattern.
+// Loops at most `max_retries` times before returning the most recent
+// non-torn read or, if always torn, the last attempted copy. In
+// practice the write window is sub-microsecond so two reads in a row
+// almost always succeed.
+inline TelemetrySnapshot read_telemetry_snapshot(const BrokerLinkControl& ctl,
+                                                 int max_retries = 8)
+{
+  TelemetrySnapshot copy{};
+  for (int attempt = 0; attempt < max_retries; ++attempt) {
+    const std::uint64_t pre = ctl.telemetry_write_seq.load(std::memory_order_acquire);
+    if (pre & 1ULL) continue;        // write in progress
+    copy = ctl.telemetry;
+    const std::uint64_t post = ctl.telemetry_write_seq.load(std::memory_order_acquire);
+    if (pre == post) return copy;    // consistent snapshot
+  }
+  return copy;
+}
+
+// Initialise BrokerLinkControl::shadow from the YAML-derived MutableParams.
+// Called once per link in each backend's prepare(). After this call, the
+// first slot's snap is a no-op (seqno still 0, live already == shadow).
+//
+// v2: also zeros the profile-swap fields. `shadow_profile` is left default-
+// constructed; `profile_pending` and `take_effect_at_slot` are explicitly 0
+// so the snap path's gate checks default to "no profile pending, apply
+// scalar updates ASAP" (= v1 behaviour).
+inline void init_broker_link_control(BrokerLinkControl& ctl,
+                                     const MutableParams& yaml_initial)
+{
+  ctl.shadow = yaml_initial;
+  ctl.shadow_profile = ProfileShadow{};
+  ctl.profile_pending = false;
+  ctl.shadow_matrix_profile = MatrixProfileShadow{};
+  ctl.matrix_profile_pending = false;
+  ctl.take_effect_at_slot = 0;
+  ctl.current_slot.store(0, std::memory_order_relaxed);
+  ctl.take_effect_at_sample.store(0, std::memory_order_relaxed);
+  ctl.noise_epoch_at_sample.store(0, std::memory_order_relaxed);
+  ctl.pending_tag[0] = '\0';
+  ctl.pending_digest = 0;
+  ctl.current_sample.store(0, std::memory_order_relaxed);
+  ctl.applied_seqno.store(0, std::memory_order_relaxed);
+  ctl.seqno.store(0, std::memory_order_relaxed);
+}
+
+// Evidence lines (sample-indexed control) are written with one write(2) of
+// the complete line, never through std::cout: several producer threads print
+// concurrently, and stream insertions from different threads interleave
+// inside one line, which a log parser then silently misses.
+inline void emit_evidence_line(std::string line)
+{
+  line.push_back('\n');
+  const char* data = line.data();
+  std::size_t left = line.size();
+  while (left > 0) {
+    const ssize_t n = ::write(STDOUT_FILENO, data, left);
+    if (n <= 0) return;
+    data += n;
+    left -= static_cast<std::size_t>(n);
+  }
+}
+
+// FNV-1a over the named fields of a decoded matrix profile (never padding
+// bytes). Two runs that decoded the same request bytes produce the same
+// value; it is the broker-side half of the identical-channel evidence.
+inline std::uint64_t matrix_profile_digest(const MatrixProfileShadow& profile)
+{
+  std::uint64_t hash = 1469598103934665603ULL;
+  const auto mix = [&hash](const void* data, std::size_t size) {
+    const auto* bytes = static_cast<const unsigned char*>(data);
+    for (std::size_t i = 0; i != size; ++i) {
+      hash ^= bytes[i];
+      hash *= 1099511628211ULL;
+    }
+  };
+  const auto mix_value = [&mix](auto value) { mix(&value, sizeof(value)); };
+  mix_value(profile.nt);
+  mix_value(profile.nr);
+  mix_value(profile.lane_count);
+  for (int lane = 0; lane < profile.lane_count; ++lane) {
+    const ProfileShadow& p = profile.lanes[lane];
+    mix_value(p.n_taps);
+    mix_value(p.fading_enabled);
+    mix_value(p.fading_f_d_max_hz);
+    mix_value(p.fading_spectrum);
+    mix_value(p.fading_grid_us);
+    mix_value(p.force);
+    for (int tap = 0; tap < p.n_taps; ++tap) {
+      const TapSpec& t = p.taps[tap];
+      mix_value(t.delay_samples);
+      mix_value(t.gain_db);
+      mix_value(t.phase_rad);
+      mix_value(t.is_los);
+      mix_value(t.los_k_db);
+      mix_value(t.los_angle_rad);
+    }
+  }
+  return hash;
+}
+
+}  // namespace ocg

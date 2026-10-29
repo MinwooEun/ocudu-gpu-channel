@@ -1,0 +1,55 @@
+.config
+.agents/
+# Local build outputs.
+/build/
+/build-*/
+/out/
+/cmake-build-*/
+/Testing/
+
+# Generated run artifacts.
+/results/
+/artifacts/
+/datasets/
+/tmp/
+*.log
+!/docs/reports/**/*.log
+*.pcap
+*.pcapng
+
+# External source checkouts kept outside the tracked project.
+/ocudu/
+/srsRAN_4G/
+/srsran_4g/
+
+# Python-generated caches.
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.py[cod]
+
+# Downloaded reference material -- 3GPP specs, papers, third-party source
+# clones consulted during design. Kept local-only because (a) PDFs and full
+# repository clones are large, and (b) some materials carry licenses that
+# disallow redistribution. See references/README.md for what belongs here.
+/references/
+
+# Local editor and OS noise.
+.DS_Store
+.claude/
+.playwright-mcp/
+
+# User's local LaTeX work, intentionally untracked.
+/writing/
+
+# Local slide files.
+/slides/
+
+# Python package build outputs
+*.egg-info/
+dist/
+
+# Documentation environments and generated publication artifacts.
+/.build/
+/.venv-docs/

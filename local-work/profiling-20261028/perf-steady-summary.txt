@@ -1,0 +1,122 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 59
+#
+# Samples: 1K of event 'armv8_pmuv3_0/cycles/P'
+# Event count (approx.): 55323287755
+#
+# Overhead | Command | Shared Object | Symbol | IPC   [IPC Coverage]
+1.92% | WORKER0 | srsue | [.] srsran_vec_prod_ccc_simd | -      -
+1.69% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf5be1484 | -      -
+1.67% | WORKER1 | srsue | [.] srsran_vec_apply_cfo_simd | -      -
+1.64% | SYNC | srsue | [.] srsran_vec_apply_cfo_simd | -      -
+1.61% | WORKER1 | srsue | [.] srsran_polar_code_get | -      -
+1.55% | WORKER0 | srsue | [.] srsran_polar_code_get | -      -
+1.40% | WORKER0 | srsue | [.] update_ldpc_var_to_check_c_neon | -      -
+1.22% | SYNC | libc.so.6 | [.] 0x00000000000a1c40 | -      -
+1.15% | WORKER1 | srsue | [.] srsran_vec_prod_ccc_simd | -      -
+1.02% | WORKER1 | libc.so.6 | [.] 0x00000000000a1c38 | -      -
+0.97% | WORKER0 | srsue | [.] __divsc3@plt | -      -
+0.95% | WORKER0 | srsue | [.] srsran_vec_sc_prod_ccc_simd2 | -      -
+0.91% | SYNC | srsue | [.] srsran_vec_sc_prod_cfc_simd | -      -
+0.87% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf5bd6d30 | -      -
+0.85% | WORKER1 | srsue | [.] srsran_vec_sc_prod_cfc_simd | -      -
+0.84% | WORKER1 | libgcc_s.so.1 | [.] __divsc3 | -      -
+0.81% | WORKER0 | srsue | [.] srsran_vec_apply_cfo_simd | -      -
+0.79% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf5b8d7a0 | -      -
+0.77% | WORKER1 | srsue | [.] srsue::nr::sf_worker::work_imp() | -      -
+0.70% | WORKER1 | srsue | [.] update_ldpc_soft_bits_c_neon | -      -
+0.66% | STACK | [unknown] | [k] 0xffffd70bf5be1484 | -      -
+0.64% | WORKER0 | srsue | [.] srsran_vec_prod_cfc_simd | -      -
+0.63% | WORKER0 | libfftw3f.so.3.6.10 | [.] 0x00000000000ad58c | -      -
+0.62% | srsue | libc.so.6 | [.] 0x00000000000a1c34 | -      -
+0.62% | WORKER0 | libgcc_s.so.1 | [.] __divsc3 | -      -
+0.61% | srsue | libc.so.6 | [.] 0x00000000000a1c3c | -      -
+0.56% | WORKER0 | libfftw3f.so.3.6.10 | [.] 0x00000000000d8020 | -      -
+0.54% | SYNC | libfftw3f.so.3.6.10 | [.] 0x00000000000ad594 | -      -
+0.54% | srsue | [unknown] | [k] 0xffffd70bf5be1484 | -      -
+0.54% | srsue | srsue | [.] fmt::v7::detail::format_handler<fmt::v7::detail::arg_formatter<std::back_insert_iterator<fmt::v7::detail::buffer<char> >, char>, char, fmt::v7::basic_format_context<std::back_insert_iterator<fmt::v7::detail::buffer<char> >, char> >::on_format_specs(int, char const*, char const*) | -      -
+0.54% | WORKER1 | srsue | [.] srsran_vec_max_ci_simd | -      -
+0.54% | srsue | [unknown] | [k] 0xffffd70bf42c84d8 | -      -
+0.52% | WORKER1 | libfftw3f.so.3.6.10 | [.] 0x00000000000ad58c | -      -
+0.52% | STACK | [unknown] | [k] 0xffffd70bf42c84d8 | -      -
+0.52% | WORKER0 | srsue | [.] srsran_ldpc_rm_rx_c | -      -
+0.52% | WORKER1 | libfftw3f.so.3.6.10 | [.] 0x00000000000da280 | -      -
+0.52% | srsue | libc.so.6 | [.] 0x00000000000a1c38 | -      -
+0.46% | WORKER1 | [unknown] | [k] 0xffffd70bf5be1364 | -      -
+0.45% | WORKER1 | srsue | [.] srsran_re_pattern_to_symbol_mask | -      -
+0.43% | WORKER0 | libc.so.6 | [.] 0x00000000000a1c3c | -      -
+0.42% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf42c84d8 | -      -
+0.42% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf5b8d4e8 | -      -
+0.42% | WORKER0 | [unknown] | [k] 0xffffd70bf5be1364 | -      -
+0.41% | WORKER0 | libc.so.6 | [.] 0x00000000000a1c40 | -      -
+0.39% | STACK | srsue | [.] srsue::ue_stack_lte::run_thread() | -      -
+0.37% | WORKER0 | srsue | [.] update_ldpc_check_to_var_c_neon | -      -
+0.37% | WORKER1 | srsue | [.] srsran_ldpc_rm_rx_c | -      -
+0.36% | WORKER0 | srsue | [.] srsran_interp_linear_offset | -      -
+0.36% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf4275170 | -      -
+0.36% | STACK | srsue | [.] srslog::detail::find_logger(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) | -      -
+0.34% | SYNC | [unknown] | [k] 0xffffd70bf42c84d8 | -      -
+0.33% | WORKER1 | libfftw3f.so.3.6.10 | [.] 0x00000000000ad568 | -      -
+0.33% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf5b8d4b8 | -      -
+0.32% | WORKER1 | libfftw3f.so.3.6.10 | [.] 0x00000000000ad560 | -      -
+0.31% | STACK | srsue | [.] srsran::rlc::get_buffer_state(unsigned int) | -      -
+0.31% | srsue | [unknown] | [k] 0xffffd70bf43ae558 | -      -
+0.30% | WORKER1 | libc.so.6 | [.] 0x00000000000a1c40 | -      -
+
+
+# Samples: 4K of event 'armv8_pmuv3_1/cycles/P'
+# Event count (approx.): 227976235288
+#
+# Overhead | Command | Shared Object | Symbol | IPC   [IPC Coverage]
+2.55% | ocudu-gpu-chann | libc.so.6 | [.] 0x0000000000140a04 | -      -
+2.26% | radio | [unknown] | [k] 0xffffd70bf5bcdb78 | -      -
+2.09% | radio | [vdso] | [.] 0x0000000000000818 | -      -
+1.98% | ocudu-gpu-chann | libc.so.6 | [.] 0x00000000000a1c3c | -      -
+1.48% | radio | libc.so.6 | [.] 0x00000000001406f4 | -      -
+1.40% | radio | libc.so.6 | [.] 0x0000000000140a04 | -      -
+1.22% | SYNC | srsue | [.] srsran_vec_apply_cfo_simd | -      -
+1.08% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf5be1484 | -      -
+1.00% | WORKER1 | srsue | [.] srsran_vec_apply_cfo_simd | -      -
+0.97% | radio | libc.so.6 | [.] __poll | -      -
+0.93% | WORKER0 | srsue | [.] srsran_polar_code_get | -      -
+0.92% | WORKER0 | srsue | [.] srsran_vec_apply_cfo_simd | -      -
+0.90% | WORKER1 | srsue | [.] srsran_polar_code_get | -      -
+0.80% | SYNC | libc.so.6 | [.] 0x00000000000a1c3c | -      -
+0.75% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf5b8d7a0 | -      -
+0.71% | ocudu-gpu-chann | [vdso] | [.] 0x0000000000000818 | -      -
+0.66% | radio | [unknown] | [k] 0xffffd70bf43ae558 | -      -
+0.62% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf5be1364 | -      -
+0.62% | radio | libc.so.6 | [.] __getpid | -      -
+0.61% | radio | gnb | [.] ocudu::radio_zmq_tx_channel::send_response() | -      -
+0.53% | phy_worker | libc.so.6 | [.] 0x0000000000140a04 | -      -
+0.51% | WORKER0 | libc.so.6 | [.] 0x00000000000a2e84 | -      -
+0.48% | radio | [unknown] | [k] 0xffffd70bf4462498 | -      -
+0.48% | radio | gnb | [.] ocudu::general_task_worker_executor<(ocudu::concurrent_queue_policy)1, (ocudu::concurrent_queue_wait_policy)1>::defer(ocudu::unique_function<void (), 64ul, false>) | -      -
+0.48% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf5b8d4c8 | -      -
+0.47% | phy_worker | gnb | [.] ocudu::radio_zmq_rx_channel::receive(ocudu::span<std::complex<float> >) | -      -
+0.44% | radio | gnb | [.] ocudu::task_details::smallbuffer_table_t<ocudu::general_task_worker<(ocudu::concurrent_queue_policy)1, (ocudu::concurrent_queue_wait_policy)1>::make_blocking_pop_task()::{lambda()#1}, void>::call(void*) const | -      -
+0.43% | ZMQbg/IO/0 | [unknown] | [k] 0xffffd70bf5bcdb78 | -      -
+0.41% | phy_worker | [unknown] | [k] 0xffffd70bf5bd5fa4 | -      -
+0.41% | ZMQbg/IO/1 | [unknown] | [k] 0xffffd70bf5be1364 | -      -
+0.40% | ocudu-gpu-chann | libc.so.6 | [.] 0x00000000000a1c34 | -      -
+0.39% | ocudu-gpu-chann | [unknown] | [k] 0xffffd70bf5bcdb78 | -      -
+0.39% | WORKER1 | srsue | [.] srsran_vec_prod_ccc_simd | -      -
+0.39% | WORKER0 | srsue | [.] srsran_vec_prod_ccc_simd | -      -
+0.36% | WORKER1 | srsue | [.] srsran_vec_sc_prod_ccc_simd2 | -      -
+0.36% | WORKER1 | libc.so.6 | [.] strchrnul | -      -
+0.35% | WORKER1 | srsue | [.] update_ldpc_var_to_check_c_neon | -      -
+0.35% | ZMQbg/IO/1 | [unknown] | [k] 0xffffd70bf5be1484 | -      -
+0.34% | STACK | srsue | [.] srsue::ue_stack_lte::run_thread() | -      -
+0.34% | ocudu-gpu-chann | libc.so.6 | [.] 0x0000000000140914 | -      -
+0.32% | ZMQbg/IO/0 | libzmq.so.5.2.5 | [.] 0x0000000000074684 | -      -
+0.31% | STACK | libc.so.6 | [.] 0x000000000008192c | -      -
+0.31% | srsue | libc.so.6 | [.] 0x00000000000a1c34 | -      -
+0.30% | radio | gnb | [.] ocudu::task_details::smallbuffer_table_t<ocudu::radio_zmq_tx_channel::run_async()::{lambda()#1}, void>::dtor(void*) const | -      -
+0.30% | WORKER0 | srsue | [.] srsran_vec_sc_prod_ccc_simd2 | -      -
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

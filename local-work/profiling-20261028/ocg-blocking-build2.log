@@ -1,0 +1,55 @@
+[  4%] Built target ocudu-gpu-hog
+[  6%] Building CUDA object CMakeFiles/ocudu_gpu_channel_lib.dir/src/cuda_backend.cu.o
+[  8%] Linking CXX static library libocudu_gpu_channel_lib.a
+[ 32%] Built target ocudu_gpu_channel_lib
+[ 38%] Building CXX object CMakeFiles/ocudu-zmq-source.dir/apps/ocudu_zmq_source.cpp.o
+[ 38%] Building CXX object CMakeFiles/ocudu-gpu-channel-bench.dir/apps/ocudu_gpu_channel_bench.cpp.o
+[ 38%] Building CXX object CMakeFiles/ocudu-gpu-channel.dir/apps/ocudu_gpu_channel.cpp.o
+[ 40%] Linking CXX executable ocudu-zmq-source
+[ 40%] Built target ocudu-zmq-source
+[ 42%] Building CXX object CMakeFiles/ocudu-zmq-sink.dir/apps/ocudu_zmq_sink.cpp.o
+[ 44%] Linking CXX executable ocudu-gpu-channel
+[ 44%] Built target ocudu-gpu-channel
+[ 46%] Building CXX object CMakeFiles/ocudu-control-req.dir/apps/ocudu_control_req.cpp.o
+[ 48%] Linking CXX executable ocudu-zmq-sink
+[ 48%] Built target ocudu-zmq-sink
+[ 50%] Linking CXX executable ocudu-control-req
+[ 52%] Building CXX object CMakeFiles/ocudu-mimo-transport-peer.dir/apps/ocudu_mimo_transport_peer.cpp.o
+[ 52%] Built target ocudu-control-req
+[ 54%] Building CUDA object CMakeFiles/bench-mutation-cost.dir/benchmarks/bench_mutation_cost.cu.o
+[ 56%] Linking CXX executable ocudu-gpu-channel-bench
+[ 56%] Built target ocudu-gpu-channel-bench
+[ 58%] Building CXX object CMakeFiles/test_config.dir/tests/core/test_config.cpp.o
+[ 60%] Linking CXX executable ocudu-mimo-transport-peer
+[ 60%] Built target ocudu-mimo-transport-peer
+[ 62%] Building CXX object CMakeFiles/test_mutable_params.dir/tests/core/test_mutable_params.cpp.o
+[ 64%] Linking CXX executable test_mutable_params
+[ 64%] Built target test_mutable_params
+[ 66%] Building CXX object CMakeFiles/test_control_server.dir/tests/core/test_control_server.cpp.o
+[ 68%] Linking CXX executable bench-mutation-cost
+[ 68%] Built target bench-mutation-cost
+[ 70%] Building CXX object CMakeFiles/test_runtime_update_parity.dir/tests/core/test_runtime_update_parity.cpp.o
+[ 72%] Linking CXX executable test_config
+[ 72%] Built target test_config
+[ 74%] Building CXX object CMakeFiles/test_matrix_profile_history.dir/tests/core/test_matrix_profile_history.cpp.o
+[ 76%] Linking CXX executable test_control_server
+[ 76%] Built target test_control_server
+[ 78%] Building CXX object CMakeFiles/test_hardware_probe.dir/tests/core/test_hardware_probe.cpp.o
+[ 80%] Linking CXX executable test_hardware_probe
+[ 80%] Built target test_hardware_probe
+[ 82%] Building CXX object CMakeFiles/test_processing.dir/tests/core/test_processing.cpp.o
+[ 84%] Linking CXX executable test_runtime_update_parity
+[ 84%] Built target test_runtime_update_parity
+[ 86%] Building CXX object CMakeFiles/test_cpu_parallel.dir/tests/core/test_cpu_parallel.cpp.o
+[ 88%] Linking CXX executable test_matrix_profile_history
+[ 88%] Built target test_matrix_profile_history
+[ 90%] Building CXX object CMakeFiles/test_ring.dir/tests/core/test_ring.cpp.o
+[ 92%] Linking CXX executable test_ring
+[ 92%] Built target test_ring
+[ 94%] Building CXX object CMakeFiles/test_broker.dir/tests/core/test_broker.cpp.o
+[ 96%] Linking CXX executable test_cpu_parallel
+[ 96%] Built target test_cpu_parallel
+[ 98%] Linking CXX executable test_broker
+[ 98%] Built target test_broker
+[100%] Linking CXX executable test_processing
+[100%] Built target test_processing

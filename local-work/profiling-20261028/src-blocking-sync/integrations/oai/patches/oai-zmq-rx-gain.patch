@@ -1,0 +1,60 @@
+OAI ZMQ radio (pin 2b69bde6): an RX digital gain, zmq.[n].rx_gain_db.
+The ZMQ path has no AGC: received samples reach the UE PHY at the level the
+far end transmits. The UE fixed-point receive chain is sized for about
+TARGET_RX_POWER (50 dB digital power); an OCUDU gNB at its default 12 dB
+back-off arrives near 55 dB, and 64QAM PDSCH NACKs 69-89% (rank 1 and
+rank 2) although the channel estimate and FFT are clean (SPARK_MILESTONES.md
+S12). rx_gain_db scales the float->int16 conversion like the RF receive gain
+of a radio; 0 (default) leaves it unchanged.
+Apply in the OAI source root: patch -p1 < oai-zmq-rx-gain.patch
+
+--- a/radio/zmq/zmq_radio.cpp
++++ b/radio/zmq/zmq_radio.cpp
+@@ -41,17 +41,28 @@
+ #include <zmq.h>
+ #include "zmq_imported.h"
+ #include "zmq_simd.h"
++#include <cmath>
+ 
+ #define ZMQ_SECTION "zmq"
+ #define ZMQ_TX_CHANNELS "tx_channels"
+ #define ZMQ_RX_CHANNELS "rx_channels"
++#define ZMQ_RX_GAIN_DB "rx_gain_db"
+ 
+ #define ZMQ_PARAMS_DESC                                                                                                            \
+   {                                                                                                                                \
+       STRINGLISTPARAM(ZMQ_TX_CHANNELS, "list of zmq addresses represeting tx channels_\n", PARAMFLAG_MANDATORY, nullptr, nullptr), \
+       STRINGLISTPARAM(ZMQ_RX_CHANNELS, "list of zmq addresses represeting rx channels_\n", PARAMFLAG_MANDATORY, nullptr, nullptr), \
++      DOUBLEPARAM(ZMQ_RX_GAIN_DB, "digital gain applied to received samples, dB (0: unchanged)\n", 0, nullptr, 0.0),            \
+   };
+ 
++// Digital gain on the float -> int16 RX conversion. The ZMQ path has no AGC,
++// so the samples reach the PHY at whatever level the far end transmits; the
++// UE's fixed-point receive chain is sized for ~TARGET_RX_POWER (50 dB) and
++// degrades well before int16 full scale. rx_gain_db plays the role of the RF
++// receive gain a radio would set. Written once in device_init, read by the
++// RX poll threads started after it.
++static float zmq_rx_factor = c16_t_to_cf_t_factor;
++
+ const size_t sample_size = sizeof(cf_t);
+ const size_t rx_buffer_size = sample_size * 300000;
+ 
+@@ -145,7 +156,7 @@
+         convert_samples_avx512_rx(reinterpret_cast<const float *>(samples),
+                                   reinterpret_cast<int16_t *>(rx_buffer_c16),
+                                   num_samples_received * 2,
+-                                  c16_t_to_cf_t_factor);
++                                  zmq_rx_factor);
+         size_t overflow = chan->buffer_.push_samples(rx_buffer_c16, num_samples_received);
+         if (rx_buffer_size < received_bytes) {
+           overflow += chan->buffer_.push_zeros((received_bytes - rx_buffer_size) / sizeof(cf_t));
+@@ -294,6 +305,9 @@
+   std::string zmq_array_section = std::string(ZMQ_SECTION) + ".[" + std::to_string(ru_id) + "]";
+   int ret = config_get(cfg, param_desc, sizeofArray(param_desc), zmq_array_section.c_str());
+   AssertFatal(ret >= 0, "configuration couldn't be performed\n");
++  const double rx_gain_db = *gpd(param_desc, sizeofArray(param_desc), ZMQ_RX_GAIN_DB)->dblptr;
++  zmq_rx_factor = (float)(c16_t_to_cf_t_factor * pow(10.0, rx_gain_db / 20.0));
++  LOG_I(HW, "[ZMQ] rx_gain_db %.1f (RX conversion factor %.1f)\n", rx_gain_db, zmq_rx_factor);
+   int num_configured_tx_channels = gpd(param_desc, sizeofArray(param_desc), ZMQ_TX_CHANNELS)->numelt;
+   AssertFatal(num_configured_tx_channels == openair0_cfg->tx_num_channels,
+               "Incorrect configuration: Number of zmq tx channels (%d) != number of configured tx channels (%d)\n",

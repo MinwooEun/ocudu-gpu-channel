@@ -1,0 +1,14 @@
+{
+  "completed_result_files": {
+    "boundary": 46,
+    "matched-boundary": 6,
+    "diagnostic-io4": 2,
+    "diagnostic-live-budget": 2,
+    "diagnostic-live-budget-blocking": 2,
+    "multi-broker": 4,
+    "nsys-boundary": 2
+  },
+  "total": 64,
+  "live_attempts": 19,
+  "note": "Live counts include deliberately retained failed/rejected diagnostic attempts; they are not a pass count."
+}

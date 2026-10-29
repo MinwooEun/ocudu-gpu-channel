@@ -1,0 +1,16 @@
+START u1-c1-bw20-a1x1-r0-trace0
+END u1-c1-bw20-a1x1-r0-trace0 1.0 rc 0
+START u1-c1-bw20-a1x1-r0-trace1
+END u1-c1-bw20-a1x1-r0-trace1 0.9998333333333334 rc 0
+START u1-c1-bw20-a1x1-r1-trace0
+END u1-c1-bw20-a1x1-r1-trace0 1.0 rc 0
+START u1-c1-bw20-a1x1-r1-trace1
+END u1-c1-bw20-a1x1-r1-trace1 0.9998333333333334 rc 0
+START u16-c1-bw20-a1x1-r0-trace0
+END u16-c1-bw20-a1x1-r0-trace0 0.9995833333333334 rc 0
+START u16-c1-bw20-a1x1-r0-trace1
+END u16-c1-bw20-a1x1-r0-trace1 0.99875 rc 0
+START u16-c1-bw20-a1x1-r1-trace0
+END u16-c1-bw20-a1x1-r1-trace0 0.99975 rc 0
+START u16-c1-bw20-a1x1-r1-trace1
+END u16-c1-bw20-a1x1-r1-trace1 0.9985833333333334 rc 0

@@ -1,0 +1,22 @@
+{
+  "broker_base": "364391bccd3abd5fb73946e50c3a4c95ce649551",
+  "pr10": "9a33e0c2de17d5e8030ea570f57ba0fc08075fce",
+  "axes": [
+    "UEs per cell",
+    "cells",
+    "bandwidth MHz",
+    "gNB/UE antenna ports"
+  ],
+  "bandwidth_to_rate": {
+    "20": 23040000,
+    "50": 61440000,
+    "100": 122880000
+  },
+  "independent_sample_rate_sweep": false,
+  "profiling": {
+    "channel": "per-call receiver/thread CSV plus NVTX; host wall and thread CPU clocks; local stream CUDA events",
+    "broker": "per-call waits, read/process/commit-pacing/push",
+    "live": "perf CPU stacks; selected Nsight Systems trace; radio sample progress and existing health gates",
+    "overhead": "paired tracing off/on; Nsight results diagnostic, not unprofiled boundary"
+  }
+}

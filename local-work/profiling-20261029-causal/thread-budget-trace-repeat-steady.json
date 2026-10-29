@@ -1,0 +1,3013 @@
+{
+  "start_ns": 3012575312708603,
+  "end_ns": 3012579347639409,
+  "threads": [
+    {
+      "tid": 2751745,
+      "pid": 2751745,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 21616,
+      "runnable_ns": 524112,
+      "timeslices": 5
+    },
+    {
+      "tid": 2751857,
+      "pid": 2751745,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 26967808,
+      "runnable_ns": 2121277936,
+      "timeslices": 13302
+    },
+    {
+      "tid": 2751922,
+      "pid": 2751745,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751924,
+      "pid": 2751745,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751954,
+      "pid": 2751745,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751957,
+      "pid": 2751745,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751962,
+      "pid": 2751745,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751966,
+      "pid": 2751745,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 165881024,
+      "runnable_ns": 1365972672,
+      "timeslices": 8461
+    },
+    {
+      "tid": 2752011,
+      "pid": 2751745,
+      "comm": "srsue",
+      "role": "ue:radio:2120",
+      "cpu_ns": 57371456,
+      "runnable_ns": 1109978400,
+      "timeslices": 6892
+    },
+    {
+      "tid": 2752033,
+      "pid": 2751745,
+      "comm": "SYNC",
+      "role": "ue:radio:2121",
+      "cpu_ns": 88824960,
+      "runnable_ns": 104208,
+      "timeslices": 3844
+    },
+    {
+      "tid": 2752044,
+      "pid": 2751745,
+      "comm": "WORKER0",
+      "role": "ue:radio:2121",
+      "cpu_ns": 182941568,
+      "runnable_ns": 4668960,
+      "timeslices": 922
+    },
+    {
+      "tid": 2752047,
+      "pid": 2751745,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 69723504,
+      "runnable_ns": 1840794864,
+      "timeslices": 20974
+    },
+    {
+      "tid": 2752049,
+      "pid": 2751745,
+      "comm": "WORKER1",
+      "role": "ue:radio:2121",
+      "cpu_ns": 181636624,
+      "runnable_ns": 4867696,
+      "timeslices": 928
+    },
+    {
+      "tid": 2752062,
+      "pid": 2751745,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2752064,
+      "pid": 2751745,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 271200,
+      "runnable_ns": 2550656,
+      "timeslices": 8
+    },
+    {
+      "tid": 2752126,
+      "pid": 2751745,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 227552,
+      "runnable_ns": 7992208,
+      "timeslices": 46
+    },
+    {
+      "tid": 2751713,
+      "pid": 2751713,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 17280,
+      "runnable_ns": 676864,
+      "timeslices": 4
+    },
+    {
+      "tid": 2751737,
+      "pid": 2751713,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 45551584,
+      "runnable_ns": 2357667328,
+      "timeslices": 11819
+    },
+    {
+      "tid": 2751813,
+      "pid": 2751713,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751816,
+      "pid": 2751713,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751829,
+      "pid": 2751713,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751832,
+      "pid": 2751713,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751839,
+      "pid": 2751713,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751842,
+      "pid": 2751713,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 170685568,
+      "runnable_ns": 1545673104,
+      "timeslices": 8862
+    },
+    {
+      "tid": 2751874,
+      "pid": 2751713,
+      "comm": "srsue",
+      "role": "ue:radio:2100",
+      "cpu_ns": 58835680,
+      "runnable_ns": 1259204368,
+      "timeslices": 7579
+    },
+    {
+      "tid": 2751900,
+      "pid": 2751713,
+      "comm": "SYNC",
+      "role": "ue:radio:2101",
+      "cpu_ns": 88918704,
+      "runnable_ns": 157952,
+      "timeslices": 4218
+    },
+    {
+      "tid": 2751910,
+      "pid": 2751713,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 100017168,
+      "runnable_ns": 1976208752,
+      "timeslices": 19310
+    },
+    {
+      "tid": 2751911,
+      "pid": 2751713,
+      "comm": "WORKER0",
+      "role": "ue:radio:2101",
+      "cpu_ns": 233283456,
+      "runnable_ns": 4231616,
+      "timeslices": 924
+    },
+    {
+      "tid": 2751937,
+      "pid": 2751713,
+      "comm": "WORKER1",
+      "role": "ue:radio:2101",
+      "cpu_ns": 249581168,
+      "runnable_ns": 4417552,
+      "timeslices": 926
+    },
+    {
+      "tid": 2751955,
+      "pid": 2751713,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751958,
+      "pid": 2751713,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1526944,
+      "runnable_ns": 18777120,
+      "timeslices": 49
+    },
+    {
+      "tid": 2752127,
+      "pid": 2751713,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 5501664,
+      "runnable_ns": 90200432,
+      "timeslices": 456
+    },
+    {
+      "tid": 2751523,
+      "pid": 2751523,
+      "comm": "gnb",
+      "role": "other",
+      "cpu_ns": 197472,
+      "runnable_ns": 0,
+      "timeslices": 16
+    },
+    {
+      "tid": 2751529,
+      "pid": 2751523,
+      "comm": "gnb",
+      "role": "other",
+      "cpu_ns": 160310976,
+      "runnable_ns": 2742688,
+      "timeslices": 26116
+    },
+    {
+      "tid": 2751542,
+      "pid": 2751523,
+      "comm": "main_pool#0",
+      "role": "other",
+      "cpu_ns": 241565792,
+      "runnable_ns": 1464672,
+      "timeslices": 78904
+    },
+    {
+      "tid": 2751543,
+      "pid": 2751523,
+      "comm": "main_pool#1",
+      "role": "other",
+      "cpu_ns": 243755936,
+      "runnable_ns": 1229520,
+      "timeslices": 78646
+    },
+    {
+      "tid": 2751544,
+      "pid": 2751523,
+      "comm": "main_pool#2",
+      "role": "other",
+      "cpu_ns": 243965968,
+      "runnable_ns": 1124624,
+      "timeslices": 78749
+    },
+    {
+      "tid": 2751545,
+      "pid": 2751523,
+      "comm": "main_pool#3",
+      "role": "other",
+      "cpu_ns": 242075296,
+      "runnable_ns": 973504,
+      "timeslices": 78491
+    },
+    {
+      "tid": 2751546,
+      "pid": 2751523,
+      "comm": "main_pool#4",
+      "role": "other",
+      "cpu_ns": 238576240,
+      "runnable_ns": 1111680,
+      "timeslices": 79043
+    },
+    {
+      "tid": 2751547,
+      "pid": 2751523,
+      "comm": "phy_worker",
+      "role": "other",
+      "cpu_ns": 1607892512,
+      "runnable_ns": 106283520,
+      "timeslices": 102150
+    },
+    {
+      "tid": 2751548,
+      "pid": 2751523,
+      "comm": "radio",
+      "role": "gnb:radio",
+      "cpu_ns": 3725375552,
+      "runnable_ns": 256621168,
+      "timeslices": 80672
+    },
+    {
+      "tid": 2751549,
+      "pid": 2751523,
+      "comm": "io_broker_epoll",
+      "role": "other",
+      "cpu_ns": 51408544,
+      "runnable_ns": 84464,
+      "timeslices": 6242
+    },
+    {
+      "tid": 2751550,
+      "pid": 2751523,
+      "comm": "cuda0000280000b",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751552,
+      "pid": 2751523,
+      "comm": "cuda-EvtHandlr",
+      "role": "other",
+      "cpu_ns": 1326208,
+      "runnable_ns": 21072,
+      "timeslices": 43
+    },
+    {
+      "tid": 2751687,
+      "pid": 2751523,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751688,
+      "pid": 2751523,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 298065376,
+      "runnable_ns": 7592304,
+      "timeslices": 13280
+    },
+    {
+      "tid": 2751689,
+      "pid": 2751523,
+      "comm": "ws_server",
+      "role": "other",
+      "cpu_ns": 246496,
+      "runnable_ns": 3040,
+      "timeslices": 10
+    },
+    {
+      "tid": 2751716,
+      "pid": 2751716,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 19040,
+      "runnable_ns": 591600,
+      "timeslices": 4
+    },
+    {
+      "tid": 2751743,
+      "pid": 2751716,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 36618192,
+      "runnable_ns": 2259524432,
+      "timeslices": 12419
+    },
+    {
+      "tid": 2751814,
+      "pid": 2751716,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751817,
+      "pid": 2751716,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751824,
+      "pid": 2751716,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751830,
+      "pid": 2751716,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751837,
+      "pid": 2751716,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751840,
+      "pid": 2751716,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 179650336,
+      "runnable_ns": 1477982576,
+      "timeslices": 8846
+    },
+    {
+      "tid": 2751875,
+      "pid": 2751716,
+      "comm": "srsue",
+      "role": "ue:radio:2102",
+      "cpu_ns": 65049232,
+      "runnable_ns": 1258588288,
+      "timeslices": 7345
+    },
+    {
+      "tid": 2751898,
+      "pid": 2751716,
+      "comm": "SYNC",
+      "role": "ue:radio:2103",
+      "cpu_ns": 92919440,
+      "runnable_ns": 145024,
+      "timeslices": 3982
+    },
+    {
+      "tid": 2751905,
+      "pid": 2751716,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 85970256,
+      "runnable_ns": 1929905216,
+      "timeslices": 19918
+    },
+    {
+      "tid": 2751919,
+      "pid": 2751716,
+      "comm": "WORKER0",
+      "role": "ue:radio:2103",
+      "cpu_ns": 219251392,
+      "runnable_ns": 4364304,
+      "timeslices": 922
+    },
+    {
+      "tid": 2751949,
+      "pid": 2751716,
+      "comm": "WORKER1",
+      "role": "ue:radio:2103",
+      "cpu_ns": 222625936,
+      "runnable_ns": 3944224,
+      "timeslices": 925
+    },
+    {
+      "tid": 2751963,
+      "pid": 2751716,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751967,
+      "pid": 2751716,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1592672,
+      "runnable_ns": 17448576,
+      "timeslices": 55
+    },
+    {
+      "tid": 2752124,
+      "pid": 2751716,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 2520944,
+      "runnable_ns": 45499600,
+      "timeslices": 217
+    },
+    {
+      "tid": 2751749,
+      "pid": 2751749,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 21648,
+      "runnable_ns": 519424,
+      "timeslices": 5
+    },
+    {
+      "tid": 2751862,
+      "pid": 2751749,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 40190432,
+      "runnable_ns": 2355057248,
+      "timeslices": 11754
+    },
+    {
+      "tid": 2751941,
+      "pid": 2751749,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751946,
+      "pid": 2751749,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751972,
+      "pid": 2751749,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751975,
+      "pid": 2751749,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751980,
+      "pid": 2751749,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751983,
+      "pid": 2751749,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 165458640,
+      "runnable_ns": 1541791392,
+      "timeslices": 8182
+    },
+    {
+      "tid": 2752020,
+      "pid": 2751749,
+      "comm": "srsue",
+      "role": "ue:radio:2122",
+      "cpu_ns": 56920064,
+      "runnable_ns": 1247633968,
+      "timeslices": 6713
+    },
+    {
+      "tid": 2752046,
+      "pid": 2751749,
+      "comm": "SYNC",
+      "role": "ue:radio:2123",
+      "cpu_ns": 89342032,
+      "runnable_ns": 180352,
+      "timeslices": 3714
+    },
+    {
+      "tid": 2752052,
+      "pid": 2751749,
+      "comm": "WORKER0",
+      "role": "ue:radio:2123",
+      "cpu_ns": 237179824,
+      "runnable_ns": 4684080,
+      "timeslices": 944
+    },
+    {
+      "tid": 2752061,
+      "pid": 2751749,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 94671840,
+      "runnable_ns": 1982508576,
+      "timeslices": 19303
+    },
+    {
+      "tid": 2752065,
+      "pid": 2751749,
+      "comm": "WORKER1",
+      "role": "ue:radio:2123",
+      "cpu_ns": 227967344,
+      "runnable_ns": 4631552,
+      "timeslices": 950
+    },
+    {
+      "tid": 2752071,
+      "pid": 2751749,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2752072,
+      "pid": 2751749,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1519072,
+      "runnable_ns": 19911952,
+      "timeslices": 46
+    },
+    {
+      "tid": 2752120,
+      "pid": 2751749,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 2433280,
+      "runnable_ns": 50461648,
+      "timeslices": 215
+    },
+    {
+      "tid": 2751719,
+      "pid": 2751719,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 18720,
+      "runnable_ns": 695568,
+      "timeslices": 4
+    },
+    {
+      "tid": 2751747,
+      "pid": 2751719,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 47251600,
+      "runnable_ns": 2169640144,
+      "timeslices": 13046
+    },
+    {
+      "tid": 2751812,
+      "pid": 2751719,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751815,
+      "pid": 2751719,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751823,
+      "pid": 2751719,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751826,
+      "pid": 2751719,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751831,
+      "pid": 2751719,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751834,
+      "pid": 2751719,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 170549424,
+      "runnable_ns": 1361852896,
+      "timeslices": 8567
+    },
+    {
+      "tid": 2751869,
+      "pid": 2751719,
+      "comm": "srsue",
+      "role": "ue:radio:2104",
+      "cpu_ns": 59032032,
+      "runnable_ns": 1277266720,
+      "timeslices": 6996
+    },
+    {
+      "tid": 2751894,
+      "pid": 2751719,
+      "comm": "SYNC",
+      "role": "ue:radio:2105",
+      "cpu_ns": 89005936,
+      "runnable_ns": 165152,
+      "timeslices": 3876
+    },
+    {
+      "tid": 2751902,
+      "pid": 2751719,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 95388592,
+      "runnable_ns": 1815210224,
+      "timeslices": 20966
+    },
+    {
+      "tid": 2751909,
+      "pid": 2751719,
+      "comm": "WORKER0",
+      "role": "ue:radio:2105",
+      "cpu_ns": 271532848,
+      "runnable_ns": 4647376,
+      "timeslices": 929
+    },
+    {
+      "tid": 2751930,
+      "pid": 2751719,
+      "comm": "WORKER1",
+      "role": "ue:radio:2105",
+      "cpu_ns": 249046016,
+      "runnable_ns": 4333136,
+      "timeslices": 926
+    },
+    {
+      "tid": 2751953,
+      "pid": 2751719,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751956,
+      "pid": 2751719,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1342576,
+      "runnable_ns": 11526736,
+      "timeslices": 41
+    },
+    {
+      "tid": 2752122,
+      "pid": 2751719,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 5207840,
+      "runnable_ns": 74880176,
+      "timeslices": 437
+    },
+    {
+      "tid": 2751752,
+      "pid": 2751752,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 16720,
+      "runnable_ns": 743584,
+      "timeslices": 4
+    },
+    {
+      "tid": 2751864,
+      "pid": 2751752,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 42471680,
+      "runnable_ns": 2271743968,
+      "timeslices": 12356
+    },
+    {
+      "tid": 2751934,
+      "pid": 2751752,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751944,
+      "pid": 2751752,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751973,
+      "pid": 2751752,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751977,
+      "pid": 2751752,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751981,
+      "pid": 2751752,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751984,
+      "pid": 2751752,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 182858608,
+      "runnable_ns": 1483131536,
+      "timeslices": 8813
+    },
+    {
+      "tid": 2752019,
+      "pid": 2751752,
+      "comm": "srsue",
+      "role": "ue:radio:2124",
+      "cpu_ns": 64851696,
+      "runnable_ns": 1261590384,
+      "timeslices": 7205
+    },
+    {
+      "tid": 2752041,
+      "pid": 2751752,
+      "comm": "SYNC",
+      "role": "ue:radio:2125",
+      "cpu_ns": 92103856,
+      "runnable_ns": 120736,
+      "timeslices": 3904
+    },
+    {
+      "tid": 2752053,
+      "pid": 2751752,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 93097936,
+      "runnable_ns": 1922055984,
+      "timeslices": 19916
+    },
+    {
+      "tid": 2752056,
+      "pid": 2751752,
+      "comm": "WORKER0",
+      "role": "ue:radio:2125",
+      "cpu_ns": 228048688,
+      "runnable_ns": 4212800,
+      "timeslices": 930
+    },
+    {
+      "tid": 2752066,
+      "pid": 2751752,
+      "comm": "WORKER1",
+      "role": "ue:radio:2125",
+      "cpu_ns": 227908720,
+      "runnable_ns": 4791040,
+      "timeslices": 930
+    },
+    {
+      "tid": 2752074,
+      "pid": 2751752,
+      "comm": "WORKER2",
+      "role": "ue:radio:2125",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2752075,
+      "pid": 2751752,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1257584,
+      "runnable_ns": 9385504,
+      "timeslices": 42
+    },
+    {
+      "tid": 2752121,
+      "pid": 2751752,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 5361808,
+      "runnable_ns": 86210448,
+      "timeslices": 456
+    },
+    {
+      "tid": 2751722,
+      "pid": 2751722,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 17456,
+      "runnable_ns": 1518608,
+      "timeslices": 4
+    },
+    {
+      "tid": 2751770,
+      "pid": 2751722,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 41356976,
+      "runnable_ns": 2353252656,
+      "timeslices": 11772
+    },
+    {
+      "tid": 2751820,
+      "pid": 2751722,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751821,
+      "pid": 2751722,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751843,
+      "pid": 2751722,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751845,
+      "pid": 2751722,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751848,
+      "pid": 2751722,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751852,
+      "pid": 2751722,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 166054784,
+      "runnable_ns": 1543075664,
+      "timeslices": 8080
+    },
+    {
+      "tid": 2751878,
+      "pid": 2751722,
+      "comm": "srsue",
+      "role": "ue:radio:2106",
+      "cpu_ns": 57172032,
+      "runnable_ns": 1267873600,
+      "timeslices": 6715
+    },
+    {
+      "tid": 2751914,
+      "pid": 2751722,
+      "comm": "SYNC",
+      "role": "ue:radio:2107",
+      "cpu_ns": 88923552,
+      "runnable_ns": 159104,
+      "timeslices": 3706
+    },
+    {
+      "tid": 2751942,
+      "pid": 2751722,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 92130672,
+      "runnable_ns": 1984931296,
+      "timeslices": 19304
+    },
+    {
+      "tid": 2751950,
+      "pid": 2751722,
+      "comm": "WORKER0",
+      "role": "ue:radio:2107",
+      "cpu_ns": 235654720,
+      "runnable_ns": 4768064,
+      "timeslices": 952
+    },
+    {
+      "tid": 2751965,
+      "pid": 2751722,
+      "comm": "WORKER1",
+      "role": "ue:radio:2107",
+      "cpu_ns": 234340304,
+      "runnable_ns": 4349072,
+      "timeslices": 953
+    },
+    {
+      "tid": 2751986,
+      "pid": 2751722,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751989,
+      "pid": 2751722,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1513888,
+      "runnable_ns": 23639728,
+      "timeslices": 52
+    },
+    {
+      "tid": 2752123,
+      "pid": 2751722,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 2467936,
+      "runnable_ns": 51236720,
+      "timeslices": 214
+    },
+    {
+      "tid": 2751435,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "other",
+      "cpu_ns": 1500336,
+      "runnable_ns": 5775536,
+      "timeslices": 200
+    },
+    {
+      "tid": 2751441,
+      "pid": 2751435,
+      "comm": "cuda00001400006",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751443,
+      "pid": 2751435,
+      "comm": "cuda-EvtHandlr",
+      "role": "other",
+      "cpu_ns": 481408,
+      "runnable_ns": 1299168,
+      "timeslices": 40
+    },
+    {
+      "tid": 2751445,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "other",
+      "cpu_ns": 592636960,
+      "runnable_ns": 629742208,
+      "timeslices": 24148
+    },
+    {
+      "tid": 2751446,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "other",
+      "cpu_ns": 37507936,
+      "runnable_ns": 31706736,
+      "timeslices": 402
+    },
+    {
+      "tid": 2751447,
+      "pid": 2751435,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751448,
+      "pid": 2751435,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751449,
+      "pid": 2751435,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751450,
+      "pid": 2751435,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 567642992,
+      "runnable_ns": 1290296800,
+      "timeslices": 46320
+    },
+    {
+      "tid": 2751451,
+      "pid": 2751435,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751452,
+      "pid": 2751435,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 970902560,
+      "runnable_ns": 1280992128,
+      "timeslices": 44046
+    },
+    {
+      "tid": 2751453,
+      "pid": 2751435,
+      "comm": "ZMQbg/IO/1",
+      "role": "other",
+      "cpu_ns": 1154570096,
+      "runnable_ns": 1112983872,
+      "timeslices": 50345
+    },
+    {
+      "tid": 2751461,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2000",
+      "cpu_ns": 42106256,
+      "runnable_ns": 72838816,
+      "timeslices": 3621
+    },
+    {
+      "tid": 2751462,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2101",
+      "cpu_ns": 42160944,
+      "runnable_ns": 90457216,
+      "timeslices": 3613
+    },
+    {
+      "tid": 2751463,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2103",
+      "cpu_ns": 38706400,
+      "runnable_ns": 84208640,
+      "timeslices": 3621
+    },
+    {
+      "tid": 2751464,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2105",
+      "cpu_ns": 42825136,
+      "runnable_ns": 96189440,
+      "timeslices": 3608
+    },
+    {
+      "tid": 2751465,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2107",
+      "cpu_ns": 37861792,
+      "runnable_ns": 77619984,
+      "timeslices": 3616
+    },
+    {
+      "tid": 2751466,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2109",
+      "cpu_ns": 43457520,
+      "runnable_ns": 93822464,
+      "timeslices": 3609
+    },
+    {
+      "tid": 2751467,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2111",
+      "cpu_ns": 39599040,
+      "runnable_ns": 78827440,
+      "timeslices": 3612
+    },
+    {
+      "tid": 2751468,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2113",
+      "cpu_ns": 39228688,
+      "runnable_ns": 88477424,
+      "timeslices": 3606
+    },
+    {
+      "tid": 2751469,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2115",
+      "cpu_ns": 37778768,
+      "runnable_ns": 85901904,
+      "timeslices": 3613
+    },
+    {
+      "tid": 2751470,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2117",
+      "cpu_ns": 41021200,
+      "runnable_ns": 91248400,
+      "timeslices": 3616
+    },
+    {
+      "tid": 2751471,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2119",
+      "cpu_ns": 35817360,
+      "runnable_ns": 86325952,
+      "timeslices": 3621
+    },
+    {
+      "tid": 2751472,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2121",
+      "cpu_ns": 44094480,
+      "runnable_ns": 93306384,
+      "timeslices": 3605
+    },
+    {
+      "tid": 2751473,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2123",
+      "cpu_ns": 39126000,
+      "runnable_ns": 83617488,
+      "timeslices": 3614
+    },
+    {
+      "tid": 2751474,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2125",
+      "cpu_ns": 44959920,
+      "runnable_ns": 97049568,
+      "timeslices": 3608
+    },
+    {
+      "tid": 2751475,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2127",
+      "cpu_ns": 43410512,
+      "runnable_ns": 85330960,
+      "timeslices": 3602
+    },
+    {
+      "tid": 2751476,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2129",
+      "cpu_ns": 39355728,
+      "runnable_ns": 94153648,
+      "timeslices": 3608
+    },
+    {
+      "tid": 2751477,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "puller:2131",
+      "cpu_ns": 41823104,
+      "runnable_ns": 100474736,
+      "timeslices": 3611
+    },
+    {
+      "tid": 2751478,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:gnb0",
+      "cpu_ns": 396257808,
+      "runnable_ns": 3604197520,
+      "timeslices": 88813
+    },
+    {
+      "tid": 2751479,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue0",
+      "cpu_ns": 178901120,
+      "runnable_ns": 3807986192,
+      "timeslices": 88141
+    },
+    {
+      "tid": 2751480,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue1",
+      "cpu_ns": 176138176,
+      "runnable_ns": 3808667696,
+      "timeslices": 92065
+    },
+    {
+      "tid": 2751481,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue2",
+      "cpu_ns": 180511584,
+      "runnable_ns": 3803954960,
+      "timeslices": 100364
+    },
+    {
+      "tid": 2751482,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue3",
+      "cpu_ns": 150466192,
+      "runnable_ns": 3866092976,
+      "timeslices": 45157
+    },
+    {
+      "tid": 2751483,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue4",
+      "cpu_ns": 158726448,
+      "runnable_ns": 3856699424,
+      "timeslices": 47130
+    },
+    {
+      "tid": 2751484,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue5",
+      "cpu_ns": 184601584,
+      "runnable_ns": 3814139008,
+      "timeslices": 102185
+    },
+    {
+      "tid": 2751485,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue6",
+      "cpu_ns": 190637664,
+      "runnable_ns": 3813886752,
+      "timeslices": 87932
+    },
+    {
+      "tid": 2751486,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue7",
+      "cpu_ns": 174808672,
+      "runnable_ns": 3834450128,
+      "timeslices": 74601
+    },
+    {
+      "tid": 2751487,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue8",
+      "cpu_ns": 146550064,
+      "runnable_ns": 3856680576,
+      "timeslices": 41922
+    },
+    {
+      "tid": 2751488,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue9",
+      "cpu_ns": 151724192,
+      "runnable_ns": 3864157328,
+      "timeslices": 45074
+    },
+    {
+      "tid": 2751489,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue10",
+      "cpu_ns": 182118624,
+      "runnable_ns": 3812940656,
+      "timeslices": 105752
+    },
+    {
+      "tid": 2751490,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue11",
+      "cpu_ns": 148388896,
+      "runnable_ns": 3869852720,
+      "timeslices": 45155
+    },
+    {
+      "tid": 2751491,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue12",
+      "cpu_ns": 180526816,
+      "runnable_ns": 3803995792,
+      "timeslices": 95466
+    },
+    {
+      "tid": 2751492,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue13",
+      "cpu_ns": 154215520,
+      "runnable_ns": 3858531584,
+      "timeslices": 48515
+    },
+    {
+      "tid": 2751493,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue14",
+      "cpu_ns": 177589728,
+      "runnable_ns": 3826706640,
+      "timeslices": 79340
+    },
+    {
+      "tid": 2751494,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "producer:ue15",
+      "cpu_ns": 149723104,
+      "runnable_ns": 3853540480,
+      "timeslices": 34987
+    },
+    {
+      "tid": 2751495,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2001",
+      "cpu_ns": 94217216,
+      "runnable_ns": 3421591488,
+      "timeslices": 74758
+    },
+    {
+      "tid": 2751496,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2100",
+      "cpu_ns": 55735712,
+      "runnable_ns": 1404173376,
+      "timeslices": 21749
+    },
+    {
+      "tid": 2751497,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2102",
+      "cpu_ns": 56722944,
+      "runnable_ns": 1413959008,
+      "timeslices": 24758
+    },
+    {
+      "tid": 2751498,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2104",
+      "cpu_ns": 61186464,
+      "runnable_ns": 1586045456,
+      "timeslices": 31988
+    },
+    {
+      "tid": 2751499,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2106",
+      "cpu_ns": 48764768,
+      "runnable_ns": 1454944848,
+      "timeslices": 11300
+    },
+    {
+      "tid": 2751500,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2108",
+      "cpu_ns": 48970624,
+      "runnable_ns": 1443436144,
+      "timeslices": 10725
+    },
+    {
+      "tid": 2751501,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2110",
+      "cpu_ns": 61676464,
+      "runnable_ns": 1681499376,
+      "timeslices": 31607
+    },
+    {
+      "tid": 2751502,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2112",
+      "cpu_ns": 47768896,
+      "runnable_ns": 380487232,
+      "timeslices": 7650
+    },
+    {
+      "tid": 2751503,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2114",
+      "cpu_ns": 47472592,
+      "runnable_ns": 882124944,
+      "timeslices": 7406
+    },
+    {
+      "tid": 2751504,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2116",
+      "cpu_ns": 47474992,
+      "runnable_ns": 1457947008,
+      "timeslices": 11482
+    },
+    {
+      "tid": 2751505,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2118",
+      "cpu_ns": 50107184,
+      "runnable_ns": 1463464320,
+      "timeslices": 11536
+    },
+    {
+      "tid": 2751506,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2120",
+      "cpu_ns": 62467280,
+      "runnable_ns": 1707736256,
+      "timeslices": 34772
+    },
+    {
+      "tid": 2751507,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2122",
+      "cpu_ns": 49449888,
+      "runnable_ns": 1493448176,
+      "timeslices": 11130
+    },
+    {
+      "tid": 2751508,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2124",
+      "cpu_ns": 60085696,
+      "runnable_ns": 1449292960,
+      "timeslices": 29979
+    },
+    {
+      "tid": 2751509,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2126",
+      "cpu_ns": 52914704,
+      "runnable_ns": 1823066368,
+      "timeslices": 16207
+    },
+    {
+      "tid": 2751510,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2128",
+      "cpu_ns": 45839600,
+      "runnable_ns": 409909440,
+      "timeslices": 4841
+    },
+    {
+      "tid": 2751511,
+      "pid": 2751435,
+      "comm": "ocudu-gpu-chann",
+      "role": "reply:2130",
+      "cpu_ns": 44866816,
+      "runnable_ns": 924034896,
+      "timeslices": 5069
+    },
+    {
+      "tid": 2751755,
+      "pid": 2751755,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 17264,
+      "runnable_ns": 224240,
+      "timeslices": 4
+    },
+    {
+      "tid": 2751865,
+      "pid": 2751755,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 38566432,
+      "runnable_ns": 2148604640,
+      "timeslices": 13192
+    },
+    {
+      "tid": 2751938,
+      "pid": 2751755,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751945,
+      "pid": 2751755,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751968,
+      "pid": 2751755,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751974,
+      "pid": 2751755,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751978,
+      "pid": 2751755,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751982,
+      "pid": 2751755,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 160231328,
+      "runnable_ns": 1233249312,
+      "timeslices": 8379
+    },
+    {
+      "tid": 2752017,
+      "pid": 2751755,
+      "comm": "srsue",
+      "role": "ue:radio:2126",
+      "cpu_ns": 57408768,
+      "runnable_ns": 1109734640,
+      "timeslices": 6720
+    },
+    {
+      "tid": 2752050,
+      "pid": 2751755,
+      "comm": "SYNC",
+      "role": "ue:radio:2127",
+      "cpu_ns": 87337200,
+      "runnable_ns": 136800,
+      "timeslices": 3718
+    },
+    {
+      "tid": 2752060,
+      "pid": 2751755,
+      "comm": "WORKER0",
+      "role": "ue:radio:2127",
+      "cpu_ns": 217229296,
+      "runnable_ns": 4173472,
+      "timeslices": 921
+    },
+    {
+      "tid": 2752067,
+      "pid": 2751755,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 86288352,
+      "runnable_ns": 1824408112,
+      "timeslices": 20957
+    },
+    {
+      "tid": 2752070,
+      "pid": 2751755,
+      "comm": "WORKER1",
+      "role": "ue:radio:2127",
+      "cpu_ns": 223276368,
+      "runnable_ns": 4260832,
+      "timeslices": 919
+    },
+    {
+      "tid": 2752077,
+      "pid": 2751755,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2752078,
+      "pid": 2751755,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1172608,
+      "runnable_ns": 6255648,
+      "timeslices": 40
+    },
+    {
+      "tid": 2752118,
+      "pid": 2751755,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 2490576,
+      "runnable_ns": 35642160,
+      "timeslices": 225
+    },
+    {
+      "tid": 2751725,
+      "pid": 2751725,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 17808,
+      "runnable_ns": 700368,
+      "timeslices": 4
+    },
+    {
+      "tid": 2751776,
+      "pid": 2751725,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 43724304,
+      "runnable_ns": 2270680576,
+      "timeslices": 12414
+    },
+    {
+      "tid": 2751822,
+      "pid": 2751725,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751827,
+      "pid": 2751725,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751846,
+      "pid": 2751725,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751851,
+      "pid": 2751725,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751856,
+      "pid": 2751725,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751859,
+      "pid": 2751725,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 181053104,
+      "runnable_ns": 1449690960,
+      "timeslices": 8659
+    },
+    {
+      "tid": 2751883,
+      "pid": 2751725,
+      "comm": "srsue",
+      "role": "ue:radio:2108",
+      "cpu_ns": 63229248,
+      "runnable_ns": 1274942688,
+      "timeslices": 7078
+    },
+    {
+      "tid": 2751917,
+      "pid": 2751725,
+      "comm": "SYNC",
+      "role": "ue:radio:2109",
+      "cpu_ns": 91396464,
+      "runnable_ns": 164464,
+      "timeslices": 3820
+    },
+    {
+      "tid": 2751939,
+      "pid": 2751725,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 94733552,
+      "runnable_ns": 1919324464,
+      "timeslices": 19918
+    },
+    {
+      "tid": 2751951,
+      "pid": 2751725,
+      "comm": "WORKER0",
+      "role": "ue:radio:2109",
+      "cpu_ns": 235269776,
+      "runnable_ns": 4017120,
+      "timeslices": 933
+    },
+    {
+      "tid": 2751964,
+      "pid": 2751725,
+      "comm": "WORKER1",
+      "role": "ue:radio:2109",
+      "cpu_ns": 251183008,
+      "runnable_ns": 4247632,
+      "timeslices": 934
+    },
+    {
+      "tid": 2751990,
+      "pid": 2751725,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751994,
+      "pid": 2751725,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1446560,
+      "runnable_ns": 20513504,
+      "timeslices": 62
+    },
+    {
+      "tid": 2752129,
+      "pid": 2751725,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 5232112,
+      "runnable_ns": 84730032,
+      "timeslices": 464
+    },
+    {
+      "tid": 2751758,
+      "pid": 2751758,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 37184,
+      "runnable_ns": 2619536,
+      "timeslices": 5
+    },
+    {
+      "tid": 2751858,
+      "pid": 2751758,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 83544928,
+      "runnable_ns": 2502711584,
+      "timeslices": 10635
+    },
+    {
+      "tid": 2751877,
+      "pid": 2751758,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751879,
+      "pid": 2751758,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751884,
+      "pid": 2751758,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751885,
+      "pid": 2751758,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751886,
+      "pid": 2751758,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751887,
+      "pid": 2751758,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 411668064,
+      "runnable_ns": 1724189232,
+      "timeslices": 11302
+    },
+    {
+      "tid": 2751897,
+      "pid": 2751758,
+      "comm": "srsue",
+      "role": "ue:radio:2128",
+      "cpu_ns": 129726944,
+      "runnable_ns": 1851933488,
+      "timeslices": 8720
+    },
+    {
+      "tid": 2751904,
+      "pid": 2751758,
+      "comm": "SYNC",
+      "role": "ue:radio:2129",
+      "cpu_ns": 155228256,
+      "runnable_ns": 743040,
+      "timeslices": 4448
+    },
+    {
+      "tid": 2751912,
+      "pid": 2751758,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 156096848,
+      "runnable_ns": 2157871760,
+      "timeslices": 16745
+    },
+    {
+      "tid": 2751918,
+      "pid": 2751758,
+      "comm": "WORKER0",
+      "role": "ue:radio:2129",
+      "cpu_ns": 501737024,
+      "runnable_ns": 7517920,
+      "timeslices": 933
+    },
+    {
+      "tid": 2751923,
+      "pid": 2751758,
+      "comm": "WORKER1",
+      "role": "ue:radio:2129",
+      "cpu_ns": 508794256,
+      "runnable_ns": 6892000,
+      "timeslices": 930
+    },
+    {
+      "tid": 2751929,
+      "pid": 2751758,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751931,
+      "pid": 2751758,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 2008304,
+      "runnable_ns": 14270784,
+      "timeslices": 46
+    },
+    {
+      "tid": 2752119,
+      "pid": 2751758,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 8048896,
+      "runnable_ns": 135924800,
+      "timeslices": 463
+    },
+    {
+      "tid": 2751728,
+      "pid": 2751728,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 19136,
+      "runnable_ns": 827504,
+      "timeslices": 4
+    },
+    {
+      "tid": 2751774,
+      "pid": 2751728,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 38617712,
+      "runnable_ns": 2150095296,
+      "timeslices": 13208
+    },
+    {
+      "tid": 2751825,
+      "pid": 2751728,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751828,
+      "pid": 2751728,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751849,
+      "pid": 2751728,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751854,
+      "pid": 2751728,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751860,
+      "pid": 2751728,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751861,
+      "pid": 2751728,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 164798128,
+      "runnable_ns": 1355566064,
+      "timeslices": 8291
+    },
+    {
+      "tid": 2751882,
+      "pid": 2751728,
+      "comm": "srsue",
+      "role": "ue:radio:2110",
+      "cpu_ns": 57517216,
+      "runnable_ns": 1182513152,
+      "timeslices": 6834
+    },
+    {
+      "tid": 2751920,
+      "pid": 2751728,
+      "comm": "SYNC",
+      "role": "ue:radio:2111",
+      "cpu_ns": 88029520,
+      "runnable_ns": 159568,
+      "timeslices": 3813
+    },
+    {
+      "tid": 2751947,
+      "pid": 2751728,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 90679648,
+      "runnable_ns": 1820260240,
+      "timeslices": 20951
+    },
+    {
+      "tid": 2751952,
+      "pid": 2751728,
+      "comm": "WORKER0",
+      "role": "ue:radio:2111",
+      "cpu_ns": 222785696,
+      "runnable_ns": 4735760,
+      "timeslices": 941
+    },
+    {
+      "tid": 2751971,
+      "pid": 2751728,
+      "comm": "WORKER1",
+      "role": "ue:radio:2111",
+      "cpu_ns": 225164576,
+      "runnable_ns": 4570448,
+      "timeslices": 929
+    },
+    {
+      "tid": 2751992,
+      "pid": 2751728,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751996,
+      "pid": 2751728,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1228080,
+      "runnable_ns": 10793120,
+      "timeslices": 36
+    },
+    {
+      "tid": 2752130,
+      "pid": 2751728,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 2252368,
+      "runnable_ns": 38346144,
+      "timeslices": 211
+    },
+    {
+      "tid": 2751762,
+      "pid": 2751762,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 42224,
+      "runnable_ns": 1239680,
+      "timeslices": 5
+    },
+    {
+      "tid": 2751863,
+      "pid": 2751762,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 74061264,
+      "runnable_ns": 2380652864,
+      "timeslices": 11309
+    },
+    {
+      "tid": 2751880,
+      "pid": 2751762,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751881,
+      "pid": 2751762,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751888,
+      "pid": 2751762,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751889,
+      "pid": 2751762,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751890,
+      "pid": 2751762,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751891,
+      "pid": 2751762,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 393048736,
+      "runnable_ns": 1548140768,
+      "timeslices": 10780
+    },
+    {
+      "tid": 2751899,
+      "pid": 2751762,
+      "comm": "srsue",
+      "role": "ue:radio:2130",
+      "cpu_ns": 119723008,
+      "runnable_ns": 1617753632,
+      "timeslices": 7942
+    },
+    {
+      "tid": 2751907,
+      "pid": 2751762,
+      "comm": "SYNC",
+      "role": "ue:radio:2131",
+      "cpu_ns": 149974096,
+      "runnable_ns": 633856,
+      "timeslices": 4030
+    },
+    {
+      "tid": 2751916,
+      "pid": 2751762,
+      "comm": "WORKER0",
+      "role": "ue:radio:2131",
+      "cpu_ns": 485930016,
+      "runnable_ns": 7008576,
+      "timeslices": 944
+    },
+    {
+      "tid": 2751921,
+      "pid": 2751762,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 154211856,
+      "runnable_ns": 2065142848,
+      "timeslices": 17677
+    },
+    {
+      "tid": 2751925,
+      "pid": 2751762,
+      "comm": "WORKER1",
+      "role": "ue:radio:2131",
+      "cpu_ns": 469949456,
+      "runnable_ns": 7055648,
+      "timeslices": 939
+    },
+    {
+      "tid": 2751933,
+      "pid": 2751762,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751936,
+      "pid": 2751762,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1816240,
+      "runnable_ns": 11816016,
+      "timeslices": 40
+    },
+    {
+      "tid": 2752136,
+      "pid": 2751762,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 3818128,
+      "runnable_ns": 64694096,
+      "timeslices": 218
+    },
+    {
+      "tid": 2751731,
+      "pid": 2751731,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 35664,
+      "runnable_ns": 2201136,
+      "timeslices": 5
+    },
+    {
+      "tid": 2751760,
+      "pid": 2751731,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 82641856,
+      "runnable_ns": 2503571632,
+      "timeslices": 10547
+    },
+    {
+      "tid": 2751800,
+      "pid": 2751731,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751802,
+      "pid": 2751731,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751804,
+      "pid": 2751731,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751805,
+      "pid": 2751731,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751807,
+      "pid": 2751731,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751809,
+      "pid": 2751731,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 417818448,
+      "runnable_ns": 1742942416,
+      "timeslices": 11483
+    },
+    {
+      "tid": 2751818,
+      "pid": 2751731,
+      "comm": "srsue",
+      "role": "ue:radio:2112",
+      "cpu_ns": 131854432,
+      "runnable_ns": 1865546256,
+      "timeslices": 9204
+    },
+    {
+      "tid": 2751838,
+      "pid": 2751731,
+      "comm": "SYNC",
+      "role": "ue:radio:2113",
+      "cpu_ns": 155839184,
+      "runnable_ns": 569984,
+      "timeslices": 4698
+    },
+    {
+      "tid": 2751847,
+      "pid": 2751731,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 160952704,
+      "runnable_ns": 2151940256,
+      "timeslices": 16743
+    },
+    {
+      "tid": 2751850,
+      "pid": 2751731,
+      "comm": "WORKER0",
+      "role": "ue:radio:2113",
+      "cpu_ns": 522358768,
+      "runnable_ns": 7437280,
+      "timeslices": 933
+    },
+    {
+      "tid": 2751866,
+      "pid": 2751731,
+      "comm": "WORKER1",
+      "role": "ue:radio:2113",
+      "cpu_ns": 479639520,
+      "runnable_ns": 6678656,
+      "timeslices": 923
+    },
+    {
+      "tid": 2751868,
+      "pid": 2751731,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751871,
+      "pid": 2751731,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 2121904,
+      "runnable_ns": 14238256,
+      "timeslices": 50
+    },
+    {
+      "tid": 2752128,
+      "pid": 2751731,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 8068224,
+      "runnable_ns": 124102320,
+      "timeslices": 453
+    },
+    {
+      "tid": 2751734,
+      "pid": 2751734,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 37760,
+      "runnable_ns": 1314208,
+      "timeslices": 6
+    },
+    {
+      "tid": 2751764,
+      "pid": 2751734,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 74967696,
+      "runnable_ns": 2385024976,
+      "timeslices": 11287
+    },
+    {
+      "tid": 2751801,
+      "pid": 2751734,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751803,
+      "pid": 2751734,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751806,
+      "pid": 2751734,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751808,
+      "pid": 2751734,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751810,
+      "pid": 2751734,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751811,
+      "pid": 2751734,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 391471040,
+      "runnable_ns": 1454854688,
+      "timeslices": 11094
+    },
+    {
+      "tid": 2751819,
+      "pid": 2751734,
+      "comm": "srsue",
+      "role": "ue:radio:2114",
+      "cpu_ns": 124995424,
+      "runnable_ns": 1679554928,
+      "timeslices": 8566
+    },
+    {
+      "tid": 2751841,
+      "pid": 2751734,
+      "comm": "SYNC",
+      "role": "ue:radio:2115",
+      "cpu_ns": 151515936,
+      "runnable_ns": 485296,
+      "timeslices": 4351
+    },
+    {
+      "tid": 2751844,
+      "pid": 2751734,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 150366912,
+      "runnable_ns": 2068471488,
+      "timeslices": 17679
+    },
+    {
+      "tid": 2751853,
+      "pid": 2751734,
+      "comm": "WORKER0",
+      "role": "ue:radio:2115",
+      "cpu_ns": 486824752,
+      "runnable_ns": 7462704,
+      "timeslices": 927
+    },
+    {
+      "tid": 2751867,
+      "pid": 2751734,
+      "comm": "WORKER1",
+      "role": "ue:radio:2115",
+      "cpu_ns": 486587392,
+      "runnable_ns": 7773408,
+      "timeslices": 928
+    },
+    {
+      "tid": 2751870,
+      "pid": 2751734,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751872,
+      "pid": 2751734,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1794544,
+      "runnable_ns": 11872240,
+      "timeslices": 35
+    },
+    {
+      "tid": 2752125,
+      "pid": 2751734,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 3831824,
+      "runnable_ns": 57558768,
+      "timeslices": 214
+    },
+    {
+      "tid": 2751738,
+      "pid": 2751738,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 18560,
+      "runnable_ns": 917808,
+      "timeslices": 4
+    },
+    {
+      "tid": 2751835,
+      "pid": 2751738,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 43636112,
+      "runnable_ns": 2364618688,
+      "timeslices": 11724
+    },
+    {
+      "tid": 2751896,
+      "pid": 2751738,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751901,
+      "pid": 2751738,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751927,
+      "pid": 2751738,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751932,
+      "pid": 2751738,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751943,
+      "pid": 2751738,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751948,
+      "pid": 2751738,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 165694416,
+      "runnable_ns": 1542218960,
+      "timeslices": 8206
+    },
+    {
+      "tid": 2752000,
+      "pid": 2751738,
+      "comm": "srsue",
+      "role": "ue:radio:2116",
+      "cpu_ns": 55943600,
+      "runnable_ns": 1270305376,
+      "timeslices": 6738
+    },
+    {
+      "tid": 2752021,
+      "pid": 2751738,
+      "comm": "SYNC",
+      "role": "ue:radio:2117",
+      "cpu_ns": 87546352,
+      "runnable_ns": 102608,
+      "timeslices": 3722
+    },
+    {
+      "tid": 2752030,
+      "pid": 2751738,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 95278032,
+      "runnable_ns": 1980836560,
+      "timeslices": 19295
+    },
+    {
+      "tid": 2752035,
+      "pid": 2751738,
+      "comm": "WORKER0",
+      "role": "ue:radio:2117",
+      "cpu_ns": 259793632,
+      "runnable_ns": 4674880,
+      "timeslices": 947
+    },
+    {
+      "tid": 2752043,
+      "pid": 2751738,
+      "comm": "WORKER1",
+      "role": "ue:radio:2117",
+      "cpu_ns": 238130896,
+      "runnable_ns": 4617744,
+      "timeslices": 941
+    },
+    {
+      "tid": 2752058,
+      "pid": 2751738,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2752059,
+      "pid": 2751738,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1524720,
+      "runnable_ns": 18839760,
+      "timeslices": 53
+    },
+    {
+      "tid": 2752131,
+      "pid": 2751738,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 5312624,
+      "runnable_ns": 98125712,
+      "timeslices": 454
+    },
+    {
+      "tid": 2751741,
+      "pid": 2751741,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 18720,
+      "runnable_ns": 973136,
+      "timeslices": 4
+    },
+    {
+      "tid": 2751855,
+      "pid": 2751741,
+      "comm": "srsue",
+      "role": "other",
+      "cpu_ns": 37551856,
+      "runnable_ns": 2257298688,
+      "timeslices": 12439
+    },
+    {
+      "tid": 2751926,
+      "pid": 2751741,
+      "comm": "TASKWORKER0",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751928,
+      "pid": 2751741,
+      "comm": "TASKWORKER1",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751961,
+      "pid": 2751741,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751970,
+      "pid": 2751741,
+      "comm": "PHY_CMD",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751976,
+      "pid": 2751741,
+      "comm": "ZMQbg/Reaper",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2751979,
+      "pid": 2751741,
+      "comm": "ZMQbg/IO/0",
+      "role": "other",
+      "cpu_ns": 179891008,
+      "runnable_ns": 1480429200,
+      "timeslices": 8685
+    },
+    {
+      "tid": 2752014,
+      "pid": 2751741,
+      "comm": "srsue",
+      "role": "ue:radio:2118",
+      "cpu_ns": 63145072,
+      "runnable_ns": 1232923584,
+      "timeslices": 7039
+    },
+    {
+      "tid": 2752042,
+      "pid": 2751741,
+      "comm": "SYNC",
+      "role": "ue:radio:2119",
+      "cpu_ns": 92387184,
+      "runnable_ns": 148560,
+      "timeslices": 3794
+    },
+    {
+      "tid": 2752051,
+      "pid": 2751741,
+      "comm": "STACK",
+      "role": "other",
+      "cpu_ns": 87960624,
+      "runnable_ns": 1926159088,
+      "timeslices": 19909
+    },
+    {
+      "tid": 2752057,
+      "pid": 2751741,
+      "comm": "WORKER0",
+      "role": "ue:radio:2119",
+      "cpu_ns": 229191392,
+      "runnable_ns": 4432752,
+      "timeslices": 936
+    },
+    {
+      "tid": 2752069,
+      "pid": 2751741,
+      "comm": "WORKER1",
+      "role": "ue:radio:2119",
+      "cpu_ns": 241012960,
+      "runnable_ns": 4743152,
+      "timeslices": 928
+    },
+    {
+      "tid": 2752079,
+      "pid": 2751741,
+      "comm": "WORKER2",
+      "role": "other",
+      "cpu_ns": 0,
+      "runnable_ns": 0,
+      "timeslices": 0
+    },
+    {
+      "tid": 2752080,
+      "pid": 2751741,
+      "comm": "METRICS_HUB",
+      "role": "other",
+      "cpu_ns": 1462800,
+      "runnable_ns": 16254656,
+      "timeslices": 42
+    },
+    {
+      "tid": 2752132,
+      "pid": 2751741,
+      "comm": "GW",
+      "role": "other",
+      "cpu_ns": 2443280,
+      "runnable_ns": 37048896,
+      "timeslices": 211
+    }
+  ],
+  "trigger_update_k": 223
+}

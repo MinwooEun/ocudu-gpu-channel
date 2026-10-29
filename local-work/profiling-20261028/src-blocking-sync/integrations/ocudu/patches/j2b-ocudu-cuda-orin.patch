@@ -1,0 +1,182 @@
+diff --git a/lib/phy/upper/prach_buffer_cuda_visible_impl.h b/lib/phy/upper/prach_buffer_cuda_visible_impl.h
+index 7236309..db74f25 100644
+--- a/lib/phy/upper/prach_buffer_cuda_visible_impl.h
++++ b/lib/phy/upper/prach_buffer_cuda_visible_impl.h
+@@ -369,14 +369,43 @@ private:
+     return status;
+   }
+ 
++  /// A managed-memory hint (prefetch or advice) that the device does not implement. Devices without
++  /// ConcurrentManagedAccess (e.g. Jetson Orin) return cudaErrorInvalidDevice here rather than
++  /// cudaErrorNotSupported; both mean "no-op", not failure. The error is consumed so that a later,
++  /// unrelated cudaGetLastError() check does not pick it up.
++  static bool managed_hint_unsupported(cudaError_t status, int device)
++  {
++    if (status == cudaErrorNotSupported) {
++      (void)cudaGetLastError();
++      return true;
++    }
++    if (status == cudaErrorInvalidDevice) {
++      int concurrent = 1;
++      if ((cudaDeviceGetAttribute(&concurrent, cudaDevAttrConcurrentManagedAccess, device) == cudaSuccess) &&
++          (concurrent == 0)) {
++        (void)cudaGetLastError();
++        return true;
++      }
++    }
++    return false;
++  }
++
++  /// Best-effort managed-memory advice: a refusal must not leave a pending CUDA error behind.
++  static void advise_best_effort(cudaError_t status)
++  {
++    if (status != cudaSuccess) {
++      (void)cudaGetLastError();
++    }
++  }
++
+   void advise_managed_memory() const
+   {
+     if (managed_data == nullptr) {
+       return;
+     }
+-    (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location());
++    advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location()));
+     if (phy_acceleration_env_flag_enabled("OCUDU_CUDA_VISIBLE_PRACH_BUFFER_PREFER_DEVICE", false)) {
+-      (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location());
++      advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location()));
+     }
+   }
+ 
+@@ -410,7 +439,7 @@ private:
+     cudaError_t status =
+         cudaMemPrefetchAsync(managed_data, managed_bytes, destination, static_cast<cudaStream_t>(stream));
+ #endif
+-    if (status == cudaErrorNotSupported) {
++    if (managed_hint_unsupported(status, device_id)) {
+       return true;
+     }
+     if (status != cudaSuccess) {
+diff --git a/lib/phy/upper/resource_grid_cuda_visible_impl.h b/lib/phy/upper/resource_grid_cuda_visible_impl.h
+index 99254c7..e97760e 100644
+--- a/lib/phy/upper/resource_grid_cuda_visible_impl.h
++++ b/lib/phy/upper/resource_grid_cuda_visible_impl.h
+@@ -96,6 +96,7 @@ public:
+     const cuda_visible_managed_access_policy access =
+         query_cuda_visible_managed_access_policy(device_id, enable_concurrent_downlink_writes);
+     host_reads_device_memory_directly = access.host_reads_device_resident_directly;
++    host_access_waits_for_device_idle = !query_cuda_device_flag(device_id, cudaDevAttrConcurrentManagedAccess);
+     prefetch_enabled =
+         phy_acceleration_env_flag_enabled("OCUDU_CUDA_VISIBLE_GRID_PREFETCH", access.prefetch_by_default);
+     // Concurrent host/device writes to disjoint REs are only safe when prefetch
+@@ -787,6 +788,17 @@ private:
+     if (!wait_for_pending_grid_events_locked()) {
+       return false;
+     }
++    // Without ConcurrentManagedAccess (Jetson Orin) the CPU must not touch any
++    // cudaMemAttachGlobal managed page while any kernel in the context runs --
++    // including kernels that never read this grid (the previous slot's PDSCH on
++    // the same lane). This grid's own events are not enough; wait for the device.
++    if (host_access_waits_for_device_idle) {
++      const cudaError_t status = cudaDeviceSynchronize();
++      if (status != cudaSuccess) {
++        record_host_access_error(status, "device-wide wait before host access (ConcurrentManagedAccess=0)");
++        return false;
++      }
++    }
+     // UL on non-coherent UM: never CPU-touch or prefetch-home the live VA,
+     // even when pages_device_resident is false (that flag is software and
+     // can lag). Host readers must use the pinned snapshot. A live host
+@@ -1444,6 +1456,10 @@ private:
+   /// home first. Queried per device so one binary stays correct on all four.
+   bool host_reads_device_memory_directly{false};
+ 
++  /// True when cudaDevAttrConcurrentManagedAccess is 0: host access to the
++  /// managed grid then waits for all device work, not only this grid's events.
++  bool host_access_waits_for_device_idle{false};
++
+   static cudaError_t cuda_event_synchronize_yielding(cudaEvent_t event)
+   {
+     cudaError_t status;
+@@ -1485,18 +1501,49 @@ private:
+         enable_concurrent_downlink);
+   }
+ 
++
++  /// A managed-memory hint (prefetch or advice) that the device does not implement. Devices without
++  /// ConcurrentManagedAccess (e.g. Jetson Orin) return cudaErrorInvalidDevice here rather than
++  /// cudaErrorNotSupported; both mean "no-op", not failure. The error is consumed so that a later,
++  /// unrelated cudaGetLastError() check does not pick it up.
++  static bool managed_hint_unsupported(cudaError_t status, int device)
++  {
++    if (status == cudaErrorNotSupported) {
++      (void)cudaGetLastError();
++      return true;
++    }
++    if (status == cudaErrorInvalidDevice) {
++      int concurrent = 1;
++      if ((cudaDeviceGetAttribute(&concurrent, cudaDevAttrConcurrentManagedAccess, device) == cudaSuccess) &&
++          (concurrent == 0)) {
++        (void)cudaGetLastError();
++        return true;
++      }
++    }
++    return false;
++  }
++
++  /// Best-effort managed-memory advice: a refusal must not leave a pending CUDA error behind.
++  static void advise_best_effort(cudaError_t status)
++  {
++    if (status != cudaSuccess) {
++      (void)cudaGetLastError();
++    }
++  }
++
+   void advise_managed_memory() const
+   {
+     if (managed_data == nullptr) {
+       return;
+     }
+     // Best-effort hints only. The public resource-grid contract must not depend on managed-memory advice support.
+-    (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location());
++    advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location()));
+     if (prefer_device_memory) {
+-      (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location());
++      advise_best_effort(
++          cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location()));
+       // On coherent systems, CUDA requires this hint for the CPU to access GPU-resident managed pages directly
+       // instead of faulting and migrating them back to host memory.
+-      (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, host_location());
++      advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, host_location()));
+     }
+   }
+ 
+@@ -1532,7 +1579,7 @@ private:
+     cudaError_t status =
+         cudaMemPrefetchAsync(managed_data, managed_bytes, destination, static_cast<cudaStream_t>(stream));
+ #endif
+-    if (status == cudaErrorNotSupported) {
++    if (managed_hint_unsupported(status, device_id)) {
+       return managed_prefetch_status::unsupported;
+     }
+     if (status != cudaSuccess) {
+@@ -1645,11 +1692,17 @@ private:
+ 
+   static bool should_use_managed_grid_auto(int device_id)
+   {
++    // Integrated parts without ConcurrentManagedAccess (older Jetson, Orin) use
++    // pinned grids, as the policy table in phy_acceleration_runtime_options.h
++    // documents: there every host access to a managed grid must wait for the
++    // whole device, which would serialise the DL pipeline.
+     int integrated = 0;
+-    if (cudaDeviceGetAttribute(&integrated, cudaDevAttrIntegrated, device_id) != cudaSuccess) {
++    int concurrent = 0;
++    if ((cudaDeviceGetAttribute(&integrated, cudaDevAttrIntegrated, device_id) != cudaSuccess) ||
++        (cudaDeviceGetAttribute(&concurrent, cudaDevAttrConcurrentManagedAccess, device_id) != cudaSuccess)) {
+       return false;
+     }
+-    return integrated != 0;
++    return (integrated != 0) && (concurrent != 0);
+   }
+ 
+   direction                              grid_direction;

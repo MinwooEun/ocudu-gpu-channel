@@ -1,0 +1,136 @@
+START cuda-u1-c1-bw20-a2x2
+END cuda-u1-c1-bw20-a2x2 0
+START cuda-u1-c1-bw50-a2x2
+END cuda-u1-c1-bw50-a2x2 0
+START cuda-u1-c1-bw100-a2x2
+END cuda-u1-c1-bw100-a2x2 0
+START cuda-u1-c1-bw20-a4x4
+END cuda-u1-c1-bw20-a4x4 0
+START cuda-u1-c1-bw50-a4x4
+END cuda-u1-c1-bw50-a4x4 0
+START cuda-u1-c1-bw100-a4x4
+END cuda-u1-c1-bw100-a4x4 0
+START cuda-u1-c1-bw100-a4x1
+END cuda-u1-c1-bw100-a4x1 0
+START cuda-u16-c1-bw20-a1x1-control
+END cuda-u16-c1-bw20-a1x1-control 0
+START cuda-u16-c1-bw20-a1x1-trace-only
+END cuda-u16-c1-bw20-a1x1-trace-only 0
+START cuda-two-cell
+END cuda-two-cell 0
+Internal ctest changing into directory: /workspace/gpuch/profile-20261028/build
+Test project /workspace/gpuch/profile-20261028/build
+    Start  4: runtime_update_parity
+1/4 Test  #4: runtime_update_parity ............   Passed    0.32 sec
+    Start  5: matrix_profile_history
+2/4 Test  #5: matrix_profile_history ...........   Passed    1.27 sec
+    Start  7: processing
+3/4 Test  #7: processing .......................   Passed    1.11 sec
+    Start 10: broker
+4/4 Test #10: broker ...........................   Passed    5.51 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   8.20 sec
+START u1-c1-bw20-a1x1-r0-trace0
+END u1-c1-bw20-a1x1-r0-trace0 0.9999166666666667 rc 0
+START u1-c1-bw20-a1x1-r1-trace1
+END u1-c1-bw20-a1x1-r1-trace1 0.9998333333333334 rc 0
+START u4-c1-bw20-a1x1-r0-trace0
+END u4-c1-bw20-a1x1-r0-trace0 1.0 rc 0
+START u4-c1-bw20-a1x1-r1-trace1
+END u4-c1-bw20-a1x1-r1-trace1 0.99925 rc 0
+START u8-c1-bw20-a1x1-r0-trace0
+END u8-c1-bw20-a1x1-r0-trace0 1.0 rc 0
+START u8-c1-bw20-a1x1-r1-trace1
+END u8-c1-bw20-a1x1-r1-trace1 0.99975 rc 0
+START u16-c1-bw20-a1x1-r0-trace0
+END u16-c1-bw20-a1x1-r0-trace0 0.9995833333333334 rc 0
+START u16-c1-bw20-a1x1-r1-trace1
+END u16-c1-bw20-a1x1-r1-trace1 0.99925 rc 0
+START u24-c1-bw20-a1x1-r0-trace0
+END u24-c1-bw20-a1x1-r0-trace0 0.6605833333333333 rc 0
+START u24-c1-bw20-a1x1-r1-trace1
+END u24-c1-bw20-a1x1-r1-trace1 0.6649166666666667 rc 0
+START u32-c1-bw20-a1x1-r0-trace0
+END u32-c1-bw20-a1x1-r0-trace0 0.494 rc 0
+START u32-c1-bw20-a1x1-r1-trace1
+END u32-c1-bw20-a1x1-r1-trace1 0.4815833333333333 rc 0
+START u64-c1-bw20-a1x1-r0-trace0
+END u64-c1-bw20-a1x1-r0-trace0 0.239 rc 0
+START u64-c1-bw20-a1x1-r1-trace1
+END u64-c1-bw20-a1x1-r1-trace1 0.23775 rc 0
+START u1-c1-bw50-a1x1-r0-trace0
+END u1-c1-bw50-a1x1-r0-trace0 1.0 rc 0
+START u1-c1-bw50-a1x1-r1-trace1
+END u1-c1-bw50-a1x1-r1-trace1 1.0 rc 0
+START u2-c1-bw50-a1x1-r0-trace0
+END u2-c1-bw50-a1x1-r0-trace0 1.0 rc 0
+START u2-c1-bw50-a1x1-r1-trace1
+END u2-c1-bw50-a1x1-r1-trace1 0.99975 rc 0
+START u4-c1-bw50-a1x1-r0-trace0
+END u4-c1-bw50-a1x1-r0-trace0 1.0 rc 0
+START u4-c1-bw50-a1x1-r1-trace1
+END u4-c1-bw50-a1x1-r1-trace1 0.9995 rc 0
+START u8-c1-bw50-a1x1-r0-trace0
+END u8-c1-bw50-a1x1-r0-trace0 0.8631666666666666 rc 0
+START u8-c1-bw50-a1x1-r1-trace1
+END u8-c1-bw50-a1x1-r1-trace1 0.8533333333333334 rc 0
+START u1-c1-bw100-a1x1-r0-trace0
+END u1-c1-bw100-a1x1-r0-trace0 0.94575 rc 0
+START u1-c1-bw100-a1x1-r1-trace1
+END u1-c1-bw100-a1x1-r1-trace1 0.961625 rc 0
+START u2-c1-bw100-a1x1-r0-trace0
+END u2-c1-bw100-a1x1-r0-trace0 0.9994166666666666 rc 0
+START u2-c1-bw100-a1x1-r1-trace1
+END u2-c1-bw100-a1x1-r1-trace1 0.9980833333333333 rc 0
+START u4-c1-bw100-a1x1-r0-trace0
+END u4-c1-bw100-a1x1-r0-trace0 0.7802083333333333 rc 0
+START u4-c1-bw100-a1x1-r1-trace1
+END u4-c1-bw100-a1x1-r1-trace1 0.7804166666666666 rc 0
+START u8-c1-bw100-a1x1-r0-trace0
+END u8-c1-bw100-a1x1-r0-trace0 0.46125 rc 0
+START u8-c1-bw100-a1x1-r1-trace1
+END u8-c1-bw100-a1x1-r1-trace1 0.4389166666666667 rc 0
+START u1-c1-bw20-a2x2-r0-trace0
+END u1-c1-bw20-a2x2-r0-trace0 1.0 rc 0
+START u1-c1-bw20-a2x2-r1-trace1
+END u1-c1-bw20-a2x2-r1-trace1 0.9999166666666667 rc 0
+START u1-c1-bw20-a4x4-r0-trace0
+END u1-c1-bw20-a4x4-r0-trace0 1.0 rc 0
+START u1-c1-bw20-a4x4-r1-trace1
+END u1-c1-bw20-a4x4-r1-trace1 0.9990833333333333 rc 0
+START u1-c1-bw50-a2x2-r0-trace0
+END u1-c1-bw50-a2x2-r0-trace0 1.0 rc 0
+START u1-c1-bw50-a2x2-r1-trace1
+END u1-c1-bw50-a2x2-r1-trace1 0.9994166666666666 rc 0
+START u1-c1-bw50-a4x4-r0-trace0
+END u1-c1-bw50-a4x4-r0-trace0 0.9408333333333333 rc 0
+START u1-c1-bw50-a4x4-r1-trace1
+END u1-c1-bw50-a4x4-r1-trace1 0.96325 rc 0
+START u1-c1-bw100-a2x2-r0-trace0
+END u1-c1-bw100-a2x2-r0-trace0 0.9135833333333333 rc 0
+START u1-c1-bw100-a2x2-r1-trace1
+END u1-c1-bw100-a2x2-r1-trace1 0.908875 rc 0
+START u1-c1-bw100-a4x4-r0-trace0
+END u1-c1-bw100-a4x4-r0-trace0 0.5009166666666667 rc 0
+START u1-c1-bw100-a4x4-r1-trace1
+END u1-c1-bw100-a4x4-r1-trace1 0.4810833333333333 rc 0
+START u4-c2-bw20-a1x1-r0-trace0
+END u4-c2-bw20-a1x1-r0-trace0 1.0 rc 0
+START u4-c2-bw20-a1x1-r1-trace1
+END u4-c2-bw20-a1x1-r1-trace1 0.999 rc 0
+START u4-c4-bw20-a1x1-r0-trace0
+END u4-c4-bw20-a1x1-r0-trace0 0.8286666666666667 rc 0
+START u4-c4-bw20-a1x1-r1-trace1
+END u4-c4-bw20-a1x1-r1-trace1 0.8599166666666667 rc 0
+START u16-c1-bw20-a1x1-r0-trace1
+Traceback (most recent call last):
+  File "/workspace/gpuch/profile-20261028/boundary.py", line 61, in <module>
+    broker.wait(timeout=35)
+  File "/usr/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2045, in _wait
+    raise TimeoutExpired(self.args, timeout)
+subprocess.TimeoutExpired: Command '['taskset', '-c', '5-14', '/usr/local/cuda/bin/nsys', 'profile', '--trace=cuda,nvtx,osrt', '--sample=none', '--cpuctxsw=process-tree', '--force-overwrite=true', '-o', '/workspace/gpuch/profile-20261028/nsys-boundary/u16-c1-bw20-a1x1-r0-trace1/timeline', '/workspace/gpuch/profile-20261028/build/ocudu-gpu-channel', '--config', '/workspace/gpuch/profile-20261028/nsys-boundary/u16-c1-bw20-a1x1-r0-trace1/topology.yaml', '--duration', '18s']' timed out after 35 seconds

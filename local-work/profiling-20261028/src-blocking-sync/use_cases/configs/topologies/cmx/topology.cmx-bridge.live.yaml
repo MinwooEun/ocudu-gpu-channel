@@ -1,0 +1,35 @@
+# CMX500 (through the USRP bridge) <-> GPU channel broker <-> ZMQ srsUE, 11.52 MS/s (52 PRB, 15 kHz), passthrough channel, 0.5 ms batches, no pacing (USRP is the clock), deep UE TX ring
+runtime:
+  backend: cuda
+  gpu_device: 0
+  batch_samples: 5760
+  queue_samples: 11520
+  pacing: false
+devices:
+  - id: gnb0
+    role: gnb
+    sample_rate_hz: 11520000
+    tx_endpoint: tcp://127.0.0.1:2000
+    rx_endpoint: tcp://127.0.0.1:2001
+  - id: ue0
+    role: ue
+    sample_rate_hz: 11520000
+    tx_endpoint: tcp://127.0.0.1:2101
+    rx_endpoint: tcp://127.0.0.1:2100
+    # srsRAN ZMQ TX sends a transmit gap as one zero payload of up to 3072000 samples
+    tx_queue_samples: 3072000
+links:
+  - from: gnb0
+    to: ue0
+    model: passthrough
+  - from: ue0
+    to: gnb0
+    model: passthrough
+models:
+  passthrough:
+    chain:
+      - type: tdl
+        taps:
+          - delay_samples: 0.0
+            gain_db: 0.0
+            phase_rad: 0.0

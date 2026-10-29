@@ -1,0 +1,4182 @@
+{
+  "files": [
+    {
+      "file": "gnb-2677390.wire",
+      "n": 0,
+      "dropped": 0,
+      "ports": []
+    },
+    {
+      "file": "gnb-2677757.wire",
+      "n": 424339,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2000,
+        2001
+      ]
+    },
+    {
+      "file": "gnb-2684437.wire",
+      "n": 0,
+      "dropped": 0,
+      "ports": []
+    },
+    {
+      "file": "gnb-2684804.wire",
+      "n": 178732,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2000,
+        2001
+      ]
+    },
+    {
+      "file": "ocudu-gpu-channel-2677671.wire",
+      "n": 1500000,
+      "dropped": 3161091,
+      "ports": [
+        2000,
+        2001,
+        2100,
+        2101,
+        2102,
+        2103,
+        2104,
+        2105,
+        2106,
+        2107,
+        2108,
+        2109,
+        2110,
+        2111,
+        2112,
+        2113,
+        2114,
+        2115,
+        2116,
+        2117,
+        2118,
+        2119,
+        2120,
+        2121,
+        2122,
+        2123,
+        2124,
+        2125,
+        2126,
+        2127,
+        2128,
+        2129,
+        2130,
+        2131
+      ]
+    },
+    {
+      "file": "ocudu-gpu-channel-2684716.wire",
+      "n": 1500000,
+      "dropped": 599046,
+      "ports": [
+        -1,
+        2000,
+        2001,
+        2100,
+        2101,
+        2102,
+        2103,
+        2104,
+        2105,
+        2106,
+        2107,
+        2108,
+        2109,
+        2110,
+        2111,
+        2112,
+        2113,
+        2114,
+        2115,
+        2116,
+        2117,
+        2118,
+        2119,
+        2120,
+        2121,
+        2122,
+        2123,
+        2124,
+        2125,
+        2126,
+        2127,
+        2128,
+        2129,
+        2130,
+        2131
+      ]
+    },
+    {
+      "file": "srsue-2677975.wire",
+      "n": 264143,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2100,
+        2101
+      ]
+    },
+    {
+      "file": "srsue-2677978.wire",
+      "n": 265974,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2102,
+        2103
+      ]
+    },
+    {
+      "file": "srsue-2677981.wire",
+      "n": 265317,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2104,
+        2105
+      ]
+    },
+    {
+      "file": "srsue-2677984.wire",
+      "n": 264437,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2106,
+        2107
+      ]
+    },
+    {
+      "file": "srsue-2677987.wire",
+      "n": 265339,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2108,
+        2109
+      ]
+    },
+    {
+      "file": "srsue-2677990.wire",
+      "n": 263422,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2110,
+        2111
+      ]
+    },
+    {
+      "file": "srsue-2677994.wire",
+      "n": 282366,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2112,
+        2113
+      ]
+    },
+    {
+      "file": "srsue-2677998.wire",
+      "n": 276017,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2114,
+        2115
+      ]
+    },
+    {
+      "file": "srsue-2678002.wire",
+      "n": 263938,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2116,
+        2117
+      ]
+    },
+    {
+      "file": "srsue-2678005.wire",
+      "n": 264319,
+      "dropped": 0,
+      "ports": [
+        -3,
+        -2,
+        2118,
+        2119
+      ]
+    },
+    {
+      "file": "srsue-2678008.wire",
+      "n": 264438,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2120,
+        2121
+      ]
+    },
+    {
+      "file": "srsue-2678012.wire",
+      "n": 263384,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2122,
+        2123
+      ]
+    },
+    {
+      "file": "srsue-2678017.wire",
+      "n": 265067,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2124,
+        2125
+      ]
+    },
+    {
+      "file": "srsue-2678022.wire",
+      "n": 263353,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2126,
+        2127
+      ]
+    },
+    {
+      "file": "srsue-2678025.wire",
+      "n": 283304,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2128,
+        2129
+      ]
+    },
+    {
+      "file": "srsue-2678028.wire",
+      "n": 279847,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2130,
+        2131
+      ]
+    },
+    {
+      "file": "srsue-2684996.wire",
+      "n": 122071,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2100,
+        2101
+      ]
+    },
+    {
+      "file": "srsue-2684999.wire",
+      "n": 121906,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2102,
+        2103
+      ]
+    },
+    {
+      "file": "srsue-2685002.wire",
+      "n": 122788,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2104,
+        2105
+      ]
+    },
+    {
+      "file": "srsue-2685005.wire",
+      "n": 122268,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2106,
+        2107
+      ]
+    },
+    {
+      "file": "srsue-2685008.wire",
+      "n": 122684,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2108,
+        2109
+      ]
+    },
+    {
+      "file": "srsue-2685011.wire",
+      "n": 122717,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2110,
+        2111
+      ]
+    },
+    {
+      "file": "srsue-2685014.wire",
+      "n": 126645,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2112,
+        2113
+      ]
+    },
+    {
+      "file": "srsue-2685018.wire",
+      "n": 124942,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2114,
+        2115
+      ]
+    },
+    {
+      "file": "srsue-2685022.wire",
+      "n": 122412,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2116,
+        2117
+      ]
+    },
+    {
+      "file": "srsue-2685025.wire",
+      "n": 122528,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2118,
+        2119
+      ]
+    },
+    {
+      "file": "srsue-2685029.wire",
+      "n": 122717,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2120,
+        2121
+      ]
+    },
+    {
+      "file": "srsue-2685032.wire",
+      "n": 122157,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2122,
+        2123
+      ]
+    },
+    {
+      "file": "srsue-2685035.wire",
+      "n": 122629,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2124,
+        2125
+      ]
+    },
+    {
+      "file": "srsue-2685038.wire",
+      "n": 122346,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2126,
+        2127
+      ]
+    },
+    {
+      "file": "srsue-2685042.wire",
+      "n": 126256,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2128,
+        2129
+      ]
+    },
+    {
+      "file": "srsue-2685047.wire",
+      "n": 125377,
+      "dropped": 0,
+      "ports": [
+        -3,
+        2130,
+        2131
+      ]
+    }
+  ],
+  "links": [
+    {
+      "port": 2000,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "gnb-2677757.wire",
+      "count": 5128,
+      "samples": 118149120,
+      "start_ns": 3009738605291911,
+      "end_ns": 3009748607574454,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 82.63977944617785,
+          "p50_us": 56.049,
+          "p95_us": 200.95079999999987
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1694.8203751950077,
+          "p50_us": 1731.236,
+          "p95_us": 3116.046399999999
+        },
+        "iqsend_to_recv": {
+          "mean_us": 158.1612474648986,
+          "p50_us": 123.929,
+          "p95_us": 314.7647999999999
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 14.901714703588144,
+          "p50_us": 11.168,
+          "p95_us": 30.69314999999999
+        },
+        "cycle": {
+          "mean_us": 1950.5231168096725,
+          "p50_us": 1999.431,
+          "p95_us": 3319.6771999999996
+        },
+        "responder_late_enter": {
+          "mean_us": 80.07551930577223,
+          "p50_us": 53.6085,
+          "p95_us": 198.01224999999997
+        },
+        "send_call": {
+          "mean_us": 5.747709633385335,
+          "p50_us": 5.344,
+          "p95_us": 9.168
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2000,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "gnb-2684804.wire",
+      "count": 5045,
+      "samples": 116236800,
+      "start_ns": 3009977716830347,
+      "end_ns": 3009987716980403,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 73.81853002973241,
+          "p50_us": 45.616,
+          "p95_us": 190.19080000000005
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1744.6015098116948,
+          "p50_us": 1785.518,
+          "p95_us": 3303.1738
+        },
+        "iqsend_to_recv": {
+          "mean_us": 150.70771397423192,
+          "p50_us": 119.217,
+          "p95_us": 305.2660000000001
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 13.062544697720515,
+          "p50_us": 10.096,
+          "p95_us": 29.15200000000003
+        },
+        "cycle": {
+          "mean_us": 1982.1902985133797,
+          "p50_us": 2014.799,
+          "p95_us": 3485.3156000000004
+        },
+        "responder_late_enter": {
+          "mean_us": 71.30844737363726,
+          "p50_us": 42.801,
+          "p95_us": 187.2940000000001
+        },
+        "send_call": {
+          "mean_us": 5.806874727452923,
+          "p50_us": 5.376,
+          "p95_us": 9.292800000000003
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2001,
+      "requester": "gnb-2677757.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 7744,
+      "samples": 118149119,
+      "start_ns": 3009738606582774,
+      "end_ns": 3009748607363028,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 131.39107347623965,
+          "p50_us": 91.937,
+          "p95_us": 354.7207999999996
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1019.8860037448347,
+          "p50_us": 961.995,
+          "p95_us": 2650.8445999999994
+        },
+        "iqsend_to_recv": {
+          "mean_us": 128.03005229855373,
+          "p50_us": 110.786,
+          "p95_us": 264.55339999999995
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.115940470041322,
+          "p50_us": 12.944,
+          "p95_us": 22.96174999999995
+        },
+        "cycle": {
+          "mean_us": 1291.4230699896693,
+          "p50_us": 1237.7985,
+          "p95_us": 2916.875549999999
+        },
+        "responder_late_enter": {
+          "mean_us": 0.10798063016528926,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 8.276444989669422,
+          "p50_us": 6.88,
+          "p95_us": 21.424
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2001,
+      "requester": "gnb-2684804.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 7803,
+      "samples": 116259835,
+      "start_ns": 3009977720812585,
+      "end_ns": 3009987720452221,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 133.97952133794695,
+          "p50_us": 89.041,
+          "p95_us": 373.46219999999954
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1016.7640171728822,
+          "p50_us": 928.775,
+          "p95_us": 2723.166499999998
+        },
+        "iqsend_to_recv": {
+          "mean_us": 118.95099436114315,
+          "p50_us": 98.848,
+          "p95_us": 256.65799999999996
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 11.81765936178393,
+          "p50_us": 13.008,
+          "p95_us": 21.902499999999993
+        },
+        "cycle": {
+          "mean_us": 1281.5121922337562,
+          "p50_us": 1196.665,
+          "p95_us": 2977.5460999999996
+        },
+        "responder_late_enter": {
+          "mean_us": 1.0558358323721646,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 8.230906189926952,
+          "p50_us": 6.656,
+          "p95_us": 20.336
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2100,
+      "requester": "srsue-2677975.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5157,
+      "samples": 118149120,
+      "start_ns": 3009738606962314,
+      "end_ns": 3009748610772891,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 280.62483982935817,
+          "p50_us": 198.226,
+          "p95_us": 770.7641999999997
+        },
+        "responder_to_iqsend": {
+          "mean_us": 870.4841528020168,
+          "p50_us": 843.146,
+          "p95_us": 2284.163599999999
+        },
+        "iqsend_to_recv": {
+          "mean_us": 412.6072501454334,
+          "p50_us": 317.363,
+          "p95_us": 1117.5873999999997
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 376.13455749466743,
+          "p50_us": 313.668,
+          "p95_us": 718.8241999999999
+        },
+        "cycle": {
+          "mean_us": 1939.8508002714757,
+          "p50_us": 1902.39,
+          "p95_us": 3330.7708
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.827507853403143,
+          "p50_us": 11.056,
+          "p95_us": 23.796199999999995
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2100,
+      "requester": "srsue-2684996.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5108,
+      "samples": 116213760,
+      "start_ns": 3009977718720745,
+      "end_ns": 3009987722038137,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 279.95197513703994,
+          "p50_us": 198.202,
+          "p95_us": 753.1291999999999
+        },
+        "responder_to_iqsend": {
+          "mean_us": 908.8379953014878,
+          "p50_us": 882.2545,
+          "p95_us": 2399.84425
+        },
+        "iqsend_to_recv": {
+          "mean_us": 400.1621088488645,
+          "p50_us": 309.0505,
+          "p95_us": 1050.7871999999995
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 369.41076174628034,
+          "p50_us": 306.554,
+          "p95_us": 729.80805
+        },
+        "cycle": {
+          "mean_us": 1958.3628410336728,
+          "p50_us": 1913.158,
+          "p95_us": 3536.843799999999
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.789527407987471,
+          "p50_us": 11.04,
+          "p95_us": 23.866399999999995
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2101,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2677975.wire",
+      "count": 5128,
+      "samples": 118149120,
+      "start_ns": 3009738604194346,
+      "end_ns": 3009748604049182,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1641.3998913806552,
+          "p50_us": 1596.378,
+          "p95_us": 3070.407
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1.3077708658346334,
+          "p50_us": 0.256,
+          "p95_us": 13.535199999999982
+        },
+        "iqsend_to_recv": {
+          "mean_us": 295.85651755070205,
+          "p50_us": 199.466,
+          "p95_us": 856.41
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 11.485515210608424,
+          "p50_us": 8.776,
+          "p95_us": 28.185949999999977
+        },
+        "cycle": {
+          "mean_us": 1950.0496950078004,
+          "p50_us": 1903.7175,
+          "p95_us": 3470.4593499999996
+        },
+        "responder_late_enter": {
+          "mean_us": 1635.0754699687989,
+          "p50_us": 1594.154,
+          "p95_us": 3068.2765999999997
+        },
+        "send_call": {
+          "mean_us": 10.306915756630266,
+          "p50_us": 9.424,
+          "p95_us": 17.040650000000003
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2101,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2684996.wire",
+      "count": 5044,
+      "samples": 116213760,
+      "start_ns": 3009977715040061,
+      "end_ns": 3009987715249974,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1684.1680725614592,
+          "p50_us": 1623.22,
+          "p95_us": 3284.6946
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.31152299762093577,
+          "p50_us": 0.208,
+          "p95_us": 0.624
+        },
+        "iqsend_to_recv": {
+          "mean_us": 286.68268655828706,
+          "p50_us": 194.458,
+          "p95_us": 792.3475999999998
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 11.432863203806502,
+          "p50_us": 8.848,
+          "p95_us": 27.003199999999982
+        },
+        "cycle": {
+          "mean_us": 1982.5951453211735,
+          "p50_us": 1927.487,
+          "p95_us": 3690.6593499999967
+        },
+        "responder_late_enter": {
+          "mean_us": 1678.3745681998414,
+          "p50_us": 1620.7405,
+          "p95_us": 3282.975399999999
+        },
+        "send_call": {
+          "mean_us": 10.283796986518634,
+          "p50_us": 9.488,
+          "p95_us": 16.64
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2102,
+      "requester": "srsue-2677978.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5278,
+      "samples": 118195200,
+      "start_ns": 3009738606639255,
+      "end_ns": 3009748608156141,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 270.43044183402804,
+          "p50_us": 195.8425,
+          "p95_us": 728.50335
+        },
+        "responder_to_iqsend": {
+          "mean_us": 745.844105342933,
+          "p50_us": 574.7185,
+          "p95_us": 2236.35545
+        },
+        "iqsend_to_recv": {
+          "mean_us": 494.64204187192115,
+          "p50_us": 380.2605,
+          "p95_us": 1283.454999999999
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 384.0278758999621,
+          "p50_us": 323.6195,
+          "p95_us": 753.7871999999999
+        },
+        "cycle": {
+          "mean_us": 1894.9444649488441,
+          "p50_us": 1839.4695,
+          "p95_us": 3370.979599999999
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.611255020841229,
+          "p50_us": 11.104,
+          "p95_us": 23.540799999999987
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2102,
+      "requester": "srsue-2684999.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5104,
+      "samples": 116236800,
+      "start_ns": 3009977721296461,
+      "end_ns": 3009987720480845,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 253.83987970219437,
+          "p50_us": 185.6255,
+          "p95_us": 674.6081999999989
+        },
+        "responder_to_iqsend": {
+          "mean_us": 855.1659439655173,
+          "p50_us": 744.1175,
+          "p95_us": 2398.775599999999
+        },
+        "iqsend_to_recv": {
+          "mean_us": 464.78204800156743,
+          "p50_us": 372.315,
+          "p95_us": 1186.8817999999965
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 385.29997786050154,
+          "p50_us": 323.3705,
+          "p95_us": 720.3979499999999
+        },
+        "cycle": {
+          "mean_us": 1959.0878495297807,
+          "p50_us": 1893.0865,
+          "p95_us": 3544.303799999996
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.750823667711598,
+          "p50_us": 11.2,
+          "p95_us": 23.419349999999984
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2103,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2677978.wire",
+      "count": 5131,
+      "samples": 118195201,
+      "start_ns": 3009738606760328,
+      "end_ns": 3009748608331919,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1633.1852962385499,
+          "p50_us": 1549.042,
+          "p95_us": 3105.932
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.2917900993958293,
+          "p50_us": 0.224,
+          "p95_us": 0.592
+        },
+        "iqsend_to_recv": {
+          "mean_us": 303.28155642175017,
+          "p50_us": 215.538,
+          "p95_us": 845.0975
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.485479438705905,
+          "p50_us": 10.048,
+          "p95_us": 29.1525
+        },
+        "cycle": {
+          "mean_us": 1949.244122198402,
+          "p50_us": 1878.197,
+          "p95_us": 3520.5685
+        },
+        "responder_late_enter": {
+          "mean_us": 1628.5993944650168,
+          "p50_us": 1546.514,
+          "p95_us": 3104.164
+        },
+        "send_call": {
+          "mean_us": 12.1032482946794,
+          "p50_us": 10.544,
+          "p95_us": 22.4405
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2103,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2684999.wire",
+      "count": 5046,
+      "samples": 116236801,
+      "start_ns": 3009977721397086,
+      "end_ns": 3009987720581822,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1674.047521997622,
+          "p50_us": 1567.052,
+          "p95_us": 3280.169
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1.1995471660721364,
+          "p50_us": 0.24,
+          "p95_us": 12.61225
+        },
+        "iqsend_to_recv": {
+          "mean_us": 294.20927506936187,
+          "p50_us": 214.7935,
+          "p95_us": 780.538
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.14982619896948,
+          "p50_us": 9.552,
+          "p95_us": 28.51625
+        },
+        "cycle": {
+          "mean_us": 1981.6061704320252,
+          "p50_us": 1896.8785,
+          "p95_us": 3676.832
+        },
+        "responder_late_enter": {
+          "mean_us": 1667.168947284978,
+          "p50_us": 1564.548,
+          "p95_us": 3277.681
+        },
+        "send_call": {
+          "mean_us": 12.129397344431233,
+          "p50_us": 10.544,
+          "p95_us": 22.308
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2104,
+      "requester": "srsue-2677981.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5148,
+      "samples": 118149120,
+      "start_ns": 3009738607490608,
+      "end_ns": 3009748607400452,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 261.66777777777776,
+          "p50_us": 183.194,
+          "p95_us": 714.9291499999996
+        },
+        "responder_to_iqsend": {
+          "mean_us": 836.0761124708624,
+          "p50_us": 751.489,
+          "p95_us": 2354.3357999999994
+        },
+        "iqsend_to_recv": {
+          "mean_us": 463.68319502719504,
+          "p50_us": 376.901,
+          "p95_us": 1138.8201999999997
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 381.0573444055944,
+          "p50_us": 317.3475,
+          "p95_us": 714.40945
+        },
+        "cycle": {
+          "mean_us": 1942.4844296814297,
+          "p50_us": 1857.3815,
+          "p95_us": 3492.4115499999994
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.97485780885781,
+          "p50_us": 11.44,
+          "p95_us": 24.058399999999995
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2104,
+      "requester": "srsue-2685002.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5193,
+      "samples": 116259840,
+      "start_ns": 3009977718259014,
+      "end_ns": 3009987719105491,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 244.28128557673793,
+          "p50_us": 163.17,
+          "p95_us": 685.6661999999994
+        },
+        "responder_to_iqsend": {
+          "mean_us": 881.9099216252648,
+          "p50_us": 807.046,
+          "p95_us": 2441.0135999999998
+        },
+        "iqsend_to_recv": {
+          "mean_us": 431.79493837858655,
+          "p50_us": 345.682,
+          "p95_us": 1103.6367999999998
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 367.84602792220295,
+          "p50_us": 311.858,
+          "p95_us": 710.1467999999998
+        },
+        "cycle": {
+          "mean_us": 1925.832173502792,
+          "p50_us": 1826.925,
+          "p95_us": 3536.7121999999986
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.689998459464665,
+          "p50_us": 11.168,
+          "p95_us": 23.48479999999999
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2105,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2677981.wire",
+      "count": 5128,
+      "samples": 118149120,
+      "start_ns": 3009738604783089,
+      "end_ns": 3009748602596110,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1639.9798297581904,
+          "p50_us": 1527.674,
+          "p95_us": 3198.1689999999994
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.2847578003120125,
+          "p50_us": 0.192,
+          "p95_us": 0.544
+        },
+        "iqsend_to_recv": {
+          "mean_us": 297.3286981279251,
+          "p50_us": 203.859,
+          "p95_us": 828.2805499999998
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.058239469578783,
+          "p50_us": 9.2085,
+          "p95_us": 29.097949999999976
+        },
+        "cycle": {
+          "mean_us": 1949.6515251560063,
+          "p50_us": 1843.653,
+          "p95_us": 3609.41335
+        },
+        "responder_late_enter": {
+          "mean_us": 1633.577629095164,
+          "p50_us": 1525.37,
+          "p95_us": 3196.2034
+        },
+        "send_call": {
+          "mean_us": 11.57376872074883,
+          "p50_us": 10.064,
+          "p95_us": 21.754399999999993
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2105,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685002.wire",
+      "count": 5046,
+      "samples": 116259840,
+      "start_ns": 3009977718739498,
+      "end_ns": 3009987719591431,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1675.558848592945,
+          "p50_us": 1553.028,
+          "p95_us": 3301.661
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.3354026952041221,
+          "p50_us": 0.224,
+          "p95_us": 0.656
+        },
+        "iqsend_to_recv": {
+          "mean_us": 292.455156757828,
+          "p50_us": 200.617,
+          "p95_us": 833.42625
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 13.587162108600873,
+          "p50_us": 11.3125,
+          "p95_us": 30.236
+        },
+        "cycle": {
+          "mean_us": 1981.936570154578,
+          "p50_us": 1879.911,
+          "p95_us": 3678.844
+        },
+        "responder_late_enter": {
+          "mean_us": 1668.775049940547,
+          "p50_us": 1548.6755,
+          "p95_us": 3299.425
+        },
+        "send_call": {
+          "mean_us": 11.247732065001982,
+          "p50_us": 9.904,
+          "p95_us": 21.16025
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2106,
+      "requester": "srsue-2677984.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5227,
+      "samples": 118172160,
+      "start_ns": 3009738605135541,
+      "end_ns": 3009748605119450,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 269.41393476181366,
+          "p50_us": 188.898,
+          "p95_us": 748.7894999999999
+        },
+        "responder_to_iqsend": {
+          "mean_us": 874.3591061794529,
+          "p50_us": 821.033,
+          "p95_us": 2364.9325999999996
+        },
+        "iqsend_to_recv": {
+          "mean_us": 406.5519079778075,
+          "p50_us": 303.939,
+          "p95_us": 1134.7329999999995
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 362.8152670748039,
+          "p50_us": 314.147,
+          "p95_us": 668.6751999999998
+        },
+        "cycle": {
+          "mean_us": 1913.140215993878,
+          "p50_us": 1861.525,
+          "p95_us": 3391.8478999999993
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.690109814425101,
+          "p50_us": 11.008,
+          "p95_us": 23.68349999999998
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2106,
+      "requester": "srsue-2685005.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5183,
+      "samples": 116282880,
+      "start_ns": 3009977719598960,
+      "end_ns": 3009987719467974,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 243.3081070808412,
+          "p50_us": 164.257,
+          "p95_us": 671.0705999999997
+        },
+        "responder_to_iqsend": {
+          "mean_us": 914.3024426008103,
+          "p50_us": 833.942,
+          "p95_us": 2448.2989999999986
+        },
+        "iqsend_to_recv": {
+          "mean_us": 420.9897005595215,
+          "p50_us": 335.587,
+          "p95_us": 1095.6056999999994
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 350.75900385876906,
+          "p50_us": 309.17,
+          "p95_us": 649.0721999999996
+        },
+        "cycle": {
+          "mean_us": 1929.359254099942,
+          "p50_us": 1850.478,
+          "p95_us": 3496.066
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.752244453019486,
+          "p50_us": 11.248,
+          "p95_us": 23.742499999999993
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2107,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2677984.wire",
+      "count": 5131,
+      "samples": 118172163,
+      "start_ns": 3009738605225270,
+      "end_ns": 3009748605213227,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1636.181774702787,
+          "p50_us": 1571.762,
+          "p95_us": 3124.204
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.5678807250048724,
+          "p50_us": 0.224,
+          "p95_us": 0.848
+        },
+        "iqsend_to_recv": {
+          "mean_us": 298.36381173260577,
+          "p50_us": 199.554,
+          "p95_us": 887.09
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 13.822014617033718,
+          "p50_us": 11.472,
+          "p95_us": 29.6165
+        },
+        "cycle": {
+          "mean_us": 1948.9354817774313,
+          "p50_us": 1906.182,
+          "p95_us": 3511.2645
+        },
+        "responder_late_enter": {
+          "mean_us": 1629.9347834730072,
+          "p50_us": 1569.346,
+          "p95_us": 3122.284
+        },
+        "send_call": {
+          "mean_us": 10.793835704541024,
+          "p50_us": 9.92,
+          "p95_us": 17.728
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2107,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685005.wire",
+      "count": 5048,
+      "samples": 116282883,
+      "start_ns": 3009977719773793,
+      "end_ns": 3009987720612094,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1674.2286911648177,
+          "p50_us": 1567.796,
+          "p95_us": 3261.35155
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.3659383914421553,
+          "p50_us": 0.208,
+          "p95_us": 0.624
+        },
+        "iqsend_to_recv": {
+          "mean_us": 294.3099780110935,
+          "p50_us": 200.49,
+          "p95_us": 859.8941999999997
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.244025752773375,
+          "p50_us": 9.776,
+          "p95_us": 28.090399999999995
+        },
+        "cycle": {
+          "mean_us": 1981.1486333201267,
+          "p50_us": 1886.8945,
+          "p95_us": 3667.9159999999983
+        },
+        "responder_late_enter": {
+          "mean_us": 1667.4761008320127,
+          "p50_us": 1564.74,
+          "p95_us": 3259.4563499999995
+        },
+        "send_call": {
+          "mean_us": 10.680892630744848,
+          "p50_us": 9.904,
+          "p95_us": 17.296
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2108,
+      "requester": "srsue-2677987.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5290,
+      "samples": 118172160,
+      "start_ns": 3009738605074485,
+      "end_ns": 3009748605015785,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 253.64545236294896,
+          "p50_us": 183.146,
+          "p95_us": 670.7704000000001
+        },
+        "responder_to_iqsend": {
+          "mean_us": 759.399774858223,
+          "p50_us": 598.5585,
+          "p95_us": 2258.9684
+        },
+        "iqsend_to_recv": {
+          "mean_us": 482.58972551984874,
+          "p50_us": 380.7005,
+          "p95_us": 1210.6566500000006
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 394.7131190926276,
+          "p50_us": 328.5,
+          "p95_us": 780.0938000000001
+        },
+        "cycle": {
+          "mean_us": 1890.3480718336484,
+          "p50_us": 1801.4685,
+          "p95_us": 3349.457750000002
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.542188279773157,
+          "p50_us": 11.056,
+          "p95_us": 23.408
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2108,
+      "requester": "srsue-2685008.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5195,
+      "samples": 116259840,
+      "start_ns": 3009977717935363,
+      "end_ns": 3009987720009210,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 262.96801674687197,
+          "p50_us": 180.689,
+          "p95_us": 729.2028
+        },
+        "responder_to_iqsend": {
+          "mean_us": 789.336363811357,
+          "p50_us": 641.605,
+          "p95_us": 2313.434
+        },
+        "iqsend_to_recv": {
+          "mean_us": 477.7552646775746,
+          "p50_us": 382.883,
+          "p95_us": 1184.4282000000007
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 395.2673705486044,
+          "p50_us": 329.299,
+          "p95_us": 784.0924000000001
+        },
+        "cycle": {
+          "mean_us": 1925.327015784408,
+          "p50_us": 1830.046,
+          "p95_us": 3495.718200000002
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.562753031761309,
+          "p50_us": 11.056,
+          "p95_us": 23.710400000000007
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2109,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2677987.wire",
+      "count": 5130,
+      "samples": 118172161,
+      "start_ns": 3009738605155846,
+      "end_ns": 3009748605141483,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1633.0379430799221,
+          "p50_us": 1531.898,
+          "p95_us": 3073.8646
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1.2121216374269006,
+          "p50_us": 0.208,
+          "p95_us": 12.687200000000026
+        },
+        "iqsend_to_recv": {
+          "mean_us": 303.8613520467836,
+          "p50_us": 217.9145,
+          "p95_us": 824.2223500000011
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 11.203522222222222,
+          "p50_us": 8.384,
+          "p95_us": 27.79255
+        },
+        "cycle": {
+          "mean_us": 1949.3149389863547,
+          "p50_us": 1859.1575,
+          "p95_us": 3525.5868500000006
+        },
+        "responder_late_enter": {
+          "mean_us": 1627.627378557505,
+          "p50_us": 1528.649,
+          "p95_us": 3070.5606000000002
+        },
+        "send_call": {
+          "mean_us": 12.192184210526316,
+          "p50_us": 10.56,
+          "p95_us": 22.857800000000005
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2109,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685008.wire",
+      "count": 5046,
+      "samples": 116236801,
+      "start_ns": 3009977717955875,
+      "end_ns": 3009987717991259,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1668.290270709473,
+          "p50_us": 1547.2115,
+          "p95_us": 3240.944
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.3243779231074118,
+          "p50_us": 0.208,
+          "p95_us": 0.672
+        },
+        "iqsend_to_recv": {
+          "mean_us": 299.8448287752675,
+          "p50_us": 210.8735,
+          "p95_us": 831.68675
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 13.315271700356718,
+          "p50_us": 10.768,
+          "p95_us": 30.62
+        },
+        "cycle": {
+          "mean_us": 1981.7747491082046,
+          "p50_us": 1875.27,
+          "p95_us": 3652.33125
+        },
+        "responder_late_enter": {
+          "mean_us": 1662.9873279825606,
+          "p50_us": 1543.4915,
+          "p95_us": 3238.996
+        },
+        "send_call": {
+          "mean_us": 12.248663297661516,
+          "p50_us": 10.608,
+          "p95_us": 22.716
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2110,
+      "requester": "srsue-2677990.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5161,
+      "samples": 118149120,
+      "start_ns": 3009738609197124,
+      "end_ns": 3009748608160205,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 262.0552036427049,
+          "p50_us": 185.298,
+          "p95_us": 705.497
+        },
+        "responder_to_iqsend": {
+          "mean_us": 830.744802363883,
+          "p50_us": 751.496,
+          "p95_us": 2312.411
+        },
+        "iqsend_to_recv": {
+          "mean_us": 466.86858767680684,
+          "p50_us": 382.42,
+          "p95_us": 1164.621
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 377.7394824646386,
+          "p50_us": 315.811,
+          "p95_us": 717.064
+        },
+        "cycle": {
+          "mean_us": 1937.4080761480334,
+          "p50_us": 1846.246,
+          "p95_us": 3421.863
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.829068203836467,
+          "p50_us": 11.072,
+          "p95_us": 23.121
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2110,
+      "requester": "srsue-2685011.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5222,
+      "samples": 116259540,
+      "start_ns": 3009977719647536,
+      "end_ns": 3009987722146330,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 251.01777192646495,
+          "p50_us": 172.769,
+          "p95_us": 693.38585
+        },
+        "responder_to_iqsend": {
+          "mean_us": 867.1553996553044,
+          "p50_us": 785.582,
+          "p95_us": 2390.4388499999995
+        },
+        "iqsend_to_recv": {
+          "mean_us": 430.44394484871697,
+          "p50_us": 346.2905,
+          "p95_us": 1114.22965
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 366.8365017234776,
+          "p50_us": 313.339,
+          "p95_us": 699.87625
+        },
+        "cycle": {
+          "mean_us": 1915.453618153964,
+          "p50_us": 1824.446,
+          "p95_us": 3466.4395999999997
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.581386824971275,
+          "p50_us": 11.184,
+          "p95_us": 23.405599999999993
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2111,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2677990.wire",
+      "count": 5128,
+      "samples": 118149120,
+      "start_ns": 3009738606279746,
+      "end_ns": 3009748605877155,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1633.9962455148207,
+          "p50_us": 1542.7855,
+          "p95_us": 3147.6578
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.3425079953198128,
+          "p50_us": 0.256,
+          "p95_us": 0.752
+        },
+        "iqsend_to_recv": {
+          "mean_us": 303.0760432917317,
+          "p50_us": 209.226,
+          "p95_us": 848.6405499999998
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.584697932917317,
+          "p50_us": 10.176,
+          "p95_us": 28.954399999999993
+        },
+        "cycle": {
+          "mean_us": 1949.9994947347896,
+          "p50_us": 1868.2535,
+          "p95_us": 3550.8641999999986
+        },
+        "responder_late_enter": {
+          "mean_us": 1626.4928880655225,
+          "p50_us": 1539.9775,
+          "p95_us": 3144.9817999999987
+        },
+        "send_call": {
+          "mean_us": 11.420407176287052,
+          "p50_us": 10.0005,
+          "p95_us": 21.40865
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2111,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685011.wire",
+      "count": 5046,
+      "samples": 116259840,
+      "start_ns": 3009977719732577,
+      "end_ns": 3009987722217786,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1679.0872277051128,
+          "p50_us": 1582.164,
+          "p95_us": 3230.74825
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.3254698771304003,
+          "p50_us": 0.192,
+          "p95_us": 0.512
+        },
+        "iqsend_to_recv": {
+          "mean_us": 290.3484603646453,
+          "p50_us": 205.169,
+          "p95_us": 760.505
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.499089575901705,
+          "p50_us": 10.032,
+          "p95_us": 28.848
+        },
+        "cycle": {
+          "mean_us": 1982.2602475227902,
+          "p50_us": 1902.574,
+          "p95_us": 3653.43525
+        },
+        "responder_late_enter": {
+          "mean_us": 1674.267968489893,
+          "p50_us": 1578.4365,
+          "p95_us": 3228.576
+        },
+        "send_call": {
+          "mean_us": 11.363208680142687,
+          "p50_us": 9.936,
+          "p95_us": 20.945
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2112,
+      "requester": "srsue-2677994.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5331,
+      "samples": 118172160,
+      "start_ns": 3009738608352555,
+      "end_ns": 3009748611692821,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 324.7070088163572,
+          "p50_us": 214.114,
+          "p95_us": 969.179
+        },
+        "responder_to_iqsend": {
+          "mean_us": 256.5036359032076,
+          "p50_us": 6.448,
+          "p95_us": 1604.594
+        },
+        "iqsend_to_recv": {
+          "mean_us": 586.5046544738324,
+          "p50_us": 529.798,
+          "p95_us": 1165.381
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 708.7319463515288,
+          "p50_us": 655.384,
+          "p95_us": 1273.015
+        },
+        "cycle": {
+          "mean_us": 1876.4472455449259,
+          "p50_us": 1801.093,
+          "p95_us": 3066.4595
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 10.804122866253987,
+          "p50_us": 10.288,
+          "p95_us": 22.296
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2112,
+      "requester": "srsue-2685014.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5353,
+      "samples": 116213460,
+      "start_ns": 3009977721113900,
+      "end_ns": 3009987721303843,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 328.9145675322249,
+          "p50_us": 216.69,
+          "p95_us": 965.6518000000001
+        },
+        "responder_to_iqsend": {
+          "mean_us": 299.78712852606014,
+          "p50_us": 6.657,
+          "p95_us": 1806.1447999999991
+        },
+        "iqsend_to_recv": {
+          "mean_us": 545.0957171679432,
+          "p50_us": 435.715,
+          "p95_us": 1138.5657999999999
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 694.3494096768168,
+          "p50_us": 647.333,
+          "p95_us": 1265.712
+        },
+        "cycle": {
+          "mean_us": 1868.146822903045,
+          "p50_us": 1791.086,
+          "p95_us": 3249.502799999999
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 10.82553670838782,
+          "p50_us": 10.416,
+          "p95_us": 23.049599999999977
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2113,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2677994.wire",
+      "count": 5129,
+      "samples": 118172160,
+      "start_ns": 3009738604219467,
+      "end_ns": 3009748604621237,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1465.0702031585104,
+          "p50_us": 1389.216,
+          "p95_us": 2712.610799999998
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1.850438876974069,
+          "p50_us": 0.4,
+          "p95_us": 18.927999999999955
+        },
+        "iqsend_to_recv": {
+          "mean_us": 471.60405829596414,
+          "p50_us": 376.5,
+          "p95_us": 1104.6008
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 11.251429518424644,
+          "p50_us": 8.592,
+          "p95_us": 27.292799999999975
+        },
+        "cycle": {
+          "mean_us": 1949.7761298498733,
+          "p50_us": 1826.917,
+          "p95_us": 3294.245999999999
+        },
+        "responder_late_enter": {
+          "mean_us": 1460.0149625658023,
+          "p50_us": 1386.304,
+          "p95_us": 2710.223599999999
+        },
+        "send_call": {
+          "mean_us": 20.957299668551375,
+          "p50_us": 18.4,
+          "p95_us": 37.42819999999998
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2113,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685014.wire",
+      "count": 5044,
+      "samples": 116213760,
+      "start_ns": 3009977716158102,
+      "end_ns": 3009987715133669,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1501.2554222839017,
+          "p50_us": 1395.7385,
+          "p95_us": 2975.8084
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.5634002775574941,
+          "p50_us": 0.4,
+          "p95_us": 0.912
+        },
+        "iqsend_to_recv": {
+          "mean_us": 468.70133743061064,
+          "p50_us": 368.707,
+          "p95_us": 1113.4503999999988
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 11.830269627279936,
+          "p50_us": 9.2,
+          "p95_us": 28.765599999999992
+        },
+        "cycle": {
+          "mean_us": 1982.3504296193498,
+          "p50_us": 1838.462,
+          "p95_us": 3483.6987999999997
+        },
+        "responder_late_enter": {
+          "mean_us": 1496.2141597938144,
+          "p50_us": 1392.267,
+          "p95_us": 2973.7835999999998
+        },
+        "send_call": {
+          "mean_us": 20.504722442505948,
+          "p50_us": 18.129,
+          "p95_us": 36.78004999999998
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2114,
+      "requester": "srsue-2677998.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5229,
+      "samples": 118125780,
+      "start_ns": 3009738607108300,
+      "end_ns": 3009748607655047,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 322.78917861923884,
+          "p50_us": 219.043,
+          "p95_us": 944.9191999999995
+        },
+        "responder_to_iqsend": {
+          "mean_us": 344.0243532224135,
+          "p50_us": 8.032,
+          "p95_us": 1746.5095999999992
+        },
+        "iqsend_to_recv": {
+          "mean_us": 544.8235628227195,
+          "p50_us": 465.589,
+          "p95_us": 1096.3612
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 700.8790168292217,
+          "p50_us": 646.983,
+          "p95_us": 1236.7564
+        },
+        "cycle": {
+          "mean_us": 1912.5161114935934,
+          "p50_us": 1798.532,
+          "p95_us": 3196.5831999999996
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.440443679479824,
+          "p50_us": 10.784,
+          "p95_us": 23.756799999999973
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2114,
+      "requester": "srsue-2685018.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5184,
+      "samples": 116259840,
+      "start_ns": 3009977721434510,
+      "end_ns": 3009987723878695,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 321.37846836419754,
+          "p50_us": 212.5135,
+          "p95_us": 954.4534499999993
+        },
+        "responder_to_iqsend": {
+          "mean_us": 402.3445648148148,
+          "p50_us": 8.064,
+          "p95_us": 1901.5213999999978
+        },
+        "iqsend_to_recv": {
+          "mean_us": 517.7693869598766,
+          "p50_us": 403.763,
+          "p95_us": 1082.852799999999
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 687.9914118441359,
+          "p50_us": 636.325,
+          "p95_us": 1213.1633999999995
+        },
+        "cycle": {
+          "mean_us": 1929.4838319830246,
+          "p50_us": 1812.278,
+          "p95_us": 3376.266649999999
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.16059587191358,
+          "p50_us": 10.384,
+          "p95_us": 22.488799999999973
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2115,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2677998.wire",
+      "count": 5128,
+      "samples": 118126081,
+      "start_ns": 3009738602863387,
+      "end_ns": 3009748603186948,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1478.4846616614664,
+          "p50_us": 1384.736,
+          "p95_us": 2835.8095999999996
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.5937589703588144,
+          "p50_us": 0.432,
+          "p95_us": 0.976
+        },
+        "iqsend_to_recv": {
+          "mean_us": 458.15611992979717,
+          "p50_us": 366.1565,
+          "p95_us": 1090.04625
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.906559477379094,
+          "p50_us": 8.624,
+          "p95_us": 27.63265
+        },
+        "cycle": {
+          "mean_us": 1950.1411000390015,
+          "p50_us": 1820.117,
+          "p95_us": 3350.8186499999997
+        },
+        "responder_late_enter": {
+          "mean_us": 1473.0746524961,
+          "p50_us": 1381.88,
+          "p95_us": 2833.7927999999997
+        },
+        "send_call": {
+          "mean_us": 20.881527496099842,
+          "p50_us": 18.496,
+          "p95_us": 37.329
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2115,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685018.wire",
+      "count": 5046,
+      "samples": 116236801,
+      "start_ns": 3009977717828786,
+      "end_ns": 3009987717846713,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1524.933537851764,
+          "p50_us": 1398.3305,
+          "p95_us": 3043.22275
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.5724845422116528,
+          "p50_us": 0.416,
+          "p95_us": 1.008
+        },
+        "iqsend_to_recv": {
+          "mean_us": 445.3956914387634,
+          "p50_us": 359.17,
+          "p95_us": 1082.64475
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 10.869575703527547,
+          "p50_us": 8.048,
+          "p95_us": 27.116
+        },
+        "cycle": {
+          "mean_us": 1981.7712895362663,
+          "p50_us": 1828.182,
+          "p95_us": 3517.07075
+        },
+        "responder_late_enter": {
+          "mean_us": 1519.918595323028,
+          "p50_us": 1395.5545,
+          "p95_us": 3039.82675
+        },
+        "send_call": {
+          "mean_us": 20.743189258818866,
+          "p50_us": 18.3525,
+          "p95_us": 36.40825
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2116,
+      "requester": "srsue-2678002.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5173,
+      "samples": 118149120,
+      "start_ns": 3009738606577878,
+      "end_ns": 3009748609975842,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 254.68089155229075,
+          "p50_us": 177.522,
+          "p95_us": 695.6463999999994
+        },
+        "responder_to_iqsend": {
+          "mean_us": 891.372480185579,
+          "p50_us": 829.082,
+          "p95_us": 2402.101599999999
+        },
+        "iqsend_to_recv": {
+          "mean_us": 412.53476570655323,
+          "p50_us": 326.163,
+          "p95_us": 1080.8631999999993
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 375.1829748695148,
+          "p50_us": 311.572,
+          "p95_us": 722.9104
+        },
+        "cycle": {
+          "mean_us": 1933.771112313938,
+          "p50_us": 1860.198,
+          "p95_us": 3441.8534
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.739479412333269,
+          "p50_us": 11.28,
+          "p95_us": 23.26719999999998
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2116,
+      "requester": "srsue-2685022.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5226,
+      "samples": 116213760,
+      "start_ns": 3009977720647928,
+      "end_ns": 3009987719853881,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 254.01505797933407,
+          "p50_us": 172.401,
+          "p95_us": 696.56125
+        },
+        "responder_to_iqsend": {
+          "mean_us": 861.1640937619594,
+          "p50_us": 777.502,
+          "p95_us": 2476.27825
+        },
+        "iqsend_to_recv": {
+          "mean_us": 427.3697399540758,
+          "p50_us": 341.771,
+          "p95_us": 1111.92875
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 370.80854286261,
+          "p50_us": 313.09,
+          "p95_us": 735.554
+        },
+        "cycle": {
+          "mean_us": 1913.3574345579793,
+          "p50_us": 1818.702,
+          "p95_us": 3503.35825
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.537794680443934,
+          "p50_us": 11.08,
+          "p95_us": 22.908
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2117,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2678002.wire",
+      "count": 5128,
+      "samples": 118126081,
+      "start_ns": 3009738603562419,
+      "end_ns": 3009748603040355,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1649.4653383385337,
+          "p50_us": 1557.522,
+          "p95_us": 3179.7787499999995
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1.3367535101404056,
+          "p50_us": 0.272,
+          "p95_us": 13.663849999999982
+        },
+        "iqsend_to_recv": {
+          "mean_us": 286.93546840873637,
+          "p50_us": 197.562,
+          "p95_us": 818.1019999999994
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.238636310452419,
+          "p50_us": 9.616,
+          "p95_us": 28.570399999999996
+        },
+        "cycle": {
+          "mean_us": 1949.9761965678629,
+          "p50_us": 1871.4695,
+          "p95_us": 3581.35925
+        },
+        "responder_late_enter": {
+          "mean_us": 1643.2589007410295,
+          "p50_us": 1553.2815,
+          "p95_us": 3177.334749999999
+        },
+        "send_call": {
+          "mean_us": 10.616817082683307,
+          "p50_us": 9.776,
+          "p95_us": 17.344
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2117,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685022.wire",
+      "count": 5047,
+      "samples": 116259841,
+      "start_ns": 3009977717770242,
+      "end_ns": 3009987720377340,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1667.4346461264117,
+          "p50_us": 1553.948,
+          "p95_us": 3288.3882
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1.1203298989498711,
+          "p50_us": 0.24,
+          "p95_us": 1.8959999999999855
+        },
+        "iqsend_to_recv": {
+          "mean_us": 299.11987576778284,
+          "p50_us": 200.002,
+          "p95_us": 878.5787999999999
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 14.21678640776699,
+          "p50_us": 12.144,
+          "p95_us": 30.592
+        },
+        "cycle": {
+          "mean_us": 1981.8916382009115,
+          "p50_us": 1893.807,
+          "p95_us": 3666.6852999999996
+        },
+        "responder_late_enter": {
+          "mean_us": 1661.2726086784228,
+          "p50_us": 1551.228,
+          "p95_us": 3286.521
+        },
+        "send_call": {
+          "mean_us": 10.621976223499109,
+          "p50_us": 9.824,
+          "p95_us": 17.318399999999993
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2118,
+      "requester": "srsue-2678005.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5301,
+      "samples": 118126080,
+      "start_ns": 3009738606956458,
+      "end_ns": 3009748605375773,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 256.71188794567064,
+          "p50_us": 179.442,
+          "p95_us": 695.08
+        },
+        "responder_to_iqsend": {
+          "mean_us": 745.577055838521,
+          "p50_us": 596.631,
+          "p95_us": 2188.297
+        },
+        "iqsend_to_recv": {
+          "mean_us": 502.0221892095831,
+          "p50_us": 398.869,
+          "p95_us": 1257.614
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 381.82720222599505,
+          "p50_us": 326.931,
+          "p95_us": 738.424
+        },
+        "cycle": {
+          "mean_us": 1886.1383352197697,
+          "p50_us": 1824.181,
+          "p95_us": 3334.662
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.916366723259761,
+          "p50_us": 11.216,
+          "p95_us": 24.016
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2118,
+      "requester": "srsue-2685025.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5124,
+      "samples": 116259840,
+      "start_ns": 3009977719337758,
+      "end_ns": 3009987719269476,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 269.61326951600313,
+          "p50_us": 185.961,
+          "p95_us": 733.7371999999997
+        },
+        "responder_to_iqsend": {
+          "mean_us": 833.4236633489461,
+          "p50_us": 723.733,
+          "p95_us": 2367.205999999999
+        },
+        "iqsend_to_recv": {
+          "mean_us": 468.11089207650275,
+          "p50_us": 376.7785,
+          "p95_us": 1157.9385499999999
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 380.43916139734586,
+          "p50_us": 328.0825,
+          "p95_us": 701.6522
+        },
+        "cycle": {
+          "mean_us": 1951.5869863387977,
+          "p50_us": 1866.2545,
+          "p95_us": 3516.7084499999987
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.805910616705699,
+          "p50_us": 11.024,
+          "p95_us": 23.74244999999999
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2119,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2678005.wire",
+      "count": 5126,
+      "samples": 118103040,
+      "start_ns": 3009738603748949,
+      "end_ns": 3009748602944386,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1638.1323934841982,
+          "p50_us": 1570.1865,
+          "p95_us": 3093.836
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.34909715177526335,
+          "p50_us": 0.208,
+          "p95_us": 0.608
+        },
+        "iqsend_to_recv": {
+          "mean_us": 297.5077317596566,
+          "p50_us": 212.346,
+          "p95_us": 799.38925
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 14.692681037846274,
+          "p50_us": 12.416,
+          "p95_us": 31.58025
+        },
+        "cycle": {
+          "mean_us": 1950.6819034334762,
+          "p50_us": 1881.885,
+          "p95_us": 3533.549
+        },
+        "responder_late_enter": {
+          "mean_us": 1633.6389358174015,
+          "p50_us": 1568.1545,
+          "p95_us": 3091.972
+        },
+        "send_call": {
+          "mean_us": 12.053502731174405,
+          "p50_us": 10.592,
+          "p95_us": 21.944
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2119,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685025.wire",
+      "count": 5046,
+      "samples": 116259840,
+      "start_ns": 3009977719678161,
+      "end_ns": 3009987719729944,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1679.2680986920332,
+          "p50_us": 1586.26,
+          "p95_us": 3265.492
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.36105766944114154,
+          "p50_us": 0.224,
+          "p95_us": 0.608
+        },
+        "iqsend_to_recv": {
+          "mean_us": 290.0729405469679,
+          "p50_us": 209.9615,
+          "p95_us": 735.82175
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.075902100673801,
+          "p50_us": 9.568,
+          "p95_us": 27.98
+        },
+        "cycle": {
+          "mean_us": 1981.777999009116,
+          "p50_us": 1894.7825,
+          "p95_us": 3645.303
+        },
+        "responder_late_enter": {
+          "mean_us": 1674.308065596512,
+          "p50_us": 1584.1405,
+          "p95_us": 3263.08025
+        },
+        "send_call": {
+          "mean_us": 12.267568767340467,
+          "p50_us": 10.704,
+          "p95_us": 22.412
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2120,
+      "requester": "srsue-2678008.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5184,
+      "samples": 118080000,
+      "start_ns": 3009738608413979,
+      "end_ns": 3009748608073676,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 262.11605478395063,
+          "p50_us": 188.122,
+          "p95_us": 713.3175999999996
+        },
+        "responder_to_iqsend": {
+          "mean_us": 822.5815574845678,
+          "p50_us": 754.2965,
+          "p95_us": 2263.0283999999992
+        },
+        "iqsend_to_recv": {
+          "mean_us": 460.0305613425926,
+          "p50_us": 368.716,
+          "p95_us": 1158.57385
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 384.2185271990741,
+          "p50_us": 320.2435,
+          "p95_us": 743.9632499999989
+        },
+        "cycle": {
+          "mean_us": 1928.9467008101851,
+          "p50_us": 1853.333,
+          "p95_us": 3365.7909999999997
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.599023341049381,
+          "p50_us": 11.184,
+          "p95_us": 23.053599999999992
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2120,
+      "requester": "srsue-2685029.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5208,
+      "samples": 116236800,
+      "start_ns": 3009977718580840,
+      "end_ns": 3009987719413717,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 252.58711885560678,
+          "p50_us": 173.569,
+          "p95_us": 695.8689999999998
+        },
+        "responder_to_iqsend": {
+          "mean_us": 860.6631090629801,
+          "p50_us": 777.094,
+          "p95_us": 2400.21865
+        },
+        "iqsend_to_recv": {
+          "mean_us": 436.54030760368664,
+          "p50_us": 348.547,
+          "p95_us": 1097.8847999999996
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 370.4922749615975,
+          "p50_us": 312.2905,
+          "p95_us": 732.0021499999995
+        },
+        "cycle": {
+          "mean_us": 1920.2828104838711,
+          "p50_us": 1846.894,
+          "p95_us": 3578.4093999999996
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.65589400921659,
+          "p50_us": 11.168,
+          "p95_us": 24.139049999999994
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2121,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2678008.wire",
+      "count": 5126,
+      "samples": 118103040,
+      "start_ns": 3009738605954271,
+      "end_ns": 3009748606685292,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1631.9048548575886,
+          "p50_us": 1542.274,
+          "p95_us": 3081.739
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.3297900897385876,
+          "p50_us": 0.208,
+          "p95_us": 0.652
+        },
+        "iqsend_to_recv": {
+          "mean_us": 305.5933095981272,
+          "p50_us": 208.538,
+          "p95_us": 870.41
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 13.153516582130317,
+          "p50_us": 10.816,
+          "p95_us": 29.88025
+        },
+        "cycle": {
+          "mean_us": 1950.9814711275849,
+          "p50_us": 1868.677,
+          "p95_us": 3525.28475
+        },
+        "responder_late_enter": {
+          "mean_us": 1625.2800524775653,
+          "p50_us": 1538.554,
+          "p95_us": 3079.671
+        },
+        "send_call": {
+          "mean_us": 11.113612173234491,
+          "p50_us": 9.664,
+          "p95_us": 20.896
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2121,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685029.wire",
+      "count": 5045,
+      "samples": 116236800,
+      "start_ns": 3009977718877067,
+      "end_ns": 3009987719577446,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1683.1227018830525,
+          "p50_us": 1607.196,
+          "p95_us": 3286.8762000000006
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1.2057244796828543,
+          "p50_us": 0.24,
+          "p95_us": 11.152
+        },
+        "iqsend_to_recv": {
+          "mean_us": 285.3038590683845,
+          "p50_us": 199.425,
+          "p95_us": 759.0524000000005
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.667095936570862,
+          "p50_us": 10.192,
+          "p95_us": 29.664
+        },
+        "cycle": {
+          "mean_us": 1982.2993813676908,
+          "p50_us": 1906.831,
+          "p95_us": 3695.904
+        },
+        "responder_late_enter": {
+          "mean_us": 1678.0940481665016,
+          "p50_us": 1602.972,
+          "p95_us": 3284.3098000000005
+        },
+        "send_call": {
+          "mean_us": 11.221852130822597,
+          "p50_us": 9.888,
+          "p95_us": 20.816
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2122,
+      "requester": "srsue-2678012.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5195,
+      "samples": 118126080,
+      "start_ns": 3009738606215682,
+      "end_ns": 3009748606331368,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 274.5898417709336,
+          "p50_us": 192.13,
+          "p95_us": 744.9447000000002
+        },
+        "responder_to_iqsend": {
+          "mean_us": 855.9108829643889,
+          "p50_us": 795.162,
+          "p95_us": 2357.3902000000007
+        },
+        "iqsend_to_recv": {
+          "mean_us": 418.1440858517806,
+          "p50_us": 326.707,
+          "p95_us": 1097.1762
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 376.30527333974976,
+          "p50_us": 312.516,
+          "p95_us": 734.1872
+        },
+        "cycle": {
+          "mean_us": 1924.9500839268528,
+          "p50_us": 1866.437,
+          "p95_us": 3400.949700000001
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.835974783445621,
+          "p50_us": 11.184,
+          "p95_us": 24.048299999999998
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2122,
+      "requester": "srsue-2685032.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5085,
+      "samples": 116213760,
+      "start_ns": 3009977720970171,
+      "end_ns": 3009987720292812,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 275.2156914454277,
+          "p50_us": 190.385,
+          "p95_us": 762.1916000000001
+        },
+        "responder_to_iqsend": {
+          "mean_us": 956.5349738446412,
+          "p50_us": 948.279,
+          "p95_us": 2435.4548000000004
+        },
+        "iqsend_to_recv": {
+          "mean_us": 375.1203036381514,
+          "p50_us": 278.53,
+          "p95_us": 1038.9040000000005
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 359.5641620452311,
+          "p50_us": 307.826,
+          "p95_us": 682.0818
+        },
+        "cycle": {
+          "mean_us": 1966.4351309734514,
+          "p50_us": 1911.166,
+          "p95_us": 3519.6140000000005
+        },
+        "responder_late_enter": {
+          "mean_us": 0.05978407079646018,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.644280629301868,
+          "p50_us": 10.832,
+          "p95_us": 22.528
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2123,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2678012.wire",
+      "count": 5128,
+      "samples": 118126081,
+      "start_ns": 3009738606396596,
+      "end_ns": 3009748606508298,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1642.4251565912637,
+          "p50_us": 1570.33,
+          "p95_us": 3185.8994
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.29254855694227766,
+          "p50_us": 0.224,
+          "p95_us": 0.608
+        },
+        "iqsend_to_recv": {
+          "mean_us": 296.26420573322935,
+          "p50_us": 199.8345,
+          "p95_us": 861.2083999999996
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 11.117875,
+          "p50_us": 8.592,
+          "p95_us": 26.58674999999999
+        },
+        "cycle": {
+          "mean_us": 1950.0997858814353,
+          "p50_us": 1876.581,
+          "p95_us": 3590.8514
+        },
+        "responder_late_enter": {
+          "mean_us": 1636.6194652886115,
+          "p50_us": 1567.626,
+          "p95_us": 3184.1033999999995
+        },
+        "send_call": {
+          "mean_us": 10.419809282371293,
+          "p50_us": 9.632,
+          "p95_us": 16.641
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2123,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685032.wire",
+      "count": 5046,
+      "samples": 116236801,
+      "start_ns": 3009977718076836,
+      "end_ns": 3009987720614158,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1676.9579171621087,
+          "p50_us": 1603.3,
+          "p95_us": 3253.54475
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1.2603089575901705,
+          "p50_us": 0.208,
+          "p95_us": 12.168
+        },
+        "iqsend_to_recv": {
+          "mean_us": 291.58281648830757,
+          "p50_us": 199.4575,
+          "p95_us": 827.854
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.469532500990885,
+          "p50_us": 9.912,
+          "p95_us": 28.812
+        },
+        "cycle": {
+          "mean_us": 1982.2705751089973,
+          "p50_us": 1913.999,
+          "p95_us": 3660.672
+        },
+        "responder_late_enter": {
+          "mean_us": 1670.4532903289735,
+          "p50_us": 1600.852,
+          "p95_us": 3251.37275
+        },
+        "send_call": {
+          "mean_us": 10.180167459373761,
+          "p50_us": 9.376,
+          "p95_us": 16.768
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2124,
+      "requester": "srsue-2678017.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5171,
+      "samples": 118149120,
+      "start_ns": 3009738606306579,
+      "end_ns": 3009748609562717,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 268.9939806613808,
+          "p50_us": 196.978,
+          "p95_us": 684.536
+        },
+        "responder_to_iqsend": {
+          "mean_us": 761.0064206149681,
+          "p50_us": 592.359,
+          "p95_us": 2260.5225
+        },
+        "iqsend_to_recv": {
+          "mean_us": 495.3199127828273,
+          "p50_us": 391.029,
+          "p95_us": 1269.7825
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 409.1713003287565,
+          "p50_us": 328.74,
+          "p95_us": 838.338
+        },
+        "cycle": {
+          "mean_us": 1934.4916143879327,
+          "p50_us": 1877.862,
+          "p95_us": 3443.2715
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.722372075033844,
+          "p50_us": 10.96,
+          "p95_us": 24.2405
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2124,
+      "requester": "srsue-2685035.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5112,
+      "samples": 116236800,
+      "start_ns": 3009977716912075,
+      "end_ns": 3009987716745457,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 290.86965062597807,
+          "p50_us": 213.4815,
+          "p95_us": 758.11275
+        },
+        "responder_to_iqsend": {
+          "mean_us": 831.5952701486698,
+          "p50_us": 769.366,
+          "p95_us": 2287.3662499999996
+        },
+        "iqsend_to_recv": {
+          "mean_us": 445.4491801643192,
+          "p50_us": 346.618,
+          "p95_us": 1166.2241999999997
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 388.23483920187795,
+          "p50_us": 322.8745,
+          "p95_us": 758.1519499999998
+        },
+        "cycle": {
+          "mean_us": 1956.148940140845,
+          "p50_us": 1906.158,
+          "p95_us": 3452.5467999999996
+        },
+        "responder_late_enter": {
+          "mean_us": 0.9090866588419405,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.673626956181533,
+          "p50_us": 10.832,
+          "p95_us": 23.49414999999999
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2125,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2678017.wire",
+      "count": 5129,
+      "samples": 118149121,
+      "start_ns": 3009738606779320,
+      "end_ns": 3009748609895489,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1640.6828426593877,
+          "p50_us": 1571.778,
+          "p95_us": 3117.2648
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.33056716708910117,
+          "p50_us": 0.24,
+          "p95_us": 0.672
+        },
+        "iqsend_to_recv": {
+          "mean_us": 296.63478475336325,
+          "p50_us": 207.203,
+          "p95_us": 800.0287999999995
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.65716104503802,
+          "p50_us": 10.192,
+          "p95_us": 29.43359999999999
+        },
+        "cycle": {
+          "mean_us": 1950.305355624878,
+          "p50_us": 1895.27,
+          "p95_us": 3503.006399999999
+        },
+        "responder_late_enter": {
+          "mean_us": 1634.9052244102163,
+          "p50_us": 1568.914,
+          "p95_us": 3115.0919999999996
+        },
+        "send_call": {
+          "mean_us": 11.994318385650224,
+          "p50_us": 10.432,
+          "p95_us": 22.0966
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2125,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685035.wire",
+      "count": 5046,
+      "samples": 116236801,
+      "start_ns": 3009977717046461,
+      "end_ns": 3009987716942179,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1679.9747764565993,
+          "p50_us": 1601.14,
+          "p95_us": 3201.30025
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.3445241775663892,
+          "p50_us": 0.208,
+          "p95_us": 0.512
+        },
+        "iqsend_to_recv": {
+          "mean_us": 288.9419891002774,
+          "p50_us": 209.2175,
+          "p95_us": 784.562
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.485780816488308,
+          "p50_us": 9.808,
+          "p95_us": 29.11625
+        },
+        "cycle": {
+          "mean_us": 1981.7470705509313,
+          "p50_us": 1913.3905,
+          "p95_us": 3599.971
+        },
+        "responder_late_enter": {
+          "mean_us": 1675.3755154577882,
+          "p50_us": 1599.06,
+          "p95_us": 3198.132
+        },
+        "send_call": {
+          "mean_us": 12.151592152199763,
+          "p50_us": 10.704,
+          "p95_us": 22.27275
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2126,
+      "requester": "srsue-2678022.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5204,
+      "samples": 118126080,
+      "start_ns": 3009738606433060,
+      "end_ns": 3009748608549169,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 271.28562740199845,
+          "p50_us": 191.5785,
+          "p95_us": 745.4065499999995
+        },
+        "responder_to_iqsend": {
+          "mean_us": 807.957178132206,
+          "p50_us": 716.6,
+          "p95_us": 2254.5675999999994
+        },
+        "iqsend_to_recv": {
+          "mean_us": 468.15030630284394,
+          "p50_us": 374.0925,
+          "p95_us": 1197.4250499999987
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 374.6122895849347,
+          "p50_us": 317.3395,
+          "p95_us": 704.23685
+        },
+        "cycle": {
+          "mean_us": 1922.005401421983,
+          "p50_us": 1848.022,
+          "p95_us": 3406.9805999999985
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.835705418908532,
+          "p50_us": 11.232,
+          "p95_us": 23.024
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2126,
+      "requester": "srsue-2685038.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5194,
+      "samples": 116259540,
+      "start_ns": 3009977719086732,
+      "end_ns": 3009987721312772,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 263.840791490181,
+          "p50_us": 184.969,
+          "p95_us": 723.686949999999
+        },
+        "responder_to_iqsend": {
+          "mean_us": 887.8411915671929,
+          "p50_us": 835.414,
+          "p95_us": 2421.738
+        },
+        "iqsend_to_recv": {
+          "mean_us": 409.03622641509435,
+          "p50_us": 319.914,
+          "p95_us": 1098.63235
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 365.00879091259145,
+          "p50_us": 309.1945,
+          "p95_us": 712.9096499999999
+        },
+        "cycle": {
+          "mean_us": 1925.7270003850597,
+          "p50_us": 1874.5185,
+          "p95_us": 3501.5845999999997
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.34797554871005,
+          "p50_us": 10.8245,
+          "p95_us": 22.72035
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2127,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2678022.wire",
+      "count": 5128,
+      "samples": 118126081,
+      "start_ns": 3009738603354801,
+      "end_ns": 3009748604892872,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1636.680704953198,
+          "p50_us": 1536.7615,
+          "p95_us": 3152.276
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.40675,
+          "p50_us": 0.24,
+          "p95_us": 0.608
+        },
+        "iqsend_to_recv": {
+          "mean_us": 302.0133833853354,
+          "p50_us": 206.755,
+          "p95_us": 848.7264499999987
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 11.27710062402496,
+          "p50_us": 8.632,
+          "p95_us": 27.349799999999988
+        },
+        "cycle": {
+          "mean_us": 1950.3779389625586,
+          "p50_us": 1869.0135,
+          "p95_us": 3560.1358499999974
+        },
+        "responder_late_enter": {
+          "mean_us": 1631.5588771450857,
+          "p50_us": 1534.8575,
+          "p95_us": 3150.276
+        },
+        "send_call": {
+          "mean_us": 11.421566887675507,
+          "p50_us": 9.824,
+          "p95_us": 21.429149999999986
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2127,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685038.wire",
+      "count": 5046,
+      "samples": 116236801,
+      "start_ns": 3009977717699601,
+      "end_ns": 3009987716754289,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1678.1893091557668,
+          "p50_us": 1599.5965,
+          "p95_us": 3234.23225
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1.2078158937772494,
+          "p50_us": 0.224,
+          "p95_us": 12.708
+        },
+        "iqsend_to_recv": {
+          "mean_us": 288.7202596115735,
+          "p50_us": 196.1135,
+          "p95_us": 844.36625
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 13.463013277843837,
+          "p50_us": 10.976,
+          "p95_us": 30.15225
+        },
+        "cycle": {
+          "mean_us": 1981.5803979389616,
+          "p50_us": 1920.4065,
+          "p95_us": 3630.804
+        },
+        "responder_late_enter": {
+          "mean_us": 1672.80921621086,
+          "p50_us": 1596.8045,
+          "p95_us": 3231.57275
+        },
+        "send_call": {
+          "mean_us": 11.388062822037256,
+          "p50_us": 10.048,
+          "p95_us": 20.988
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2128,
+      "requester": "srsue-2678025.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5333,
+      "samples": 118102740,
+      "start_ns": 3009738609155172,
+      "end_ns": 3009748607199122,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 329.0257999249953,
+          "p50_us": 213.923,
+          "p95_us": 978.6291999999995
+        },
+        "responder_to_iqsend": {
+          "mean_us": 230.62557753609602,
+          "p50_us": 5.936,
+          "p95_us": 1605.9577999999983
+        },
+        "iqsend_to_recv": {
+          "mean_us": 604.6127926120382,
+          "p50_us": 589.031,
+          "p95_us": 1192.4071999999999
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 710.4862424526532,
+          "p50_us": 655.784,
+          "p95_us": 1289.0966
+        },
+        "cycle": {
+          "mean_us": 1874.7504125257828,
+          "p50_us": 1808.997,
+          "p95_us": 3032.1949999999993
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 10.839349709356835,
+          "p50_us": 10.448,
+          "p95_us": 22.13179999999998
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2128,
+      "requester": "srsue-2685042.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5481,
+      "samples": 116236800,
+      "start_ns": 3009977719824306,
+      "end_ns": 3009987718600415,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 309.4731808064222,
+          "p50_us": 205.426,
+          "p95_us": 941.863
+        },
+        "responder_to_iqsend": {
+          "mean_us": 308.5343165480752,
+          "p50_us": 5.984,
+          "p95_us": 1828.03
+        },
+        "iqsend_to_recv": {
+          "mean_us": 532.6470693304142,
+          "p50_us": 414.164,
+          "p95_us": 1124.409
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 673.6067193942712,
+          "p50_us": 639.077,
+          "p95_us": 1263.402
+        },
+        "cycle": {
+          "mean_us": 1824.2612860791826,
+          "p50_us": 1764.125,
+          "p95_us": 3176.808
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 10.550540229885057,
+          "p50_us": 10.288,
+          "p95_us": 22.24
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2129,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2678025.wire",
+      "count": 5127,
+      "samples": 118126080,
+      "start_ns": 3009738605714092,
+      "end_ns": 3009748607180418,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1459.65792646772,
+          "p50_us": 1399.44,
+          "p95_us": 2729.1785
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.577152720889409,
+          "p50_us": 0.4,
+          "p95_us": 0.944
+        },
+        "iqsend_to_recv": {
+          "mean_us": 479.6581835381315,
+          "p50_us": 377.412,
+          "p95_us": 1126.0098
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 10.851095767505363,
+          "p50_us": 8.176,
+          "p95_us": 26.283199999999997
+        },
+        "cycle": {
+          "mean_us": 1950.7443584942462,
+          "p50_us": 1837.669,
+          "p95_us": 3288.1748999999995
+        },
+        "responder_late_enter": {
+          "mean_us": 1453.824235030232,
+          "p50_us": 1394.416,
+          "p95_us": 2727.1576999999997
+        },
+        "send_call": {
+          "mean_us": 20.746660230154088,
+          "p50_us": 18.288,
+          "p95_us": 36.811899999999994
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2129,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685042.wire",
+      "count": 5046,
+      "samples": 116259840,
+      "start_ns": 3009977717357295,
+      "end_ns": 3009987718409774,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1509.2536535869995,
+          "p50_us": 1398.627,
+          "p95_us": 2975.04275
+        },
+        "responder_to_iqsend": {
+          "mean_us": 1.938844827586207,
+          "p50_us": 0.448,
+          "p95_us": 19.044
+        },
+        "iqsend_to_recv": {
+          "mean_us": 458.3333630598494,
+          "p50_us": 367.8265,
+          "p95_us": 1103.468
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.450452239397542,
+          "p50_us": 8.384,
+          "p95_us": 26.872
+        },
+        "cycle": {
+          "mean_us": 1981.9763137138327,
+          "p50_us": 1821.422,
+          "p95_us": 3490.406
+        },
+        "responder_late_enter": {
+          "mean_us": 1504.4892362267142,
+          "p50_us": 1395.923,
+          "p95_us": 2973.419
+        },
+        "send_call": {
+          "mean_us": 20.5805527150218,
+          "p50_us": 18.128,
+          "p95_us": 37.149
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2130,
+      "requester": "srsue-2678028.wire",
+      "responder": "ocudu-gpu-channel-2677671.wire",
+      "count": 5515,
+      "samples": 118126080,
+      "start_ns": 3009738606109217,
+      "end_ns": 3009748605859891,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 307.6663947416138,
+          "p50_us": 200.403,
+          "p95_us": 946.2974
+        },
+        "responder_to_iqsend": {
+          "mean_us": 317.55747706255664,
+          "p50_us": 6.96,
+          "p95_us": 1630.2051999999999
+        },
+        "iqsend_to_recv": {
+          "mean_us": 525.6747758839529,
+          "p50_us": 416.181,
+          "p95_us": 1093.3858
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 662.292770988214,
+          "p50_us": 635.767,
+          "p95_us": 1222.2492
+        },
+        "cycle": {
+          "mean_us": 1813.1914186763372,
+          "p50_us": 1757.189,
+          "p95_us": 3051.7578000000003
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 11.052031368993655,
+          "p50_us": 10.64,
+          "p95_us": 23.156800000000004
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2130,
+      "requester": "srsue-2685047.wire",
+      "responder": "ocudu-gpu-channel-2684716.wire",
+      "count": 5315,
+      "samples": 116259840,
+      "start_ns": 3009977720540359,
+      "end_ns": 3009987721767047,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 312.72633396048917,
+          "p50_us": 213.153,
+          "p95_us": 938.0374
+        },
+        "responder_to_iqsend": {
+          "mean_us": 389.73673132643466,
+          "p50_us": 7.36,
+          "p95_us": 1993.6022
+        },
+        "iqsend_to_recv": {
+          "mean_us": 507.9965826904986,
+          "p50_us": 401.875,
+          "p95_us": 1085.6019000000001
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 671.2386940733771,
+          "p50_us": 636.021,
+          "p95_us": 1206.6538000000003
+        },
+        "cycle": {
+          "mean_us": 1881.6983420507997,
+          "p50_us": 1781.086,
+          "p95_us": 3394.5341000000003
+        },
+        "responder_late_enter": {
+          "mean_us": 0.0,
+          "p50_us": 0.0,
+          "p95_us": 0.0
+        },
+        "send_call": {
+          "mean_us": 10.736579868297273,
+          "p50_us": 10.112,
+          "p95_us": 22.720299999999998
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2131,
+      "requester": "ocudu-gpu-channel-2677671.wire",
+      "responder": "srsue-2678028.wire",
+      "count": 5131,
+      "samples": 118149132,
+      "start_ns": 3009738605291143,
+      "end_ns": 3009748605972052,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1485.7005731826155,
+          "p50_us": 1389.664,
+          "p95_us": 2822.84
+        },
+        "responder_to_iqsend": {
+          "mean_us": 2.8783533424283765,
+          "p50_us": 0.416,
+          "p95_us": 18.12
+        },
+        "iqsend_to_recv": {
+          "mean_us": 448.30183180666535,
+          "p50_us": 358.516,
+          "p95_us": 1083.389
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 12.189775482362112,
+          "p50_us": 9.504,
+          "p95_us": 28.561
+        },
+        "cycle": {
+          "mean_us": 1949.0705338140715,
+          "p50_us": 1817.589,
+          "p95_us": 3315.35
+        },
+        "responder_late_enter": {
+          "mean_us": 1479.9985223153383,
+          "p50_us": 1386.88,
+          "p95_us": 2821.256
+        },
+        "send_call": {
+          "mean_us": 20.403232313389204,
+          "p50_us": 18.08,
+          "p95_us": 36.376
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    },
+    {
+      "port": 2131,
+      "requester": "ocudu-gpu-channel-2684716.wire",
+      "responder": "srsue-2685047.wire",
+      "count": 5048,
+      "samples": 116259840,
+      "start_ns": 3009977719785522,
+      "end_ns": 3009987718591535,
+      "metrics": {
+        "request_to_responder": {
+          "mean_us": 1531.4076654120445,
+          "p50_us": 1398.395,
+          "p95_us": 3100.4132499999996
+        },
+        "responder_to_iqsend": {
+          "mean_us": 0.5541913629160063,
+          "p50_us": 0.416,
+          "p95_us": 1.024
+        },
+        "iqsend_to_recv": {
+          "mean_us": 434.7788565768621,
+          "p50_us": 352.339,
+          "p95_us": 1067.9119999999998
+        },
+        "recv_to_nextrequest": {
+          "mean_us": 14.005327258320127,
+          "p50_us": 10.0,
+          "p95_us": 29.248
+        },
+        "cycle": {
+          "mean_us": 1980.7460406101425,
+          "p50_us": 1822.814,
+          "p95_us": 3551.276599999996
+        },
+        "responder_late_enter": {
+          "mean_us": 1526.6579164025356,
+          "p50_us": 1396.147,
+          "p95_us": 3098.194049999999
+        },
+        "send_call": {
+          "mean_us": 20.620232765451664,
+          "p50_us": 18.192,
+          "p95_us": 36.98144999999999
+        }
+      },
+      "negative_intervals": {
+        "request_to_responder": 0,
+        "responder_to_iqsend": 0,
+        "iqsend_to_recv": 0,
+        "recv_to_nextrequest": 0,
+        "cycle": 0,
+        "responder_late_enter": 0,
+        "send_call": 0
+      }
+    }
+  ]
+}

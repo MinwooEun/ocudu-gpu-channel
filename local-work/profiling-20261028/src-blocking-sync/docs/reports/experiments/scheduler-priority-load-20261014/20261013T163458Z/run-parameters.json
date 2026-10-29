@@ -1,0 +1,46 @@
+{
+  "active_cells": [
+    "a"
+  ],
+  "attach_timeout_seconds": 180,
+  "brokers": "active brokers: own CUDA context, default stream, no realtime class",
+  "cpus": {
+    "aux": "22-23",
+    "broker": {
+      "a": "20",
+      "b": "21"
+    },
+    "gnb": {
+      "a": "0-7",
+      "b": "0-7"
+    },
+    "ue": {
+      "ue0": "8-19",
+      "ue1": "8-19",
+      "ue2": "8-19",
+      "ue3": "8-19"
+    }
+  },
+  "drain_seconds": 6,
+  "gnb_metrics": 1,
+  "measure_seconds": 120,
+  "platform_profile": "none",
+  "scenario": "/work/ocudu-native-workspace/configs/ocudu-scheduler-benchmark-native/20261013T163458Z/scenario-source.json",
+  "scenario_override": null,
+  "schedulers": {
+    "a": "qos"
+  },
+  "seed": 1,
+  "sionna": {
+    "awgn_snr_db": 40.0,
+    "fanout": false,
+    "timeline": "grid",
+    "tx_power_dl": null,
+    "tx_power_ul": null,
+    "update_hz": 10.0
+  },
+  "timestamp": "20261013T163458Z",
+  "traffic_overrides": "ue0.dl_bulk.rate_mbps=70,ue1.dl_video.rate_mbps=40",
+  "traffic_profile": "mixed",
+  "ue_rx_sleep": false
+}

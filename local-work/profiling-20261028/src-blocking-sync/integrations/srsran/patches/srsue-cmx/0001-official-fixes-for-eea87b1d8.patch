@@ -1,0 +1,175 @@
+From cdb02542355b7f35c1e5eff1fbe8c019a923fb1b Mon Sep 17 00:00:00 2001
+From: Robert Falkenberg <robert.falkenberg@srs.io>
+Date: Tue, 16 Jun 2026 14:28:59 +0200
+Subject: [PATCH] cmake: remove outdated Boost library `system` (only for
+ Ubuntu 18.04 + UHD)
+
+The `system` library was removed in newer Boost versions.
+It was only needed for Ubuntu 18.04 + UHD as a transitive dependency.
+---
+ CMakeLists.txt | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 37063999d..7084258a5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -260,9 +260,7 @@ endif(BUILD_STATIC)
+ set(BOOST_REQUIRED_COMPONENTS
+   program_options
+ )
+-if(UHD_FOUND) # Ubuntu 18.04 requires component 'system' to link UHD
+-  list(APPEND BOOST_REQUIRED_COMPONENTS "system")
+-endif(UHD_FOUND)
++
+ if(UNIX AND EXISTS "/usr/lib64")
+   list(APPEND BOOST_LIBRARYDIR "/usr/lib64") #fedora 64-bit fix
+ endif(UNIX AND EXISTS "/usr/lib64")
+-- 
+2.43.0
+
+From 0a6c6437825d6816121b13b60e6872c4fe32c0e2 Mon Sep 17 00:00:00 2001
+From: Robert Falkenberg <robert.falkenberg@srs.io>
+Date: Tue, 16 Jun 2026 14:30:02 +0200
+Subject: [PATCH] cmake: increase minimum CMAKE version to 3.10
+
+This avoids a deprecation warning from cmake 4.3.2.
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7084258a5..009c19e79 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -18,7 +18,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+ ########################################################################
+ # Project setup
+ ########################################################################
+-cmake_minimum_required(VERSION 3.5)
++cmake_minimum_required(VERSION 3.10)
+ project( SRSRAN )
+ message( STATUS "CMAKE_SYSTEM: " ${CMAKE_SYSTEM} )
+ message( STATUS "CMAKE_SYSTEM_PROCESSOR: " ${CMAKE_SYSTEM_PROCESSOR} )
+-- 
+2.43.0
+
+From 4cb86aeab7e04695fb2d0f6b09627b566036b5a2 Mon Sep 17 00:00:00 2001
+From: Robert Falkenberg <robert.falkenberg@srs.io>
+Date: Tue, 16 Jun 2026 14:32:19 +0200
+Subject: [PATCH] cmake: enable backward compat for `FindBoost` policy.
+
+This avoids the following warning:
+
+Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+--help-policy CMP0167" for policy details.  Use the cmake_policy command to
+set the policy and suppress this warning.
+---
+ CMakeLists.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 009c19e79..e45740709 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -19,6 +19,11 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+ # Project setup
+ ########################################################################
+ cmake_minimum_required(VERSION 3.10)
++
++if(POLICY CMP0167) # CMAKE 3.30+ changed the FindBoost policy.
++  cmake_policy(SET CMP0167 OLD) # Use old behavior.
++endif()
++
+ project( SRSRAN )
+ message( STATUS "CMAKE_SYSTEM: " ${CMAKE_SYSTEM} )
+ message( STATUS "CMAKE_SYSTEM_PROCESSOR: " ${CMAKE_SYSTEM_PROCESSOR} )
+-- 
+2.43.0
+
+From 50564d9c2f6284f249f69c9762f8150e37eae2c5 Mon Sep 17 00:00:00 2001
+From: Piotr Gawlowicz <piotr@srs.io>
+Date: Mon, 15 Jul 2024 12:50:23 +0200
+Subject: [PATCH] nr,sync: fix casting of nof samples to discard, when
+ avg_delay_us is negative
+
+---
+ lib/src/phy/ue/ue_sync_nr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/src/phy/ue/ue_sync_nr.c b/lib/src/phy/ue/ue_sync_nr.c
+index 1d6dc190a..65c6e3c1f 100644
+--- a/lib/src/phy/ue/ue_sync_nr.c
++++ b/lib/src/phy/ue/ue_sync_nr.c
+@@ -107,7 +107,7 @@ static void ue_sync_nr_apply_feedback(srsran_ue_sync_nr_t* q)
+ 
+   // Update number of samples
+   q->avg_delay_us          = q->feedback.delay_us;
+-  q->next_rf_sample_offset = (uint32_t)round((double)q->avg_delay_us * (q->srate_hz * 1e-6));
++  q->next_rf_sample_offset = (int32_t)round((double)q->avg_delay_us * (q->srate_hz * 1e-6));
+ 
+   // Integrate CFO
+   if (q->disable_cfo) {
+-- 
+2.43.0
+
+From e1a0f3241d7d7f4adca33a3407b81f8a0d4c4cfe Mon Sep 17 00:00:00 2001
+From: Karsten Ohme <karsten.ohme@ohmesoftware.de>
+Date: Sat, 3 Jun 2023 01:55:14 +0200
+Subject: [PATCH] fixed K_AMF derivation
+
+---
+ srsue/src/stack/upper/pcsc_usim.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/srsue/src/stack/upper/pcsc_usim.cc b/srsue/src/stack/upper/pcsc_usim.cc
+index 37854d794..5c6087bcb 100644
+--- a/srsue/src/stack/upper/pcsc_usim.cc
++++ b/srsue/src/stack/upper/pcsc_usim.cc
+@@ -209,7 +209,7 @@ auth_result_t pcsc_usim::generate_authentication_response_5g(uint8_t*    rand,
+   security_generate_k_seaf(k_ausf, serving_network_name, k_seaf);
+   logger.debug(k_seaf, 32, "K SEAF");
+   // Generate K_amf
+-  security_generate_k_amf(k_ausf, imsi_str.c_str(), abba, abba_len, k_amf);
++  security_generate_k_amf(k_seaf, imsi_str.c_str(), abba, abba_len, k_amf);
+   logger.debug(k_amf, 32, "K AMF");
+ 
+   ret = AUTH_OK;
+-- 
+2.43.0
+
+From 5da97cb582188dad2ff68281b04fe2ab6b6c39e3 Mon Sep 17 00:00:00 2001
+From: Andre Puschmann <andre@srs.io>
+Date: Mon, 3 Nov 2025 11:33:48 +0100
+Subject: [PATCH] ue,nas: do not include NSSAI IE in NAS registration request
+
+according to 24.501 sec 4.4.6 a the NSSAI IE should not be
+sent in cleartext in a NAS registration request
+
+Thanks to @s5uishida for flagging in https://github.com/srsran/srsRAN_4G/pull/1214
+
+Imported here for internal CI checking
+---
+ srsue/src/stack/upper/nas_5g.cc | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/srsue/src/stack/upper/nas_5g.cc b/srsue/src/stack/upper/nas_5g.cc
+index a3f1cc21b..34333f1a7 100644
+--- a/srsue/src/stack/upper/nas_5g.cc
++++ b/srsue/src/stack/upper/nas_5g.cc
+@@ -269,12 +269,6 @@ int nas_5g::send_registration_request()
+   reg_req.ue_security_capability_present = true;
+   fill_security_caps(reg_req.ue_security_capability);
+ 
+-  if (cfg.enable_slicing) {
+-    reg_req.requested_nssai_present = true;
+-    s_nssai_t nssai;
+-    set_nssai(nssai);
+-    reg_req.requested_nssai.s_nssai_list.push_back(nssai);
+-  }
+   if (initial_registration_request_stored.pack(pdu) != SRSASN_SUCCESS) {
+     logger.error("Failed to pack registration request");
+     return SRSRAN_ERROR;
+-- 
+2.43.0
+

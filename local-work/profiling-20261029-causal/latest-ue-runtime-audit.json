@@ -1,0 +1,247 @@
+[
+  {
+    "session": "tagged-s2-b20-cpu-4ue-20261029T101425Z-g185",
+    "results": [
+      {
+        "run": "01-test1",
+        "ratio": 0.9908576888541751,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 14,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=off lower_prach=stage"
+      },
+      {
+        "run": "02-test2",
+        "ratio": 0.9868283564347208,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 26,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=off lower_prach=stage"
+      }
+    ]
+  },
+  {
+    "session": "tagged-s2-b20-gpu-4ue-20261029T101720Z-g186",
+    "results": [
+      {
+        "run": "01-test1",
+        "ratio": 0.963362220414952,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 313,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=on lower_prach=stage"
+      },
+      {
+        "run": "02-test2",
+        "ratio": 0.9687286023291871,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 249,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=on lower_prach=stage"
+      }
+    ]
+  },
+  {
+    "session": "tagged-s2-b50-cpu-1c-20261029T100339Z-g180",
+    "results": [
+      {
+        "run": "01-test1",
+        "ratio": 0.9047641392569916,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 14,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=off lower_prach=stage"
+      },
+      {
+        "run": "02-test2",
+        "ratio": 0.9129926945736241,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 11,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=off lower_prach=stage"
+      }
+    ]
+  },
+  {
+    "session": "tagged-s2-b50-cpu-3c-20261029T101009Z-g183",
+    "results": [
+      {
+        "run": "01-test1",
+        "ratio": 0.9937053087486919,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 6,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=off lower_prach=stage"
+      },
+      {
+        "run": "02-test2",
+        "ratio": 0.9926971486582044,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 4,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=off lower_prach=stage"
+      }
+    ]
+  },
+  {
+    "session": "tagged-s2-b50-gpu-1c-20261029T100551Z-g181",
+    "results": [
+      {
+        "run": "01-test1",
+        "ratio": 0.9915826057547933,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 21,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=on lower_prach=stage"
+      },
+      {
+        "run": "02-test2",
+        "ratio": 0.9902866999731689,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 24,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=on lower_prach=stage"
+      }
+    ]
+  },
+  {
+    "session": "tagged-s2-b50-gpu-3c-20261029T101216Z-g184",
+    "results": [
+      {
+        "run": "01-test1",
+        "ratio": 0.9798893226631081,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 27,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=on lower_prach=stage"
+      },
+      {
+        "run": "02-test2",
+        "ratio": 0.9857300311700327,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 21,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=on lower_prach=stage"
+      }
+    ]
+  },
+  {
+    "session": "tagged-s2-b50-gpuspin-1c-20261029T100801Z-g182",
+    "results": [
+      {
+        "run": "01-test1",
+        "ratio": 0.9857551297848101,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 25,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=on lower_prach=stage"
+      },
+      {
+        "run": "02-test2",
+        "ratio": 0.9734454767834341,
+        "segments_valid": 20,
+        "segments_complete": 20,
+        "faults": {
+          "rx_starvations": 32,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "measure_seconds": 20,
+        "warmup_seconds": 10,
+        "knobs": "event=local_knobs ue_rx_sleep=false log_level=default pcap=off broker_env=2 ue_phy_threads=3 gnb_main_pool=auto quiet_logs=1 gnb_binary=/workspace/ocudu-spark-ranb/builds/ocudu-zmq-release/apps/gnb/gnb rx_to_tx_max_ms=unset gnb_acceleration=none mps=on lower_prach=stage"
+      }
+    ]
+  }
+]

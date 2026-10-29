@@ -1,0 +1,7 @@
+cuda-u1-c1-bw100-a4x4 0.3392 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': ['pusch_ko_ratio 0.1725 > 0.1'], 'result': 'fail'}
+cuda-u1-c1-bw20-a4x4 0.9997 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+cuda-u1-c1-bw100-a4x1 0.4911 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+cuda-u1-c1-bw50-a4x4 0.5131 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+cuda-u1-c1-bw50-a2x2 0.9973 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+cuda-u1-c1-bw20-a2x2 0.9999 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}
+cuda-u1-c1-bw100-a2x2 0.684 {'max_nack_ratio': 0.1, 'max_pusch_ko_ratio': 0.1, 'problems': [], 'result': 'pass'}

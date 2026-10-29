@@ -1,0 +1,22 @@
+{
+  "cpu19": "entries: 200774\noverrun: 0\ncommit overrun: 0\nbytes: 11279372\noldest event ts: 3020021.580255\nnow ts: 3020027.089820\ndropped events: 0\nread events: 0\n",
+  "cpu18": "entries: 212526\noverrun: 0\ncommit overrun: 0\nbytes: 11937008\noldest event ts: 3020021.580266\nnow ts: 3020027.089852\ndropped events: 0\nread events: 0\n",
+  "cpu17": "entries: 204895\noverrun: 0\ncommit overrun: 0\nbytes: 11510016\noldest event ts: 3020021.580286\nnow ts: 3020027.089872\ndropped events: 0\nread events: 0\n",
+  "cpu16": "entries: 295413\noverrun: 0\ncommit overrun: 0\nbytes: 18982852\noldest event ts: 3020021.580260\nnow ts: 3020027.089894\ndropped events: 0\nread events: 0\n",
+  "cpu15": "entries: 196064\noverrun: 0\ncommit overrun: 0\nbytes: 11123972\noldest event ts: 3020021.580256\nnow ts: 3020027.089911\ndropped events: 0\nread events: 0\n",
+  "cpu14": "entries: 102593\noverrun: 0\ncommit overrun: 0\nbytes: 5814972\noldest event ts: 3020021.580317\nnow ts: 3020027.089929\ndropped events: 0\nread events: 0\n",
+  "cpu13": "entries: 98420\noverrun: 0\ncommit overrun: 0\nbytes: 5570092\noldest event ts: 3020021.580315\nnow ts: 3020027.089951\ndropped events: 0\nread events: 0\n",
+  "cpu12": "entries: 32031\noverrun: 0\ncommit overrun: 0\nbytes: 1891040\noldest event ts: 3020021.580310\nnow ts: 3020027.089969\ndropped events: 0\nread events: 0\n",
+  "cpu11": "entries: 27927\noverrun: 0\ncommit overrun: 0\nbytes: 1647740\noldest event ts: 3020021.580321\nnow ts: 3020027.089986\ndropped events: 0\nread events: 0\n",
+  "cpu10": "entries: 28420\noverrun: 0\ncommit overrun: 0\nbytes: 1675256\noldest event ts: 3020021.580325\nnow ts: 3020027.090016\ndropped events: 0\nread events: 0\n",
+  "cpu9": "entries: 120783\noverrun: 0\ncommit overrun: 0\nbytes: 7143640\noldest event ts: 3020021.580271\nnow ts: 3020027.090032\ndropped events: 0\nread events: 0\n",
+  "cpu8": "entries: 122041\noverrun: 0\ncommit overrun: 0\nbytes: 7211640\noldest event ts: 3020021.580297\nnow ts: 3020027.090055\ndropped events: 0\nread events: 0\n",
+  "cpu7": "entries: 123920\noverrun: 0\ncommit overrun: 0\nbytes: 7324072\noldest event ts: 3020021.580277\nnow ts: 3020027.090073\ndropped events: 0\nread events: 0\n",
+  "cpu6": "entries: 119332\noverrun: 0\ncommit overrun: 0\nbytes: 7069368\noldest event ts: 3020021.580279\nnow ts: 3020027.090090\ndropped events: 0\nread events: 0\n",
+  "cpu5": "entries: 122821\noverrun: 0\ncommit overrun: 0\nbytes: 7253768\noldest event ts: 3020021.580300\nnow ts: 3020027.090112\ndropped events: 0\nread events: 0\n",
+  "cpu4": "entries: 56410\noverrun: 0\ncommit overrun: 0\nbytes: 3282492\noldest event ts: 3020021.580257\nnow ts: 3020027.090130\ndropped events: 0\nread events: 0\n",
+  "cpu3": "entries: 57984\noverrun: 0\ncommit overrun: 0\nbytes: 3372480\noldest event ts: 3020021.580333\nnow ts: 3020027.090148\ndropped events: 0\nread events: 0\n",
+  "cpu2": "entries: 59061\noverrun: 0\ncommit overrun: 0\nbytes: 3433256\noldest event ts: 3020021.580275\nnow ts: 3020027.090170\ndropped events: 0\nread events: 0\n",
+  "cpu1": "entries: 57931\noverrun: 0\ncommit overrun: 0\nbytes: 3367056\noldest event ts: 3020021.580265\nnow ts: 3020027.090187\ndropped events: 0\nread events: 0\n",
+  "cpu0": "entries: 57281\noverrun: 0\ncommit overrun: 0\nbytes: 3329096\noldest event ts: 3020021.580344\nnow ts: 3020027.090205\ndropped events: 0\nread events: 0\n"
+}

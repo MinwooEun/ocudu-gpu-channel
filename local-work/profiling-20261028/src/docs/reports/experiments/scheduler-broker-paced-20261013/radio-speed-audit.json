@@ -1,0 +1,924 @@
+{
+  "sample_rate_hz": 23040000,
+  "samples_per_radio_slot": 23040,
+  "method": "IQ acquired counter counts cf32 samples successfully copied from each radio TX into its broker ring. Compare samples at monotonic heartbeat t=60 and t=130; per-port counts, not message or producer-call counts. Independently unwrap gNB SFN.slot and divide endpoint slot progress by wall time inside each 120-second measurement. Heartbeat comparison uses an interior window rather than exactly the same 120-second endpoints.",
+  "heartbeat_timing_bound": "Integer seconds imply conservative 69\u201371 s elapsed for the selected nominal 70 s window; both bounds remain below nominal rate.",
+  "runs": [
+    {
+      "scheduler": "rr",
+      "segments_valid": 120,
+      "run": "20261013T103050Z",
+      "measurement_anchor_unix_ms": 1791887467933,
+      "measurement_seconds": 120,
+      "cells": {
+        "a": {
+          "iq_sample_progress": {
+            "gnb0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1250081580,
+              "to_samples": 2860992300,
+              "sample_delta": 1610910720,
+              "samples_per_s": 23013010.285714287,
+              "fraction_of_realtime": 0.9988285714285715,
+              "conservative_fraction_bounds": [
+                0.9847605633802817,
+                1.013304347826087
+              ],
+              "input_waits_over_5_ms_in_window": 0
+            },
+            "ue0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1250081294,
+              "to_samples": 2861015053,
+              "sample_delta": 1610933759,
+              "samples_per_s": 23013339.414285716,
+              "fraction_of_realtime": 0.9988428565228176,
+              "conservative_fraction_bounds": [
+                0.9847746472760172,
+                1.0133188399506845
+              ],
+              "input_waits_over_5_ms_in_window": 1
+            },
+            "ue1_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1250104333,
+              "to_samples": 2861038094,
+              "sample_delta": 1610933761,
+              "samples_per_s": 23013339.442857143,
+              "fraction_of_realtime": 0.9988428577628968,
+              "conservative_fraction_bounds": [
+                0.9847746484986307,
+                1.0133188412087357
+              ],
+              "input_waits_over_5_ms_in_window": 1
+            }
+          },
+          "heartbeat_excerpts": [
+            "event=heartbeat t=60 dev=gnb0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=54241 idle=55 room_stall=0 last=23040 acquired=1250081580] producer[state=throttle slots=59724 stall=248289 last=23040] rep[state=wait_row replies=59724 idle=22 row_spin=421140 last=23040] starvations=0 starvations_total=0 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue0_p0 ring=23041/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=54335 idle=56 room_stall=0 last=23040 acquired=1250081294] producer[state=throttle slots=54258 stall=147983 last=23040] rep[state=wait_row replies=54258 idle=55 row_spin=394792 last=23040] starvations=0 starvations_total=1 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue1_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=54343 idle=56 room_stall=0 last=23040 acquired=1250104333] producer[state=throttle slots=54258 stall=150412 last=23040] rep[state=wait_row replies=54258 idle=55 row_spin=414829 last=23040] starvations=0 starvations_total=1 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=gnb0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=124154 idle=55 room_stall=0 last=23040 acquired=2860992300] producer[state=throttle slots=135333 stall=442658 last=23040] rep[state=wait_row replies=135333 idle=22 row_spin=922717 last=23040] starvations=0 starvations_total=0 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue0_p0 ring=46080/2457600 rx_ring=23040/46080 puller[state=recv_reply pulls=124379 idle=56 room_stall=0 last=23040 acquired=2861015053] producer[state=wait_room slots=124178 stall=295903 last=23040] rep[state=wait_row replies=124177 idle=55 row_spin=917157 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue1_p0 ring=46081/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=124314 idle=56 room_stall=0 last=23040 acquired=2861038094] producer[state=process slots=124177 stall=286890 last=23040] rep[state=wait_row replies=124177 idle=55 row_spin=942389 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0"
+          ],
+          "independent_slot_progress": {
+            "first": {
+              "wall_unix_s": 1791887467.933301,
+              "absolute_slot": 9009,
+              "line": "2026-10-13T10:31:07.933301 [SCHED   ] [I] [   900.9] Slot decisions pci=1 t=9us (1 PDSCH, 1 PUSCH, 1 PUCCH): DL: ue=0 c-rnti=0x4601 h_id=0 ss_id=2 rb=[0..60) k1=4 cw[0]: newtx=true rv=0 tbs=4992 ri=1"
+            },
+            "last": {
+              "wall_unix_s": 1791887587.930741,
+              "absolute_slot": 128860,
+              "line": "2026-10-13T10:33:07.930741 [SCHED   ] [I] [   598.0] Slot decisions pci=1 t=6us (0 PDSCHs, 1 PUSCH, 0 PUCCHs): UL: ue=0 rnti=0x4601 h_id=0 ss_id=2 rb=[5..30) newtx=true rv=0 tbs=2304 k2=4"
+            },
+            "elapsed_wall_seconds": 119.99744009971619,
+            "slot_delta": 119851,
+            "slots_per_s": 998.7796398023617,
+            "logged_decisions": 119837,
+            "wrapped_late_lines": 0
+          },
+          "reported_slots_per_s": 998.7782043840729,
+          "priority_warnings": [
+            "Warning: Scheduling priority of thread \"main_pool#0\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#1\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#2\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#3\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#4\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"io_broker_epoll\" not changed. Cause: Not enough privileges."
+          ],
+          "log_sha256": {
+            "broker": "17a53988608a0cf151528722a0da4c189b148df2427b0fb449fb4c3708df9ef5"
+          }
+        }
+      },
+      "bulk_delay_per_second_p99_ms": [
+        7.789656162261963,
+        7.859556198120117,
+        9.297052383422852,
+        8.69955062866211,
+        9.130318641662598,
+        8.792743682861328,
+        7.616891860961914,
+        8.123139381408691,
+        8.377312660217285,
+        8.742180824279785,
+        9.38810920715332,
+        8.681797981262207,
+        9.142017364501953,
+        8.706988334655762,
+        9.751523971557617,
+        7.370721817016602,
+        7.3909711837768555,
+        8.730673789978027,
+        9.161595344543457,
+        10.049052238464355,
+        9.01961612701416,
+        8.760207176208496,
+        8.718454360961914,
+        8.6830472946167,
+        13.237678527832031,
+        8.96164321899414,
+        8.787029266357422,
+        9.086737632751465,
+        8.912850379943848,
+        8.939848899841309,
+        8.677085876464844,
+        8.577193260192871,
+        9.306790351867676,
+        9.374659538269043,
+        8.853978157043457,
+        8.798959732055664,
+        8.850386619567871,
+        8.896573066711426,
+        7.29506778717041,
+        7.122664928436279,
+        12.112774848937988,
+        8.552107810974121,
+        8.628284454345703,
+        7.70143985748291,
+        9.76640796661377,
+        8.00369644165039,
+        7.567665100097656,
+        9.157003402709961,
+        8.576798439025879,
+        9.515580177307129,
+        8.509451866149902,
+        22.225677490234375,
+        7.560279846191406,
+        8.830010414123535,
+        10.123330116271973,
+        8.691306114196777,
+        8.97426700592041,
+        8.394182205200195,
+        7.605844974517822,
+        9.94862174987793,
+        8.938857078552246,
+        8.348278045654297,
+        11.044224739074707,
+        7.677195072174072,
+        7.5096869468688965,
+        7.578917026519775,
+        8.043910026550293,
+        8.612693786621094,
+        8.852137565612793,
+        8.9668550491333,
+        8.908251762390137,
+        9.031444549560547,
+        8.52385139465332,
+        7.717207908630371,
+        8.404194831848145,
+        7.465800762176514,
+        8.354188919067383,
+        16.136329650878906,
+        7.374526023864746,
+        7.038078784942627,
+        7.310548782348633,
+        7.231227874755859,
+        11.534884452819824,
+        7.074073791503906,
+        8.237374305725098,
+        7.404621124267578,
+        7.227717876434326,
+        10.819421768188477,
+        8.551271438598633,
+        8.242598533630371,
+        8.782182693481445,
+        8.01310920715332,
+        26.40990447998047,
+        8.411206245422363,
+        8.473122596740723,
+        8.128281593322754,
+        7.929243087768555,
+        8.104914665222168,
+        8.044833183288574,
+        7.972154140472412,
+        8.009228706359863,
+        9.933438301086426,
+        8.187856674194336,
+        12.454981803894043,
+        8.774273872375488,
+        8.790987968444824,
+        8.777252197265625,
+        8.775079727172852,
+        8.898215293884277,
+        8.77840518951416,
+        8.643877029418945,
+        8.771102905273438,
+        8.419437408447266,
+        8.528942108154297,
+        8.98657512664795,
+        6.340968132019043,
+        6.934071063995361,
+        7.129717826843262,
+        9.826507568359375,
+        6.9387078285217285
+      ],
+      "mean_bulk_delay_p99_ms": 8.936966705322266,
+      "observed_iq_progress": {
+        "gnb0_p0": {
+          "first": {
+            "heartbeat_elapsed_s": 60,
+            "device": "gnb0_p0",
+            "acquired_samples": 1250081580,
+            "observed_monotonic_ns": 261863175938131
+          },
+          "last": {
+            "heartbeat_elapsed_s": 130,
+            "device": "gnb0_p0",
+            "acquired_samples": 2860992300,
+            "observed_monotonic_ns": 261933183803419
+          },
+          "elapsed_wall_seconds": 70.007865288,
+          "sample_delta": 1610910720,
+          "samples_per_s": 23010424.80545575,
+          "fraction_of_realtime": 0.9987163544034614,
+          "timing_note": "Read-only observer polls the line-buffered broker log every 2 ms on auxiliary CPUs; observation timestamps have polling/scheduling delay. Independently check precise gNB SFN progress."
+        },
+        "ue0_p0": {
+          "first": {
+            "heartbeat_elapsed_s": 60,
+            "device": "ue0_p0",
+            "acquired_samples": 1250081294,
+            "observed_monotonic_ns": 261863175994302
+          },
+          "last": {
+            "heartbeat_elapsed_s": 130,
+            "device": "ue0_p0",
+            "acquired_samples": 2861015053,
+            "observed_monotonic_ns": 261933183860248
+          },
+          "elapsed_wall_seconds": 70.007865946,
+          "sample_delta": 1610933759,
+          "samples_per_s": 23010753.680773254,
+          "fraction_of_realtime": 0.9987306285057836,
+          "timing_note": "Read-only observer polls the line-buffered broker log every 2 ms on auxiliary CPUs; observation timestamps have polling/scheduling delay. Independently check precise gNB SFN progress."
+        },
+        "ue1_p0": {
+          "first": {
+            "heartbeat_elapsed_s": 60,
+            "device": "ue1_p0",
+            "acquired_samples": 1250104333,
+            "observed_monotonic_ns": 261863176012362
+          },
+          "last": {
+            "heartbeat_elapsed_s": 130,
+            "device": "ue1_p0",
+            "acquired_samples": 2861038094,
+            "observed_monotonic_ns": 261933183873089
+          },
+          "elapsed_wall_seconds": 70.007860727,
+          "sample_delta": 1610933761,
+          "samples_per_s": 23010755.42476489,
+          "fraction_of_realtime": 0.998730704199865,
+          "timing_note": "Read-only observer polls the line-buffered broker log every 2 ms on auxiliary CPUs; observation timestamps have polling/scheduling delay. Independently check precise gNB SFN progress."
+        }
+      },
+      "gate": {
+        "brokers": {
+          "a": {
+            "control_batches_committed": 1319,
+            "rx_requests": 434454,
+            "rx_starvations": 4,
+            "tx_pulls": 421681,
+            "tx_queue_overflows": 0,
+            "tx_sequence_gaps": 0,
+            "zmq_errors": 0
+          }
+        },
+        "each_ue_on_its_own_cell": 1,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "cell": "a",
+            "crashed": 0,
+            "expected_pci": 1,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue1": {
+            "camped_pci": 1,
+            "cell": "a",
+            "crashed": 0,
+            "expected_pci": 1,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "schedulers": {
+          "a": "rr"
+        },
+        "srsue_alive_at_stop": 1,
+        "status": "passed",
+        "timestamp": "20261013T103050Z"
+      },
+      "traffic_checks": {
+        "ue0.dl_bulk": {
+          "duplicates": 0,
+          "received": 500000,
+          "scheduled": 500000,
+          "sender_done": true,
+          "sent": 500000,
+          "unknown_seq": 0
+        },
+        "ue0.ul_bulk": {
+          "duplicates": 0,
+          "received": 25000,
+          "scheduled": 25000,
+          "sender_done": true,
+          "sent": 25000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_control": {
+          "duplicates": 0,
+          "received": 12000,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_video": {
+          "duplicates": 0,
+          "received": 103153,
+          "scheduled": 103153,
+          "sender_done": true,
+          "sent": 103153,
+          "unknown_seq": 0
+        },
+        "ue1.ul_control": {
+          "duplicates": 0,
+          "received": 12000,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        }
+      },
+      "sionna": {
+        "fanout_ack_skew_ms": {
+          "count": 0,
+          "max": null,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "generation_ms": {
+          "count": 1318,
+          "max": 35.233226022683084,
+          "mean": 25.130496993049704,
+          "p50": 25.15312097966671,
+          "p95": 26.164936978602782,
+          "p99": 28.40925200143829
+        },
+        "lag_ms": {
+          "count": 1318,
+          "max": 0.16368500655516982,
+          "mean": 0.09910229650309821,
+          "p50": 0.09761599358171225,
+          "p95": 0.10696399840526283,
+          "p99": 0.135489011881873
+        },
+        "last": {
+          "channels": {
+            "gnb0>ue0:sionna_rt": {
+              "path_power_db": -59.230055004357396,
+              "rays": 5,
+              "tap_gain_db": 0.331915596,
+              "taps": 4
+            },
+            "gnb0>ue1:sionna_rt": {
+              "path_power_db": -68.05803967022604,
+              "rays": 2,
+              "tap_gain_db": -9.315530272,
+              "taps": 1
+            },
+            "ue0>gnb0:sionna_rt": {
+              "path_power_db": -58.82960830606487,
+              "rays": 5,
+              "tap_gain_db": 0.791721204,
+              "taps": 4
+            },
+            "ue1>gnb0:sionna_rt": {
+              "path_power_db": -67.59686751129166,
+              "rays": 2,
+              "tap_gain_db": -9.348800293,
+              "taps": 1
+            }
+          },
+          "digest": "a89487c52864c4dc4dbcd8ee6d6a94f84de312b5a5c672c0a266c7ae5cba953b",
+          "fanout_ack_ms": [],
+          "fanout_ok": null,
+          "generation_ms": 21.70795400161296,
+          "grid_index": 1317,
+          "lag_ms": 0.10115298209711909,
+          "positions": {
+            "gnb0": [
+              15.0,
+              0.0,
+              8.0
+            ],
+            "ue0": [
+              5.327217668373326,
+              -1.9982103761555905,
+              0.4
+            ],
+            "ue1": [
+              -16.003133306044603,
+              10.148569132301299,
+              0.4
+            ]
+          },
+          "scenario_time_s": 131.7,
+          "skipped": 0
+        },
+        "skipped_grid_points": 0,
+        "updates": 1318
+      }
+    },
+    {
+      "scheduler": "qos",
+      "segments_valid": 120,
+      "run": "20261013T103414Z",
+      "measurement_anchor_unix_ms": 1791887671541,
+      "measurement_seconds": 120,
+      "cells": {
+        "a": {
+          "iq_sample_progress": {
+            "gnb0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1250058540,
+              "to_samples": 2861729580,
+              "sample_delta": 1611671040,
+              "samples_per_s": 23023872.0,
+              "fraction_of_realtime": 0.9993,
+              "conservative_fraction_bounds": [
+                0.9852253521126761,
+                1.013782608695652
+              ],
+              "input_waits_over_5_ms_in_window": 0
+            },
+            "ue0_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1250081294,
+              "to_samples": 2861729293,
+              "sample_delta": 1611647999,
+              "samples_per_s": 23023542.84285714,
+              "fraction_of_realtime": 0.9992857136656745,
+              "conservative_fraction_bounds": [
+                0.985211266994327,
+                1.0137681153130031
+              ],
+              "input_waits_over_5_ms_in_window": 0
+            },
+            "ue1_p0": {
+              "from_elapsed_s": 60,
+              "to_elapsed_s": 130,
+              "from_samples": 1250104333,
+              "to_samples": 2861752334,
+              "sample_delta": 1611648001,
+              "samples_per_s": 23023542.87142857,
+              "fraction_of_realtime": 0.999285714905754,
+              "conservative_fraction_bounds": [
+                0.9852112682169405,
+                1.0137681165710548
+              ],
+              "input_waits_over_5_ms_in_window": 0
+            }
+          },
+          "heartbeat_excerpts": [
+            "event=heartbeat t=60 dev=gnb0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=54248 idle=55 room_stall=0 last=23040 acquired=1250058540] producer[state=throttle slots=58961 stall=235512 last=23040] rep[state=wait_row replies=58961 idle=22 row_spin=412882 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue0_p0 ring=23041/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=54334 idle=56 room_stall=0 last=23040 acquired=1250081294] producer[state=wait_room slots=54264 stall=152499 last=23040] rep[state=wait_req replies=54264 idle=55 row_spin=412178 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=60 dev=ue1_p0 ring=46080/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=54348 idle=56 room_stall=0 last=23040 acquired=1250104333] producer[state=wait_data slots=54261 stall=152847 last=23040] rep[state=wait_row replies=54261 idle=55 row_spin=386246 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=gnb0_p0 ring=46080/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=124191 idle=55 room_stall=0 last=23040 acquired=2861729580] producer[state=wait_data slots=138516 stall=533644 last=23040] rep[state=wait_row replies=138516 idle=22 row_spin=918549 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue0_p0 ring=23040/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=124408 idle=56 room_stall=0 last=23040 acquired=2861729293] producer[state=throttle slots=124213 stall=271411 last=23040] rep[state=wait_row replies=124213 idle=55 row_spin=939796 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0",
+            "event=heartbeat t=130 dev=ue1_p0 ring=23041/2457600 rx_ring=0/46080 puller[state=recv_reply pulls=124348 idle=56 room_stall=0 last=23040 acquired=2861752334] producer[state=throttle slots=124210 stall=272207 last=23040] rep[state=wait_row replies=124210 idle=55 row_spin=917887 last=23040] starvations=0 starvations_total=2 gaps=0 gaps_total=0 overflows=0 overflows_total=0"
+          ],
+          "independent_slot_progress": {
+            "first": {
+              "wall_unix_s": 1791887671.541526,
+              "absolute_slot": 8971,
+              "line": "2026-10-13T10:34:31.541526 [SCHED   ] [I] [   897.1] Slot decisions pci=1 t=13us (1 PDSCH, 0 PUSCHs, 2 PUCCHs): DL: ue=0 c-rnti=0x4601 h_id=0 ss_id=2 rb=[0..80) k1=4 cw[0]: newtx=true rv=0 tbs=6661 ri"
+            },
+            "last": {
+              "wall_unix_s": 1791887791.540467,
+              "absolute_slot": 128857,
+              "line": "2026-10-13T10:36:31.540467 [SCHED   ] [I] [   597.7] Slot decisions pci=1 t=5us (0 PDSCHs, 1 PUSCH, 0 PUCCHs): UL: ue=1 rnti=0x4602 h_id=0 ss_id=2 rb=[0..6) newtx=true rv=0 tbs=544 k2=4"
+            },
+            "elapsed_wall_seconds": 119.99894094467163,
+            "slot_delta": 119886,
+            "slots_per_s": 999.0588171546972,
+            "logged_decisions": 119866,
+            "wrapped_late_lines": 0
+          },
+          "reported_slots_per_s": 999.0591643991113,
+          "priority_warnings": [
+            "Warning: Scheduling priority of thread \"main_pool#0\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#1\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#2\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#3\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"main_pool#4\" not changed. Cause: Not enough privileges.",
+            "Warning: Scheduling priority of thread \"io_broker_epoll\" not changed. Cause: Not enough privileges."
+          ],
+          "log_sha256": {
+            "broker": "31d373e4155062f92dbb82d7168e2ce75d8ecb22b3aadb276a8cc4da5253f73f"
+          }
+        }
+      },
+      "bulk_delay_per_second_p99_ms": [
+        8.153239250183105,
+        7.910788059234619,
+        7.984579086303711,
+        8.214014053344727,
+        8.0726900100708,
+        7.980828762054443,
+        7.572796821594238,
+        7.53931188583374,
+        7.594939231872559,
+        8.493980407714844,
+        8.97577953338623,
+        8.658008575439453,
+        8.721546173095703,
+        8.524327278137207,
+        7.962635040283203,
+        7.531813144683838,
+        8.364482879638672,
+        8.496502876281738,
+        8.616754531860352,
+        9.59864616394043,
+        8.922109603881836,
+        6.783968925476074,
+        6.7609148025512695,
+        8.48392391204834,
+        8.555060386657715,
+        8.662946701049805,
+        15.150339126586914,
+        8.626680374145508,
+        8.462270736694336,
+        8.655635833740234,
+        8.841109275817871,
+        7.075072765350342,
+        7.201046943664551,
+        10.416999816894531,
+        8.805872917175293,
+        8.801527976989746,
+        8.39273738861084,
+        8.451326370239258,
+        8.388792991638184,
+        8.342185974121094,
+        10.182849884033203,
+        10.871850967407227,
+        8.479109764099121,
+        7.962430000305176,
+        7.965000152587891,
+        10.309715270996094,
+        8.060362815856934,
+        7.6137919425964355,
+        7.776494979858398,
+        7.797598838806152,
+        8.419012069702148,
+        8.409931182861328,
+        7.610022068023682,
+        7.611180782318115,
+        7.5538249015808105,
+        6.769576072692871,
+        6.432641983032227,
+        8.43169116973877,
+        8.718578338623047,
+        8.690640449523926,
+        8.582524299621582,
+        8.68807315826416,
+        8.295304298400879,
+        10.460993766784668,
+        9.007143020629883,
+        8.879210472106934,
+        8.59893798828125,
+        8.615017890930176,
+        8.614338874816895,
+        8.53089427947998,
+        10.503931999206543,
+        7.275485992431641,
+        8.756818771362305,
+        8.33386516571045,
+        8.191584587097168,
+        8.919159889221191,
+        7.769749164581299,
+        8.599205017089844,
+        8.585433006286621,
+        8.578164100646973,
+        11.956839561462402,
+        8.201499938964844,
+        8.941818237304688,
+        8.292252540588379,
+        8.218340873718262,
+        8.310415267944336,
+        8.408368110656738,
+        8.39297103881836,
+        8.116442680358887,
+        8.080500602722168,
+        8.038106918334961,
+        8.612818717956543,
+        8.33381175994873,
+        10.635501861572266,
+        8.396871566772461,
+        10.652886390686035,
+        7.081617832183838,
+        7.016657829284668,
+        13.47984504699707,
+        8.754335403442383,
+        8.745019912719727,
+        8.719340324401855,
+        8.573928833007812,
+        8.999518394470215,
+        8.319412231445312,
+        9.223011016845703,
+        7.322230815887451,
+        7.376252174377441,
+        10.680035591125488,
+        12.43819522857666,
+        8.657079696655273,
+        9.584413528442383,
+        8.421996116638184,
+        9.022686004638672,
+        8.361398696899414,
+        9.750655174255371,
+        8.12818717956543,
+        15.565057754516602,
+        10.224651336669922,
+        13.80068588256836
+      ],
+      "mean_bulk_delay_p99_ms": 8.733633200327555,
+      "observed_iq_progress": {
+        "gnb0_p0": {
+          "first": {
+            "heartbeat_elapsed_s": 60,
+            "device": "gnb0_p0",
+            "acquired_samples": 1250058540,
+            "observed_monotonic_ns": 262066819647467
+          },
+          "last": {
+            "heartbeat_elapsed_s": 130,
+            "device": "gnb0_p0",
+            "acquired_samples": 2861729580,
+            "observed_monotonic_ns": 262136827419454
+          },
+          "elapsed_wall_seconds": 70.007771987,
+          "sample_delta": 1611671040,
+          "samples_per_s": 23021315.980449673,
+          "fraction_of_realtime": 0.9991890616514615,
+          "timing_note": "Read-only observer polls the line-buffered broker log every 2 ms on auxiliary CPUs; observation timestamps have polling/scheduling delay. Independently check precise gNB SFN progress."
+        },
+        "ue0_p0": {
+          "first": {
+            "heartbeat_elapsed_s": 60,
+            "device": "ue0_p0",
+            "acquired_samples": 1250081294,
+            "observed_monotonic_ns": 262066819703955
+          },
+          "last": {
+            "heartbeat_elapsed_s": 130,
+            "device": "ue0_p0",
+            "acquired_samples": 2861729293,
+            "observed_monotonic_ns": 262136827469900
+          },
+          "elapsed_wall_seconds": 70.007765945,
+          "sample_delta": 1611647999,
+          "samples_per_s": 23020988.846668158,
+          "fraction_of_realtime": 0.9991748631366388,
+          "timing_note": "Read-only observer polls the line-buffered broker log every 2 ms on auxiliary CPUs; observation timestamps have polling/scheduling delay. Independently check precise gNB SFN progress."
+        },
+        "ue1_p0": {
+          "first": {
+            "heartbeat_elapsed_s": 60,
+            "device": "ue1_p0",
+            "acquired_samples": 1250104333,
+            "observed_monotonic_ns": 262066819716412
+          },
+          "last": {
+            "heartbeat_elapsed_s": 130,
+            "device": "ue1_p0",
+            "acquired_samples": 2861752334,
+            "observed_monotonic_ns": 262136827481899
+          },
+          "elapsed_wall_seconds": 70.007765487,
+          "sample_delta": 1611648001,
+          "samples_per_s": 23020989.025842752,
+          "fraction_of_realtime": 0.9991748709133139,
+          "timing_note": "Read-only observer polls the line-buffered broker log every 2 ms on auxiliary CPUs; observation timestamps have polling/scheduling delay. Independently check precise gNB SFN progress."
+        }
+      },
+      "gate": {
+        "brokers": {
+          "a": {
+            "control_batches_committed": 1319,
+            "rx_requests": 437688,
+            "rx_starvations": 6,
+            "tx_pulls": 421674,
+            "tx_queue_overflows": 0,
+            "tx_sequence_gaps": 0,
+            "zmq_errors": 0
+          }
+        },
+        "each_ue_on_its_own_cell": 1,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "cell": "a",
+            "crashed": 0,
+            "expected_pci": 1,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue1": {
+            "camped_pci": 1,
+            "cell": "a",
+            "crashed": 0,
+            "expected_pci": 1,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "qos"
+              ],
+              "ok": true,
+              "policy_block": "      qos_sched:\n        combine_function: gbr_prioritized\n        pf_fairness_coeff: 2.0\n        prio_enabled: true\n        pdb_enabled: true\n        gbr_enabled: true\n",
+              "requested": "qos"
+            }
+          },
+          "ok": true
+        },
+        "schedulers": {
+          "a": "qos"
+        },
+        "srsue_alive_at_stop": 1,
+        "status": "passed",
+        "timestamp": "20261013T103414Z"
+      },
+      "traffic_checks": {
+        "ue0.dl_bulk": {
+          "duplicates": 0,
+          "received": 500000,
+          "scheduled": 500000,
+          "sender_done": true,
+          "sent": 500000,
+          "unknown_seq": 0
+        },
+        "ue0.ul_bulk": {
+          "duplicates": 0,
+          "received": 25000,
+          "scheduled": 25000,
+          "sender_done": true,
+          "sent": 25000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_control": {
+          "duplicates": 0,
+          "received": 12000,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        },
+        "ue1.dl_video": {
+          "duplicates": 0,
+          "received": 103153,
+          "scheduled": 103153,
+          "sender_done": true,
+          "sent": 103153,
+          "unknown_seq": 0
+        },
+        "ue1.ul_control": {
+          "duplicates": 0,
+          "received": 12000,
+          "scheduled": 12000,
+          "sender_done": true,
+          "sent": 12000,
+          "unknown_seq": 0
+        }
+      },
+      "sionna": {
+        "fanout_ack_skew_ms": {
+          "count": 0,
+          "max": null,
+          "mean": null,
+          "p50": null,
+          "p95": null,
+          "p99": null
+        },
+        "generation_ms": {
+          "count": 1318,
+          "max": 30.982236028648913,
+          "mean": 24.579667083102727,
+          "p50": 24.605264014098793,
+          "p95": 25.30015099910088,
+          "p99": 26.167014002567157
+        },
+        "lag_ms": {
+          "count": 1318,
+          "max": 0.16214902279898524,
+          "mean": 0.09837807952415775,
+          "p50": 0.09691299055702984,
+          "p95": 0.10585400741547346,
+          "p99": 0.13520900392904878
+        },
+        "last": {
+          "channels": {
+            "gnb0>ue0:sionna_rt": {
+              "path_power_db": -59.230055004357396,
+              "rays": 5,
+              "tap_gain_db": 0.331915596,
+              "taps": 4
+            },
+            "gnb0>ue1:sionna_rt": {
+              "path_power_db": -68.05803967022604,
+              "rays": 2,
+              "tap_gain_db": -9.315530272,
+              "taps": 1
+            },
+            "ue0>gnb0:sionna_rt": {
+              "path_power_db": -58.82960830832546,
+              "rays": 5,
+              "tap_gain_db": 0.791721204,
+              "taps": 4
+            },
+            "ue1>gnb0:sionna_rt": {
+              "path_power_db": -67.59686751129166,
+              "rays": 2,
+              "tap_gain_db": -9.348800293,
+              "taps": 1
+            }
+          },
+          "digest": "55e98e7d299cb165b60d6e7f7f4f929b0ead3d7bf5e7e55fe177c234ee6e8158",
+          "fanout_ack_ms": [],
+          "fanout_ok": null,
+          "generation_ms": 21.62007399601862,
+          "grid_index": 1317,
+          "lag_ms": 0.10464002843946218,
+          "positions": {
+            "gnb0": [
+              15.0,
+              0.0,
+              8.0
+            ],
+            "ue0": [
+              5.327217668373326,
+              -1.9982103761555905,
+              0.4
+            ],
+            "ue1": [
+              -16.003133306044603,
+              10.148569132301299,
+              0.4
+            ]
+          },
+          "scenario_time_s": 131.7,
+          "skipped": 0
+        },
+        "skipped_grid_points": 0,
+        "updates": 1318
+      }
+    }
+  ]
+}

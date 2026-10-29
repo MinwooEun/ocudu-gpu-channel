@@ -1,0 +1,154 @@
+[
+  {
+    "label": "cuda-two-cell",
+    "wrapper_returncode": 0,
+    "benchmark_exit": null,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-two-cell-control",
+    "wrapper_returncode": 0,
+    "benchmark_exit": null,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u1-c1-bw100-a2x2",
+    "wrapper_returncode": 0,
+    "benchmark_exit": null,
+    "oai_gate_exit": 0,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u1-c1-bw100-a4x1",
+    "wrapper_returncode": 0,
+    "benchmark_exit": null,
+    "oai_gate_exit": 0,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u1-c1-bw100-a4x4",
+    "wrapper_returncode": 0,
+    "benchmark_exit": null,
+    "oai_gate_exit": 0,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u1-c1-bw20-a1x1",
+    "wrapper_returncode": 0,
+    "benchmark_exit": 0,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u1-c1-bw20-a2x2",
+    "wrapper_returncode": 0,
+    "benchmark_exit": null,
+    "oai_gate_exit": 0,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u1-c1-bw20-a4x4",
+    "wrapper_returncode": 0,
+    "benchmark_exit": null,
+    "oai_gate_exit": 0,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u1-c1-bw50-a2x2",
+    "wrapper_returncode": 0,
+    "benchmark_exit": null,
+    "oai_gate_exit": 0,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u1-c1-bw50-a4x4",
+    "wrapper_returncode": 0,
+    "benchmark_exit": null,
+    "oai_gate_exit": 0,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u16-c1-bw20-a1x1",
+    "wrapper_returncode": 0,
+    "benchmark_exit": 1,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u16-c1-bw20-a1x1-control",
+    "wrapper_returncode": 0,
+    "benchmark_exit": 1,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u16-c1-bw20-a1x1-cpu-sampled",
+    "wrapper_returncode": 0,
+    "benchmark_exit": 1,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u16-c1-bw20-a1x1-trace-only",
+    "wrapper_returncode": 0,
+    "benchmark_exit": 1,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u4-c1-bw20-a1x1",
+    "wrapper_returncode": 0,
+    "benchmark_exit": 0,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u8-c1-bw20-a1x1",
+    "wrapper_returncode": 0,
+    "benchmark_exit": 1,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u8-c1-bw20-a1x1-control",
+    "wrapper_returncode": 0,
+    "benchmark_exit": 1,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "cuda-u8-c1-bw20-a1x1-nsys",
+    "wrapper_returncode": 0,
+    "benchmark_exit": 1,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  },
+  {
+    "label": "failed-missing-replay-api-u1",
+    "wrapper_returncode": 0,
+    "benchmark_exit": 1,
+    "oai_gate_exit": null,
+    "namespace_failure": false,
+    "interpretation": "Use benchmark/gate exit and preserved validation files; wrapper return code alone is not a qualification verdict."
+  }
+]

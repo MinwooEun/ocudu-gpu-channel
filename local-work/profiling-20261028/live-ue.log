@@ -1,0 +1,8 @@
+START cuda-u1-c1-bw20-a1x1
+END cuda-u1-c1-bw20-a1x1 0
+START cuda-u4-c1-bw20-a1x1
+END cuda-u4-c1-bw20-a1x1 0
+START cuda-u8-c1-bw20-a1x1
+END cuda-u8-c1-bw20-a1x1 0
+START cuda-u16-c1-bw20-a1x1
+END cuda-u16-c1-bw20-a1x1 0

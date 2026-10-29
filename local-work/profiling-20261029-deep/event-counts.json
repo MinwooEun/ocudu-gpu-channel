@@ -1,0 +1,20 @@
+{
+  "yield": {
+    "sched_yield_calls": 241147,
+    "mutex_acquisitions": 607841,
+    "switches": {
+      "15": 114558,
+      "16": 251172
+    },
+    "wire_dropped": 0
+  },
+  "eight": {
+    "sched_yield_calls": 268224,
+    "mutex_acquisitions": 674558,
+    "switches": {
+      "15": 198216,
+      "16": 216819
+    },
+    "wire_dropped": 0
+  }
+}

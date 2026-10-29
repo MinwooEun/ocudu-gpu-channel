@@ -1,0 +1,125 @@
+diff --git a/lib/phy/upper/prach_buffer_cuda_visible_impl.h b/lib/phy/upper/prach_buffer_cuda_visible_impl.h
+index 7236309395..db74f25774 100644
+--- a/lib/phy/upper/prach_buffer_cuda_visible_impl.h
++++ b/lib/phy/upper/prach_buffer_cuda_visible_impl.h
+@@ -369,14 +369,43 @@ private:
+     return status;
+   }
+ 
++  /// A managed-memory hint (prefetch or advice) that the device does not implement. Devices without
++  /// ConcurrentManagedAccess (e.g. Jetson Orin) return cudaErrorInvalidDevice here rather than
++  /// cudaErrorNotSupported; both mean "no-op", not failure. The error is consumed so that a later,
++  /// unrelated cudaGetLastError() check does not pick it up.
++  static bool managed_hint_unsupported(cudaError_t status, int device)
++  {
++    if (status == cudaErrorNotSupported) {
++      (void)cudaGetLastError();
++      return true;
++    }
++    if (status == cudaErrorInvalidDevice) {
++      int concurrent = 1;
++      if ((cudaDeviceGetAttribute(&concurrent, cudaDevAttrConcurrentManagedAccess, device) == cudaSuccess) &&
++          (concurrent == 0)) {
++        (void)cudaGetLastError();
++        return true;
++      }
++    }
++    return false;
++  }
++
++  /// Best-effort managed-memory advice: a refusal must not leave a pending CUDA error behind.
++  static void advise_best_effort(cudaError_t status)
++  {
++    if (status != cudaSuccess) {
++      (void)cudaGetLastError();
++    }
++  }
++
+   void advise_managed_memory() const
+   {
+     if (managed_data == nullptr) {
+       return;
+     }
+-    (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location());
++    advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location()));
+     if (phy_acceleration_env_flag_enabled("OCUDU_CUDA_VISIBLE_PRACH_BUFFER_PREFER_DEVICE", false)) {
+-      (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location());
++      advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location()));
+     }
+   }
+ 
+@@ -410,7 +439,7 @@ private:
+     cudaError_t status =
+         cudaMemPrefetchAsync(managed_data, managed_bytes, destination, static_cast<cudaStream_t>(stream));
+ #endif
+-    if (status == cudaErrorNotSupported) {
++    if (managed_hint_unsupported(status, device_id)) {
+       return true;
+     }
+     if (status != cudaSuccess) {
+diff --git a/lib/phy/upper/resource_grid_cuda_visible_impl.h b/lib/phy/upper/resource_grid_cuda_visible_impl.h
+index 99254c74ca..456364945b 100644
+--- a/lib/phy/upper/resource_grid_cuda_visible_impl.h
++++ b/lib/phy/upper/resource_grid_cuda_visible_impl.h
+@@ -1485,18 +1485,49 @@ private:
+         enable_concurrent_downlink);
+   }
+ 
++
++  /// A managed-memory hint (prefetch or advice) that the device does not implement. Devices without
++  /// ConcurrentManagedAccess (e.g. Jetson Orin) return cudaErrorInvalidDevice here rather than
++  /// cudaErrorNotSupported; both mean "no-op", not failure. The error is consumed so that a later,
++  /// unrelated cudaGetLastError() check does not pick it up.
++  static bool managed_hint_unsupported(cudaError_t status, int device)
++  {
++    if (status == cudaErrorNotSupported) {
++      (void)cudaGetLastError();
++      return true;
++    }
++    if (status == cudaErrorInvalidDevice) {
++      int concurrent = 1;
++      if ((cudaDeviceGetAttribute(&concurrent, cudaDevAttrConcurrentManagedAccess, device) == cudaSuccess) &&
++          (concurrent == 0)) {
++        (void)cudaGetLastError();
++        return true;
++      }
++    }
++    return false;
++  }
++
++  /// Best-effort managed-memory advice: a refusal must not leave a pending CUDA error behind.
++  static void advise_best_effort(cudaError_t status)
++  {
++    if (status != cudaSuccess) {
++      (void)cudaGetLastError();
++    }
++  }
++
+   void advise_managed_memory() const
+   {
+     if (managed_data == nullptr) {
+       return;
+     }
+     // Best-effort hints only. The public resource-grid contract must not depend on managed-memory advice support.
+-    (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location());
++    advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, device_location()));
+     if (prefer_device_memory) {
+-      (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location());
++      advise_best_effort(
++          cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetPreferredLocation, device_location()));
+       // On coherent systems, CUDA requires this hint for the CPU to access GPU-resident managed pages directly
+       // instead of faulting and migrating them back to host memory.
+-      (void)cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, host_location());
++      advise_best_effort(cudaMemAdvise(managed_data, managed_bytes, cudaMemAdviseSetAccessedBy, host_location()));
+     }
+   }
+ 
+@@ -1532,7 +1563,7 @@ private:
+     cudaError_t status =
+         cudaMemPrefetchAsync(managed_data, managed_bytes, destination, static_cast<cudaStream_t>(stream));
+ #endif
+-    if (status == cudaErrorNotSupported) {
++    if (managed_hint_unsupported(status, device_id)) {
+       return managed_prefetch_status::unsupported;
+     }
+     if (status != cudaSuccess) {

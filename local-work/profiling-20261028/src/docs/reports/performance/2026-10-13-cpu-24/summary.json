@@ -1,0 +1,109 @@
+{
+  "date": "2026-10-13",
+  "source_base_commit": "f95dabd0d13db3b24e9a4b04c919ad3620468f11",
+  "source_changes": "source.patch",
+  "measurement": "model_mix_latency",
+  "unit": "microseconds",
+  "aggregation": "median of three run-level p99 values, calls from all nine receiving nodes",
+  "duration_seconds_per_run": 30,
+  "runs_per_variant": 3,
+  "separate_warmup_seconds": 5,
+  "backend_runs": {
+    "cpu1": [
+      {
+        "run": 1,
+        "count": 2367,
+        "p50_us": 7109.712,
+        "p95_us": 56876.149,
+        "p99_us": 57047.801,
+        "max_us": 58854.661,
+        "mean_cpu_core_equivalents": 0.9990023279015631
+      },
+      {
+        "run": 2,
+        "count": 2376,
+        "p50_us": 7087.265,
+        "p95_us": 56695.118,
+        "p99_us": 56798.826,
+        "max_us": 58710.207,
+        "mean_cpu_core_equivalents": 0.9993351063829787
+      },
+      {
+        "run": 3,
+        "count": 2376,
+        "p50_us": 7093.504,
+        "p95_us": 56737.123,
+        "p99_us": 56847.507,
+        "max_us": 59959.969,
+        "mean_cpu_core_equivalents": 0.9993357688475589
+      }
+    ],
+    "cpu24": [
+      {
+        "run": 1,
+        "count": 17019,
+        "p50_us": 885.074,
+        "p95_us": 7533.879,
+        "p99_us": 9869.149,
+        "max_us": 19674.89,
+        "mean_cpu_core_equivalents": 8.466222961730448,
+        "active_sample_workers": 24
+      },
+      {
+        "run": 2,
+        "count": 17334,
+        "p50_us": 874.673,
+        "p95_us": 7423.808,
+        "p99_us": 9634.258,
+        "max_us": 21322.051,
+        "mean_cpu_core_equivalents": 8.651913477537436,
+        "active_sample_workers": 24
+      },
+      {
+        "run": 3,
+        "count": 17190,
+        "p50_us": 884.537,
+        "p95_us": 7469.315,
+        "p99_us": 9794.65,
+        "max_us": 18888.049,
+        "mean_cpu_core_equivalents": 8.556258322237017,
+        "active_sample_workers": 24
+      }
+    ],
+    "cuda": [
+      {
+        "run": 1,
+        "count": 186012,
+        "p50_us": 104.57,
+        "p95_us": 228.195,
+        "p99_us": 230.855,
+        "max_us": 532.971,
+        "mean_cpu_core_equivalents": 0.999007279947055
+      },
+      {
+        "run": 2,
+        "count": 186687,
+        "p50_us": 104.236,
+        "p95_us": 226.186,
+        "p99_us": 229.187,
+        "max_us": 459.502,
+        "mean_cpu_core_equivalents": 0.999337528983107
+      },
+      {
+        "run": 3,
+        "count": 186372,
+        "p50_us": 104.263,
+        "p95_us": 228.341,
+        "p99_us": 231.314,
+        "max_us": 558.084,
+        "mean_cpu_core_equivalents": 0.9993379675604104
+      }
+    ]
+  },
+  "cpu1_p99_median_us": 56847.507,
+  "cpu24_p99_median_us": 9794.65,
+  "cuda_p99_median_us": 230.855,
+  "cpu_parallel_p99_speedup": 5.803934494851782,
+  "gpu_over_cpu24_p99_speedup": 42.42771436616058,
+  "source_patch_sha256": "e18d560c15ea3982dd73efcc4a2051e08c3776e4f782150d1c8a06201acb9f70"
+}

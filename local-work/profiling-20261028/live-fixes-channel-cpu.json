@@ -1,0 +1,22 @@
+{
+  "source": "live-summary.json",
+  "definition": "sum across receiver nodes; cumulative work, not serial critical-path latency",
+  "runs": [
+    {
+      "run": "01-test1",
+      "receivers": 17,
+      "total_cpu_us_per_radio_ms": 999.9565395258103,
+      "total_submit_us_per_radio_ms": 581.015727596707,
+      "total_completion_wait_us_per_radio_ms": 366.42451833186425,
+      "total_host_call_us_per_radio_ms": 1032.894631478228
+    },
+    {
+      "run": "02-test2",
+      "receivers": 17,
+      "total_cpu_us_per_radio_ms": 1000.7978884437093,
+      "total_submit_us_per_radio_ms": 587.1823662094148,
+      "total_completion_wait_us_per_radio_ms": 362.95266142747374,
+      "total_host_call_us_per_radio_ms": 1033.3906675483197
+    }
+  ]
+}

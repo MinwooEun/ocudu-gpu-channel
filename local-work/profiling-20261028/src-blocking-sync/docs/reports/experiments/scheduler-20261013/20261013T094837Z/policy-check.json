@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "gnbs": {
+    "gnb0": {
+      "requested": "qos",
+      "found_in_config_dump": [
+        "qos"
+      ],
+      "ok": true,
+      "policy_block": "      qos_sched:\n        combine_function: gbr_prioritized\n        pf_fairness_coeff: 2.0\n        prio_enabled: true\n        pdb_enabled: true\n        gbr_enabled: true\n"
+    },
+    "gnb1": {
+      "requested": "rr",
+      "found_in_config_dump": [
+        "rr"
+      ],
+      "ok": true,
+      "policy_block": "      rr_sched: ~\n"
+    }
+  }
+}

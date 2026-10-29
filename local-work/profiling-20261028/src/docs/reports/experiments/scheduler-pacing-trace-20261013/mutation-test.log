@@ -1,0 +1,36 @@
+event=socket_ready device=gnb0_p0 tx_connect=tcp://127.0.0.1:25700 rx_bind=tcp://127.0.0.1:25701
+event=socket_ready device=gnb0_p1 tx_connect=tcp://127.0.0.1:25702 rx_bind=tcp://127.0.0.1:25703
+event=socket_ready device=ue0_p0 tx_connect=tcp://127.0.0.1:25704 rx_bind=tcp://127.0.0.1:25705
+event=socket_ready device=ue0_p1 tx_connect=tcp://127.0.0.1:25706 rx_bind=tcp://127.0.0.1:25707
+event=radio_node_resolved id=gnb0 tx[0]=gnb0_p0 tx[1]=gnb0_p1 rx[0]=gnb0_p0 rx[1]=gnb0_p1 implicit=false
+event=radio_node_resolved id=ue0 tx[0]=ue0_p0 tx[1]=ue0_p1 rx[0]=ue0_p0 rx[1]=ue0_p1 implicit=false
+event=worker_summary dev=gnb0_p0 puller[pulls=932 idle=2 room_stall=0 acquired=5592000] producer[slots=795 stall=3854] rep[replies=794 idle=1 row_spin=4588]
+event=worker_summary dev=gnb0_p1 puller[pulls=932 idle=2 room_stall=0 acquired=5592000] producer[slots=795 stall=3854] rep[replies=794 idle=1 row_spin=4442]
+event=worker_summary dev=ue0_p0 puller[pulls=931 idle=1 room_stall=0 acquired=5586000] producer[slots=782 stall=3456] rep[replies=781 idle=1 row_spin=5159]
+event=worker_summary dev=ue0_p1 puller[pulls=932 idle=1 room_stall=0 acquired=5592000] producer[slots=782 stall=3456] rep[replies=781 idle=1 row_spin=4918]
+event=process_latency_summary node=gnb0 n=795 p50_us=395 p95_us=960 p99_us=1170 p999_us=1670 max_us=5005
+event=process_latency_summary node=ue0 n=782 p50_us=470 p95_us=1060 p99_us=1430 p999_us=2240 max_us=5005
+event=socket_ready device=gnb0_p0 tx_connect=tcp://127.0.0.1:25700 rx_bind=tcp://127.0.0.1:25701
+event=socket_ready device=gnb0_p1 tx_connect=tcp://127.0.0.1:25702 rx_bind=tcp://127.0.0.1:25703
+event=socket_ready device=ue0_p0 tx_connect=tcp://127.0.0.1:25704 rx_bind=tcp://127.0.0.1:25705
+event=socket_ready device=ue0_p1 tx_connect=tcp://127.0.0.1:25706 rx_bind=tcp://127.0.0.1:25707
+event=radio_node_resolved id=gnb0 tx[0]=gnb0_p0 tx[1]=gnb0_p1 rx[0]=gnb0_p0 rx[1]=gnb0_p1 implicit=false
+event=radio_node_resolved id=ue0 tx[0]=ue0_p0 tx[1]=ue0_p1 rx[0]=ue0_p0 rx[1]=ue0_p1 implicit=false
+event=worker_summary dev=gnb0_p0 puller[pulls=1307 idle=2 room_stall=0 acquired=7842000] producer[slots=1105 stall=1670314] rep[replies=1104 idle=1 row_spin=3051711]
+event=worker_summary dev=gnb0_p1 puller[pulls=1307 idle=2 room_stall=0 acquired=7842000] producer[slots=1105 stall=1670314] rep[replies=1104 idle=1 row_spin=4325902]
+event=worker_summary dev=ue0_p0 puller[pulls=1308 idle=1 room_stall=0 acquired=7848000] producer[slots=1091 stall=1560257] rep[replies=1091 idle=1 row_spin=4558375]
+event=worker_summary dev=ue0_p1 puller[pulls=1308 idle=2 room_stall=0 acquired=7848000] producer[slots=1091 stall=1560257] rep[replies=1091 idle=1 row_spin=3410663]
+event=process_latency_summary node=gnb0 n=1105 p50_us=400 p95_us=785 p99_us=805 p999_us=1145 max_us=5005
+event=process_latency_summary node=ue0 n=1091 p50_us=405 p95_us=795 p99_us=1115 p999_us=1405 max_us=5005
+relay knobs parity: 22332000 samples bit-identical across 4 ports
+pacer_debt free_slots=2 stall_ms=1000 max_debt_ms=1
+event=socket_ready device=gnb0 tx_connect=tcp://127.0.0.1:25500 rx_bind=tcp://127.0.0.1:25501
+event=socket_ready device=ue0 tx_connect=tcp://127.0.0.1:25502 rx_bind=tcp://127.0.0.1:25503
+event=radio_node_resolved id=gnb0 tx[0]=gnb0 rx[0]=gnb0 implicit=true
+event=radio_node_resolved id=ue0 tx[0]=ue0 rx[0]=ue0 implicit=true
+event=worker_summary dev=gnb0 puller[pulls=613 idle=0 room_stall=7241 acquired=14123520] producer[slots=690 stall=2008] rep[replies=689 idle=1 row_spin=6083]
+event=worker_summary dev=ue0 puller[pulls=695 idle=0 room_stall=7308 acquired=16012800] producer[slots=609 stall=2783] rep[replies=608 idle=1 row_spin=5229]
+event=process_latency_summary node=gnb0 n=690 p50_us=180 p95_us=265 p99_us=280 p999_us=480 max_us=5005
+event=process_latency_summary node=ue0 n=609 p50_us=175 p95_us=215 p99_us=275 p999_us=655 max_us=5005
+loopback: cpu_threads=1 tx_pulls=1308 rx_requests=1297 tx_queue_overflows=0 tx_sequence_gaps=0 rx_starvations=0 zmq_errors=0 gnb_received=15874560 ue_received=14008320
+FAIL: summary maximum disagrees with the measured receiver maximum

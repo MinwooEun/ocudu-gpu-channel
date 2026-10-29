@@ -1,0 +1,24 @@
+# label ues srate scs io transport hop ctrl spin
+# A. why phase 3's 16 UE differs from 2d: hop trace / control endpoint cost
+A-16-plain 16 23040000 15 2 tcp 0 0 0
+A-16-hop 16 23040000 15 2 tcp 1 0 0
+A-16-ctrl 16 23040000 15 2 tcp 0 1 0
+A-16-hopctrl 16 23040000 15 2 tcp 1 1 0
+# B. ZMQ I/O threads at the edge
+B-24-io1 24 23040000 15 1 tcp 0 0 0
+B-24-io2 24 23040000 15 2 tcp 0 0 0
+B-24-io4 24 23040000 15 4 tcp 0 0 0
+B-24-io8 24 23040000 15 8 tcp 0 0 0
+B-50-12-io2 12 61440000 15 2 tcp 0 0 0
+B-50-12-io4 12 61440000 15 4 tcp 0 0 0
+B-50-12-io8 12 61440000 15 8 tcp 0 0 0
+B-100-4-io2 4 122880000 30 2 tcp 0 0 0
+B-100-4-io4 4 122880000 30 4 tcp 0 0 0
+B-100-4-io8 4 122880000 30 8 tcp 0 0 0
+# C. ipc transport instead of tcp loopback
+C-24-ipc-io2 24 23040000 15 2 ipc 0 0 0
+C-24-ipc-io4 24 23040000 15 4 ipc 0 0 0
+C-32-ipc-io4 32 23040000 15 4 ipc 0 0 0
+C-50-12-ipc-io4 12 61440000 15 4 ipc 0 0 0
+C-100-4-ipc-io4 4 122880000 30 4 ipc 0 0 0
+C-100-8-ipc-io4 8 122880000 30 4 ipc 0 0 0

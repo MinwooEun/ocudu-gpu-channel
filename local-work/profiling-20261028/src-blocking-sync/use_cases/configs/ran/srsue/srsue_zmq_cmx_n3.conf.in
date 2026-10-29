@@ -1,0 +1,55 @@
+# srsUE for a CMX500 5G SA cell (n3 FDD, 10 MHz, 15 kHz) over ZMQ and the USRP bridge (integrations/usrp).
+# Fill @UE_IMSI@ and @UE_K@ with the subscriber of the CMX500 and save as ue-cmx-n3.zmq.conf next to run_cmx_loop.sh.
+[rf]
+time_adv_nsamples = 0
+freq_offset = 0
+tx_gain = 0
+rx_gain = 0
+srate = 11.52e6
+nof_antennas = 1
+
+device_name = zmq
+device_args = tx_port=tcp://*:2101,rx_port=tcp://localhost:2100,base_srate=11.52e6,rx_sleep=false,tx_async=true,rx_max_buffered=34560
+
+continuous_tx = auto
+
+[rat.eutra]
+dl_earfcn = 2850
+nof_carriers = 0
+
+[rat.nr]
+bands = 3
+nof_carriers = 1
+max_nof_prb = 52
+nof_prb = 52
+dl_nr_arfcn = 368500
+ssb_nr_arfcn = 367930
+scs = 15
+ssb_scs = 15
+
+[usim]
+mode = soft
+algo = xor
+imsi = @UE_IMSI@
+k = @UE_K@
+imei = 353490069873319
+
+[rrc]
+release = 15
+
+[nas]
+apn = cmx500.rohde-schwarz.com
+apn_protocol = ipv4
+eia = 2
+eea = 2
+
+[gw]
+netns =
+ip_devname = tun_srsue
+ip_netmask = 255.255.255.0
+
+[log]
+all_level = info
+phy_lib_level = none
+filename = /tmp/srsue-cmx.log
+file_max_size = -1

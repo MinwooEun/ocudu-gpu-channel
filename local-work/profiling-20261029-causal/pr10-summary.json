@@ -1,0 +1,2074 @@
+[
+  {
+    "case": "baseline",
+    "ratio": 0.4461758489381311,
+    "valid_segments": 30,
+    "complete_segments": 30,
+    "faults": {
+      "rx_starvations": 248,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    },
+    "epoch": {
+      "clock_at_release": {
+        "gnb0>ue0:sionna_rt": 459625260,
+        "gnb0>ue10:sionna_rt": 459625260,
+        "gnb0>ue11:sionna_rt": 459625260,
+        "gnb0>ue12:sionna_rt": 459625260,
+        "gnb0>ue13:sionna_rt": 459625260,
+        "gnb0>ue14:sionna_rt": 459579180,
+        "gnb0>ue15:sionna_rt": 459625260,
+        "gnb0>ue1:sionna_rt": 459625260,
+        "gnb0>ue2:sionna_rt": 459625260,
+        "gnb0>ue3:sionna_rt": 459625260,
+        "gnb0>ue4:sionna_rt": 459625260,
+        "gnb0>ue5:sionna_rt": 459625260,
+        "gnb0>ue6:sionna_rt": 459602220,
+        "gnb0>ue7:sionna_rt": 459625260,
+        "gnb0>ue8:sionna_rt": 459625260,
+        "gnb0>ue9:sionna_rt": 459625260,
+        "ue0>gnb0:sionna_rt": 459601925,
+        "ue10>gnb0:sionna_rt": 459601925,
+        "ue11>gnb0:sionna_rt": 459601925,
+        "ue12>gnb0:sionna_rt": 459601925,
+        "ue13>gnb0:sionna_rt": 459601925,
+        "ue14>gnb0:sionna_rt": 459601925,
+        "ue15>gnb0:sionna_rt": 459601925,
+        "ue1>gnb0:sionna_rt": 459601925,
+        "ue2>gnb0:sionna_rt": 459601925,
+        "ue3>gnb0:sionna_rt": 459601925,
+        "ue4>gnb0:sionna_rt": 459601925,
+        "ue5>gnb0:sionna_rt": 459601925,
+        "ue6>gnb0:sionna_rt": 459601925,
+        "ue7>gnb0:sionna_rt": 459601925,
+        "ue8>gnb0:sionna_rt": 459601925,
+        "ue9>gnb0:sionna_rt": 459601925
+      },
+      "frontier_at_release": 459625260,
+      "lead_samples": 6912000,
+      "links": [
+        "gnb0>ue0:sionna_rt",
+        "gnb0>ue10:sionna_rt",
+        "gnb0>ue11:sionna_rt",
+        "gnb0>ue12:sionna_rt",
+        "gnb0>ue13:sionna_rt",
+        "gnb0>ue14:sionna_rt",
+        "gnb0>ue15:sionna_rt",
+        "gnb0>ue1:sionna_rt",
+        "gnb0>ue2:sionna_rt",
+        "gnb0>ue3:sionna_rt",
+        "gnb0>ue4:sionna_rt",
+        "gnb0>ue5:sionna_rt",
+        "gnb0>ue6:sionna_rt",
+        "gnb0>ue7:sionna_rt",
+        "gnb0>ue8:sionna_rt",
+        "gnb0>ue9:sionna_rt",
+        "ue0>gnb0:sionna_rt",
+        "ue10>gnb0:sionna_rt",
+        "ue11>gnb0:sionna_rt",
+        "ue12>gnb0:sionna_rt",
+        "ue13>gnb0:sionna_rt",
+        "ue14>gnb0:sionna_rt",
+        "ue15>gnb0:sionna_rt",
+        "ue1>gnb0:sionna_rt",
+        "ue2>gnb0:sionna_rt",
+        "ue3>gnb0:sionna_rt",
+        "ue4>gnb0:sionna_rt",
+        "ue5>gnb0:sionna_rt",
+        "ue6>gnb0:sionna_rt",
+        "ue7>gnb0:sionna_rt",
+        "ue8>gnb0:sionna_rt",
+        "ue9>gnb0:sionna_rt"
+      ],
+      "measure_samples": 921600000,
+      "release_unix_ns": 1793258891917433309,
+      "s0": 466560000,
+      "sample_rate_hz": 23040000.0,
+      "samples_per_update": 2304000,
+      "trace_sha256": "e114c91710ace5208f9c98802babc1ce6d910727a085cf4da331275b8ee6b15b",
+      "updates": 400
+    },
+    "gate": {
+      "all_ues_attached": true,
+      "broker": {
+        "control_batches_committed": 12832,
+        "rx_requests": 1236480,
+        "rx_starvations": 248,
+        "tx_pulls": 1091081,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "broker_clean": true,
+      "gnb_alive_at_stop": 1,
+      "measure_status": "completed",
+      "per_ue": {
+        "ue0": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 7,
+          "rrc_connected": 1,
+          "rrc_release": 13
+        },
+        "ue1": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 10
+        },
+        "ue10": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 10
+        },
+        "ue11": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 4,
+          "rrc_connected": 1,
+          "rrc_release": 11
+        },
+        "ue12": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 8
+        },
+        "ue13": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 9
+        },
+        "ue14": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 9
+        },
+        "ue15": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 4,
+          "rrc_connected": 1,
+          "rrc_release": 12
+        },
+        "ue2": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 4,
+          "rrc_connected": 1,
+          "rrc_release": 11
+        },
+        "ue3": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 8
+        },
+        "ue4": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 7
+        },
+        "ue5": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 11
+        },
+        "ue6": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 8
+        },
+        "ue7": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 9
+        },
+        "ue8": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 7
+        },
+        "ue9": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 9
+        }
+      },
+      "policy": "rr",
+      "policy_check": {
+        "gnbs": {
+          "gnb0": {
+            "found_in_config_dump": [
+              "rr"
+            ],
+            "link_adaptation": {
+              "found_in_config_dump": {
+                "link_adaptation": "harq_olla"
+              },
+              "ok": true,
+              "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+              "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+              "requested": {
+                "link_adaptation": "harq_olla"
+              }
+            },
+            "ok": true,
+            "policy_block": "      rr_sched: ~\n",
+            "requested": "rr"
+          }
+        },
+        "ok": true
+      },
+      "replay_status": "measure_end",
+      "srsue_alive_at_stop": 1,
+      "status": "passed"
+    }
+  },
+  {
+    "case": "baseline-repeat",
+    "ratio": 0.44829298041827664,
+    "valid_segments": 5,
+    "complete_segments": 30,
+    "faults": {
+      "rx_starvations": 321,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    },
+    "epoch": {
+      "clock_at_release": {
+        "gnb0>ue0:sionna_rt": 467942700,
+        "gnb0>ue10:sionna_rt": 467942700,
+        "gnb0>ue11:sionna_rt": 467942700,
+        "gnb0>ue12:sionna_rt": 467942700,
+        "gnb0>ue13:sionna_rt": 467942700,
+        "gnb0>ue14:sionna_rt": 467942700,
+        "gnb0>ue15:sionna_rt": 467942700,
+        "gnb0>ue1:sionna_rt": 467942700,
+        "gnb0>ue2:sionna_rt": 467942700,
+        "gnb0>ue3:sionna_rt": 467942700,
+        "gnb0>ue4:sionna_rt": 467942700,
+        "gnb0>ue5:sionna_rt": 467942700,
+        "gnb0>ue6:sionna_rt": 467919660,
+        "gnb0>ue7:sionna_rt": 467942700,
+        "gnb0>ue8:sionna_rt": 467942700,
+        "gnb0>ue9:sionna_rt": 467942700,
+        "ue0>gnb0:sionna_rt": 467965445,
+        "ue10>gnb0:sionna_rt": 467965445,
+        "ue11>gnb0:sionna_rt": 467965445,
+        "ue12>gnb0:sionna_rt": 467965445,
+        "ue13>gnb0:sionna_rt": 467965445,
+        "ue14>gnb0:sionna_rt": 467965445,
+        "ue15>gnb0:sionna_rt": 467965445,
+        "ue1>gnb0:sionna_rt": 467965445,
+        "ue2>gnb0:sionna_rt": 467965445,
+        "ue3>gnb0:sionna_rt": 467965445,
+        "ue4>gnb0:sionna_rt": 467965445,
+        "ue5>gnb0:sionna_rt": 467965445,
+        "ue6>gnb0:sionna_rt": 467965445,
+        "ue7>gnb0:sionna_rt": 467965445,
+        "ue8>gnb0:sionna_rt": 467965445,
+        "ue9>gnb0:sionna_rt": 467965445
+      },
+      "frontier_at_release": 467965445,
+      "lead_samples": 6912000,
+      "links": [
+        "gnb0>ue0:sionna_rt",
+        "gnb0>ue10:sionna_rt",
+        "gnb0>ue11:sionna_rt",
+        "gnb0>ue12:sionna_rt",
+        "gnb0>ue13:sionna_rt",
+        "gnb0>ue14:sionna_rt",
+        "gnb0>ue15:sionna_rt",
+        "gnb0>ue1:sionna_rt",
+        "gnb0>ue2:sionna_rt",
+        "gnb0>ue3:sionna_rt",
+        "gnb0>ue4:sionna_rt",
+        "gnb0>ue5:sionna_rt",
+        "gnb0>ue6:sionna_rt",
+        "gnb0>ue7:sionna_rt",
+        "gnb0>ue8:sionna_rt",
+        "gnb0>ue9:sionna_rt",
+        "ue0>gnb0:sionna_rt",
+        "ue10>gnb0:sionna_rt",
+        "ue11>gnb0:sionna_rt",
+        "ue12>gnb0:sionna_rt",
+        "ue13>gnb0:sionna_rt",
+        "ue14>gnb0:sionna_rt",
+        "ue15>gnb0:sionna_rt",
+        "ue1>gnb0:sionna_rt",
+        "ue2>gnb0:sionna_rt",
+        "ue3>gnb0:sionna_rt",
+        "ue4>gnb0:sionna_rt",
+        "ue5>gnb0:sionna_rt",
+        "ue6>gnb0:sionna_rt",
+        "ue7>gnb0:sionna_rt",
+        "ue8>gnb0:sionna_rt",
+        "ue9>gnb0:sionna_rt"
+      ],
+      "measure_samples": 921600000,
+      "release_unix_ns": 1793259773058483535,
+      "s0": 474900480,
+      "sample_rate_hz": 23040000.0,
+      "samples_per_update": 2304000,
+      "trace_sha256": "e114c91710ace5208f9c98802babc1ce6d910727a085cf4da331275b8ee6b15b",
+      "updates": 400
+    },
+    "gate": {
+      "all_ues_attached": true,
+      "broker": {
+        "control_batches_committed": 12832,
+        "rx_requests": 1250906,
+        "rx_starvations": 321,
+        "tx_pulls": 1098000,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "broker_clean": true,
+      "gnb_alive_at_stop": 1,
+      "measure_status": "completed",
+      "per_ue": {
+        "ue0": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue1": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue10": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue11": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 3,
+          "rrc_connected": 1,
+          "rrc_release": 4
+        },
+        "ue12": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue13": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue14": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue15": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue2": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue3": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue4": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue5": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue6": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue7": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue8": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue9": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        }
+      },
+      "policy": "rr",
+      "policy_check": {
+        "gnbs": {
+          "gnb0": {
+            "found_in_config_dump": [
+              "rr"
+            ],
+            "link_adaptation": {
+              "found_in_config_dump": {
+                "link_adaptation": "harq_olla"
+              },
+              "ok": true,
+              "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+              "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+              "requested": {
+                "link_adaptation": "harq_olla"
+              }
+            },
+            "ok": true,
+            "policy_block": "      rr_sched: ~\n",
+            "requested": "rr"
+          }
+        },
+        "ok": true
+      },
+      "replay_status": "measure_end",
+      "srsue_alive_at_stop": 1,
+      "status": "passed"
+    }
+  },
+  {
+    "case": "notify",
+    "ratio": 0.41554899938820283,
+    "valid_segments": 0,
+    "complete_segments": 0,
+    "faults": {
+      "rx_starvations": 325,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 1
+    },
+    "epoch": {
+      "clock_at_release": {
+        "gnb0>ue0:sionna_rt": 454556460,
+        "gnb0>ue10:sionna_rt": 454556460,
+        "gnb0>ue11:sionna_rt": 454556460,
+        "gnb0>ue12:sionna_rt": 454556460,
+        "gnb0>ue13:sionna_rt": 454556460,
+        "gnb0>ue14:sionna_rt": 454556460,
+        "gnb0>ue15:sionna_rt": 454556460,
+        "gnb0>ue1:sionna_rt": 454556460,
+        "gnb0>ue2:sionna_rt": 454556460,
+        "gnb0>ue3:sionna_rt": 454556460,
+        "gnb0>ue4:sionna_rt": 454556460,
+        "gnb0>ue5:sionna_rt": 454556460,
+        "gnb0>ue6:sionna_rt": 454556460,
+        "gnb0>ue7:sionna_rt": 454556460,
+        "gnb0>ue8:sionna_rt": 454556460,
+        "gnb0>ue9:sionna_rt": 454556460,
+        "ue0>gnb0:sionna_rt": 454533125,
+        "ue10>gnb0:sionna_rt": 454533125,
+        "ue11>gnb0:sionna_rt": 454533125,
+        "ue12>gnb0:sionna_rt": 454533125,
+        "ue13>gnb0:sionna_rt": 454533125,
+        "ue14>gnb0:sionna_rt": 454533125,
+        "ue15>gnb0:sionna_rt": 454533125,
+        "ue1>gnb0:sionna_rt": 454533125,
+        "ue2>gnb0:sionna_rt": 454533125,
+        "ue3>gnb0:sionna_rt": 454533125,
+        "ue4>gnb0:sionna_rt": 454533125,
+        "ue5>gnb0:sionna_rt": 454533125,
+        "ue6>gnb0:sionna_rt": 454533125,
+        "ue7>gnb0:sionna_rt": 454533125,
+        "ue8>gnb0:sionna_rt": 454533125,
+        "ue9>gnb0:sionna_rt": 454533125
+      },
+      "frontier_at_release": 454556460,
+      "lead_samples": 6912000,
+      "links": [
+        "gnb0>ue0:sionna_rt",
+        "gnb0>ue10:sionna_rt",
+        "gnb0>ue11:sionna_rt",
+        "gnb0>ue12:sionna_rt",
+        "gnb0>ue13:sionna_rt",
+        "gnb0>ue14:sionna_rt",
+        "gnb0>ue15:sionna_rt",
+        "gnb0>ue1:sionna_rt",
+        "gnb0>ue2:sionna_rt",
+        "gnb0>ue3:sionna_rt",
+        "gnb0>ue4:sionna_rt",
+        "gnb0>ue5:sionna_rt",
+        "gnb0>ue6:sionna_rt",
+        "gnb0>ue7:sionna_rt",
+        "gnb0>ue8:sionna_rt",
+        "gnb0>ue9:sionna_rt",
+        "ue0>gnb0:sionna_rt",
+        "ue10>gnb0:sionna_rt",
+        "ue11>gnb0:sionna_rt",
+        "ue12>gnb0:sionna_rt",
+        "ue13>gnb0:sionna_rt",
+        "ue14>gnb0:sionna_rt",
+        "ue15>gnb0:sionna_rt",
+        "ue1>gnb0:sionna_rt",
+        "ue2>gnb0:sionna_rt",
+        "ue3>gnb0:sionna_rt",
+        "ue4>gnb0:sionna_rt",
+        "ue5>gnb0:sionna_rt",
+        "ue6>gnb0:sionna_rt",
+        "ue7>gnb0:sionna_rt",
+        "ue8>gnb0:sionna_rt",
+        "ue9>gnb0:sionna_rt"
+      ],
+      "measure_samples": 921600000,
+      "release_unix_ns": 1793259370212024037,
+      "s0": 461491200,
+      "sample_rate_hz": 23040000.0,
+      "samples_per_update": 2304000,
+      "trace_sha256": "e114c91710ace5208f9c98802babc1ce6d910727a085cf4da331275b8ee6b15b",
+      "updates": 400
+    },
+    "gate": {
+      "all_ues_attached": true,
+      "broker": {
+        "control_batches_committed": 1504,
+        "rx_requests": 437819,
+        "rx_starvations": 325,
+        "tx_pulls": 415470,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 1
+      },
+      "broker_clean": false,
+      "gnb_alive_at_stop": 1,
+      "measure_status": "process_exited",
+      "per_ue": {
+        "ue0": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue1": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue10": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue11": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue12": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue13": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue14": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue15": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue2": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue3": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue4": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue5": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue6": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue7": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue8": {
+          "camped_pci": 1,
+          "crashed": 1,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        },
+        "ue9": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        }
+      },
+      "policy": "rr",
+      "policy_check": {
+        "gnbs": {
+          "gnb0": {
+            "found_in_config_dump": [
+              "rr"
+            ],
+            "link_adaptation": {
+              "found_in_config_dump": {
+                "link_adaptation": "harq_olla"
+              },
+              "ok": true,
+              "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+              "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+              "requested": {
+                "link_adaptation": "harq_olla"
+              }
+            },
+            "ok": true,
+            "policy_block": "      rr_sched: ~\n",
+            "requested": "rr"
+          }
+        },
+        "ok": true
+      },
+      "replay_status": "interrupted",
+      "srsue_alive_at_stop": 0,
+      "status": "failed"
+    }
+  },
+  {
+    "case": "notify-all-control",
+    "ratio": 0.38781873333573136,
+    "valid_segments": 15,
+    "complete_segments": 15,
+    "faults": {
+      "rx_starvations": 368,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 1
+    },
+    "epoch": {
+      "clock_at_release": {
+        "gnb0>ue0:sionna_rt": 432000300,
+        "gnb0>ue10:sionna_rt": 432000300,
+        "gnb0>ue11:sionna_rt": 432000300,
+        "gnb0>ue12:sionna_rt": 432000300,
+        "gnb0>ue13:sionna_rt": 432000300,
+        "gnb0>ue14:sionna_rt": 431977260,
+        "gnb0>ue15:sionna_rt": 432000300,
+        "gnb0>ue1:sionna_rt": 432000300,
+        "gnb0>ue2:sionna_rt": 432000300,
+        "gnb0>ue3:sionna_rt": 432000300,
+        "gnb0>ue4:sionna_rt": 432000300,
+        "gnb0>ue5:sionna_rt": 432000300,
+        "gnb0>ue6:sionna_rt": 432000300,
+        "gnb0>ue7:sionna_rt": 431954220,
+        "gnb0>ue8:sionna_rt": 432000300,
+        "gnb0>ue9:sionna_rt": 432000300,
+        "ue0>gnb0:sionna_rt": 431976975,
+        "ue10>gnb0:sionna_rt": 431976975,
+        "ue11>gnb0:sionna_rt": 431976975,
+        "ue12>gnb0:sionna_rt": 431976975,
+        "ue13>gnb0:sionna_rt": 431976975,
+        "ue14>gnb0:sionna_rt": 431976975,
+        "ue15>gnb0:sionna_rt": 431976975,
+        "ue1>gnb0:sionna_rt": 431976975,
+        "ue2>gnb0:sionna_rt": 431976975,
+        "ue3>gnb0:sionna_rt": 431976975,
+        "ue4>gnb0:sionna_rt": 431976975,
+        "ue5>gnb0:sionna_rt": 431976975,
+        "ue6>gnb0:sionna_rt": 431976975,
+        "ue7>gnb0:sionna_rt": 431976975,
+        "ue8>gnb0:sionna_rt": 431976975,
+        "ue9>gnb0:sionna_rt": 431976975
+      },
+      "frontier_at_release": 432000300,
+      "lead_samples": 6912000,
+      "links": [
+        "gnb0>ue0:sionna_rt",
+        "gnb0>ue10:sionna_rt",
+        "gnb0>ue11:sionna_rt",
+        "gnb0>ue12:sionna_rt",
+        "gnb0>ue13:sionna_rt",
+        "gnb0>ue14:sionna_rt",
+        "gnb0>ue15:sionna_rt",
+        "gnb0>ue1:sionna_rt",
+        "gnb0>ue2:sionna_rt",
+        "gnb0>ue3:sionna_rt",
+        "gnb0>ue4:sionna_rt",
+        "gnb0>ue5:sionna_rt",
+        "gnb0>ue6:sionna_rt",
+        "gnb0>ue7:sionna_rt",
+        "gnb0>ue8:sionna_rt",
+        "gnb0>ue9:sionna_rt",
+        "ue0>gnb0:sionna_rt",
+        "ue10>gnb0:sionna_rt",
+        "ue11>gnb0:sionna_rt",
+        "ue12>gnb0:sionna_rt",
+        "ue13>gnb0:sionna_rt",
+        "ue14>gnb0:sionna_rt",
+        "ue15>gnb0:sionna_rt",
+        "ue1>gnb0:sionna_rt",
+        "ue2>gnb0:sionna_rt",
+        "ue3>gnb0:sionna_rt",
+        "ue4>gnb0:sionna_rt",
+        "ue5>gnb0:sionna_rt",
+        "ue6>gnb0:sionna_rt",
+        "ue7>gnb0:sionna_rt",
+        "ue8>gnb0:sionna_rt",
+        "ue9>gnb0:sionna_rt"
+      ],
+      "measure_samples": 921600000,
+      "release_unix_ns": 1793260285187914045,
+      "s0": 438935040,
+      "sample_rate_hz": 23040000.0,
+      "samples_per_update": 2304000,
+      "trace_sha256": "e114c91710ace5208f9c98802babc1ce6d910727a085cf4da331275b8ee6b15b",
+      "updates": 400
+    },
+    "gate": {
+      "all_ues_attached": true,
+      "broker": {
+        "control_batches_committed": 8160,
+        "rx_requests": 1127191,
+        "rx_starvations": 368,
+        "tx_pulls": 753609,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 1
+      },
+      "broker_clean": false,
+      "gnb_alive_at_stop": 1,
+      "measure_status": "process_exited",
+      "per_ue": {
+        "ue0": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue1": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue10": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue11": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue12": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue13": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue14": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue15": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue2": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue3": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue4": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue5": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue6": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue7": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue8": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue9": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        }
+      },
+      "policy": "rr",
+      "policy_check": {
+        "gnbs": {
+          "gnb0": {
+            "found_in_config_dump": [
+              "rr"
+            ],
+            "link_adaptation": {
+              "found_in_config_dump": {
+                "link_adaptation": "harq_olla"
+              },
+              "ok": true,
+              "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+              "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+              "requested": {
+                "link_adaptation": "harq_olla"
+              }
+            },
+            "ok": true,
+            "policy_block": "      rr_sched: ~\n",
+            "requested": "rr"
+          }
+        },
+        "ok": true
+      },
+      "replay_status": "interrupted",
+      "srsue_alive_at_stop": 1,
+      "status": "failed"
+    }
+  },
+  {
+    "case": "notify-control",
+    "ratio": 0.4299949820042537,
+    "valid_segments": 30,
+    "complete_segments": 30,
+    "faults": {
+      "rx_starvations": 317,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    },
+    "epoch": {
+      "clock_at_release": {
+        "gnb0>ue0:sionna_rt": 453796140,
+        "gnb0>ue10:sionna_rt": 453796140,
+        "gnb0>ue11:sionna_rt": 453796140,
+        "gnb0>ue12:sionna_rt": 453796140,
+        "gnb0>ue13:sionna_rt": 453796140,
+        "gnb0>ue14:sionna_rt": 453750060,
+        "gnb0>ue15:sionna_rt": 453750060,
+        "gnb0>ue1:sionna_rt": 453773100,
+        "gnb0>ue2:sionna_rt": 453796140,
+        "gnb0>ue3:sionna_rt": 453773100,
+        "gnb0>ue4:sionna_rt": 453796140,
+        "gnb0>ue5:sionna_rt": 453796140,
+        "gnb0>ue6:sionna_rt": 453773100,
+        "gnb0>ue7:sionna_rt": 453773100,
+        "gnb0>ue8:sionna_rt": 453796140,
+        "gnb0>ue9:sionna_rt": 453773100,
+        "ue0>gnb0:sionna_rt": 453772805,
+        "ue10>gnb0:sionna_rt": 453772805,
+        "ue11>gnb0:sionna_rt": 453772805,
+        "ue12>gnb0:sionna_rt": 453772805,
+        "ue13>gnb0:sionna_rt": 453772805,
+        "ue14>gnb0:sionna_rt": 453772805,
+        "ue15>gnb0:sionna_rt": 453772805,
+        "ue1>gnb0:sionna_rt": 453772805,
+        "ue2>gnb0:sionna_rt": 453772805,
+        "ue3>gnb0:sionna_rt": 453772805,
+        "ue4>gnb0:sionna_rt": 453772805,
+        "ue5>gnb0:sionna_rt": 453772805,
+        "ue6>gnb0:sionna_rt": 453772805,
+        "ue7>gnb0:sionna_rt": 453772805,
+        "ue8>gnb0:sionna_rt": 453772805,
+        "ue9>gnb0:sionna_rt": 453772805
+      },
+      "frontier_at_release": 453796140,
+      "lead_samples": 6912000,
+      "links": [
+        "gnb0>ue0:sionna_rt",
+        "gnb0>ue10:sionna_rt",
+        "gnb0>ue11:sionna_rt",
+        "gnb0>ue12:sionna_rt",
+        "gnb0>ue13:sionna_rt",
+        "gnb0>ue14:sionna_rt",
+        "gnb0>ue15:sionna_rt",
+        "gnb0>ue1:sionna_rt",
+        "gnb0>ue2:sionna_rt",
+        "gnb0>ue3:sionna_rt",
+        "gnb0>ue4:sionna_rt",
+        "gnb0>ue5:sionna_rt",
+        "gnb0>ue6:sionna_rt",
+        "gnb0>ue7:sionna_rt",
+        "gnb0>ue8:sionna_rt",
+        "gnb0>ue9:sionna_rt",
+        "ue0>gnb0:sionna_rt",
+        "ue10>gnb0:sionna_rt",
+        "ue11>gnb0:sionna_rt",
+        "ue12>gnb0:sionna_rt",
+        "ue13>gnb0:sionna_rt",
+        "ue14>gnb0:sionna_rt",
+        "ue15>gnb0:sionna_rt",
+        "ue1>gnb0:sionna_rt",
+        "ue2>gnb0:sionna_rt",
+        "ue3>gnb0:sionna_rt",
+        "ue4>gnb0:sionna_rt",
+        "ue5>gnb0:sionna_rt",
+        "ue6>gnb0:sionna_rt",
+        "ue7>gnb0:sionna_rt",
+        "ue8>gnb0:sionna_rt",
+        "ue9>gnb0:sionna_rt"
+      ],
+      "measure_samples": 921600000,
+      "release_unix_ns": 1793259532068151595,
+      "s0": 460730880,
+      "sample_rate_hz": 23040000.0,
+      "samples_per_update": 2304000,
+      "trace_sha256": "e114c91710ace5208f9c98802babc1ce6d910727a085cf4da331275b8ee6b15b",
+      "updates": 400
+    },
+    "gate": {
+      "all_ues_attached": true,
+      "broker": {
+        "control_batches_committed": 12832,
+        "rx_requests": 1213546,
+        "rx_starvations": 317,
+        "tx_pulls": 1089211,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "broker_clean": true,
+      "gnb_alive_at_stop": 1,
+      "measure_status": "completed",
+      "per_ue": {
+        "ue0": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 4,
+          "rrc_connected": 1,
+          "rrc_release": 11
+        },
+        "ue1": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 10
+        },
+        "ue10": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 9
+        },
+        "ue11": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 9
+        },
+        "ue12": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 7
+        },
+        "ue13": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 3,
+          "rrc_connected": 1,
+          "rrc_release": 11
+        },
+        "ue14": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 3,
+          "rrc_connected": 1,
+          "rrc_release": 9
+        },
+        "ue15": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 4,
+          "rrc_connected": 1,
+          "rrc_release": 11
+        },
+        "ue2": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 4,
+          "rrc_connected": 1,
+          "rrc_release": 12
+        },
+        "ue3": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 6
+        },
+        "ue4": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 7
+        },
+        "ue5": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 9
+        },
+        "ue6": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 8
+        },
+        "ue7": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 8
+        },
+        "ue8": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 7
+        },
+        "ue9": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 9
+        }
+      },
+      "policy": "rr",
+      "policy_check": {
+        "gnbs": {
+          "gnb0": {
+            "found_in_config_dump": [
+              "rr"
+            ],
+            "link_adaptation": {
+              "found_in_config_dump": {
+                "link_adaptation": "harq_olla"
+              },
+              "ok": true,
+              "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+              "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+              "requested": {
+                "link_adaptation": "harq_olla"
+              }
+            },
+            "ok": true,
+            "policy_block": "      rr_sched: ~\n",
+            "requested": "rr"
+          }
+        },
+        "ok": true
+      },
+      "replay_status": "measure_end",
+      "srsue_alive_at_stop": 1,
+      "status": "passed"
+    }
+  },
+  {
+    "case": "trace",
+    "ratio": 0.4429549484494219,
+    "valid_segments": 4,
+    "complete_segments": 30,
+    "faults": {
+      "rx_starvations": 562,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    },
+    "epoch": {
+      "clock_at_release": {
+        "gnb0>ue0:sionna_rt": 458127660,
+        "gnb0>ue10:sionna_rt": 458081580,
+        "gnb0>ue11:sionna_rt": 458127660,
+        "gnb0>ue12:sionna_rt": 458127660,
+        "gnb0>ue13:sionna_rt": 458127660,
+        "gnb0>ue14:sionna_rt": 458058540,
+        "gnb0>ue15:sionna_rt": 458081580,
+        "gnb0>ue1:sionna_rt": 458127660,
+        "gnb0>ue2:sionna_rt": 458127660,
+        "gnb0>ue3:sionna_rt": 458127660,
+        "gnb0>ue4:sionna_rt": 458127660,
+        "gnb0>ue5:sionna_rt": 458127660,
+        "gnb0>ue6:sionna_rt": 458127660,
+        "gnb0>ue7:sionna_rt": 458081580,
+        "gnb0>ue8:sionna_rt": 458081580,
+        "gnb0>ue9:sionna_rt": 458081580,
+        "ue0>gnb0:sionna_rt": 458127365,
+        "ue10>gnb0:sionna_rt": 458127365,
+        "ue11>gnb0:sionna_rt": 458127365,
+        "ue12>gnb0:sionna_rt": 458127365,
+        "ue13>gnb0:sionna_rt": 458127365,
+        "ue14>gnb0:sionna_rt": 458127365,
+        "ue15>gnb0:sionna_rt": 458127365,
+        "ue1>gnb0:sionna_rt": 458127365,
+        "ue2>gnb0:sionna_rt": 458127365,
+        "ue3>gnb0:sionna_rt": 458127365,
+        "ue4>gnb0:sionna_rt": 458127365,
+        "ue5>gnb0:sionna_rt": 458127365,
+        "ue6>gnb0:sionna_rt": 458127365,
+        "ue7>gnb0:sionna_rt": 458127365,
+        "ue8>gnb0:sionna_rt": 458127365,
+        "ue9>gnb0:sionna_rt": 458127365
+      },
+      "frontier_at_release": 458127660,
+      "lead_samples": 6912000,
+      "links": [
+        "gnb0>ue0:sionna_rt",
+        "gnb0>ue10:sionna_rt",
+        "gnb0>ue11:sionna_rt",
+        "gnb0>ue12:sionna_rt",
+        "gnb0>ue13:sionna_rt",
+        "gnb0>ue14:sionna_rt",
+        "gnb0>ue15:sionna_rt",
+        "gnb0>ue1:sionna_rt",
+        "gnb0>ue2:sionna_rt",
+        "gnb0>ue3:sionna_rt",
+        "gnb0>ue4:sionna_rt",
+        "gnb0>ue5:sionna_rt",
+        "gnb0>ue6:sionna_rt",
+        "gnb0>ue7:sionna_rt",
+        "gnb0>ue8:sionna_rt",
+        "gnb0>ue9:sionna_rt",
+        "ue0>gnb0:sionna_rt",
+        "ue10>gnb0:sionna_rt",
+        "ue11>gnb0:sionna_rt",
+        "ue12>gnb0:sionna_rt",
+        "ue13>gnb0:sionna_rt",
+        "ue14>gnb0:sionna_rt",
+        "ue15>gnb0:sionna_rt",
+        "ue1>gnb0:sionna_rt",
+        "ue2>gnb0:sionna_rt",
+        "ue3>gnb0:sionna_rt",
+        "ue4>gnb0:sionna_rt",
+        "ue5>gnb0:sionna_rt",
+        "ue6>gnb0:sionna_rt",
+        "ue7>gnb0:sionna_rt",
+        "ue8>gnb0:sionna_rt",
+        "ue9>gnb0:sionna_rt"
+      ],
+      "measure_samples": 921600000,
+      "release_unix_ns": 1793259130198490211,
+      "s0": 465062400,
+      "sample_rate_hz": 23040000.0,
+      "samples_per_update": 2304000,
+      "trace_sha256": "e114c91710ace5208f9c98802babc1ce6d910727a085cf4da331275b8ee6b15b",
+      "updates": 400
+    },
+    "gate": {
+      "all_ues_attached": true,
+      "broker": {
+        "control_batches_committed": 12832,
+        "rx_requests": 1219465,
+        "rx_starvations": 562,
+        "tx_pulls": 1093591,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "broker_clean": true,
+      "gnb_alive_at_stop": 1,
+      "measure_status": "completed",
+      "per_ue": {
+        "ue0": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue1": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue10": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue11": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue12": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue13": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue14": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue15": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue2": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue3": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue4": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue5": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue6": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue7": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue8": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        },
+        "ue9": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 1
+        }
+      },
+      "policy": "rr",
+      "policy_check": {
+        "gnbs": {
+          "gnb0": {
+            "found_in_config_dump": [
+              "rr"
+            ],
+            "link_adaptation": {
+              "found_in_config_dump": {
+                "link_adaptation": "harq_olla"
+              },
+              "ok": true,
+              "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+              "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+              "requested": {
+                "link_adaptation": "harq_olla"
+              }
+            },
+            "ok": true,
+            "policy_block": "      rr_sched: ~\n",
+            "requested": "rr"
+          }
+        },
+        "ok": true
+      },
+      "replay_status": "measure_end",
+      "srsue_alive_at_stop": 1,
+      "status": "passed"
+    }
+  },
+  {
+    "case": "trace-repeat",
+    "ratio": 0.43625066121394757,
+    "valid_segments": 6,
+    "complete_segments": 30,
+    "faults": {
+      "rx_starvations": 614,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    },
+    "epoch": {
+      "clock_at_release": {
+        "gnb0>ue0:sionna_rt": 454279980,
+        "gnb0>ue10:sionna_rt": 454279980,
+        "gnb0>ue11:sionna_rt": 454279980,
+        "gnb0>ue12:sionna_rt": 454279980,
+        "gnb0>ue13:sionna_rt": 454279980,
+        "gnb0>ue14:sionna_rt": 454256940,
+        "gnb0>ue15:sionna_rt": 454279980,
+        "gnb0>ue1:sionna_rt": 454279980,
+        "gnb0>ue2:sionna_rt": 454279980,
+        "gnb0>ue3:sionna_rt": 454279980,
+        "gnb0>ue4:sionna_rt": 454279980,
+        "gnb0>ue5:sionna_rt": 454279980,
+        "gnb0>ue6:sionna_rt": 454279980,
+        "gnb0>ue7:sionna_rt": 454256940,
+        "gnb0>ue8:sionna_rt": 454279980,
+        "gnb0>ue9:sionna_rt": 454279980,
+        "ue0>gnb0:sionna_rt": 454279685,
+        "ue10>gnb0:sionna_rt": 454279685,
+        "ue11>gnb0:sionna_rt": 454279685,
+        "ue12>gnb0:sionna_rt": 454279685,
+        "ue13>gnb0:sionna_rt": 454279685,
+        "ue14>gnb0:sionna_rt": 454279685,
+        "ue15>gnb0:sionna_rt": 454279685,
+        "ue1>gnb0:sionna_rt": 454279685,
+        "ue2>gnb0:sionna_rt": 454279685,
+        "ue3>gnb0:sionna_rt": 454279685,
+        "ue4>gnb0:sionna_rt": 454279685,
+        "ue5>gnb0:sionna_rt": 454279685,
+        "ue6>gnb0:sionna_rt": 454279685,
+        "ue7>gnb0:sionna_rt": 454279685,
+        "ue8>gnb0:sionna_rt": 454279685,
+        "ue9>gnb0:sionna_rt": 454279685
+      },
+      "frontier_at_release": 454279980,
+      "lead_samples": 6912000,
+      "links": [
+        "gnb0>ue0:sionna_rt",
+        "gnb0>ue10:sionna_rt",
+        "gnb0>ue11:sionna_rt",
+        "gnb0>ue12:sionna_rt",
+        "gnb0>ue13:sionna_rt",
+        "gnb0>ue14:sionna_rt",
+        "gnb0>ue15:sionna_rt",
+        "gnb0>ue1:sionna_rt",
+        "gnb0>ue2:sionna_rt",
+        "gnb0>ue3:sionna_rt",
+        "gnb0>ue4:sionna_rt",
+        "gnb0>ue5:sionna_rt",
+        "gnb0>ue6:sionna_rt",
+        "gnb0>ue7:sionna_rt",
+        "gnb0>ue8:sionna_rt",
+        "gnb0>ue9:sionna_rt",
+        "ue0>gnb0:sionna_rt",
+        "ue10>gnb0:sionna_rt",
+        "ue11>gnb0:sionna_rt",
+        "ue12>gnb0:sionna_rt",
+        "ue13>gnb0:sionna_rt",
+        "ue14>gnb0:sionna_rt",
+        "ue15>gnb0:sionna_rt",
+        "ue1>gnb0:sionna_rt",
+        "ue2>gnb0:sionna_rt",
+        "ue3>gnb0:sionna_rt",
+        "ue4>gnb0:sionna_rt",
+        "ue5>gnb0:sionna_rt",
+        "ue6>gnb0:sionna_rt",
+        "ue7>gnb0:sionna_rt",
+        "ue8>gnb0:sionna_rt",
+        "ue9>gnb0:sionna_rt"
+      ],
+      "measure_samples": 921600000,
+      "release_unix_ns": 1793260011721141220,
+      "s0": 461214720,
+      "sample_rate_hz": 23040000.0,
+      "samples_per_update": 2304000,
+      "trace_sha256": "e114c91710ace5208f9c98802babc1ce6d910727a085cf4da331275b8ee6b15b",
+      "updates": 400
+    },
+    "gate": {
+      "all_ues_attached": true,
+      "broker": {
+        "control_batches_committed": 12832,
+        "rx_requests": 1213318,
+        "rx_starvations": 614,
+        "tx_pulls": 1089274,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "broker_clean": true,
+      "gnb_alive_at_stop": 1,
+      "measure_status": "completed",
+      "per_ue": {
+        "ue0": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue1": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue10": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 4
+        },
+        "ue11": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue12": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue13": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue14": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue15": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue2": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 3,
+          "rrc_connected": 1,
+          "rrc_release": 4
+        },
+        "ue3": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue4": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue5": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue6": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 2,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        },
+        "ue7": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue8": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 2
+        },
+        "ue9": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 3
+        }
+      },
+      "policy": "rr",
+      "policy_check": {
+        "gnbs": {
+          "gnb0": {
+            "found_in_config_dump": [
+              "rr"
+            ],
+            "link_adaptation": {
+              "found_in_config_dump": {
+                "link_adaptation": "harq_olla"
+              },
+              "ok": true,
+              "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+              "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+              "requested": {
+                "link_adaptation": "harq_olla"
+              }
+            },
+            "ok": true,
+            "policy_block": "      rr_sched: ~\n",
+            "requested": "rr"
+          }
+        },
+        "ok": true
+      },
+      "replay_status": "measure_end",
+      "srsue_alive_at_stop": 1,
+      "status": "passed"
+    }
+  }
+]

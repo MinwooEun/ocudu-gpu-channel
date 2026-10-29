@@ -1,0 +1,884 @@
+{
+  "date": "2026-10-28",
+  "cases": [
+    {
+      "ues": 1,
+      "trace_ratios": [
+        0.9975413052676428,
+        0.9974796039111141
+      ],
+      "reference_ratios": [
+        0.9975413052676428,
+        0.9974796039111141
+      ],
+      "reference_valid": [
+        30,
+        30
+      ],
+      "method": "diagnostic capture including CPU sampling",
+      "trace_label": "cuda-u1-c1-bw20-a1x1",
+      "reference_label": "cuda-u1-c1-bw20-a1x1",
+      "broker": {
+        "room_us": 20.862070373771388,
+        "align_us": 0.0361532583672418,
+        "data_us": 18.51184766203122,
+        "read_us": 0.13812226807404238,
+        "process_us": 64.65041140347194,
+        "commit_pace_us": 892.2453596902493,
+        "push_us": 2.6859289326040057
+      },
+      "calls_per_radio_ms": 1.2671541505436252,
+      "timing_runs": [
+        "01-test1",
+        "02-test2"
+      ],
+      "channel": {
+        "entry_pack_us": 0.8966184090381295,
+        "model_control_us": 0.5308741102727885,
+        "rx_prep_us": 0.2390566774101894,
+        "submit_us": 29.78870471476428,
+        "sync_wait_us": 25.290954095779497,
+        "output_record_us": 0.7468108345476565,
+        "call_us": 57.493018841812535,
+        "thread_cpu_us": 55.59703589484836,
+        "h2d_event_us": 7.438949062717828,
+        "kernel_event_us": 37.43174343324966,
+        "d2h_event_us": 1.467406081173289
+      }
+    },
+    {
+      "ues": 4,
+      "trace_ratios": [
+        0.9886705354639159,
+        0.989366876595561
+      ],
+      "reference_ratios": [
+        0.9886705354639159,
+        0.989366876595561
+      ],
+      "reference_valid": [
+        30,
+        30
+      ],
+      "method": "diagnostic capture including CPU sampling",
+      "trace_label": "cuda-u4-c1-bw20-a1x1",
+      "reference_label": "cuda-u4-c1-bw20-a1x1",
+      "broker": {
+        "room_us": 36.672529031564885,
+        "align_us": 0.049671535198773105,
+        "data_us": 116.22755382906803,
+        "read_us": 0.4813517814774396,
+        "process_us": 104.32291753065543,
+        "commit_pace_us": 739.7939304770998,
+        "push_us": 2.3655957391679516
+      },
+      "calls_per_radio_ms": 1.6608956757813342,
+      "timing_runs": [
+        "01-test1",
+        "02-test2"
+      ],
+      "channel": {
+        "entry_pack_us": 1.7759439045464602,
+        "model_control_us": 1.7514075404349587,
+        "rx_prep_us": 0.597129452256832,
+        "submit_us": 44.67660732661484,
+        "sync_wait_us": 38.58194292317211,
+        "output_record_us": 0.9624756934519665,
+        "call_us": 88.34550684047716,
+        "thread_cpu_us": 80.32022466760463,
+        "h2d_event_us": 11.057258297905467,
+        "kernel_event_us": 58.055687523441605,
+        "d2h_event_us": 1.8853909385732956
+      }
+    },
+    {
+      "ues": 8,
+      "trace_ratios": [
+        0.8946010778941035,
+        0.93019305280751
+      ],
+      "reference_ratios": [
+        0.9295782479222292,
+        0.937765480173535
+      ],
+      "reference_valid": [
+        30,
+        2
+      ],
+      "method": "diagnostic capture including CPU sampling",
+      "trace_label": "cuda-u8-c1-bw20-a1x1",
+      "reference_label": "cuda-u8-c1-bw20-a1x1-control",
+      "broker": {
+        "room_us": 254.25878539198771,
+        "align_us": 0.0536549380708061,
+        "data_us": 531.2107609522768,
+        "read_us": 2.01563243834751,
+        "process_us": 163.2024655342716,
+        "commit_pace_us": 125.21102812693249,
+        "push_us": 6.493023315839652
+      },
+      "calls_per_radio_ms": 1.8579619172688073,
+      "timing_runs": [
+        "01-test1",
+        "02-test2"
+      ],
+      "channel": {
+        "entry_pack_us": 3.3752238140849604,
+        "model_control_us": 5.07510749658285,
+        "rx_prep_us": 1.4406743110428506,
+        "submit_us": 54.402068686800746,
+        "sync_wait_us": 57.0638425239427,
+        "output_record_us": 1.1776214447470714,
+        "call_us": 122.53453827720118,
+        "thread_cpu_us": 110.33123976219241,
+        "h2d_event_us": 14.113007921518355,
+        "kernel_event_us": 79.09115147521035,
+        "d2h_event_us": 2.139774775435783
+      }
+    },
+    {
+      "ues": 16,
+      "trace_ratios": [
+        0.4452659765037127,
+        0.4469775822813307
+      ],
+      "reference_ratios": [
+        0.4501545584742642,
+        0.45189399396968455
+      ],
+      "reference_valid": [
+        11,
+        0
+      ],
+      "method": "receiver CSV only",
+      "trace_label": "cuda-u16-c1-bw20-a1x1-trace-only",
+      "reference_label": "cuda-u16-c1-bw20-a1x1-control",
+      "broker": {
+        "room_us": 462.2923532702534,
+        "align_us": 0.06417060167340158,
+        "data_us": 1575.9076457432543,
+        "read_us": 3.910183318308345,
+        "process_us": 174.22620479647395,
+        "commit_pace_us": 5.34739043907579,
+        "push_us": 3.766494598127704
+      },
+      "calls_per_radio_ms": 2.1043167213773404,
+      "timing_runs": [
+        "01-test1",
+        "02-test2"
+      ],
+      "channel": {
+        "entry_pack_us": 2.2226068910110843,
+        "model_control_us": 14.143066651572934,
+        "rx_prep_us": 0.9540938247838855,
+        "submit_us": 61.09513858790797,
+        "sync_wait_us": 83.49623067208684,
+        "output_record_us": 1.3872105693884156,
+        "call_us": 163.29834719675114,
+        "thread_cpu_us": 160.27390123467956,
+        "h2d_event_us": 17.57613859008577,
+        "kernel_event_us": 109.35693937734654,
+        "d2h_event_us": 2.3615952613801223
+      }
+    }
+  ],
+  "fixes": [
+    {
+      "id": "baseline",
+      "label": "원래 설정",
+      "ratio": 0.4515283212796943,
+      "valid": 30,
+      "complete": 30,
+      "faults": {
+        "rx_starvations": 254,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "attached": true,
+      "gate": "passed",
+      "strict": false,
+      "exclusions": {},
+      "changes": {},
+      "iq_min": 0.4515277820260462,
+      "iq_max": 0.45160473360672354,
+      "report": "fixes/baseline/runtime/report/run-report.json"
+    },
+    {
+      "id": "baseline-repeat",
+      "label": "원래 설정 · 반복",
+      "ratio": 0.4507894944873964,
+      "valid": 8,
+      "complete": 30,
+      "faults": {
+        "rx_starvations": 320,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "attached": true,
+      "gate": "passed",
+      "strict": false,
+      "exclusions": {
+        "ue12: not in the gNB report": 22
+      },
+      "changes": {},
+      "iq_min": 0.45077945444012624,
+      "iq_max": 0.4508601437922941,
+      "report": "fixes/baseline-repeat/runtime/report/run-report.json"
+    },
+    {
+      "id": "sleep",
+      "label": "내부 대기를 sleep으로",
+      "ratio": 0.3761644466215071,
+      "valid": 26,
+      "complete": 30,
+      "faults": {
+        "rx_starvations": 419,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "attached": true,
+      "gate": "passed",
+      "strict": false,
+      "exclusions": {
+        "ue8: not in the gNB report": 4
+      },
+      "changes": {
+        "OCG_BROKER_SPIN": "0"
+      },
+      "iq_min": 0.37616282215474095,
+      "iq_max": 0.37622627546173715,
+      "report": "fixes/sleep/runtime/report/run-report.json"
+    },
+    {
+      "id": "poll10",
+      "label": "sleep 간격 10 µs",
+      "ratio": 0.23251771372626787,
+      "valid": 30,
+      "complete": 30,
+      "faults": {
+        "rx_starvations": 60489,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "attached": true,
+      "gate": "passed",
+      "strict": false,
+      "exclusions": {},
+      "changes": {
+        "OCG_BROKER_SPIN": "0",
+        "OCG_BROKER_POLL_US": "10"
+      },
+      "iq_min": 0.2325193964583472,
+      "iq_max": 0.23256543951134778,
+      "report": "fixes/poll10/runtime/report/run-report.json"
+    },
+    {
+      "id": "broker4",
+      "label": "broker 4코어 + I/O 4개 · sleep",
+      "ratio": 0.43309533966981595,
+      "valid": 30,
+      "complete": 30,
+      "faults": {
+        "rx_starvations": 521,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "attached": true,
+      "gate": "passed",
+      "strict": false,
+      "exclusions": {},
+      "changes": {
+        "OCG_BROKER_SPIN": "0",
+        "OCG_ZMQ_IO_THREADS": "4",
+        "SINGLE_CELL_CPUS_GNB": "5-7,10-12",
+        "SINGLE_CELL_CPUS_BROKER": "8-9,15-16"
+      },
+      "iq_min": 0.4330719330804201,
+      "iq_max": 0.43345826731056564,
+      "report": "fixes/broker4/runtime/report/run-report.json"
+    },
+    {
+      "id": "broker4-spin",
+      "label": "broker 4코어 + I/O 4개 · spin",
+      "ratio": 0.44612467886551477,
+      "valid": 4,
+      "complete": 30,
+      "faults": {
+        "rx_starvations": 1006,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "attached": true,
+      "gate": "passed",
+      "strict": false,
+      "exclusions": {
+        "ue8: not in the gNB report": 26,
+        "ue8: no UE metrics row": 26,
+        "ue12: not in the gNB report": 26,
+        "ue12: no UE metrics row": 26
+      },
+      "changes": {
+        "OCG_BROKER_SPIN": "2",
+        "OCG_ZMQ_IO_THREADS": "4",
+        "SINGLE_CELL_CPUS_GNB": "5-7,10-12",
+        "SINGLE_CELL_CPUS_BROKER": "8-9,15-16"
+      },
+      "iq_min": 0.4461325301139888,
+      "iq_max": 0.44625866057411046,
+      "report": "fixes/broker4-spin/runtime/report/run-report.json"
+    },
+    {
+      "id": "ue5big-shared",
+      "label": "UE big core 5개 · 공유 + sleep",
+      "ratio": 0.3787952417264738,
+      "valid": 6,
+      "complete": 30,
+      "faults": {
+        "rx_starvations": 1010,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "attached": true,
+      "gate": "passed",
+      "strict": false,
+      "exclusions": {
+        "ue10: no UE metrics row": 24,
+        "ue10: not in the gNB report": 23
+      },
+      "changes": {
+        "OCG_BROKER_SPIN": "0",
+        "SINGLE_CELL_CPUS_GNB": "5-7,10-14",
+        "SINGLE_CELL_CPUS_UES": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE0": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE1": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE2": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE3": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE4": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE5": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE6": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE7": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE8": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE9": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE10": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE11": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE12": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE13": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE14": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE15": "8-9,17-19"
+      },
+      "iq_min": 0.37878834627502966,
+      "iq_max": 0.37892248903903003,
+      "report": "fixes/ue5big-shared/runtime/report/run-report.json"
+    },
+    {
+      "id": "ue5big-spin",
+      "label": "UE big core 5개 · 개별 고정",
+      "ratio": 0.47495925056011296,
+      "valid": 30,
+      "complete": 30,
+      "faults": {
+        "rx_starvations": 312,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "attached": true,
+      "gate": "passed",
+      "strict": false,
+      "exclusions": {},
+      "changes": {
+        "OCG_BROKER_SPIN": "2",
+        "SINGLE_CELL_CPUS_GNB": "5-7,10-14",
+        "SINGLE_CELL_CPUS_UES": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE0": "8",
+        "SINGLE_CELL_CPUS_UE1": "9",
+        "SINGLE_CELL_CPUS_UE2": "17",
+        "SINGLE_CELL_CPUS_UE3": "18",
+        "SINGLE_CELL_CPUS_UE4": "19",
+        "SINGLE_CELL_CPUS_UE5": "8",
+        "SINGLE_CELL_CPUS_UE6": "9",
+        "SINGLE_CELL_CPUS_UE7": "17",
+        "SINGLE_CELL_CPUS_UE8": "18",
+        "SINGLE_CELL_CPUS_UE9": "19",
+        "SINGLE_CELL_CPUS_UE10": "8",
+        "SINGLE_CELL_CPUS_UE11": "9",
+        "SINGLE_CELL_CPUS_UE12": "17",
+        "SINGLE_CELL_CPUS_UE13": "18",
+        "SINGLE_CELL_CPUS_UE14": "19",
+        "SINGLE_CELL_CPUS_UE15": "8"
+      },
+      "iq_min": 0.47494824491802196,
+      "iq_max": 0.47506305712322144,
+      "report": "fixes/ue5big-spin/runtime/report/run-report.json"
+    },
+    {
+      "id": "ue5big-spin-repeat",
+      "label": "UE big core 5개 · 개별 고정 · 반복",
+      "ratio": 0.47094738450470414,
+      "valid": 1,
+      "complete": 30,
+      "faults": {
+        "rx_starvations": 195,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "attached": true,
+      "gate": "passed",
+      "strict": false,
+      "exclusions": {
+        "ue12: not in the gNB report": 29
+      },
+      "changes": {
+        "OCG_BROKER_SPIN": "2",
+        "SINGLE_CELL_CPUS_GNB": "5-7,10-14",
+        "SINGLE_CELL_CPUS_UES": "8-9,17-19",
+        "SINGLE_CELL_CPUS_UE0": "8",
+        "SINGLE_CELL_CPUS_UE1": "9",
+        "SINGLE_CELL_CPUS_UE2": "17",
+        "SINGLE_CELL_CPUS_UE3": "18",
+        "SINGLE_CELL_CPUS_UE4": "19",
+        "SINGLE_CELL_CPUS_UE5": "8",
+        "SINGLE_CELL_CPUS_UE6": "9",
+        "SINGLE_CELL_CPUS_UE7": "17",
+        "SINGLE_CELL_CPUS_UE8": "18",
+        "SINGLE_CELL_CPUS_UE9": "19",
+        "SINGLE_CELL_CPUS_UE10": "8",
+        "SINGLE_CELL_CPUS_UE11": "9",
+        "SINGLE_CELL_CPUS_UE12": "17",
+        "SINGLE_CELL_CPUS_UE13": "18",
+        "SINGLE_CELL_CPUS_UE14": "19",
+        "SINGLE_CELL_CPUS_UE15": "8"
+      },
+      "iq_min": 0.47094166154741,
+      "iq_max": 0.47103570776108006,
+      "report": "fixes/ue5big-spin-repeat/runtime/report/run-report.json"
+    },
+    {
+      "id": "cuda-blocking-sleep",
+      "label": "GPU 완료 대기도 CPU를 재움 · sleep",
+      "ratio": 0.40123326378046315,
+      "valid": 30,
+      "complete": 30,
+      "faults": {
+        "rx_starvations": 325,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "attached": true,
+      "gate": "passed",
+      "strict": false,
+      "exclusions": {},
+      "changes": {
+        "OCG_BROKER_SPIN": "0",
+        "OCG_CUDA_BLOCKING_SYNC": "1",
+        "OCUDU_NATIVE_CHANNEL_BUILD": "/workspace/gpuch/profile-20261028/build-blocking-sync"
+      },
+      "iq_min": 0.40123301865096456,
+      "iq_max": 0.40134806649057525,
+      "report": "fixes/cuda-blocking-sleep/runtime/report/run-report.json"
+    }
+  ],
+  "oai": [
+    {
+      "bw": 100,
+      "g": 4,
+      "u": 4,
+      "ratio": 0.3392,
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [
+          "pusch_ko_ratio 0.1725 > 0.1"
+        ],
+        "result": "fail"
+      },
+      "label": "cuda-u1-c1-bw100-a4x4"
+    },
+    {
+      "bw": 20,
+      "g": 4,
+      "u": 4,
+      "ratio": 0.9997,
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "label": "cuda-u1-c1-bw20-a4x4"
+    },
+    {
+      "bw": 100,
+      "g": 4,
+      "u": 1,
+      "ratio": 0.4911,
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "label": "cuda-u1-c1-bw100-a4x1"
+    },
+    {
+      "bw": 50,
+      "g": 4,
+      "u": 4,
+      "ratio": 0.5131,
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "label": "cuda-u1-c1-bw50-a4x4"
+    },
+    {
+      "bw": 50,
+      "g": 2,
+      "u": 2,
+      "ratio": 0.9973,
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "label": "cuda-u1-c1-bw50-a2x2"
+    },
+    {
+      "bw": 20,
+      "g": 2,
+      "u": 2,
+      "ratio": 0.9999,
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "label": "cuda-u1-c1-bw20-a2x2"
+    },
+    {
+      "bw": 100,
+      "g": 2,
+      "u": 2,
+      "ratio": 0.684,
+      "health": {
+        "max_nack_ratio": 0.1,
+        "max_pusch_ko_ratio": 0.1,
+        "problems": [],
+        "result": "pass"
+      },
+      "label": "cuda-u1-c1-bw100-a2x2"
+    }
+  ],
+  "synthetic": [
+    {
+      "ues": 1,
+      "ratio": 0.9999166666666667,
+      "label": "u1-c1-bw20-a1x1-r0-trace0"
+    },
+    {
+      "ues": 4,
+      "ratio": 1.0,
+      "label": "u4-c1-bw20-a1x1-r0-trace0"
+    },
+    {
+      "ues": 4,
+      "ratio": 1.0,
+      "label": "u4-c2-bw20-a1x1-r0-trace0"
+    },
+    {
+      "ues": 4,
+      "ratio": 0.8286666666666667,
+      "label": "u4-c4-bw20-a1x1-r0-trace0"
+    },
+    {
+      "ues": 8,
+      "ratio": 1.0,
+      "label": "u8-c1-bw20-a1x1-r0-trace0"
+    },
+    {
+      "ues": 16,
+      "ratio": 0.9995833333333334,
+      "label": "u16-c1-bw20-a1x1-r0-trace0"
+    },
+    {
+      "ues": 24,
+      "ratio": 0.6605833333333333,
+      "label": "u24-c1-bw20-a1x1-r0-trace0"
+    },
+    {
+      "ues": 32,
+      "ratio": 0.494,
+      "label": "u32-c1-bw20-a1x1-r0-trace0"
+    },
+    {
+      "ues": 64,
+      "ratio": 0.239,
+      "label": "u64-c1-bw20-a1x1-r0-trace0"
+    }
+  ],
+  "audit64": {
+    "model_mix_latency": {
+      "p50_us": 59.089,
+      "p99_us": 1195.94
+    },
+    "gpu_process_us": {
+      "p50_us": 50.876,
+      "p99_us": 537.693
+    },
+    "node:gnb0:call_us": {
+      "p50_us": 1197.816,
+      "p99_us": 1338.493
+    },
+    "node:gnb0:host_prep_us": {
+      "p50_us": 658.086,
+      "p99_us": 794.679
+    },
+    "node:gnb0:h2d_us": {
+      "p50_us": 444.959,
+      "p99_us": 450.432
+    },
+    "node:gnb0:kernel_us": {
+      "p50_us": 67.808,
+      "p99_us": 71.967
+    }
+  },
+  "audit_checksums": 52,
+  "audit_verified": true,
+  "cpu": {
+    "window": "16 UE diagnostic second policy, post warmup until replay failure",
+    "duration_s": 7.860603332,
+    "groups": {
+      "ocudu-gpu-chann": {
+        "cpu_seconds": 15.721094304,
+        "runnable_wait_seconds": 188.790684336,
+        "mean_cores": 1.9999857059318151
+      },
+      "gnb": {
+        "cpu_seconds": 14.661977424,
+        "runnable_wait_seconds": 0.551609456,
+        "mean_cores": 1.8652483536870577
+      },
+      "srsue": {
+        "cpu_seconds": 35.235293888,
+        "runnable_wait_seconds": 215.500957616,
+        "mean_cores": 4.482517740662403
+      }
+    }
+  },
+  "channel_cpu": {
+    "source": "live-summary.json",
+    "definition": "sum across receiver nodes; cumulative work, not serial critical-path latency",
+    "runs": [
+      {
+        "run": "01-test1",
+        "receivers": 17,
+        "total_cpu_us_per_radio_ms": 999.9565395258103,
+        "total_submit_us_per_radio_ms": 581.015727596707,
+        "total_completion_wait_us_per_radio_ms": 366.42451833186425,
+        "total_host_call_us_per_radio_ms": 1032.894631478228
+      },
+      {
+        "run": "02-test2",
+        "receivers": 17,
+        "total_cpu_us_per_radio_ms": 1000.7978884437093,
+        "total_submit_us_per_radio_ms": 587.1823662094148,
+        "total_completion_wait_us_per_radio_ms": 362.95266142747374,
+        "total_host_call_us_per_radio_ms": 1033.3906675483197
+      }
+    ]
+  },
+  "cells": {
+    "definition": "mean gate per-second scheduler slots metric in valid post-warmup wall-time segments, divided by 1000",
+    "results": {
+      "instrumented": {
+        "a": 0.854759635506142,
+        "b": 0.8704614548282488
+      },
+      "control": {
+        "a": 0.8670886440074231,
+        "b": 0.8765238769121272
+      }
+    }
+  },
+  "nsys": [
+    {
+      "label": "u1-c1-bw100-a4x4-r0-trace1",
+      "kernel_count": 142778,
+      "window_s": 9.515643136,
+      "kernel_union_fraction": 0.3423358444029821,
+      "memcpy": {
+        "1": {
+          "count": 107092,
+          "bytes": 11355688,
+          "activity_us": 51661.76000002861
+        }
+      }
+    },
+    {
+      "label": "u16-c1-bw20-a1x1-r0-trace1",
+      "kernel_count": 807400,
+      "window_s": 9.547856448,
+      "kernel_union_fraction": 0.3091014181113084,
+      "memcpy": {
+        "1": {
+          "count": 484477,
+          "bytes": 14112896,
+          "activity_us": 197246.75200054454
+        }
+      }
+    }
+  ],
+  "sources": [
+    {
+      "name": "live-summary.json",
+      "sha256": "69f4c959b17b1943e0d0e34ae2923931e331daf1f242af7c721bf250f747eb2c"
+    },
+    {
+      "name": "live-fixes-summary.json",
+      "sha256": "2dbab3eaab88f2e2627e3343cfe56701e070a00ae58e8895cd891ac03f43eed5"
+    },
+    {
+      "name": "live-fixes-results.csv",
+      "sha256": "36d9da65342d5b48a5efa27c0eee3549cc832bd8bd4b4131ce117785eb884018"
+    },
+    {
+      "name": "oai-summary.json",
+      "sha256": "0721a5cb2cddaf4a38a2d020496fd4b89ea40211d06fb18bfb93d325004848d0"
+    },
+    {
+      "name": "boundary-results.csv",
+      "sha256": "f257a5f2dabee6b61f2b70ac78f3186a936ea163cbb29a15a2aa6ffa99da70ef"
+    },
+    {
+      "name": "audit-5090.json",
+      "sha256": "0840663cd202ab424671bd33b8f07eb499cd09b2c5f3bba5532b32646c9d7cee"
+    },
+    {
+      "name": "nsys-summary.json",
+      "sha256": "974f01e65c1b1eb4da971420a7c36dffe3a5a57731895e011182d994de1222b2"
+    },
+    {
+      "name": "thread-runtime-steady-summary.json",
+      "sha256": "2c6111364a65d4d55709f28c7430524eb58535c0ed5edd1d14a9bd9a431122a3"
+    },
+    {
+      "name": "live-fixes-channel-cpu.json",
+      "sha256": "a037286075a8f7b8ecf96f53b186cf4eb5ea8e6f72276a61e4a607a28fd5cf13"
+    },
+    {
+      "name": "two-cell-control-summary.json",
+      "sha256": "d152a2f685275a3de4bc454255546594ee8594c55f70941cc28a98183a8bce04"
+    },
+    {
+      "name": "report.txt",
+      "sha256": "9ae502df87793ac6c7a94bda68c5bb81ddb606812c49de669cf50b788b46926b"
+    },
+    {
+      "name": "live-fixes.ko.txt",
+      "sha256": "52173660835c2399c417e8ac93c60d2a7bd552ef0820fb82df391f82cfd4e7d7"
+    },
+    {
+      "name": "instrumentation.patch",
+      "sha256": "c019346e324a8f0d836efd2ebac89787f14294f3e0a46b89f03fb2386aff59ae"
+    },
+    {
+      "name": "blocking-sync.patch",
+      "sha256": "38bc28bc86f8e1a1570b9a55df1e5ecda8e6b6b577b6bbfb7f4360055cfdad44"
+    },
+    {
+      "name": "../ocudu-upstream-main/docs/reports/performance/2026-10-13-fanin/N8.1.csv",
+      "sha256": "e2e98fdc1968eebdd20210298e06c7f7c253a64c72235f61149175b4959ed769"
+    },
+    {
+      "name": "../ocudu-upstream-main/docs/reports/performance/2026-10-13-fanin/N8.2.csv",
+      "sha256": "8a3ba9914303d6fc22e153f783d7f7b6d32e7f172195a7ce13d1afca31e88c52"
+    },
+    {
+      "name": "../ocudu-upstream-main/docs/reports/performance/2026-10-13-fanin/N8.3.csv",
+      "sha256": "47de969d677ab96d7551811e3b8ed3df122d06bf6ff9c1884a92bffce70e7308"
+    },
+    {
+      "name": "../ocudu-upstream-main/docs/reports/performance/2026-10-13-fanin/README.md",
+      "sha256": "4f1cd494217087dbdaa03b6163fc732f40ea99c77477b79c2c959a2e6d4c08d0"
+    },
+    {
+      "name": "../ocudu-upstream-main/docs/history/milestones/ZERO_COPY_MILESTONES.md",
+      "sha256": "af6192ce627ceecadef4ad180def7d1db2bacbff2d10d513e52c0f86156e16d3"
+    },
+    {
+      "name": "../perf-platform/compare-zc-z8.md",
+      "sha256": "4b039b1ee18ce9bb38774b75730671160ebac9f206b68b51ed99e001ac121cb3"
+    },
+    {
+      "name": "explainer/spark-direct-input-observation.json",
+      "sha256": "9b230a994699472c54360421afd0937c86c7c12a756d3e366ee3f4f12dfd0bb3"
+    }
+  ],
+  "code": {
+    "broker.cpp:1153": "1153          // (A) Output room. Every RX row must be able to take at least one\n1154          // sample. Partial progress is deliberate and mirrors the input side:\n1155          // demanding a full batch of headroom would strand the partial chunks a\n1156          // lock-step radio leaves behind, which is the B2.2 dead-lock in a new\n1157          // place.\n1158          diag.state.store(\"wait_room\");\n1159          const auto t_room_start = std::chrono::steady_clock::now();\n1160          std::size_t room = 0;\n1161          bool room_stall_reported = false;\n1162          auto next_room_report = t_room_start + kStallReportInterval;\n1163          while (!stop_requested.load()) {\n1164            room = node.batch;\n1165            for (const std::size_t r : node.rx_ports) {\n1166              room = std::min(room, rx_headroom(*ports[r]));\n1167            }\n1168            if (room > 0) {\n1169              break;\n1170            }\n1171            diag.blocked_iters.fetch_add(1);\n1172            const auto now = std::chrono::steady_clock::now();\n1173            if (now >= next_room_report) {\n1174              report_node_stall(node, \"output_room\", now - t_room_start);\n1175              room_stall_reported = true;\n1176              next_room_report = now + kStallReportInterval;\n1177            }\n1178            wait_tick(knobs, t_room_start);\n1179          }\n1180          // Only a genuine resume clears; a stop request is a shutdown, not\n1181          // recovery, and must not be logged as one.\n1182          if (room_stall_reported && !stop_requested.load()) {\n1183            report_node_stall_cleared(node, \"output_room\",\n1184                                      std::chrono::steady_clock::now() - t_room_start);\n1185          }\n1186          if (room == 0) {\n1187            break; // stop requested while waiting for output room\n1188          }\n1189          const auto t_align_start = std::chrono::steady_clock::now();\n1190          const double room_us =\n1191              std::chrono::duration<double, std::micro>(t_align_start - t_room_start).count();\n1192  \n1193          // (B) First slot: co-initialise every incoming lane's cursor to its",
+    "broker.cpp:1212": "1212          const double align_us =\n1213              std::chrono::duration<double, std::micro>(t_data_start - t_align_start).count();\n1214  \n1215          // (C) Common input window: the largest amount simultaneously available\n1216          // on EVERY incoming lane, capped at the node batch and at the output\n1217          // room, instead of blocking until each lane holds a full fixed batch.\n1218          // A fixed-batch serve strands the partial final chunk every lock-step\n1219          // radio leaves on its ring; in a multi-device fan-in/fan-out topology\n1220          // no radio can advance to refill it, so the whole relay dead-locks.\n1221          std::size_t count = 0;\n1222          if (incoming.empty()) {\n1223            count = room; // no lanes -> zero-fill, still paced and bounded\n1224          } else {\n1225            const auto wait_start = std::chrono::steady_clock::now();\n1226            bool starvation_counted = false;\n1227            bool data_stall_reported = false;\n1228            auto next_data_report = wait_start + kStallReportInterval;\n1229            while (!stop_requested.load()) {\n1230              std::size_t common = node.batch;\n1231              for (std::size_t k = 0; k != incoming.size(); ++k) {\n1232                auto& link = links[incoming[k]];\n1233                PortRuntime& src = *ports[link.src_index];\n1234                std::lock_guard<std::mutex> lk(src.ring_mutex);\n1235                std::uint64_t cur = link.cursor.load();\n1236                if (cur < src.tx_ring.earliest_sequence()) {\n1237                  cur = src.tx_ring.earliest_sequence();\n1238                  link.cursor.store(cur);\n1239                  stats.tx_sequence_gaps.fetch_add(1);\n1240                  diag.sequence_gaps.fetch_add(1, std::memory_order_relaxed);\n1241                }\n1242                const std::uint64_t avail = src.tx_ring.next_sequence() - cur;\n1243                common = std::min<std::size_t>(common, static_cast<std::size_t>(avail));\n1244              }\n1245              if (common > 0) {\n1246                count = std::min(common, room);\n1247                break;\n1248              }\n1249              diag.state.store(\"wait_data\");\n1250              diag.blocked_iters.fetch_add(1);\n1251              const auto now = std::chrono::steady_clock::now();\n1252              // Only a node that has already produced can be starved; the first\n1253              // wait is the relay filling, not a real-time miss. The slot counter\n1254              // states that directly -- the throttle bookkeeping this used to\n1255              // read was rebased to zero once a second, so a starvation landing\n1256              // in that one slot went uncounted.\n1257              if (diag.progress.load() > 0 && !starvation_counted &&\n1258                  now - wait_start > starvation_deadline) {\n1259                stats.rx_starvations.fetch_add(1);\n1260                diag.starvations.fetch_add(1, std::memory_order_relaxed);\n1261                starvation_counted = true;\n1262              }\n1263              if (now >= next_data_report) {\n1264                report_node_stall(node, \"input_data\", now - wait_start);\n1265                data_stall_reported = true;\n1266                next_data_report = now + kStallReportInterval;\n1267              }\n1268              wait_tick(knobs, wait_start);\n1269            }\n1270            if (data_stall_reported && !stop_requested.load()) {\n1271              report_node_stall_cleared(node, \"input_data\",\n1272                                        std::chrono::steady_clock::now() - wait_start);\n1273            }\n1274          }\n1275          if (count == 0) {\n1276            break; // stop requested while waiting for lane data\n1277          }\n1278          // Opt-in sample-indexed control: a call never straddles a pending\n1279          // take_effect_at_sample or noise epoch of an incoming link, so the\n1280          // update starts exactly at its target sample instead of at whichever\n1281          // call boundary follows it. Inert (no target set) for every caller\n1282          // that does not name one.\n1283          for (BrokerLinkControl* ctl : node_controls[n]) {",
+    "cuda_backend.cu:1499": "1499              row, row, count, sp.device_rx_steps + r * rx_stride, rx_steps);\n1500        }\n1501        check(cudaGetLastError(), \"superpose rx kernel launch\");\n1502      }\n1503      check(cudaEventRecord(sp.kernel_done, sp.stream), \"cudaEventRecord superpose kernel_done\");\n1504  \n1505      if (!sp.zc_out) {\n1506        check(cudaMemcpyAsync(sp.host_output, sp.device_output, sp.rows * sample_bytes,\n1507                              cudaMemcpyDeviceToHost, sp.stream),\n1508              \"cudaMemcpyAsync superpose D2H\");\n1509      }\n1510      check(cudaEventRecord(sp.d2h_done, sp.stream), \"cudaEventRecord superpose d2h_done\");\n1511      const auto profile_submit_end = std::chrono::steady_clock::now();\n1512      check(cudaStreamSynchronize(sp.stream), \"cudaStreamSynchronize superpose\");\n1513      const auto out_start = std::chrono::steady_clock::now();\n1514      for (std::size_t r = 0; !sp.zc_direct && r != sp.rows; ++r) {\n1515        const IqSample* row = sp.host_output + r * count;\n1516        std::copy(row, row + count, outputs[r].begin());\n1517      }\n1518  \n1519      record_timings(sp.h2d_start, sp.h2d_done, sp.kernel_done, sp.d2h_done, call_start, total_start, out_start,\n1520                     sp.use_device_channel, sp.zc_in || sp.zc_out || sp.zc_meta || sp.zc_direct_in);"
+  },
+  "preparation_origin": {
+    "date": "2026-10-13",
+    "hardware": "RTX 5090",
+    "incoming_tx_ports": 8,
+    "batch_samples": 23040,
+    "rate_hz": 23040000,
+    "mode": "copy",
+    "real_radios": false,
+    "metric": "node:gnb0:host_prep_us",
+    "runs": [
+      {
+        "repeat": 1,
+        "p99_us": 77.979,
+        "source": "ocudu-upstream-main/docs/reports/performance/2026-10-13-fanin/N8.1.csv"
+      },
+      {
+        "repeat": 2,
+        "p99_us": 75.223,
+        "source": "ocudu-upstream-main/docs/reports/performance/2026-10-13-fanin/N8.2.csv"
+      },
+      {
+        "repeat": 3,
+        "p99_us": 76.734,
+        "source": "ocudu-upstream-main/docs/reports/performance/2026-10-13-fanin/N8.3.csv"
+      }
+    ],
+    "median_p99_us": 76.734
+  },
+  "spark_direct": {
+    "observed_on": "2026-10-28",
+    "evidence_kind": "First recorded row of a preserved live receiver trace; flags identify the selected path, not a latency benchmark",
+    "source": "/workspace/gpuch/profile-20261028/live/cuda-u16-c1-bw20-a1x1-trace-only/trace/channel-2449918-2449961.csv",
+    "node": "gnb0",
+    "samples": 23040,
+    "direct_in": 1,
+    "zero_in": 1,
+    "zero_out": 1,
+    "code_commit": "0a6f281",
+    "code_commit_subject": "cuda: read inputs in place on integrated GPUs; block-copy the IQ rings (Z8)",
+    "commit_present_in_current_main_ancestry": true
+  },
+  "provenance": {
+    "broker": "364391bccd3abd5fb73946e50c3a4c95ce649551",
+    "pr10": "9a33e0c2de17d5e8030ea570f57ba0fc08075fce",
+    "sample_rate_hz": 23040000,
+    "bandwidth_mhz": 20,
+    "host": "DGX Spark GB10",
+    "tracing": "receiver-local host clocks and CUDA events"
+  }
+}

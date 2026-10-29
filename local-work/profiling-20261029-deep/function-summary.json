@@ -1,0 +1,37 @@
+{
+  "rows": [
+    {
+      "label": "입력 버퍼 준비 → producer 확인",
+      "total": 541.4425766527885,
+      "yield_call": 515.593184309515,
+      "mutex": 3.0576625683427823,
+      "pct": 95.2258293939359
+    },
+    {
+      "label": "요청 수신 → 출력 row 확보",
+      "total": 166.37215341296002,
+      "yield_call": 160.64192053334645,
+      "mutex": 1.6875306903411207,
+      "pct": 96.55577405108757
+    },
+    {
+      "label": "출력 공간 반환 → producer 확인",
+      "total": 194.35708620156075,
+      "yield_call": 186.13902017135263,
+      "mutex": 1.3383771382665028,
+      "pct": 95.77166637408556
+    }
+  ],
+  "example": {
+    "kind": "single actual wall-time interval, not radio-normalized",
+    "yield_start_ns": 3020021617741297,
+    "input_ready_ns": 3020021617773681,
+    "yield_return_ns": 3020021618311832,
+    "producer_confirm_ns": 3020021618314952,
+    "ready_us_from_yield": 32.384,
+    "return_us_from_yield": 570.535,
+    "confirm_us_from_yield": 573.655
+  },
+  "eight_radio_ms": 1811.0000434027659,
+  "sixteen_radio_ms": 847.9993923611131
+}

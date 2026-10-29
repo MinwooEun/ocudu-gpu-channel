@@ -1,0 +1,58 @@
+[
+  {
+    "site": 1,
+    "expression": "port.rx_mutex"
+  },
+  {
+    "site": 2,
+    "expression": "out.rx_mutex"
+  },
+  {
+    "site": 3,
+    "expression": "dev.ring_mutex"
+  },
+  {
+    "site": 4,
+    "expression": "dev.ring_mutex"
+  },
+  {
+    "site": 5,
+    "expression": "src.ring_mutex"
+  },
+  {
+    "site": 6,
+    "expression": "src.ring_mutex"
+  },
+  {
+    "site": 7,
+    "expression": "src.ring_mutex"
+  },
+  {
+    "site": 8,
+    "expression": "out.rx_mutex"
+  },
+  {
+    "site": 9,
+    "expression": "out.rx_mutex"
+  },
+  {
+    "site": 10,
+    "expression": "port.rx_mutex"
+  },
+  {
+    "site": 11,
+    "expression": "port.rx_mutex"
+  },
+  {
+    "site": 12,
+    "expression": "ports[d]->ring_mutex"
+  },
+  {
+    "site": 13,
+    "expression": "ports[d]->rx_mutex"
+  },
+  {
+    "site": 14,
+    "expression": "ports[d]->rx_mutex"
+  }
+]

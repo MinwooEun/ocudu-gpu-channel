@@ -1,0 +1,31 @@
+diff --git a/use_cases/ran_benchmark/run-single-cell-policy.sh b/use_cases/ran_benchmark/run-single-cell-policy.sh
+index 4a2a819..26198de 100755
+--- a/use_cases/ran_benchmark/run-single-cell-policy.sh
++++ b/use_cases/ran_benchmark/run-single-cell-policy.sh
+@@ -127,6 +127,26 @@ if [[ -n "${gnb_rx_gain}" ]]; then
+   grep -qx '  rx_gain: 0' "${config_dir}/gnb0.yaml" || usage_error "gnb0.yaml has no 'rx_gain: 0' line"
+   sed -i "s/^  rx_gain: 0\$/  rx_gain: ${gnb_rx_gain}/" "${config_dir}/gnb0.yaml"
+ fi
++# --- local experiment knobs (minwoo, 2026-10-22; not upstream) ---------------
++# SINGLE_CELL_UE_RX_SLEEP=false  -> srsUE ZMQ rx_sleep=false (needs srsue-zmq-rx-sleep.patch build)
++# SINGLE_CELL_LOG_LEVEL=warning  -> gNB all_level + srsUE all_level
++# SINGLE_CELL_PCAP=off           -> gNB MAC/NGAP pcap off
++if [[ "${SINGLE_CELL_UE_RX_SLEEP:-true}" == "false" ]]; then
++  sed -i '/^device_args *=/ s/$/,rx_sleep=false/' "${config_dir}"/srsue-ue*.conf
++fi
++if [[ -n "${SINGLE_CELL_LOG_LEVEL:-}" ]]; then
++  sed -i "s/^all_level = info$/all_level = ${SINGLE_CELL_LOG_LEVEL}/" "${config_dir}"/srsue-ue*.conf
++  sed -i "s/^  all_level: info$/  all_level: ${SINGLE_CELL_LOG_LEVEL}/" "${config_dir}/gnb0.yaml"
++fi
++if [[ "${SINGLE_CELL_PCAP:-on}" == "off" ]]; then
++  sed -i "s/^  mac_enable: enable$/  mac_enable: false/; s/^  ngap_enable: enable$/  ngap_enable: false/" "${config_dir}/gnb0.yaml"
++fi
++if [[ -n "${SINGLE_CELL_GNB_MAIN_POOL:-}" ]]; then
++  grep -q '^expert_execution:' "${config_dir}/gnb0.yaml" && usage_error "gnb0.yaml already has expert_execution"
++  printf 'expert_execution:\n  threads:\n    main_pool:\n      nof_threads: %s\n' "${SINGLE_CELL_GNB_MAIN_POOL}" >>"${config_dir}/gnb0.yaml"
++fi
++printf 'event=local_knobs ue_rx_sleep=%s log_level=%s pcap=%s broker_env=%s\n' "${SINGLE_CELL_UE_RX_SLEEP:-true}" \
++  "${SINGLE_CELL_LOG_LEVEL:-default}" "${SINGLE_CELL_PCAP:-on}" "${OCG_BROKER_SPIN:-unset}" | tee "${log_dir}/local-knobs.log"
+ "${gnb_binary}" -c "${config_dir}/gnb0.yaml" --dryrun >"${log_dir}/gnb0-dryrun.log" 2>&1 || {
+   tail -20 "${log_dir}/gnb0-dryrun.log" >&2; usage_error "gnb0 dry run failed"; }
+ 

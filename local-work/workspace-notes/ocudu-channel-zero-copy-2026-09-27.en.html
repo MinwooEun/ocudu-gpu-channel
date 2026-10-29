@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Channel Emulator Zero-Copy</title>
+<style>
+:root{
+  --bg:#fbfbf9; --panel:#ffffff; --ink:#1d1f23; --muted:#5d636e; --line:#e3e4e0;
+  --accent:#2f5d8a; --ok:#2e7d4f; --warn:#a36a00; --bad:#b23b3b; --chip:#eef2f6; --code:#f3f3ef;
+  --surface-1:#fcfcfb; --grid:#e6e6e2;
+  --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15171b; --panel:#1c1f24; --ink:#e7e8ea; --muted:#a2a7b0; --line:#2e3239;
+    --accent:#7fb0e0; --ok:#6cc08f; --warn:#e0b25a; --bad:#e58585; --chip:#252a31; --code:#23272d;
+    --surface-1:#1a1a19; --grid:#2c2c2a;
+    --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15171b; --panel:#1c1f24; --ink:#e7e8ea; --muted:#a2a7b0; --line:#2e3239;
+  --accent:#7fb0e0; --ok:#6cc08f; --warn:#e0b25a; --bad:#e58585; --chip:#252a31; --code:#23272d;
+  --surface-1:#1a1a19; --grid:#2c2c2a;
+  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:1080px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:28px;line-height:1.25;margin:0 0 6px}
+h2{font-size:20px;margin:44px 0 12px;padding-top:10px;border-top:1px solid var(--line)}
+h3{font-size:16px;margin:22px 0 8px}
+p{margin:8px 0}
+.sub{color:var(--muted);margin:0 0 22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card .label{color:var(--muted);font-size:13px;margin:0 0 4px}
+.card .big{font-size:26px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.2}
+.card .big small{font-size:15px;font-weight:500;color:var(--muted)}
+.card .delta{font-size:14px;font-weight:600;color:var(--ok);margin-top:2px}
+.card .kv{color:var(--muted);font-size:13px;margin-top:6px}
+.chip{display:inline-block;background:var(--chip);border-radius:999px;padding:1px 9px;font-size:12px;margin:2px 4px 2px 0;white-space:nowrap}
+.chip.ok{color:var(--ok)} .chip.bad{color:var(--bad)} .chip.muted{color:var(--muted)}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel);margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.02em;background:var(--panel);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.strong{font-weight:650}
+.gone{color:var(--muted);text-decoration:line-through}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px;word-break:break-word}
+ul,ol{margin:6px 0 6px 22px;padding:0}
+li{margin:4px 0}
+.note{border-left:3px solid var(--accent);padding:8px 12px;background:var(--panel);border-radius:0 8px 8px 0;margin:14px 0}
+.note.warn{border-left-color:var(--warn)}
+footer{margin-top:44px;color:var(--muted);font-size:13px}
+
+/* chart */
+.viz{background:var(--surface-1);border:1px solid var(--line);border-radius:10px;padding:16px 16px 12px;margin:12px 0}
+.viz h3{margin:0 0 2px}
+.viz .cap{color:var(--muted);font-size:13px;margin:0 0 10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink);margin:0 0 12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.rows{display:grid;gap:14px}
+.row{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center}
+.row .name{font-size:13px;color:var(--ink);line-height:1.3}
+.row .name small{display:block;color:var(--muted);font-size:12px}
+.bars{display:grid;gap:2px;position:relative}
+.bars::before{content:"";position:absolute;left:0;top:-2px;bottom:-2px;border-left:1px solid var(--muted)}
+.bar{display:flex;align-items:center;gap:8px;height:14px;cursor:default}
+.bar i{display:block;height:10px;border-radius:0 4px 4px 0;min-width:2px}
+.bar b{font-weight:500;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar:hover b,.bar:focus b{color:var(--ink)}
+.bar:hover i{filter:brightness(1.08)}
+.s1 i,.sw.s1{background:var(--series-1)} .s2 i,.sw.s2{background:var(--series-2)} .s3 i,.sw.s3{background:var(--series-3)}
+.axis{display:grid;grid-template-columns:150px 1fr;gap:10px;margin-top:6px;font-size:11px;color:var(--muted)}
+.ticks{position:relative;height:14px}
+.ticks span{position:absolute;transform:translateX(-50%);font-variant-numeric:tabular-nums}
+.ticks span:first-child{transform:none}
+#tip{position:fixed;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.12);opacity:0;transition:opacity .08s;z-index:10;max-width:260px}
+@media (max-width:560px){
+  .row,.axis{grid-template-columns:96px 1fr}
+  .card .big{font-size:22px}
+}
+
+/* path diagram */
+.path{display:grid;gap:6px;margin:10px 0}
+.step{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:14px}
+.step .n{color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px}
+.step .who{color:var(--muted);font-size:12px}
+.step.cut{border-style:dashed}
+.step.cut .what{color:var(--muted);text-decoration:line-through}
+.step.faster{border-left:3px solid var(--ok)}
+.step.cut{border-left:3px solid var(--ok)}
+</style>
+</head>
+<body>
+<main>
+<h1>Channel emulator: zero-copy on integrated GPUs</h1>
+<p class="sub">Removing the CPU↔GPU copies that the emulator's CUDA backend inherited from its discrete-GPU design, measured on DGX Spark (GB10) · 2026-09-27 · branch <code>gb10-zero-copy</code> (local commits <code>6fab580</code> and <code>0a6f281</code> on top of <code>a07b8a9</code>, not pushed)</p>
+
+<div class="grid">
+  <div class="card">
+    <p class="label">Emulator call · 2-edge MVP</p>
+    <div class="big">46.6 → 25.9 <small>µs</small></div>
+    <div class="delta">−44%</div>
+    <p class="kv">One whole per-slot call, p50</p>
+  </div>
+  <div class="card">
+    <p class="label">gNB node · 64-UE fan-in</p>
+    <div class="big">934 → 177 <small>µs</small></div>
+    <div class="delta">−81% · now inside the 500 µs slot</div>
+    <p class="kv">Before: 1.9× the slot budget</p>
+  </div>
+  <div class="card">
+    <p class="label">Live broker latency (real gNB + UE attach)</p>
+    <div class="big">60–65 → 40 <small>µs</small></div>
+    <div class="delta">p99 105 → 80 µs</div>
+    <p class="kv">Legacy 1×1 gate, copy and zero-copy runs interleaved</p>
+  </div>
+  <div class="card">
+    <p class="label">Broker time per slot</p>
+    <div class="big">~120 → ~60 <small>µs</small></div>
+    <div class="delta">ring read + emulator + ring write</div>
+    <p class="kv">Includes the ring stages going from 30–40 µs to 4–14 µs</p>
+  </div>
+</div>
+
+<h2>Why</h2>
+<p>The emulator's CUDA backend was written for a discrete GPU such as the RTX 5090. Every slot (1 ms, 23,040 samples, 184 KB per direction), it gathered the IQ into a pinned buffer, sent it to the GPU with <code>cudaMemcpyAsync</code>, and copied the result back. On GB10 the CPU and GPU share one DRAM, but the code still asked for the copies, so they still happened.</p>
+<p>That is why the 09-26 comparison showed the same emulator time on both platforms (44.8 vs 43.6 µs). GB10 copied a little faster but computed about 2× slower. The goal here was a separate path, used only on integrated GPUs, that drops those copies. The hard requirement was output that is bit-identical to the copy path.</p>
+
+<h2>What was done</h2>
+<ol>
+  <li><b>A knob: <code>runtime.cuda_host_memory: copy | zero_copy | auto</code>.</b> The default is <code>copy</code>, which is the old behavior. <code>auto</code> selects zero-copy only on a device that reports <code>cudaDevAttrIntegrated</code>. <span class="chip muted">6fab580</span></li>
+  <li><b>Mapped input and output buffers.</b> They are allocated with <code>cudaHostAllocMapped</code>, and the GPU reads and writes that memory directly. The per-slot H2D/D2H IQ copies are gone. <span class="chip muted">6fab580</span></li>
+  <li><b>Direct output.</b> When the device can access pageable memory, the kernels write straight into the caller's (the broker's) output row. That removes the last CPU copy on the output side. <span class="chip muted">6fab580</span></li>
+  <li><b>Mapped metadata was tried and dropped.</b> It saves 1.5 µs of H2D, but every GPU thread then re-reads the step data from host memory, and the kernel gets 8 µs slower. It was measured and left out of the default. <span class="chip muted">6fab580</span></li>
+  <li><b>Direct input.</b> The channel kernels used to find source IQ in one packed buffer. They now use a per-source pointer table (<code>DeviceSourceTable</code>, a <code>__grid_constant__</code> kernel parameter holding up to 128 entries). The GPU reads the broker's input windows in place. The CPU no longer packs many UEs' IQ into one buffer, and the H2D of that buffer is gone too. This was the largest remaining cost with many users. <span class="chip muted">0a6f281</span></li>
+  <li><b>Broker ring fix.</b> <code>IqRing::push/read</code> copied one sample at a time with a modulo per sample. They now do at most two block copies around the wrap. Behavior is unchanged, and the CPU backend benefits too. <span class="chip muted">0a6f281</span></li>
+  <li><b>Instrumentation.</b> <code>ProcessorTimings</code> gains <code>host_prep_us</code>, <code>host_out_us</code>, <code>call_us</code>, and <code>zero_copy</code>. The bench prints them, prints <code>cuda_zero_copy</code> (the mode that actually ran), and has <code>--per-node</code>. This is how CPU input packing was identified as the remaining bottleneck.</li>
+  <li><b>Verification.</b> Copy vs 10 zero-copy combinations are compared bit for bit over 4 slots. There is also a 3-UE fan-in case and a randomized ring test against a reference model. Three negative controls (deliberately broken code) all fail as they should.</li>
+  <li><b>Live runner.</b> <code>OCUDU_NATIVE_CHANNEL_BUILD</code> overrides the broker build directory, so the gate can run from a second source tree.</li>
+  <li><b>Docs.</b> README documents the knob and the new bench output. <code>ZERO_COPY_MILESTONES.md</code> records each step (Z0–Z8) with its plan, evidence, and log locations.</li>
+</ol>
+
+<h2>What was removed: the IQ path of one slot</h2>
+<p>These are the stages one direction of IQ (184 KB) passes through in the live broker. A green edge marks a stage this work removed or sped up.</p>
+<div class="path">
+  <div class="step"><span class="n">1</span><span class="what">ZMQ receive → TX ring</span><span class="who">broker CPU copy · same ring fix applies (not measured separately)</span></div>
+  <div class="step faster"><span class="n">2</span><span class="what">TX ring → input window (<code>read_us</code>)</span><span class="who">30–40 → 5–11 µs</span></div>
+  <div class="step cut"><span class="n">3</span><span class="what">Input windows → packed staging buffer (<code>host_prep</code>)</span><span class="who">removed · GPU reads the windows in place</span></div>
+  <div class="step cut"><span class="n">4</span><span class="what">Staging → GPU memory (H2D)</span><span class="who">removed</span></div>
+  <div class="step"><span class="n">5</span><span class="what">GPU kernels (TDL, fading, superposition, receiver noise)</span><span class="who">read and write host memory directly</span></div>
+  <div class="step cut"><span class="n">6</span><span class="what">GPU memory → output staging (D2H)</span><span class="who">removed</span></div>
+  <div class="step cut"><span class="n">7</span><span class="what">Output staging → caller's row (<code>host_out</code>)</span><span class="who">removed · GPU writes the caller's row</span></div>
+  <div class="step faster"><span class="n">8</span><span class="what">Caller's row → RX ring (<code>push_us</code>)</span><span class="who">30–40 → 4–14 µs</span></div>
+  <div class="step"><span class="n">9</span><span class="what">RX ring → ZMQ reply</span><span class="who">broker CPU copy · same ring fix applies (not measured separately)</span></div>
+</div>
+<p>The only GPU-side copy left is the small per-slot step metadata (about 3 µs).</p>
+
+<h2>Step by step (2-edge MVP, GB10)</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Step</th><th>Change</th><th class="num">Call p50</th><th class="num">vs copy</th></tr></thead>
+  <tbody>
+    <tr><td>copy (before)</td><td>pinned staging + H2D/D2H</td><td class="num">46.6 µs</td><td class="num">—</td></tr>
+    <tr><td>Z3</td><td>mapped input and output</td><td class="num">36.8 µs</td><td class="num">−21%</td></tr>
+    <tr><td>Z5</td><td>+ direct output</td><td class="num">31.8 µs</td><td class="num">−32%</td></tr>
+    <tr><td class="strong">Z8</td><td class="strong">+ direct input (current zero-copy default)</td><td class="num strong">25.9 µs</td><td class="num strong">−44%</td></tr>
+  </tbody>
+</table></div>
+<p class="note">Z3 and Z5 come from the <code>zc-final</code> run, and Z8 from <code>zc-z8</code> (Spark, cores 5-8 pinned, median of 5 s × 3 repeats). The two runs agree within 1 µs: copy measured 46.1 and 46.6 µs, and Z5 measured 31.8 and 32.1 µs.</p>
+
+<div class="viz" id="viz">
+  <h3>More users and more bandwidth mean a bigger cut</h3>
+  <p class="cap">gNB-node emulator call time (p50). Bar length is relative to that configuration's copy time (= 100%). The label shows the actual time.</p>
+  <div class="legend">
+    <span><i class="sw s1"></i>copy (before)</span>
+    <span><i class="sw s2"></i>Z5 · zero-copy in/out + direct output</span>
+    <span><i class="sw s3"></i>Z8 · + direct input (final)</span>
+  </div>
+  <div class="rows" id="rows"></div>
+  <div class="axis"><span></span><div class="ticks"><span style="left:0">0%</span><span style="left:20.5%">25%</span><span style="left:41%">50%</span><span style="left:61.5%">75%</span><span style="left:82%">100% = copy</span></div></div>
+</div>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Configuration</th><th class="num">copy</th><th class="num">Z5</th><th class="num">Z8</th><th class="num">Z8 cut</th><th class="num">CPU input packing: copy → Z8</th></tr></thead>
+  <tbody id="tbody"></tbody>
+</table></div>
+<ul>
+  <li><b>Bandwidth:</b> Every copy that was removed scales with bytes, so the cut reaches −74% at 122.88 MS/s (100 MHz class).</li>
+  <li><b>Users:</b> The gNB sums N UEs' uplinks in one call. With copy, the CPU packing of N UEs' IQ took 524 µs at N = 64, more than half the call. Z8 removes it, and N = 64 takes 177 µs.</li>
+  <li><b>Slot budget (30 kHz, 500 µs):</b> N64 (714 µs) and N16 at 92 MS/s (646 µs) were still over budget at Z5. They now take 177 and 145 µs.</li>
+  <li><b>TDL-A (23 taps)</b> is dominated by GPU compute, so it improves only 19%. Removing copies cannot shorten the compute itself.</li>
+</ul>
+
+<h2>Which buffer bought what (2-edge MVP)</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Zero-copy applied to</th><th class="num">Call</th><th class="num">H2D</th><th class="num">GPU kernels</th><th class="num">D2H</th><th class="num">Output copy</th><th>Verdict</th></tr></thead>
+  <tbody>
+    <tr><td>nothing (copy)</td><td class="num">46.4</td><td class="num">8.5</td><td class="num">13.4</td><td class="num">11.6</td><td class="num">4.7</td><td></td></tr>
+    <tr><td>input only</td><td class="num">42.1</td><td class="num">2.8</td><td class="num">18.0</td><td class="num">8.5</td><td class="num">4.8</td><td>H2D −6, kernels +4.6</td></tr>
+    <tr><td>output only</td><td class="num">38.8</td><td class="num">10.5</td><td class="num">15.4</td><td class="num">0.8</td><td class="num">5.7</td><td>D2H −11, kernels +2 · largest gain</td></tr>
+    <tr><td>metadata only</td><td class="num">48.4</td><td class="num">7.0</td><td class="num">21.3</td><td class="num">7.8</td><td class="num">4.8</td><td><span class="chip bad">slower · excluded</span></td></tr>
+    <tr><td>input + output</td><td class="num">36.8</td><td class="num">3.3</td><td class="num">20.7</td><td class="num">0.8</td><td class="num">5.6</td><td></td></tr>
+    <tr><td>+ direct output</td><td class="num">31.8</td><td class="num">3.2</td><td class="num">20.8</td><td class="num">1.0</td><td class="num">0.4</td><td>Z5 default</td></tr>
+    <tr><td class="strong">+ direct input</td><td class="num strong">25.9</td><td class="num">3.2</td><td class="num">16.8</td><td class="num">0.8</td><td class="num">0.4</td><td><span class="chip ok">Z8 default</span></td></tr>
+  </tbody>
+</table></div>
+<p>All values are µs (p50). Kernels slow down when they access mapped host memory: reads cost +4.6 to +8 µs, writes +2 µs. Z8 reads input from the caller's pageable memory instead, and there the kernels got faster (20.8 → 16.8). Why the two differ is a hypothesis; it was not checked with a profiler.</p>
+
+<h2>Live results (real gNB + UE attach)</h2>
+<p>Legacy 1×1 gate: CPU OCUDU gNB ↔ emulator ↔ srsUE. Copy and zero-copy ran alternately, twice each, on the same day. All four runs passed RRC, PDU session, and ping with zero error counters.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Run</th><th>Mode</th><th class="num">gNB p50 / p99</th><th class="num">UE p50 / p99</th><th class="num">Ring read / write</th><th class="num">Emulator process</th></tr></thead>
+  <tbody>
+    <tr><td>090009Z</td><td>copy</td><td class="num">65 / 105</td><td class="num">60 / 105</td><td class="num">5.6 / 3.8</td><td class="num">57.8</td></tr>
+    <tr><td>090056Z</td><td class="strong">zero-copy</td><td class="num strong">40 / 80</td><td class="num strong">40 / 80</td><td class="num">10.9 / 11.1</td><td class="num">37.4</td></tr>
+    <tr><td>090144Z</td><td>copy</td><td class="num">65 / 105</td><td class="num">65 / 105</td><td class="num">5.9 / 3.5</td><td class="num">57.2</td></tr>
+    <tr><td>090229Z</td><td class="strong">zero-copy</td><td class="num strong">40 / 80</td><td class="num strong">40 / 80</td><td class="num">10.5 / 13.8</td><td class="num">39.1</td></tr>
+  </tbody>
+</table></div>
+<p>Values are µs. Latencies come from the broker histogram in 5 µs buckets. Stage times are medians of once-per-second snapshots. Before this work (09-26 to the morning of 09-27), the ring read and write stages took 30–40 µs each. The broker's per-slot time (ring read + emulator + ring write) went from about 115–135 µs to about 60 µs with zero-copy.</p>
+
+<h2>Verification</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Check</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td>Unit tests (RTX 5090, GB10)</td><td><span class="chip ok">12/12</span> on both platforms</td></tr>
+    <tr><td>Copy vs zero-copy, bit for bit</td><td><span class="chip ok">pass</span> 10 combinations × 4 slots: the device-channel path (fading TDL + CFO + AWGN, shared source, receiver noise), the host-stage path, and a 3-UE fan-in with distinct IQ per source</td></tr>
+    <tr><td>Negative controls (deliberately broken code)</td><td><span class="chip ok">3/3 fail as expected</span> reading an unfilled buffer, always reading source 0, shifting the ring wrap by one</td></tr>
+    <tr><td>Randomized ring check against a reference model</td><td><span class="chip ok">pass</span> 5 capacities × 4000 operations (push, read, discard)</td></tr>
+    <tr><td>9-step synthetic GPU sequence (zero-copy default build)</td><td><span class="chip ok">9/9</span> three times (Z3, Z5, Z8 code). Values match the copy runs (TDL-A 3.33, 2×2 correlated 9.54)</td></tr>
+    <tr><td>Live attach gate</td><td><span class="chip ok">12/12 pass</span> 6 copy + 6 zero-copy (Z3, Z5, Z8 code). Excludes 4 first attempts that stopped before the gate started, because of a build-directory setup error</td></tr>
+    <tr><td>RTX 5090 zero-copy (control)</td><td><span class="chip muted">slower, as expected</span> MVP 44.7 → 48.5 µs, TDL-A 43× slower. The copy path numbers are unchanged</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Limits and open items</h2>
+<ul>
+  <li><b>The default is still <code>copy</code>.</b> Jetson Orin (Z6) is not validated yet, so switching the default to <code>auto</code> is on hold. For now, a config must set <code>cuda_host_memory: auto</code> or <code>zero_copy</code> to use this path.</li>
+  <li><b>Do not use it on a discrete GPU.</b> On the 5090 every access crosses PCIe, and TDL-A gets 43× slower. <code>auto</code> selects copy there.</li>
+  <li><b>Three observations with unverified causes.</b> Why mapped-memory kernels cost more than pageable reads. Why the ring stages take 5–10 µs longer under zero-copy than under copy. Why live kernel and H2D times are 5–7 µs above the bench. None of these were checked with nsys or ncu.</li>
+  <li><b>MIMO output (2 or more rows) does not use direct output.</b> A node with more than 128 sources falls back to packed input.</li>
+  <li><b>Next candidates.</b> Separate the live-vs-bench gap, remove the step-metadata H2D (3–8 µs), and add a path that bypasses the rings (a broker restructure).</li>
+</ul>
+
+<h2>Files and reproduction</h2>
+<ul>
+  <li>Code: <code>~/ocudu-work/ocudu-cuda-pr</code> (worktree, branch <code>gb10-zero-copy</code>)</li>
+  <li>Plan and evidence: <code>ZERO_COPY_MILESTONES.md</code> (same folder, written in Korean)</li>
+  <li>Tables: <code>~/ocudu-work/perf-platform/compare-zc.md</code>, <code>compare-zc-scale.md</code>, <code>compare-zc-z8.md</code></li>
+  <li>Measurement scripts: <code>perf-zc-compare.sh</code>, <code>zc-scale.py</code>, <code>zc-final.py</code>, <code>zc-z8.py</code>, and analysis <code>analyze-zc*.py</code> (same folder)</li>
+  <li>Raw Spark results and logs: <code>/workspace/gpuch/</code> (<code>zc-scale-*</code>, <code>zc-final-*</code>, <code>zc-z8-*</code>, <code>zc9-live-*.log</code>), gate logs in <code>/workspace/ocudu-spark/results/logs/ocudu-interop/20260927T0*</code></li>
+  <li>Conditions: Spark container, GB10 sm_121, CUDA 13.0.88, big cores 5-8 pinned, no other GPU process during measurement</li>
+</ul>
+
+<footer>Written 2026-09-27. All values are medians of p50 measured on Spark that day, except where p99 is stated.</footer>
+</main>
+<div id="tip" role="tooltip"></div>
+<script>
+const data = [
+  {name:"MVP, 2 edges", sub:"23.04 MS/s", v:[46.6, 32.1, 25.9], prep:[2.0, 0.1]},
+  {name:"TDL-A, 23 taps", sub:"23.04 MS/s", v:[95.9, 82.0, 77.9], prep:[2.0, 0.1]},
+  {name:"MVP, 1 link", sub:"122.88 MS/s", v:[122.8, 64.6, 31.5], prep:[21.7, 0.1]},
+  {name:"4 UEs → gNB", sub:"23.04 MS/s", v:[77.4, 54.8, 32.1], prep:[18.5, 0.4]},
+  {name:"16 UEs → gNB", sub:"23.04 MS/s", v:[213.0, 146.7, 48.0], prep:[98.7, 1.5]},
+  {name:"64 UEs → gNB", sub:"23.04 MS/s", v:[934.4, 713.8, 176.7], prep:[523.7, 7.1]},
+  {name:"4 UEs → gNB", sub:"92.16 MS/s", v:[230.2, 136.7, 40.4], prep:[91.9, 0.4]},
+  {name:"16 UEs → gNB", sub:"92.16 MS/s", v:[926.1, 646.4, 144.7], prep:[507.5, 1.5]},
+];
+const series = ["copy", "Z5", "Z8"];
+const fmt = x => x >= 100 ? x.toFixed(0) : x.toFixed(1);
+const rows = document.getElementById("rows");
+const tbody = document.getElementById("tbody");
+const tip = document.getElementById("tip");
+for (const d of data) {
+  const row = document.createElement("div");
+  row.className = "row";
+  const bars = d.v.map((v, i) => {
+    const pct = 100 * v / d.v[0];
+    const label = `${fmt(v)} µs` + (i ? ` · ${pct.toFixed(0)}%` : "");
+    const tipText = `${d.name} (${d.sub}) · ${series[i]}: ${fmt(v)} µs` + (i ? `, −${(100 - pct).toFixed(0)}% vs copy` : "");
+    return `<div class="bar s${i + 1}" tabindex="0" data-tip="${tipText}"><i style="width:calc(${pct.toFixed(2)}% * 0.82)"></i><b>${label}</b></div>`;
+  }).join("");
+  row.innerHTML = `<div class="name">${d.name}<small>${d.sub}</small></div><div class="bars">${bars}</div>`;
+  rows.appendChild(row);
+  const cut = 100 * (1 - d.v[2] / d.v[0]);
+  tbody.insertAdjacentHTML("beforeend",
+    `<tr><td>${d.name} · ${d.sub}</td><td class="num">${fmt(d.v[0])}</td><td class="num">${fmt(d.v[1])}</td>` +
+    `<td class="num strong">${fmt(d.v[2])}</td><td class="num">−${cut.toFixed(0)}%</td>` +
+    `<td class="num">${d.prep[0].toFixed(1)} → ${d.prep[1].toFixed(1)}</td></tr>`);
+}
+const show = (el, x, y) => {
+  tip.textContent = el.dataset.tip;
+  tip.style.opacity = 1;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(window.innerWidth - w - 8, x + 12) + "px";
+  tip.style.top = Math.max(8, y - h - 10) + "px";
+};
+rows.addEventListener("mousemove", e => {
+  const el = e.target.closest(".bar");
+  if (el) show(el, e.clientX, e.clientY); else tip.style.opacity = 0;
+});
+rows.addEventListener("mouseleave", () => { tip.style.opacity = 0; });
+rows.addEventListener("focusin", e => {
+  const el = e.target.closest(".bar");
+  if (el) { const r = el.getBoundingClientRect(); show(el, r.left + 40, r.top); }
+});
+rows.addEventListener("focusout", () => { tip.style.opacity = 0; });
+</script>
+</body>
+</html>

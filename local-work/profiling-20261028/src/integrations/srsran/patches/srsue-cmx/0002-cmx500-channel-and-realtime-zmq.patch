@@ -1,0 +1,879 @@
+diff --git a/lib/include/srsran/interfaces/ue_nr_interfaces.h b/lib/include/srsran/interfaces/ue_nr_interfaces.h
+index e28204a2d..cde5e69cd 100644
+--- a/lib/include/srsran/interfaces/ue_nr_interfaces.h
++++ b/lib/include/srsran/interfaces/ue_nr_interfaces.h
+@@ -22,6 +22,7 @@
+ #ifndef SRSRAN_UE_NR_INTERFACES_H
+ #define SRSRAN_UE_NR_INTERFACES_H
+ 
++#include "srsran/phy/channel/channel.h"
+ #include "srsran/common/interfaces_common.h"
+ #include "srsran/common/phy_cfg_nr.h"
+ #include "srsran/interfaces/mac_interface_types.h"
+@@ -212,6 +213,8 @@ public:
+ };
+ 
+ struct phy_args_nr_t {
++  srsran::channel::args_t dl_channel_args = {}; ///< Downlink channel emulator (applied to received samples)
++  srsran::channel::args_t ul_channel_args = {}; ///< Uplink channel emulator (applied to transmitted samples)
+   uint32_t               rf_channel_offset     = 0; ///< Specifies the RF channel the NR carrier shall fill
+   uint32_t               nof_carriers          = 1;
+   uint32_t               max_nof_prb           = 106;
+diff --git a/lib/include/srsran/phy/common/phy_common_nr.h b/lib/include/srsran/phy/common/phy_common_nr.h
+index bb01b8b4d..fdc013763 100644
+--- a/lib/include/srsran/phy/common/phy_common_nr.h
++++ b/lib/include/srsran/phy/common/phy_common_nr.h
+@@ -385,6 +385,7 @@ typedef struct SRSRAN_API {
+   double                      ul_center_frequency_hz; ///< Absolute baseband center frequency in Hz for UL grid
+   double                      ssb_center_freq_hz;     ///< SS/PBCH Block center frequency in Hz. Set to 0 if not present
+   uint32_t                    offset_to_carrier; ///< Offset between point A and the lowest subcarrier of the lowest RB
++  uint32_t                    ul_offset_to_carrier; ///< Same as offset_to_carrier for the uplink carrier (UL point A)
+   srsran_subcarrier_spacing_t scs;
+   uint32_t                    nof_prb; ///< @brief See TS 38.101-1 Table 5.3.2-1 for more details
+   uint32_t                    start;
+diff --git a/lib/include/srsran/phy/phch/phch_cfg_nr.h b/lib/include/srsran/phy/phch/phch_cfg_nr.h
+index f8318e385..fc6b9e870 100644
+--- a/lib/include/srsran/phy/phch/phch_cfg_nr.h
++++ b/lib/include/srsran/phy/phch/phch_cfg_nr.h
+@@ -87,6 +87,8 @@ typedef struct {
+   bool                        lte_CRS_to_match_around;
+ 
+   uint32_t reference_point_k_rb;
++  bool     reference_point_coreset; ///< Set when the DMRS reference point is the CORESET 0 start (PDSCH carrying SIB1),
++                                    ///< otherwise the reference point is common resource block 0 (point A)
+ 
+   /// Parameters provided by FeatureSetDownlink-v1540
+   bool additional_DMRS_DL_Alt;
+diff --git a/lib/src/asn1/rrc_nr_utils.cc b/lib/src/asn1/rrc_nr_utils.cc
+index d552d890b..88892974b 100644
+--- a/lib/src/asn1/rrc_nr_utils.cc
++++ b/lib/src/asn1/rrc_nr_utils.cc
+@@ -415,11 +415,9 @@ bool make_phy_rach_cfg(const rach_cfg_common_s& asn1_type,
+ 
+   // As the current PRACH is based on LTE, the freq-offset shall be subtracted 1 for aligning with NR bandwidth
+   // For example. A 52 PRB cell with an freq_offset of 1 will match a LTE 50 PRB cell with freq_offset of 0
++  // msg1-FrequencyStart = 0 is valid (PRACH at the lowest PRB of the initial UL BWP), the LTE alignment is handled in the
++  // PHY worker pool
+   prach_cfg->freq_offset = (uint32_t)asn1_type.rach_cfg_generic.msg1_freq_start;
+-  if (prach_cfg->freq_offset == 0) {
+-    asn1::log_error("PRACH freq offset must be at least one");
+-    return false;
+-  }
+ 
+   switch (asn1_type.prach_root_seq_idx.type().value) {
+     case rach_cfg_common_s::prach_root_seq_idx_c_::types_opts::l839:
+@@ -905,6 +903,11 @@ bool make_phy_coreset_cfg(const ctrl_res_set_s& ctrl_res_set, srsran_coreset_t*
+       return false;
+   }
+   srsran_coreset.duration = ctrl_res_set.dur;
++  // pdcch-DMRS-ScramblingID sets n_ID for the PDCCH DMRS and scrambling in UE-specific search spaces
++  if (ctrl_res_set.pdcch_dmrs_scrambling_id_present) {
++    srsran_coreset.dmrs_scrambling_id_present = true;
++    srsran_coreset.dmrs_scrambling_id         = ctrl_res_set.pdcch_dmrs_scrambling_id;
++  }
+   for (uint32_t i = 0; i < SRSRAN_CORESET_FREQ_DOMAIN_RES_SIZE; i++) {
+     srsran_coreset.freq_resources[i] = ctrl_res_set.freq_domain_res.get(SRSRAN_CORESET_FREQ_DOMAIN_RES_SIZE - 1 - i);
+   }
+@@ -986,7 +989,10 @@ bool make_phy_res_config(const pucch_res_s&          pucch_res,
+   }
+   switch (pucch_res.format.type()) {
+     case pucch_res_s::format_c_::types_opts::format0:
+-      srsran_pucch_nr_resource.format = SRSRAN_PUCCH_NR_FORMAT_0;
++      srsran_pucch_nr_resource.format               = SRSRAN_PUCCH_NR_FORMAT_0;
++      srsran_pucch_nr_resource.initial_cyclic_shift = pucch_res.format.format0().init_cyclic_shift;
++      srsran_pucch_nr_resource.nof_symbols          = pucch_res.format.format0().nrof_symbols;
++      srsran_pucch_nr_resource.start_symbol_idx     = pucch_res.format.format0().start_symbol_idx;
+       break;
+     case pucch_res_s::format_c_::types_opts::format1:
+       srsran_pucch_nr_resource.format               = SRSRAN_PUCCH_NR_FORMAT_1;
+@@ -2131,9 +2137,17 @@ void fill_phy_carrier_cfg(const asn1::rrc_nr::serving_cell_cfg_common_sib_s& ser
+   out_carrier_nr->nof_prb = freq_info_dl.scs_specific_carrier_list[0].carrier_bw;
+ 
+   auto&                      freq_info_ul = serv_cell_cfg.ul_cfg_common.freq_info_ul;
++  out_carrier_nr->ul_offset_to_carrier = freq_info_ul.scs_specific_carrier_list[0].offset_to_carrier;
+   srsran::srsran_band_helper bands;
+-  out_carrier_nr->ul_center_frequency_hz = bands.get_center_freq_from_abs_freq_point_a(
+-      freq_info_ul.scs_specific_carrier_list[0].carrier_bw, freq_info_ul.absolute_freq_point_a);
++  // The carrier starts offsetToCarrier PRB above point A, so the centre is point A + (offsetToCarrier + BW/2) PRB.
++  // The PUSCH OFDM phase compensation uses this frequency, so it must be the real uplink carrier centre
++  double   ul_point_a_hz = bands.nr_arfcn_to_freq(freq_info_ul.absolute_freq_point_a);
++  uint32_t ul_scs_hz =
++      SRSRAN_SUBC_SPACING_NR(make_subcarrier_spacing(freq_info_ul.scs_specific_carrier_list[0].subcarrier_spacing));
++  out_carrier_nr->ul_center_frequency_hz =
++      ul_point_a_hz + (freq_info_ul.scs_specific_carrier_list[0].offset_to_carrier +
++                       freq_info_ul.scs_specific_carrier_list[0].carrier_bw / 2.0) *
++                          SRSRAN_NRE * ul_scs_hz;
+ }
+ 
+ void fill_phy_ssb_cfg(const asn1::rrc_nr::serving_cell_cfg_common_sib_s& serv_cell_cfg,
+diff --git a/lib/src/phy/ch_estimation/dmrs_pdcch.c b/lib/src/phy/ch_estimation/dmrs_pdcch.c
+index 1c87fb05a..8e1e87b4d 100644
+--- a/lib/src/phy/ch_estimation/dmrs_pdcch.c
++++ b/lib/src/phy/ch_estimation/dmrs_pdcch.c
+@@ -76,6 +76,12 @@ static void dmrs_pdcch_put_symbol(const srsran_carrier_nr_t* carrier,
+   srsran_sequence_state_init(&sequence_state, cinit);
+   uint32_t sequence_skip = 0; // Accumulates pilot locations to skip
+ 
++  // For a CORESET other than CORESET 0 the reference point is common resource block 0 (TS 38.211 7.4.1.3.2), which is
++  // offset_to_carrier PRB below the carrier
++  if (coreset->id != 0) {
++    sequence_skip = carrier->offset_to_carrier * NOF_PILOTS_X_RB;
++  }
++
+   // CORESET Resource Block counter
+   uint32_t rb_coreset_idx = 0;
+ 
+@@ -293,6 +299,11 @@ srsran_dmrs_pdcch_extract(srsran_dmrs_pdcch_estimator_t* q, uint32_t cinit, cons
+   // Counter for skipping unused pilot locations
+   uint32_t sequence_skip = 0;
+ 
++  // For a CORESET other than CORESET 0 the reference point is common resource block 0 (TS 38.211 7.4.1.3.2)
++  if (q->coreset.id != 0) {
++    sequence_skip = q->carrier.offset_to_carrier * NOF_PILOTS_X_RB;
++  }
++
+   // Counts enabled frequency domain resources
+   uint32_t lse_count = 0;
+ 
+diff --git a/lib/src/phy/ch_estimation/dmrs_sch.c b/lib/src/phy/ch_estimation/dmrs_sch.c
+index bc08f8dff..bc177ed2d 100644
+--- a/lib/src/phy/ch_estimation/dmrs_sch.c
++++ b/lib/src/phy/ch_estimation/dmrs_sch.c
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include "srsran/phy/ch_estimation/dmrs_sch.h"
++#include <stdlib.h>
+ #include "srsran/phy/ch_estimation/csi_rs.h"
+ #include "srsran/phy/common/sequence.h"
+ #include <complex.h>
+@@ -216,6 +217,17 @@ static int srsran_dmrs_sch_put_symbol(srsran_dmrs_sch_t*           q,
+   srsran_sequence_state_t sequence_state = {};
+   srsran_sequence_state_init(&sequence_state, cinit);
+ 
++  // The sequence is referenced to common resource block 0 (point A), which is offset_to_carrier PRB below the carrier
++  // Transmitter side (UE PUSCH): the reference is the uplink common resource block 0
++  if (!dmrs_cfg->reference_point_coreset) {
++    prb_skip = q->carrier.ul_offset_to_carrier;
++    // Debug override for interoperability tests: SRSUE_UL_DMRS_REF_RB=<n> forces the PUSCH DMRS reference offset
++    const char* ul_ref_override = getenv("SRSUE_UL_DMRS_REF_RB");
++    if (ul_ref_override != NULL) {
++      prb_skip = (uint32_t)strtol(ul_ref_override, NULL, 10);
++    }
++  }
++
+   // Iterate over PRBs
+   for (uint32_t prb_idx = 0; prb_idx < q->carrier.nof_prb; prb_idx++) {
+     // If the PRB is used for PDSCH transmission count
+@@ -705,6 +717,12 @@ static int srsran_dmrs_sch_get_symbol(srsran_dmrs_sch_t*           q,
+   srsran_sequence_state_t sequence_state = {};
+   srsran_sequence_state_init(&sequence_state, cinit);
+ 
++  // The sequence is referenced to common resource block 0 (point A), which is offset_to_carrier PRB below the carrier
++  // Receiver side (UE PDSCH): the reference is the downlink common resource block 0
++  if (!dmrs_cfg->reference_point_coreset) {
++    prb_skip = q->carrier.offset_to_carrier;
++  }
++
+   // Iterate over PRBs
+   for (uint32_t prb_idx = 0; prb_idx < q->carrier.nof_prb; prb_idx++) {
+     // If the PRB is used for PDSCH transmission count
+diff --git a/lib/src/phy/phch/prach.c b/lib/src/phy/phch/prach.c
+index 0c3bdbe7d..a938ba26b 100644
+--- a/lib/src/phy/phch/prach.c
++++ b/lib/src/phy/phch/prach.c
+@@ -630,7 +630,24 @@ int srsran_prach_set_cell_(srsran_prach_t*      p,
+       return -1;
+     }
+ 
+-    uint32_t preamble_format   = srsran_prach_get_preamble_format(cfg->config_idx);
++    uint32_t preamble_format = srsran_prach_get_preamble_format(cfg->config_idx);
++    if (cfg->is_nr) {
++      // NR prach-ConfigurationIndex maps to a preamble format through the NR tables (TS 38.211 Table 6.3.3.2-2/3), not
++      // the LTE ones: e.g. NR FDD index 16 is format 0 but LTE index 16 is format 1. NR format 0 (L=839) has the same
++      // CP and sequence length as LTE format 0, so the LTE generator can be reused for it
++      const prach_nr_config_t* nr_cfg = (tdd_config != NULL && tdd_config->configured)
++                                            ? srsran_prach_nr_get_cfg_fr1_unpaired(cfg->config_idx)
++                                            : srsran_prach_nr_get_cfg_fr1_paired(cfg->config_idx);
++      if (nr_cfg == NULL) {
++        ERROR("PRACH: Invalid NR prach-ConfigurationIndex %d", cfg->config_idx);
++        return SRSRAN_ERROR;
++      }
++      if (nr_cfg->preamble_format != 0) {
++        ERROR("PRACH: NR preamble format %d is not supported, only format 0", nr_cfg->preamble_format);
++        return SRSRAN_ERROR;
++      }
++      preamble_format = 0;
++    }
+     p->is_nr                   = cfg->is_nr;
+     p->config_idx              = cfg->config_idx;
+     p->f                       = preamble_format;
+diff --git a/lib/src/phy/phch/ra_nr.c b/lib/src/phy/phch/ra_nr.c
+index 9aa22c5d8..f35786f3c 100644
+--- a/lib/src/phy/phch/ra_nr.c
++++ b/lib/src/phy/phch/ra_nr.c
+@@ -663,7 +663,8 @@ static int ra_dl_dmrs(const srsran_sch_hl_cfg_nr_t* hl_cfg, const srsran_dci_dl_
+     //  CORESET configured by the PBCH
+     //- otherwise, subcarrier 0 in common resource block 0
+     if (dci->ctx.rnti_type == srsran_rnti_type_si) {
+-      cfg->dmrs.reference_point_k_rb = dci->ctx.coreset_start_rb;
++      cfg->dmrs.reference_point_k_rb    = dci->ctx.coreset_start_rb;
++      cfg->dmrs.reference_point_coreset = true;
+     }
+ 
+     if (cfg->grant.mapping == srsran_sch_mapping_type_A) {
+diff --git a/lib/src/phy/rf/rf_zmq_imp.c b/lib/src/phy/rf/rf_zmq_imp.c
+index 976159890..6a4d9c05d 100644
+--- a/lib/src/phy/rf/rf_zmq_imp.c
++++ b/lib/src/phy/rf/rf_zmq_imp.c
+@@ -47,6 +47,7 @@ typedef struct {
+   uint32_t tx_freq_mhz[SRSRAN_MAX_CHANNELS];
+   uint32_t rx_freq_mhz[SRSRAN_MAX_CHANNELS];
+   bool     tx_off;
++  bool     rx_sleep; // sleep for the duration of every receive (lock-step pacing between ZMQ peers)
+   char     id[RF_PARAM_LEN];
+ 
+   // Server
+@@ -238,8 +239,16 @@ int rf_zmq_open_multi(char* args, void** h, uint32_t nof_channels)
+       perror("Mutex init");
+     }
+ 
++    handler->rx_sleep = true;
++
+     // parse args
+     if (args && strlen(args)) {
++      // rx_sleep=false when the far end is paced by a real radio, so the receive must not add its own delay
++      char rx_sleep[RF_PARAM_LEN] = {0};
++      if (parse_string(args, "rx_sleep", -1, rx_sleep) == SRSRAN_SUCCESS && strcmp(rx_sleep, "false") == 0) {
++        handler->rx_sleep = false;
++      }
++
+       // base_srate
+       parse_uint32(args, "base_srate", -1, &handler->base_srate);
+ 
+@@ -329,6 +338,11 @@ int rf_zmq_open_multi(char* args, void** h, uint32_t nof_channels)
+       // tx_offset
+       parse_int32(args, "tx_offset", i, &tx_opts.sample_offset);
+ 
++      // tx_async
++      char tx_async[RF_PARAM_LEN] = {};
++      parse_string(args, "tx_async", -1, tx_async);
++      tx_opts.tx_async = strncmp(tx_async, "true", RF_PARAM_LEN) == 0;
++
+       // fail_on_disconnect
+       char tmp[RF_PARAM_LEN] = {};
+       parse_string(args, "fail_on_disconnect", i, tmp);
+@@ -347,6 +361,9 @@ int rf_zmq_open_multi(char* args, void** h, uint32_t nof_channels)
+         rx_opts.log_trx_timeout = true;
+       }
+ 
++      // rx_max_buffered
++      parse_uint32(args, "rx_max_buffered", -1, &rx_opts.rx_max_buffered);
++
+       // initialize transmitter
+       if (strlen(tx_port) != 0) {
+         if (rf_zmq_tx_open(&handler->transmitter[i], tx_opts, handler->context, tx_port) != SRSRAN_SUCCESS) {
+@@ -711,7 +728,9 @@ int rf_zmq_recv_with_time_multi(void* h, void** data, uint32_t nsamples, bool bl
+     rf_zmq_info(handler->id, " - next tx time: %d + %.3f\n", ts_tx.full_secs, ts_tx.frac_secs);
+ 
+     // Leave time for the Tx to transmit
+-    usleep((1000000UL * nsamples_baserate) / handler->base_srate);
++    if (handler->rx_sleep) {
++      usleep((1000000UL * nsamples_baserate) / handler->base_srate);
++    }
+ 
+     // check for tx gap if we're also transmitting on this radio
+     for (int i = 0; i < handler->nof_channels; i++) {
+diff --git a/lib/src/phy/rf/rf_zmq_imp_rx.c b/lib/src/phy/rf/rf_zmq_imp_rx.c
+index 657733f01..10aa19180 100644
+--- a/lib/src/phy/rf/rf_zmq_imp_rx.c
++++ b/lib/src/phy/rf/rf_zmq_imp_rx.c
+@@ -37,6 +37,12 @@ static void* rf_zmq_async_rx_thread(void* h)
+ 
+     rf_zmq_info(q->id, "-- ASYNC RX wait...\n");
+ 
++    // Do not run ahead of the reader by more than max_buffered_bytes
++    while (q->max_buffered_bytes > 0 && srsran_ringbuffer_status(&q->ringbuffer) >= (int)q->max_buffered_bytes &&
++           rf_zmq_rx_is_running(q)) {
++      usleep(20);
++    }
++
+     // Send request if socket type is REQUEST
+     if (q->socket_type == ZMQ_REQ) {
+       while (n < 0 && rf_zmq_rx_is_running(q)) {
+@@ -123,6 +129,7 @@ int rf_zmq_rx_open(rf_zmq_rx_t* q, rf_zmq_opts_t opts, void* zmq_ctx, char* sock
+     q->sample_offset      = opts.sample_offset;
+     q->trx_timeout_ms     = opts.trx_timeout_ms;
+     q->log_trx_timeout    = opts.log_trx_timeout;
++    q->max_buffered_bytes = NSAMPLES2NBYTES(opts.rx_max_buffered);
+ 
+     if (opts.socket_type == ZMQ_SUB) {
+       zmq_setsockopt(q->sock, ZMQ_SUBSCRIBE, "", 0);
+diff --git a/lib/src/phy/rf/rf_zmq_imp_trx.h b/lib/src/phy/rf/rf_zmq_imp_trx.h
+index 71b2a39e4..f3c6a3e50 100644
+--- a/lib/src/phy/rf/rf_zmq_imp_trx.h
++++ b/lib/src/phy/rf/rf_zmq_imp_trx.h
+@@ -52,6 +52,12 @@ typedef struct {
+   void*           temp_buffer_convert;
+   uint32_t        frequency_mhz;
+   int32_t         sample_offset;
++  // tx_async: samples are queued here and a thread answers the peer's requests
++  bool                async;
++  volatile bool       async_running;
++  pthread_t           async_thread;
++  srsran_ringbuffer_t async_ringbuffer;
++  void*               async_buffer;
+ } rf_zmq_tx_t;
+ 
+ typedef struct {
+@@ -75,6 +81,7 @@ typedef struct {
+   uint32_t            trx_timeout_ms;
+   bool                log_trx_timeout;
+   int32_t             sample_offset;
++  uint32_t            max_buffered_bytes; // rx_max_buffered, 0 = no limit
+ } rf_zmq_rx_t;
+ 
+ typedef struct {
+@@ -86,6 +93,8 @@ typedef struct {
+   uint32_t        trx_timeout_ms;
+   bool            log_trx_timeout;
+   int32_t         sample_offset; ///< offset in samples
++  bool            tx_async;      ///< queue TX samples, answer requests from a thread
++  uint32_t        rx_max_buffered; ///< RX stops requesting while this many samples are buffered, 0 = no limit
+ } rf_zmq_opts_t;
+ 
+ /*
+diff --git a/lib/src/phy/rf/rf_zmq_imp_tx.c b/lib/src/phy/rf/rf_zmq_imp_tx.c
+index 43f94f26d..135b132a1 100644
+--- a/lib/src/phy/rf/rf_zmq_imp_tx.c
++++ b/lib/src/phy/rf/rf_zmq_imp_tx.c
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include "rf_zmq_imp_trx.h"
++#include <errno.h>
+ #include <inttypes.h>
+ #include <srsran/config.h>
+ #include <srsran/phy/utils/vector.h>
+@@ -27,6 +28,45 @@
+ #include <string.h>
+ #include <zmq.h>
+ 
++// Largest piece queued at once; the queue holds four of them
++#define ZMQ_TX_ASYNC_CHUNK_SAMPLES (NBYTES2NSAMPLES(ZMQ_MAX_BUFFER_SIZE) / 4)
++
++// Answers each request with everything queued so far (at least one sample)
++static void* rf_zmq_tx_async_run(void* h)
++{
++  rf_zmq_tx_t* q = (rf_zmq_tx_t*)h;
++
++  while (q->async_running) {
++    uint8_t dummy;
++    if (zmq_recv(q->sock, &dummy, sizeof(dummy), 0) < 0) {
++      if (zmq_errno() != EAGAIN && zmq_errno() != EINTR) {
++        fprintf(stderr, "[zmq] Error: async tx request receive: %s\n", zmq_strerror(zmq_errno()));
++      }
++      continue;
++    }
++
++    // Wait for the first sample, then take whatever else is queued
++    int n = SRSRAN_ERROR;
++    while (q->async_running && n < 0) {
++      n = srsran_ringbuffer_read_timed(&q->async_ringbuffer, q->async_buffer, sizeof(cf_t), 1000);
++    }
++    if (n < 0) {
++      break;
++    }
++    int nbytes = SRSRAN_MIN(srsran_ringbuffer_status(&q->async_ringbuffer), (int)(ZMQ_MAX_BUFFER_SIZE - sizeof(cf_t)));
++    nbytes -= nbytes % (int)sizeof(cf_t);
++    if (nbytes > 0) {
++      srsran_ringbuffer_read(&q->async_ringbuffer, (uint8_t*)q->async_buffer + sizeof(cf_t), nbytes);
++    }
++
++    if (zmq_send(q->sock, q->async_buffer, sizeof(cf_t) + nbytes, 0) < 0) {
++      fprintf(stderr, "[zmq] Error: async tx baseband send: %s\n", zmq_strerror(zmq_errno()));
++    }
++  }
++
++  return NULL;
++}
++
+ int rf_zmq_tx_open(rf_zmq_tx_t* q, rf_zmq_opts_t opts, void* zmq_ctx, char* sock_args)
+ {
+   int ret = SRSRAN_ERROR;
+@@ -95,6 +135,29 @@ int rf_zmq_tx_open(rf_zmq_tx_t* q, rf_zmq_opts_t opts, void* zmq_ctx, char* sock
+     }
+     bzero(q->zeros, ZMQ_MAX_BUFFER_SIZE);
+ 
++    if (opts.tx_async && opts.socket_type == ZMQ_REP && opts.sample_format == ZMQ_TYPE_FC32) {
++      // Short receive timeout so that the thread notices a close
++      int timeout = 100;
++      zmq_setsockopt(q->sock, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
++      if (srsran_ringbuffer_init(&q->async_ringbuffer, 4 * NSAMPLES2NBYTES(ZMQ_TX_ASYNC_CHUNK_SAMPLES))) {
++        fprintf(stderr, "Error: initiating async tx buffer\n");
++        goto clean_exit;
++      }
++      q->async_buffer = srsran_vec_malloc(ZMQ_MAX_BUFFER_SIZE);
++      if (!q->async_buffer) {
++        fprintf(stderr, "Error: allocating async tx buffer\n");
++        goto clean_exit;
++      }
++      q->async         = true;
++      q->async_running = true;
++      if (pthread_create(&q->async_thread, NULL, rf_zmq_tx_async_run, q)) {
++        fprintf(stderr, "Error: creating async tx thread\n");
++        q->async = false;
++        goto clean_exit;
++      }
++      rf_zmq_info(q->id, "Asynchronous transmitter enabled\n");
++    }
++
+     q->running = true;
+ 
+     ret = SRSRAN_SUCCESS;
+@@ -108,6 +171,24 @@ static int _rf_zmq_tx_baseband(rf_zmq_tx_t* q, cf_t* buffer, uint32_t nsamples)
+ {
+   int n = SRSRAN_ERROR;
+ 
++  if (q->async) {
++    // Queue and return; zeros are queued from the zero buffer piece by piece
++    uint32_t left = nsamples;
++    while (left > 0 && q->running) {
++      uint32_t len = SRSRAN_MIN(left, ZMQ_TX_ASYNC_CHUNK_SAMPLES);
++      if (srsran_ringbuffer_write_block(&q->async_ringbuffer, buffer ? (void*)buffer : (void*)q->zeros,
++                                        NSAMPLES2NBYTES(len)) < 0) {
++        return SRSRAN_ERROR;
++      }
++      if (buffer && buffer != q->zeros) {
++        buffer += len;
++      }
++      left -= len;
++    }
++    q->nsamples += nsamples;
++    return (int)nsamples;
++  }
++
+   while (n < 0 && q->running) {
+     // Receive Transmit request is socket type is REPLY
+     if (q->socket_type == ZMQ_REP) {
+@@ -240,6 +321,16 @@ bool rf_zmq_tx_match_freq(rf_zmq_tx_t* q, uint32_t freq_hz)
+ 
+ void rf_zmq_tx_close(rf_zmq_tx_t* q)
+ {
++  if (q->async) {
++    q->async_running = false;
++    srsran_ringbuffer_stop(&q->async_ringbuffer);
++    pthread_join(q->async_thread, NULL);
++    srsran_ringbuffer_free(&q->async_ringbuffer);
++    free(q->async_buffer);
++    q->async_buffer = NULL;
++    q->async        = false;
++  }
++
+   pthread_mutex_lock(&q->mutex);
+   q->running = false;
+   pthread_mutex_unlock(&q->mutex);
+diff --git a/lib/src/phy/sync/ssb.c b/lib/src/phy/sync/ssb.c
+index 0102f8c06..54a14f9f4 100644
+--- a/lib/src/phy/sync/ssb.c
++++ b/lib/src/phy/sync/ssb.c
+@@ -429,6 +429,9 @@ int srsran_ssb_set_cfg(srsran_ssb_t* q, const srsran_ssb_cfg_t* cfg)
+     return SRSRAN_ERROR_INVALID_INPUTS;
+   }
+ 
++  // Keep the previous SSB frequency offset; the PSS correlation sequences depend on it
++  int32_t prev_f_offset = q->f_offset;
++
+   // Calculate subcarrier spacing in Hz
+   q->scs_hz = (float)SRSRAN_SUBC_SPACING_NR(cfg->scs);
+ 
+@@ -495,6 +498,12 @@ int srsran_ssb_set_cfg(srsran_ssb_t* q, const srsran_ssb_cfg_t* cfg)
+   q->sf_sz     = (uint32_t)round(1e-3 * cfg->srate_hz);
+   q->ssb_sz    = SRSRAN_SSB_DURATION_NSYMB * (q->symbol_sz + q->cp_sz);
+ 
++  // Force regenerating the PSS correlation sequences if the SSB frequency offset changed, otherwise a search on a new
++  // SSB frequency would keep correlating against the previous frequency offset
++  if (q->f_offset != prev_f_offset) {
++    q->corr_sz = 0;
++  }
++
+   // Initialise correlation
+   if (ssb_setup_corr(q) < SRSRAN_SUCCESS) {
+     ERROR("Error initialising correlation");
+@@ -1589,7 +1598,11 @@ uint32_t srsran_ssb_candidate_sf_offset(const srsran_ssb_t* q, uint32_t ssb_idx)
+ 
+   uint32_t cp_sz_0 = (16U * q->symbol_sz) / 2048U;
+ 
+-  return cp_sz_0 + l * (q->symbol_sz + q->cp_sz);
++  // Every half subframe (every SRSRAN_EXT_CP_SYMBOL symbols) starts with an extended CP, count all of them up to l,
++  // otherwise SSB candidates located after the half subframe boundary (e.g. Case A SSB index 1) are misaligned
++  uint32_t nof_ext_cp = 1 + l / SRSRAN_EXT_CP_SYMBOL(q->cfg.scs);
++
++  return nof_ext_cp * cp_sz_0 + l * (q->symbol_sz + q->cp_sz);
+ }
+ 
+ uint32_t srsran_ssb_cfg_to_str(const srsran_ssb_cfg_t* cfg, char* str, uint32_t str_len)
+diff --git a/lib/src/phy/ue/ue_ul_nr.c b/lib/src/phy/ue/ue_ul_nr.c
+index 983d4cae6..19ce28dc1 100644
+--- a/lib/src/phy/ue/ue_ul_nr.c
++++ b/lib/src/phy/ue/ue_ul_nr.c
+@@ -158,12 +158,33 @@ int srsran_ue_ul_nr_encode_pusch(srsran_ue_ul_nr_t*            q,
+   return SRSRAN_SUCCESS;
+ }
+ 
+-static int ue_ul_nr_encode_pucch_format0(srsran_ue_ul_nr_t*                q,
+-                                         const srsran_pucch_nr_resource_t* resource,
+-                                         const srsran_uci_data_nr_t*       uci_data)
++static int ue_ul_nr_encode_pucch_format0(srsran_ue_ul_nr_t*                  q,
++                                         const srsran_slot_cfg_t*            slot,
++                                         const srsran_pucch_nr_common_cfg_t* cfg,
++                                         const srsran_pucch_nr_resource_t*   resource,
++                                         const srsran_uci_data_nr_t*         uci_data)
+ {
+-  ERROR("Not implemented");
+-  return SRSRAN_ERROR;
++  // Select the cyclic shift m_cs from HARQ-ACK and SR, TS 38.213 Tables 9.2.3-3/9.2.3-4 (HARQ-ACK only) and
++  // 9.2.5-1/9.2.5-2 (HARQ-ACK with positive SR); a positive SR alone uses m_cs = 0
++  uint32_t nof_ack = SRSRAN_MIN(2, uci_data->cfg.ack.count);
++  bool     sr      = uci_data->cfg.o_sr > 0 && uci_data->value.sr > 0;
++  uint32_t m_cs    = 0;
++  if (nof_ack == 1) {
++    bool ack = uci_data->value.ack[0] > 0;
++    m_cs     = sr ? (ack ? 9 : 3) : (ack ? 6 : 0);
++  } else if (nof_ack == 2) {
++    bool b0 = uci_data->value.ack[0] > 0;
++    bool b1 = uci_data->value.ack[1] > 0;
++    // order {b0,b1}: {0,0}, {0,1}, {1,1}, {1,0}
++    uint32_t idx = (!b0 && !b1) ? 0 : (!b0 && b1) ? 1 : (b0 && b1) ? 2 : 3;
++    m_cs         = sr ? (1 + 3 * idx) : (3 * idx);
++  } else if (!sr) {
++    // Neither HARQ-ACK nor a positive SR: nothing to transmit
++    return SRSRAN_SUCCESS;
++  }
++
++  srsran_pucch_nr_resource_t res = *resource;
++  return srsran_pucch_nr_format0_encode(&q->pucch, cfg, slot, &res, m_cs, q->sf_symbols[0]);
+ }
+ 
+ static int ue_ul_nr_encode_pucch_format1(srsran_ue_ul_nr_t*                  q,
+@@ -212,7 +233,7 @@ int srsran_ue_ul_nr_encode_pucch(srsran_ue_ul_nr_t*                  q,
+   // Actual PUCCH encoding
+   switch (resource->format) {
+     case SRSRAN_PUCCH_NR_FORMAT_0:
+-      if (ue_ul_nr_encode_pucch_format0(q, resource, uci_data) < SRSRAN_SUCCESS) {
++      if (ue_ul_nr_encode_pucch_format0(q, slot_cfg, cfg, resource, uci_data) < SRSRAN_SUCCESS) {
+         return SRSRAN_ERROR;
+       }
+       break;
+diff --git a/srsue/hdr/phy/nr/slot_sync.h b/srsue/hdr/phy/nr/slot_sync.h
+index bba00689e..eef644429 100644
+--- a/srsue/hdr/phy/nr/slot_sync.h
++++ b/srsue/hdr/phy/nr/slot_sync.h
+@@ -41,6 +41,7 @@ public:
+     float                       pbch_dmrs_thr   = 0.0f; ///< PBCH DMRS correlation detection threshold (0 means auto)
+     float                       cfo_alpha       = 0.0f; ///< CFO averaging alpha (0 means auto)
+     int                         thread_priority = -1;
++    srsran::channel::args_t     dl_channel_args = {};
+   };
+ 
+   slot_sync(srslog::basic_logger& logger);
+@@ -64,6 +65,9 @@ private:
+   stack_interface_phy_nr*      stack = nullptr;
+   srsran::radio_interface_phy* radio = nullptr;
+   srsran::rf_timestamp_t       last_rx_time;
++  srsran::channel_ptr          dl_channel     = nullptr; ///< Downlink channel emulator
++  double                       rx_pwr_acc     = 0.0;     ///< Received power accumulator (linear)
++  uint32_t                     rx_pwr_count   = 0;
+   srsran_ue_sync_nr_t          ue_sync_nr          = {};
+   srsran_timestamp_t           stack_tti_ts_new    = {};
+   srsran_timestamp_t           stack_tti_ts        = {};
+diff --git a/srsue/hdr/phy/nr/sync_sa.h b/srsue/hdr/phy/nr/sync_sa.h
+index 07dd9a5b8..587702204 100644
+--- a/srsue/hdr/phy/nr/sync_sa.h
++++ b/srsue/hdr/phy/nr/sync_sa.h
+@@ -54,6 +54,8 @@ public:
+     float                       pbch_dmrs_thr   = 0.0f; ///< PBCH DMRS correlation detection threshold (0 means auto)
+     float                       cfo_alpha       = 0.0f; ///< CFO averaging alpha (0 means auto)
+     int                         thread_priority = 1;
++    srsran::channel::args_t     dl_channel_args = {};
++    srsran::channel::args_t     ul_channel_args = {};
+ 
+     cell_search::args_t get_cell_search() const
+     {
+@@ -68,6 +70,7 @@ public:
+       ret.max_srate_hz      = srate_hz;
+       ret.nof_rx_channels   = nof_rx_channels;
+       ret.ssb_min_scs       = ssb_min_scs;
++      ret.dl_channel_args   = dl_channel_args;
+ 
+       return ret;
+     }
+@@ -119,6 +122,7 @@ private:
+   cell_search::ret_t cs_ret;
+   cell_search        searcher;
+   slot_sync          slot_synchronizer;
++  srsran::channel_ptr ul_channel = nullptr; ///< Uplink channel emulator
+ 
+   // Time Aligment Controller, internal thread safe
+   ta_control ta;
+diff --git a/srsue/src/phy/nr/slot_sync.cc b/srsue/src/phy/nr/slot_sync.cc
+index 302822358..984b967fc 100644
+--- a/srsue/src/phy/nr/slot_sync.cc
++++ b/srsue/src/phy/nr/slot_sync.cc
+@@ -66,6 +66,20 @@ bool slot_sync::init(const args_t& args, stack_interface_phy_nr* stack_, srsran:
+     return false;
+   }
+ 
++  // Downlink channel emulator, applied to the received samples
++  if (args.dl_channel_args.enable) {
++    dl_channel = srsran::channel_ptr(new srsran::channel(args.dl_channel_args, args.nof_rx_channels, logger));
++    dl_channel->set_srate((uint32_t)args.max_srate_hz);
++    logger.info("DL channel emulator enabled: awgn=%s snr=%.1f dB ref=%.1f dBfs fading=%s delay=%s rlf=%s hst=%s",
++                args.dl_channel_args.awgn_enable ? "yes" : "no",
++                args.dl_channel_args.awgn_snr_dB,
++                args.dl_channel_args.awgn_signal_power_dBfs,
++                args.dl_channel_args.fading_enable ? args.dl_channel_args.fading_model.c_str() : "no",
++                args.dl_channel_args.delay_enable ? "yes" : "no",
++                args.dl_channel_args.rlf_enable ? "yes" : "no",
++                args.dl_channel_args.hst_enable ? "yes" : "no");
++  }
++
+   return true;
+ }
+ 
+@@ -99,6 +113,23 @@ int slot_sync::recv_callback(srsran::rf_buffer_t& data, srsran_timestamp_t* rx_t
+     return SRSRAN_ERROR;
+   }
+ 
++  // Measure the received power before the channel emulator, logged once per second for AWGN calibration
++  if (data.get(0) != nullptr && data.get_nof_samples() > 0) {
++    rx_pwr_acc += srsran_vec_avg_power_cf(data.get(0), data.get_nof_samples());
++    if (++rx_pwr_count >= 1000) {
++      logger.info("RX power: %+.1f dBfs (average over %d receptions, before channel emulator)",
++                  srsran_convert_power_to_dB((float)(rx_pwr_acc / rx_pwr_count)),
++                  rx_pwr_count);
++      rx_pwr_acc   = 0.0;
++      rx_pwr_count = 0;
++    }
++  }
++
++  // Downlink channel emulator
++  if (dl_channel) {
++    dl_channel->run(data.to_cf_t(), data.to_cf_t(), data.get_nof_samples(), rf_timestamp.get(0));
++  }
++
+   srsran_timestamp_t dummy_flat_ts = {};
+ 
+   // Load flat timestamp
+diff --git a/srsue/src/phy/nr/worker_pool.cc b/srsue/src/phy/nr/worker_pool.cc
+index 107f6667d..e068cc12b 100644
+--- a/srsue/src/phy/nr/worker_pool.cc
++++ b/srsue/src/phy/nr/worker_pool.cc
+@@ -269,8 +269,11 @@ bool worker_pool::set_config(const srsran::phy_cfg_nr_t& new_cfg)
+   srsran_prach_cfg_t prach_cfg           = new_cfg.prach;
+   uint32_t           lte_nr_prach_offset = (new_cfg.carrier.nof_prb - cell.nof_prb) / 2;
+   if (prach_cfg.freq_offset < lte_nr_prach_offset) {
+-    logger.error("prach_cfg.freq_offset=%d is not compatible with LTE", prach_cfg.freq_offset);
+-    return false;
++    // The PRACH starts below the equivalent LTE bandwidth. The LTE PRACH generator computes the subcarrier index with
++    // unsigned modular arithmetic, so a negative offset (wrapped) still maps to the right subcarriers
++    logger.info("prach_cfg.freq_offset=%d is below the LTE bandwidth, using an offset of %d PRB",
++                prach_cfg.freq_offset,
++                (int)prach_cfg.freq_offset - (int)lte_nr_prach_offset);
+   }
+   prach_cfg.freq_offset -= lte_nr_prach_offset;
+   prach_cfg.tdd_config.configured = (new_cfg.duplex.mode == SRSRAN_DUPLEX_MODE_TDD);
+diff --git a/srsue/src/phy/phy_nr_sa.cc b/srsue/src/phy/phy_nr_sa.cc
+index 21cb98d01..cefb9ed8a 100644
+--- a/srsue/src/phy/phy_nr_sa.cc
++++ b/srsue/src/phy/phy_nr_sa.cc
+@@ -106,6 +106,8 @@ void phy_nr_sa::init_background()
+   nr::sync_sa::args_t sync_args = {};
+   sync_args.srate_hz            = args.srate_hz;
+   sync_args.thread_priority     = args.slot_recv_thread_prio;
++  sync_args.dl_channel_args     = args.dl_channel_args;
++  sync_args.ul_channel_args     = args.ul_channel_args;
+   if (not sync.init(sync_args, stack, radio)) {
+     logger.error("Error initialising SYNC");
+     return;
+diff --git a/srsue/src/phy/sync_sa.cc b/srsue/src/phy/sync_sa.cc
+index 5529aaf79..f6b6df286 100644
+--- a/srsue/src/phy/sync_sa.cc
++++ b/srsue/src/phy/sync_sa.cc
+@@ -54,6 +54,13 @@ bool sync_sa::init(const args_t& args, stack_interface_phy_nr* stack_, srsran::r
+     return false;
+   }
+ 
++  // Uplink channel emulator, applied to transmitted slots
++  if (args.ul_channel_args.enable) {
++    ul_channel = srsran::channel_ptr(new srsran::channel(args.ul_channel_args, 1, logger));
++    ul_channel->set_srate((uint32_t)args.srate_hz);
++    logger.info("UL channel emulator enabled");
++  }
++
+   // Cell bandwidth must be provided at init so set now sampling rate
+   radio->set_rx_srate(args.srate_hz);
+   radio->set_tx_srate(args.srate_hz);
+@@ -312,6 +319,14 @@ void sync_sa::run_state_cell_camping()
+     return;
+   }
+ 
++  // Follow the SFN the synchroniser reads from the MIB (its slot index refers to the next slot): a radio front end
++  // that skips whole radio frames keeps the slot timing but not the frame number
++  const uint32_t synced_tti = TTI_SUB(slot_synchronizer.get_slot_cfg().idx, 1);
++  if (synced_tti != tti) {
++    logger.warning("SYNC: slot counter %d resynchronised to %d from the MIB", tti, synced_tti);
++    tti = synced_tti;
++  }
++
+   srsran::phy_common_interface::worker_context_t context;
+   context.sf_idx     = tti;
+   context.worker_ptr = nr_worker;
+@@ -366,6 +381,11 @@ void sync_sa::worker_end(const srsran::phy_common_interface::worker_context_t& w
+ 
+   // Check if any worker had a transmission
+   if (tx_enable) {
++    // Uplink channel emulator
++    if (ul_channel) {
++      ul_channel->run(tx_buffer.to_cf_t(), tx_buffer.to_cf_t(), tx_buffer.get_nof_samples(), tx_time.get(0));
++    }
++
+     // Actual baseband transmission
+     radio->tx(tx_buffer, tx_time);
+   } else {
+diff --git a/srsue/src/stack/rrc_nr/rrc_nr.cc b/srsue/src/stack/rrc_nr/rrc_nr.cc
+index df272416e..aae65401f 100644
+--- a/srsue/src/stack/rrc_nr/rrc_nr.cc
++++ b/srsue/src/stack/rrc_nr/rrc_nr.cc
+@@ -1502,8 +1502,8 @@ bool rrc_nr::apply_dl_common_cfg(const asn1::rrc_nr::dl_cfg_common_s& dl_cfg_com
+       return false;
+     }
+   } else {
+-    logger.warning("Option init_dl_bwp not present");
+-    return false;
++    // initialDownlinkBWP is optional in a (delta) configuration: keep the current one
++    logger.info("Option init_dl_bwp not present, keeping the current configuration");
+   }
+   return true;
+ }
+@@ -1606,6 +1606,15 @@ bool rrc_nr::apply_sp_cell_ded_ul_pucch(const asn1::rrc_nr::pucch_cfg_s& pucch_c
+       uint32_t res_id = pucch_cfg.res_to_add_mod_list[i].pucch_res_id;
+       pucch_res_list.insert(res_id, {});
+       if (!make_phy_res_config(pucch_cfg.res_to_add_mod_list[i], format_2_max_code_rate, &pucch_res_list[res_id])) {
++        const auto& fmt = pucch_cfg.res_to_add_mod_list[i].format;
++        if (fmt.type() == pucch_res_s::format_c_::types_opts::format3 ||
++            fmt.type() == pucch_res_s::format_c_::types_opts::format4) {
++          // PUCCH formats 3 and 4 are not implemented; ignore the resource instead of rejecting the whole
++          // configuration, the other resources (formats 0, 1 and 2) still carry HARQ-ACK and SR
++          logger.warning("Ignoring PUCCH resource %d with unsupported format %s", res_id, fmt.type().to_string());
++          pucch_res_list.erase(res_id);
++          continue;
++        }
+         logger.warning("Warning while building pucch_nr_resource structure");
+         return false;
+       }
+@@ -1860,8 +1869,8 @@ bool rrc_nr::update_sp_cell_cfg(const sp_cell_cfg_s& sp_cell_cfg)
+         return false;
+       }
+     } else {
+-      logger.warning("Option init_dl_bwp not present");
+-      return false;
++      // initialDownlinkBWP is optional in a (delta) configuration: keep the current one
++      logger.info("Option init_dl_bwp not present, keeping the current configuration");
+     }
+     // Dedicated Uplink
+     if (sp_cell_cfg.sp_cell_cfg_ded.ul_cfg_present) {
+@@ -1899,8 +1908,8 @@ bool rrc_nr::update_sp_cell_cfg(const sp_cell_cfg_s& sp_cell_cfg)
+         return false;
+       }
+     } else {
+-      logger.warning("Option ul_cfg in spCellConfigDedicated not present");
+-      return false;
++      // uplinkConfig is optional in a (delta) configuration: keep the current one
++      logger.info("Option ul_cfg in spCellConfigDedicated not present, keeping the current configuration");
+     }
+ 
+     if (sp_cell_cfg.sp_cell_cfg_ded.pdsch_serving_cell_cfg_present) {
+@@ -2113,6 +2122,17 @@ bool rrc_nr::apply_drb_add_mod(const drb_to_add_mod_s& drb_cfg)
+ bool rrc_nr::apply_security_cfg(const security_cfg_s& security_cfg)
+ {
+   logger.debug("Applying Security config");
++  if (security_cfg.key_to_use_present &&
++      security_cfg.key_to_use.value == security_cfg_s::key_to_use_opts::options::master) {
++    // Standalone: AS security was already activated by the SecurityModeCommand with the master key, whose algorithms
++    // and keys are in sec_cfg; apply them to the (new) DRBs
++    for (auto& lcid : lcid_drb) {
++      logger.debug("Applying PDCP security config with the master key. LCID=%d", lcid.first);
++      pdcp->config_security(lcid.first, sec_cfg);
++      pdcp->enable_encryption(lcid.first);
++    }
++    return true;
++  }
+   if (security_cfg.key_to_use_present) {
+     if (security_cfg.key_to_use.value != security_cfg_s::key_to_use_opts::options::secondary) {
+       logger.warning("Only secondary key supported yet");
+diff --git a/srsue/src/stack/rrc_nr/rrc_nr_procedures.cc b/srsue/src/stack/rrc_nr/rrc_nr_procedures.cc
+index 619eac6de..9e0147677 100644
+--- a/srsue/src/stack/rrc_nr/rrc_nr_procedures.cc
++++ b/srsue/src/stack/rrc_nr/rrc_nr_procedures.cc
+@@ -454,6 +454,11 @@ rrc_nr::cell_selection_proc::handle_cell_search_result(const rrc_interface_phy_n
+   phy_cfg.pdsch.scs_cfg         = mib.scs_common;
+   phy_cfg.carrier.pci           = result.pci;
+ 
++  // Use the SSB candidate index actually detected instead of assuming index 0, the cell may transmit other indexes
++  for (uint32_t i = 0; i < SRSRAN_SSB_NOF_CANDIDATES; i++) {
++    phy_cfg.ssb.position_in_burst[i] = (i == result.pbch_msg.ssb_idx);
++  }
++
+   // Get pointA and SSB absolute frequencies
+   double pointA_abs_freq_Hz = phy_cfg.carrier.dl_center_frequency_hz -
+                               phy_cfg.carrier.nof_prb * SRSRAN_NRE * SRSRAN_SUBC_SPACING_NR(phy_cfg.carrier.scs) / 2;
+diff --git a/srsue/src/stack/upper/nas_base.cc b/srsue/src/stack/upper/nas_base.cc
+index 79aa48401..6c857acb0 100644
+--- a/srsue/src/stack/upper/nas_base.cc
++++ b/srsue/src/stack/upper/nas_base.cc
+@@ -186,7 +186,7 @@ void nas_base::cipher_decrypt(byte_buffer_t* pdu)
+ {
+   byte_buffer_t tmp_pdu;
+ 
+-  uint32_t count_est = (ctxt_base.rx_count & 0x00FFFF00u) | pdu->msg[5];
++  uint32_t count_est = (ctxt_base.rx_count & 0x00FFFF00u) | pdu->msg[seq_offset]; // SQN position differs for 5GS NAS
+   if (ctxt_base.cipher_algo != CIPHERING_ALGORITHM_ID_EEA0) {
+     logger.debug("Decrypting PDU. Local: count=%d, Received: count=%d", ctxt_base.rx_count, count_est);
+   }
+diff --git a/srsue/src/stack/upper/sdap.cc b/srsue/src/stack/upper/sdap.cc
+index a6bb15756..088d79ddc 100644
+--- a/srsue/src/stack/upper/sdap.cc
++++ b/srsue/src/stack/upper/sdap.cc
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include "srsue/hdr/stack/upper/sdap.h"
++#include <cstdlib>
+ 
+ namespace srsue {
+ 
+@@ -55,7 +56,9 @@ void sdap::write_sdu(uint32_t lcid, srsran::unique_byte_buffer_t pdu)
+     return;
+   }
+   if (lcid < bearers.size()) {
+-    if (bearers[lcid].add_uplink_header) {
++    // Debug override for interoperability tests: SRSUE_SDAP_NO_UL_HEADER=1 sends UL SDUs without the SDAP header
++    static const bool no_ul_header = getenv("SRSUE_SDAP_NO_UL_HEADER") != nullptr;
++    if (bearers[lcid].add_uplink_header && !no_ul_header) {
+       if (pdu->get_headroom() > 1) {
+         pdu->msg -= 1;
+         pdu->N_bytes += 1;
+diff --git a/srsue/src/ue.cc b/srsue/src/ue.cc
+index 038c2103c..05c4dc767 100644
+--- a/srsue/src/ue.cc
++++ b/srsue/src/ue.cc
+@@ -92,6 +92,8 @@ int ue::init(const all_args_t& args_)
+   phy_args_nr.log                  = args.phy.log;
+   phy_args_nr.store_pdsch_ko       = args.phy.nr_store_pdsch_ko;
+   phy_args_nr.srate_hz             = args.rf.srate_hz;
++  phy_args_nr.dl_channel_args      = args.phy.dl_channel_args;
++  phy_args_nr.ul_channel_args      = args.phy.ul_channel_args;
+ 
+   // init layers
+   if (args.phy.nof_lte_carriers == 0) {

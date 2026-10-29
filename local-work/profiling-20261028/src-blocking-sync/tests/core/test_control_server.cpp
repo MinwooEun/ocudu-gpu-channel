@@ -1,0 +1,881 @@
+// ControlServer test — two halves:
+//   C3a: handle_message() exercised directly (no ZMQ). Covers JSON parse,
+//        whitelist validation, range checks, shadow → seqno write-back.
+//   C3b: full loop exercised through a real ZMQ REQ client over inproc://
+//        or tcp://127.0.0.1 — verifies the REP socket binding, the
+//        background thread lifecycle, and the wire-format round-trip.
+
+#include "ocudu_gpu_channel/control_server.h"
+#include "ocudu_gpu_channel/runtime_control.h"
+
+#include <zmq.h>
+
+#include <atomic>
+#include <chrono>
+#include <cmath>
+#include <cstdlib>
+#include <iostream>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <thread>
+#include <vector>
+
+namespace {
+
+void require(bool condition, const char* message)
+{
+  if (!condition) {
+    std::cerr << "FAIL: " << message << "\n";
+    std::exit(1);
+  }
+}
+
+bool contains(const std::string& haystack, const std::string& needle)
+{
+  return haystack.find(needle) != std::string::npos;
+}
+
+bool nearly(float a, float b, float tol = 1e-6F)
+{
+  return std::fabs(a - b) <= tol;
+}
+
+}  // namespace
+
+int main()
+{
+  // Allocate two link controls — heap-allocated so the link_map can hold
+  // stable pointers across re-binds.
+  auto ctl_a = std::make_unique<ocg::BrokerLinkControl>();
+  auto ctl_b = std::make_unique<ocg::BrokerLinkControl>();
+
+  ocg::ControlServer::LinkMap link_map = {
+      {"ue0-gnb0", ctl_a.get()},
+      {"ue1-gnb0", ctl_b.get()},
+  };
+
+  // Capture log lines so C4 assertions can grep them.
+  std::vector<std::string> log_lines;
+  std::mutex log_mu;
+  auto recording_logger = [&](std::string_view line) {
+    std::lock_guard<std::mutex> g(log_mu);
+    log_lines.emplace_back(line);
+  };
+
+  ocg::ControlServerConfig cfg;
+  cfg.endpoint = "inproc://test-c3a-not-bound";
+  cfg.recv_timeout_ms = 100;
+  cfg.logger = recording_logger;
+  ocg::ControlServer server(std::move(cfg), std::move(link_map));
+
+  // ── Case 1: well-formed REQ updates shadow + bumps seqno + returns seqno
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"path_loss_db","value":-12.5})");
+    require(contains(reply, "\"ok\":true"), "expected ok:true for valid request");
+    require(contains(reply, "\"seqno\":1"), "expected seqno to be 1 after first apply");
+    require(nearly(ctl_a->shadow.path_loss_db, -12.5F), "shadow.path_loss_db should be -12.5");
+    require(ctl_a->seqno.load() == 1, "seqno on ctl_a should be 1");
+    require(ctl_b->seqno.load() == 0, "ctl_b untouched");
+  }
+
+  // ── Case 2: subsequent valid REQ on same link advances seqno
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"cfo_hz","value":250.0})");
+    require(contains(reply, "\"ok\":true"), "expected ok:true for second valid request");
+    require(contains(reply, "\"seqno\":2"), "expected seqno to be 2");
+    require(nearly(ctl_a->shadow.cfo_hz, 250.0F), "shadow.cfo_hz should be 250");
+    require(ctl_a->seqno.load() == 2, "seqno on ctl_a should be 2");
+  }
+
+  // ── Case 3: separate link, independent seqno counter
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue1-gnb0","param":"los_k_db","value":9.0})");
+    require(contains(reply, "\"ok\":true"), "expected ok:true");
+    require(contains(reply, "\"seqno\":1"), "ctl_b's seqno tracks independently");
+    require(nearly(ctl_b->shadow.los_k_db, 9.0F), "ctl_b shadow updated");
+  }
+
+  // ── Case 4: fractional tap0_delay accepted (v1-fin-C — used to be int-only)
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"tap0_delay_samples","value":3.5})");
+    require(contains(reply, "\"ok\":true"), "fractional tap0_delay should be accepted");
+    require(nearly(ctl_a->shadow.tap0_delay_samples, 3.5F),
+            "shadow.tap0_delay_samples should be 3.5");
+  }
+
+  // ── Case 5: integer value still accepted (no regression)
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"tap0_delay_samples","value":7})");
+    require(contains(reply, "\"ok\":true"), "integer value should still work");
+    require(nearly(ctl_a->shadow.tap0_delay_samples, 7.0F),
+            "shadow.tap0_delay_samples should be 7.0");
+  }
+
+  // ── Case 6: out-of-range → rejected with informative message
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"path_loss_db","value":9999.0})");
+    require(contains(reply, "\"ok\":false"), "out-of-range should fail");
+    require(contains(reply, "out of range"), "error should say out of range");
+    require(contains(reply, "[-200"), "error should include the valid range");
+  }
+
+  // ── Case 7: unknown param → rejected
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"reverse_polarity","value":1.0})");
+    require(contains(reply, "\"ok\":false"), "unknown param should fail");
+    require(contains(reply, "unknown param"), "error should say unknown param");
+  }
+
+  // ── Case 8: unknown link_id → rejected
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"nope","param":"path_loss_db","value":-5.0})");
+    require(contains(reply, "\"ok\":false"), "unknown link should fail");
+    require(contains(reply, "unknown link_id"), "error should say unknown link_id");
+  }
+
+  // ── Case 9: missing field → rejected
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"path_loss_db"})");
+    require(contains(reply, "\"ok\":false"), "missing field should fail");
+    require(contains(reply, "missing required field"), "error should mention missing field");
+  }
+
+  // ── Case 10: malformed JSON → rejected
+  {
+    const std::string reply = server.handle_message("not json at all");
+    require(contains(reply, "\"ok\":false"), "garbage input should fail");
+    require(contains(reply, "malformed JSON"), "error should mention JSON parse");
+  }
+
+  // ── Case 11: type mismatch (value as string) → rejected
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"path_loss_db","value":"oops"})");
+    require(contains(reply, "\"ok\":false"), "string value should be rejected");
+    require(contains(reply, "type error"), "error should mention type");
+  }
+
+  // ── Case 12: counters reflect all attempted REQs
+  {
+    const auto s = server.stats();
+    require(s.msgs_received == 11, "msgs_received should equal total handled messages");
+    require(s.updates_applied == 5, "5 successful updates: cases 1, 2, 3, 4, 5");
+    require(s.updates_rejected == 6, "6 rejections: cases 6, 7, 8, 9, 10, 11");
+  }
+
+  // ── Case 13 (C4): log lines reconstruct the experiment trace
+  {
+    std::lock_guard<std::mutex> g(log_mu);
+    require(log_lines.size() == 11, "every REQ must emit exactly one log line");
+
+    // 5 control_update + 6 control_error
+    std::size_t updates = 0, errors = 0;
+    for (const auto& line : log_lines) {
+      if (line.rfind("event=control_update", 0) == 0) ++updates;
+      else if (line.rfind("event=control_error", 0) == 0) ++errors;
+    }
+    require(updates == 5, "should see 5 event=control_update lines");
+    require(errors == 6, "should see 6 event=control_error lines");
+
+    // First successful update should carry the before-and-after values.
+    require(contains(log_lines[0], "event=control_update"), "first line is an update");
+    require(contains(log_lines[0], "link_id=ue0-gnb0"), "first update names link");
+    require(contains(log_lines[0], "param=path_loss_db"), "first update names param");
+    require(contains(log_lines[0], "old=0"), "first update reports old=0 (YAML default)");
+    require(contains(log_lines[0], "new=-12.5"), "first update reports the new value");
+    require(contains(log_lines[0], "seqno=1"), "first update reports seqno=1");
+  }
+
+  // ── v2.0-F2: profile_swap message type ──────────────────────────────────
+
+  // Case 14: valid profile_swap (2 taps, no fading) → accepted, shadow populated
+  {
+    const std::string reply = server.handle_message(R"({
+      "type":"profile_swap",
+      "link_id":"ue0-gnb0",
+      "taps":[
+        {"delay_samples":0.0,"gain_db":-3.0,"phase_rad":0.0,"is_los":true,"los_k_db":9.0,"los_angle_rad":0.0},
+        {"delay_samples":2.5,"gain_db":-6.0,"phase_rad":1.0}
+      ]
+    })");
+    require(contains(reply, "\"ok\":true"), "valid profile_swap should be accepted");
+    require(ctl_a->profile_pending, "profile_pending should be set");
+    require(ctl_a->shadow_profile.n_taps == 2, "shadow_profile.n_taps should be 2");
+    require(nearly(static_cast<float>(ctl_a->shadow_profile.taps[0].gain_db), -3.0F),
+            "shadow_profile.taps[0].gain_db should be -3.0");
+    require(nearly(static_cast<float>(ctl_a->shadow_profile.taps[1].delay_samples), 2.5F),
+            "shadow_profile.taps[1].delay_samples should be 2.5");
+    require(ctl_a->shadow_profile.taps[0].is_los, "tap 0 should be LOS");
+    require(!ctl_a->shadow_profile.fading_enabled, "fading default off when omitted");
+  }
+
+  // Case 15: valid profile_swap with fading sub-config
+  {
+    const std::string reply = server.handle_message(R"({
+      "type":"profile_swap",
+      "link_id":"ue1-gnb0",
+      "taps":[{"delay_samples":0.0,"gain_db":0.0}],
+      "fading":{"enabled":true,"f_d_max_hz":350.0,"spectrum":"jakes","grid_us":100.0}
+    })");
+    require(contains(reply, "\"ok\":true"), "profile_swap with fading should be accepted");
+    require(ctl_b->shadow_profile.fading_enabled, "fading_enabled should be true");
+    require(nearly(ctl_b->shadow_profile.fading_f_d_max_hz, 350.0F),
+            "fading_f_d_max_hz should be 350");
+  }
+
+  // Case 16: > kDeviceMaxTaps taps → rejected
+  {
+    std::string req = R"({"type":"profile_swap","link_id":"ue0-gnb0","taps":[)";
+    for (int i = 0; i < ocg::kDeviceMaxTaps + 1; ++i) {
+      if (i) req += ",";
+      req += R"({"delay_samples":0,"gain_db":0})";
+    }
+    req += "]}";
+    const std::string reply = server.handle_message(req);
+    require(contains(reply, "\"ok\":false"), ">max-taps should be rejected");
+    require(contains(reply, "exceeds kDeviceMaxTaps"), "error names the limit");
+  }
+
+  // Case 17: empty taps array → rejected
+  {
+    const std::string reply = server.handle_message(
+        R"({"type":"profile_swap","link_id":"ue0-gnb0","taps":[]})");
+    require(contains(reply, "\"ok\":false"), "empty taps should be rejected");
+    require(contains(reply, "must not be empty"), "error names the constraint");
+  }
+
+  // Case 18: profile_swap missing 'taps' → rejected
+  {
+    const std::string reply = server.handle_message(
+        R"({"type":"profile_swap","link_id":"ue0-gnb0"})");
+    require(contains(reply, "\"ok\":false"), "missing taps should be rejected");
+    require(contains(reply, "missing or non-array"), "error names the issue");
+  }
+
+  // Case 19: profile_swap with non-jakes spectrum → rejected
+  {
+    const std::string reply = server.handle_message(R"({
+      "type":"profile_swap","link_id":"ue0-gnb0",
+      "taps":[{"delay_samples":0,"gain_db":0}],
+      "fading":{"spectrum":"flat"}
+    })");
+    require(contains(reply, "\"ok\":false"), "non-jakes spectrum should be rejected");
+    require(contains(reply, "jakes"), "error names the supported spectrum");
+  }
+
+  // Case 20: scalar update with explicit "type":"scalar" works (back-compat)
+  {
+    const std::string reply = server.handle_message(
+        R"({"type":"scalar","link_id":"ue0-gnb0","param":"cfo_hz","value":-150.0})");
+    require(contains(reply, "\"ok\":true"), "explicit type=scalar should work");
+    require(nearly(ctl_a->shadow.cfo_hz, -150.0F), "shadow.cfo_hz should update");
+  }
+
+  // Case 21: unknown type → rejected
+  {
+    const std::string reply = server.handle_message(
+        R"({"type":"future","link_id":"ue0-gnb0"})");
+    require(contains(reply, "\"ok\":false"), "unknown type should be rejected");
+    require(contains(reply, "unknown message type"), "error names the dispatch failure");
+  }
+
+  // ── v2.1: take_effect_at_slot in REQ + applied_at_slot in REP ─────────
+
+  // Case 22: scalar update with explicit take_effect_at_slot — REP echoes
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"cfo_hz","value":-200.0,"take_effect_at_slot":42})");
+    require(contains(reply, "\"ok\":true"), "scalar+take_effect should be accepted");
+    require(contains(reply, "\"applied_at_slot\":42"),
+            "REP should echo the take_effect_at_slot");
+    require(ctl_a->take_effect_at_slot == 42,
+            "ctl.take_effect_at_slot persisted");
+  }
+
+  // Case 23: scalar update with no take_effect_at_slot — applied_at_slot = 0
+  // (current_slot of an unused link is 0).
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue1-gnb0","param":"path_loss_db","value":3.0})");
+    require(contains(reply, "\"ok\":true"), "scalar without take_effect should work");
+    require(contains(reply, "\"applied_at_slot\":"),
+            "REP should still include applied_at_slot field");
+  }
+
+  // Case 24: negative take_effect_at_slot → rejected
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"path_loss_db","value":0.0,"take_effect_at_slot":-1})");
+    require(contains(reply, "\"ok\":false"), "negative take_effect should be rejected");
+    require(contains(reply, "take_effect_at_slot must be >= 0"),
+            "error names the constraint");
+  }
+
+  // Case 25: counters after v2.1 cases
+  {
+    const auto s = server.stats();
+    // 13 priors + 8 v2.0 (14-21) + 3 v2.1 (22-24) = 24
+    require(s.msgs_received == 22, "msgs_received tracks all v2.1 cases");
+    // Successes: 1,2,3,4,5 (=5) + 14,15,20 (=3) + 22,23 (=2) = 10
+    require(s.updates_applied == 10, "updates_applied should be 10");
+    // Rejections: 6,7,8,9,10,11 (=6) + 16,17,18,19,21 (=5) + 24 (=1) = 12
+    require(s.updates_rejected == 12, "updates_rejected should be 12");
+  }
+
+  // ── v2.3: multi-link atomic batches ─────────────────────────────────────
+
+  // Case 26: batch_begin + stage 2 scalars + batch_commit → both visible
+  // with the same take_effect_at_slot on their respective ctl.
+  {
+    // Pre-snapshot seqno baselines so we can assert "exactly 1 bump per
+    // staged op".
+    const std::uint32_t a_seqno_before = ctl_a->seqno.load();
+    const std::uint32_t b_seqno_before = ctl_b->seqno.load();
+
+    auto r1 = server.handle_message(R"({"type":"batch_begin","id":"exp-26"})");
+    require(contains(r1, "\"ok\":true"), "batch_begin should succeed");
+    require(contains(r1, "\"batch_id\":\"exp-26\""), "REP echoes batch_id");
+
+    auto r2 = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"path_loss_db","value":-1.5,"batch_id":"exp-26"})");
+    require(contains(r2, "\"staged\":true"), "staged scalar should ack staged:true");
+
+    auto r3 = server.handle_message(
+        R"({"link_id":"ue1-gnb0","param":"cfo_hz","value":444.0,"batch_id":"exp-26"})");
+    require(contains(r3, "\"staged\":true"), "second staged scalar should ack staged:true");
+
+    // Shadow NOT yet updated by the stage step.
+    require(ctl_a->seqno.load() == a_seqno_before,
+            "staged op should not bump ctl_a seqno until commit");
+    require(ctl_b->seqno.load() == b_seqno_before,
+            "staged op should not bump ctl_b seqno until commit");
+
+    auto r4 = server.handle_message(
+        R"({"type":"batch_commit","id":"exp-26","take_effect_at_slot":777})");
+    require(contains(r4, "\"ok\":true"), "batch_commit should succeed");
+    require(contains(r4, "\"batch_id\":\"exp-26\""),
+            "batch_commit REP echoes batch id");
+    require(contains(r4, "\"link_count\":2"), "REP reports 2 links applied");
+    require(contains(r4, "\"apply_at_slot\":777"), "REP carries the commit slot");
+    require(contains(r4, "\"link_id\":\"ue0-gnb0\""),
+            "REP identifies first committed link");
+    require(contains(r4, "\"seqno\":" + std::to_string(a_seqno_before + 1)),
+            "REP exposes committed seqno for UI correlation");
+
+    // Post-commit assertions
+    require(nearly(ctl_a->shadow.path_loss_db, -1.5F),
+            "staged ctl_a.path_loss applied at commit");
+    require(nearly(ctl_b->shadow.cfo_hz, 444.0F),
+            "staged ctl_b.cfo_hz applied at commit");
+    require(ctl_a->take_effect_at_slot == 777,
+            "ctl_a.take_effect_at_slot set by commit");
+    require(ctl_b->take_effect_at_slot == 777,
+            "ctl_b.take_effect_at_slot set by commit (SAME as ctl_a)");
+    require(ctl_a->seqno.load() == a_seqno_before + 1,
+            "ctl_a seqno bumped exactly once by commit");
+    require(ctl_b->seqno.load() == b_seqno_before + 1,
+            "ctl_b seqno bumped exactly once by commit");
+  }
+
+  // Case 27: batch_begin with id that's already open → rejected
+  {
+    server.handle_message(R"({"type":"batch_begin","id":"dup-27"})");
+    const std::string reply = server.handle_message(R"({"type":"batch_begin","id":"dup-27"})");
+    require(contains(reply, "\"ok\":false"), "duplicate batch_begin rejected");
+    require(contains(reply, "already open"), "error names the conflict");
+  }
+
+  // Case 28: stray scalar with unknown batch_id → rejected
+  {
+    const std::string reply = server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"cfo_hz","value":0.0,"batch_id":"ghost"})");
+    require(contains(reply, "\"ok\":false"), "scalar with unknown batch should be rejected");
+    require(contains(reply, "unknown batch_id"), "error names the missing batch");
+  }
+
+  // Case 29: batch_abort drops a batch without applying
+  {
+    const std::uint32_t a_seqno_before = ctl_a->seqno.load();
+    const float path_loss_before = ctl_a->shadow.path_loss_db;
+    server.handle_message(R"({"type":"batch_begin","id":"abrt-29"})");
+    server.handle_message(
+        R"({"link_id":"ue0-gnb0","param":"path_loss_db","value":42.0,"batch_id":"abrt-29"})");
+    const std::string reply = server.handle_message(R"({"type":"batch_abort","id":"abrt-29"})");
+    require(contains(reply, "\"ok\":true"), "batch_abort should succeed");
+    require(contains(reply, "\"dropped_ops\":1"), "REP reports dropped count");
+    require(ctl_a->seqno.load() == a_seqno_before,
+            "aborted batch must not bump shadow seqno");
+    require(nearly(ctl_a->shadow.path_loss_db, path_loss_before),
+            "shadow.path_loss must equal the pre-batch value (42 was staged, never applied)");
+  }
+
+  // Case 30: batch_commit / abort with unknown id → rejected
+  {
+    const std::string c = server.handle_message(R"({"type":"batch_commit","id":"nope"})");
+    require(contains(c, "\"ok\":false"), "commit unknown id should be rejected");
+    const std::string a = server.handle_message(R"({"type":"batch_abort","id":"nope"})");
+    require(contains(a, "\"ok\":false"), "abort unknown id should be rejected");
+  }
+
+  // Case 31: stats reflect v2.3 batch activity
+  {
+    const auto s = server.stats();
+    require(s.batches_committed == 1, "case 26 contributes one committed batch");
+    require(s.batches_aborted == 1, "case 29 contributes one aborted batch");
+  }
+
+  // ── C3b: full end-to-end over real ZMQ REQ ↔ REP on a localhost TCP port
+  // Uses a port the OS picks via tcp://127.0.0.1:0 isn't supported on bind
+  // for the binding side in older zmq builds, so pick a high port unlikely
+  // to clash. If this test ever flakes from port collisions, switch to
+  // ipc://${TMPDIR}/<unique>.
+  {
+    auto ctl_z = std::make_unique<ocg::BrokerLinkControl>();
+    ocg::ControlServer::LinkMap zmq_map = {{"ue9-gnb9", ctl_z.get()}};
+    ocg::ControlServerConfig zmq_cfg;
+    zmq_cfg.endpoint = "tcp://127.0.0.1:5570";
+    zmq_cfg.recv_timeout_ms = 50;
+    ocg::ControlServer zmq_server(std::move(zmq_cfg), std::move(zmq_map));
+    zmq_server.start();
+
+    // Construct a REQ client and send one update. Tiny retry/sleep because
+    // the server binds asynchronously after start() returns.
+    void* ctx = zmq_ctx_new();
+    require(ctx != nullptr, "zmq_ctx_new for client");
+    void* sock = zmq_socket(ctx, ZMQ_REQ);
+    require(sock != nullptr, "zmq_socket REQ");
+    const int snd_timeout = 1000;
+    const int rcv_timeout = 1000;
+    zmq_setsockopt(sock, ZMQ_SNDTIMEO, &snd_timeout, sizeof(snd_timeout));
+    zmq_setsockopt(sock, ZMQ_RCVTIMEO, &rcv_timeout, sizeof(rcv_timeout));
+
+    // Retry connect for up to ~500ms while the REP socket binds.
+    bool connected = false;
+    for (int attempt = 0; attempt < 10; ++attempt) {
+      if (zmq_connect(sock, "tcp://127.0.0.1:5570") == 0) { connected = true; break; }
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+    require(connected, "REQ client should connect to server");
+
+    const std::string req = R"({"link_id":"ue9-gnb9","param":"path_loss_db","value":-15.0})";
+    require(zmq_send(sock, req.data(), req.size(), 0) > 0, "REQ send should succeed");
+
+    char buf[1024];
+    const int rcvd = zmq_recv(sock, buf, sizeof(buf), 0);
+    require(rcvd > 0, "REP recv should succeed");
+    const std::string reply(buf, static_cast<std::size_t>(rcvd));
+    require(contains(reply, "\"ok\":true"), "ZMQ round-trip should return ok:true");
+
+    // Verify the shadow actually updated.
+    require(nearly(ctl_z->shadow.path_loss_db, -15.0F),
+            "shadow should reflect ZMQ-delivered update");
+    require(ctl_z->seqno.load() == 1, "seqno bumped via the wire path");
+
+    zmq_close(sock);
+    zmq_ctx_term(ctx);
+    // ControlServer dtor stops the loop + joins the thread.
+  }
+
+  // ── v2.2 follow-on: --control-warmup-cap-slots rejects overlong swaps ──
+  // Batch profile ACKs expose the same per-link warm-up hint as a direct
+  // profile_swap so read-only observers can distinguish applied from usable.
+  {
+    auto ctl = std::make_unique<ocg::BrokerLinkControl>();
+    ctl->current_slot.store(41);
+    ocg::ControlServer::LinkMap m = {{"batch-warmup", ctl.get()}};
+    ocg::ControlServerConfig c;
+    c.endpoint = "inproc://test-batch-warmup-hint";
+    ocg::ControlServer s(std::move(c), std::move(m));
+    require(contains(s.handle_message(
+                         R"({"type":"batch_begin","id":"warmup-batch"})"),
+                     "\"ok\":true"),
+            "warmup batch should begin");
+    require(contains(s.handle_message(R"({
+      "type":"profile_swap","link_id":"batch-warmup","batch_id":"warmup-batch",
+      "taps":[{"delay_samples":0,"gain_db":0}]
+    })"), "\"staged\":true"),
+            "profile should stage inside warmup batch");
+    const std::string r = s.handle_message(
+        R"({"type":"batch_commit","id":"warmup-batch"})");
+    require(contains(r, "\"warmup_until_slot\":43"),
+            "batch profile ACK reports its per-link warmup end slot");
+  }
+
+  {
+    auto ctl = std::make_unique<ocg::BrokerLinkControl>();
+    // Mimic what the backend writes at prepare(): a link whose
+    // ring is 4096 samples deep but whose slot count is 1024 →
+    // warmup span = 4 slots.
+    ctl->dl_size_samples_hint = 4096;
+    ctl->slot_count_hint      = 1024;
+
+    ocg::ControlServer::LinkMap m = {{"big-warmup", ctl.get()}};
+    ocg::ControlServerConfig c;
+    c.endpoint           = "inproc://test-warmup-cap";
+    c.recv_timeout_ms    = 50;
+    c.warmup_cap_slots   = 3;   // cap < computed span of 4
+    ocg::ControlServer s(std::move(c), std::move(m));
+
+    const std::string r = s.handle_message(R"({
+      "type":"profile_swap","link_id":"big-warmup",
+      "taps":[{"delay_samples":0,"gain_db":0}]
+    })");
+    require(contains(r, "\"ok\":false"), "warmup-cap should reject overlong swap");
+    require(contains(r, "exceeds --control-warmup-cap-slots"),
+            "error names the flag");
+    require(contains(r, "dl_size=4096"), "error reports dl_size hint");
+    require(contains(r, "count=1024"),   "error reports slot count hint");
+  }
+
+  // ── v2.2 follow-on: warmup span within cap → accepted ─────────────────
+  {
+    auto ctl = std::make_unique<ocg::BrokerLinkControl>();
+    ctl->dl_size_samples_hint = 128;
+    ctl->slot_count_hint      = 23040;   // production-typical → 1-slot warmup
+
+    ocg::ControlServer::LinkMap m = {{"prod-link", ctl.get()}};
+    ocg::ControlServerConfig c;
+    c.endpoint           = "inproc://test-warmup-cap-ok";
+    c.recv_timeout_ms    = 50;
+    c.warmup_cap_slots   = 3;
+    ocg::ControlServer s(std::move(c), std::move(m));
+
+    const std::string r = s.handle_message(R"({
+      "type":"profile_swap","link_id":"prod-link",
+      "taps":[{"delay_samples":0,"gain_db":0}]
+    })");
+    require(contains(r, "\"ok\":true"), "in-cap warmup should be accepted");
+  }
+
+  // ── v3.0: telemetry PUB feed ────────────────────────────────────────────
+  // Bring up a ControlServer with telemetry on a localhost TCP port,
+  // populate per-link telemetry snapshots directly (mirrors what the
+  // backend snap path does), subscribe with a real ZMQ_SUB socket, and
+  // assert the JSON frame contents + topic-prefix filtering.
+  {
+    auto t_a = std::make_unique<ocg::BrokerLinkControl>();
+    auto t_b = std::make_unique<ocg::BrokerLinkControl>();
+
+    // Pre-populate telemetry snapshots so the publisher has something
+    // meaningful to emit. The publisher runs at telemetry_rate_hz so
+    // we just give it a generous timeout.
+    {
+      ocg::TelemetrySnapshot s;
+      s.slot              = 100;
+      s.live_seqno        = 7;
+      s.live.path_loss_db = -8.5F;
+      s.live.cfo_hz       = 333.0F;
+      s.warmup_until_slot = 0;
+      ocg::publish_telemetry_snapshot(*t_a, s);
+    }
+    {
+      ocg::TelemetrySnapshot s;
+      s.slot              = 200;
+      s.live_seqno        = 11;
+      s.live.path_loss_db = 5.0F;
+      s.live.awgn_snr_db  = 12.5F;
+      s.profile_active    = true;
+      s.warmup_event_seq = 3;
+      s.warmup_profile_seqno = 11;
+      s.warmup_begin_slot = 198;
+      s.warmup_end_slot = 199;
+      s.warmup_begin_unix_ns = 1700000000000000000ULL;
+      s.warmup_end_unix_ns = 1700000000001000000ULL;
+      s.processed_samples  = 23040;
+      s.sample_rate_hz     = 23040000;
+      s.slot_deadline_us   = 1000.0;
+      s.channel_process_us = 125.0;
+      s.slot_process_count = 1000;
+      s.slot_deadline_miss_count = 2;
+      s.slot_process_max_us = 1450.0;
+      s.slot_process_p95_us = 180.0;
+      s.slot_process_p99_us = 240.0;
+      s.nominal_slot_samples = 23040;
+      s.nominal_pending_samples = 10;
+      s.nominal_pending_estimated_us = 0.25;
+      s.nominal_latest_estimated_us = 125.0;
+      s.nominal_slot_count = 998;
+      s.nominal_deadline_miss_count = 1;
+      s.nominal_process_max_us = 1200.0;
+      s.nominal_process_p95_us = 175.0;
+      s.nominal_process_p99_us = 230.0;
+      s.fragment_call_count = 250;
+      s.fragment_sample_count = 30000;
+      s.fragment_min_samples = 1;
+      s.fragment_max_samples = 23039;
+      s.fragmented_nominal_slot_count = 200;
+      ocg::publish_telemetry_snapshot(*t_b, s);
+    }
+
+    ocg::ControlServer::LinkMap tlink = {
+        {"link-A", t_a.get()},
+        {"link-B", t_b.get()},
+    };
+    ocg::ControlServerConfig tcfg;
+    tcfg.endpoint           = "tcp://127.0.0.1:5571";
+    tcfg.telemetry_endpoint = "tcp://127.0.0.1:5572";
+    tcfg.telemetry_rate_hz  = 50.0;           // 20 ms tick — plenty of frames in the window
+    tcfg.recv_timeout_ms    = 50;
+    tcfg.backend_name       = "cuda";
+    ocg::ControlServer tserver(std::move(tcfg), std::move(tlink));
+    tserver.start();
+
+    // SUB client filtering to "link-B" only.
+    void* sub_ctx = zmq_ctx_new();
+    require(sub_ctx != nullptr, "SUB zmq_ctx_new");
+    void* sub = zmq_socket(sub_ctx, ZMQ_SUB);
+    require(sub != nullptr, "SUB zmq_socket");
+    const int rcv_to = 800;
+    zmq_setsockopt(sub, ZMQ_RCVTIMEO, &rcv_to, sizeof(rcv_to));
+    zmq_setsockopt(sub, ZMQ_SUBSCRIBE, "link-B", 6);
+    bool connected = false;
+    for (int attempt = 0; attempt < 20; ++attempt) {
+      if (zmq_connect(sub, "tcp://127.0.0.1:5572") == 0) { connected = true; break; }
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+    require(connected, "SUB should connect to telemetry endpoint");
+
+    // Drain the SUB queue for ~500 ms (PUB-SUB is lossy on the SUB
+    // connect race; we just need ≥1 frame for link-B to land).
+    bool got_b = false;
+    bool got_a = false;
+    char buf[2048];
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(800);
+    while (std::chrono::steady_clock::now() < deadline) {
+      const int rcvd = zmq_recv(sub, buf, sizeof(buf), 0);
+      if (rcvd < 0) {
+        if (zmq_errno() == EAGAIN) continue;
+        break;
+      }
+      const std::string frame(buf, static_cast<std::size_t>(rcvd));
+      if (frame.rfind("link-B ", 0) == 0) {
+        got_b = true;
+        require(frame.find("\"event\":\"telemetry\"") != std::string::npos,
+                "v3.0: telemetry frame has event field");
+        require(frame.find("\"link_id\":\"link-B\"") != std::string::npos,
+                "v3.0: telemetry frame names link-B");
+        require(frame.find("\"profile_active\":true") != std::string::npos,
+                "v3.0: telemetry frame reports profile_active=true for link-B");
+        require(frame.find("\"warmup_event_seq\":3") != std::string::npos,
+                "telemetry retains the latest warmup cycle sequence");
+        require(frame.find("\"warmup_profile_seqno\":11") != std::string::npos,
+                "telemetry correlates warmup with the applied profile");
+        require(frame.find("\"warmup_begin_slot\":198") != std::string::npos,
+                "telemetry reports the backend warmup begin slot");
+        require(frame.find("\"warmup_end_slot\":199") != std::string::npos,
+                "telemetry reports the backend warmup end slot");
+        require(frame.find("\"warmup_begin_unix_ns\":1700000000000000000") != std::string::npos,
+                "telemetry reports the backend warmup begin timestamp");
+        require(frame.find("\"warmup_end_unix_ns\":1700000000001000000") != std::string::npos,
+                "telemetry reports the backend warmup end timestamp");
+        require(frame.find("\"backend\":\"cuda\"") != std::string::npos,
+                "v3.0: telemetry frame identifies the data-plane backend");
+        require(frame.find("\"process_id\":") != std::string::npos,
+                "telemetry identifies the GPU Channel process for GPU monitoring");
+        require(frame.find("\"scope\":\"destination_superposition\"") != std::string::npos,
+                "slot timing identifies receiver-superposition scope");
+        require(frame.find("\"usage_percent\":12.5") != std::string::npos,
+                "slot timing reports deadline utilization");
+        require(frame.find("\"deadline_met\":true") != std::string::npos,
+                "slot timing reports deadline verdict");
+        require(frame.find("\"processed_slots\":1000") != std::string::npos,
+                "slot timing reports cumulative processed slots");
+        require(frame.find("\"deadline_misses\":2") != std::string::npos,
+                "slot timing reports cumulative deadline misses");
+        require(frame.find("\"deadline_miss_percent\":0.2") != std::string::npos,
+                "slot timing reports cumulative deadline miss rate");
+        require(frame.find("\"max_elapsed_us\":1450") != std::string::npos,
+                "slot timing reports cumulative maximum");
+        require(frame.find("\"p95_elapsed_us\":180") != std::string::npos,
+                "slot timing reports cumulative p95");
+        require(frame.find("\"p99_elapsed_us\":240") != std::string::npos,
+                "slot timing reports cumulative p99");
+        require(frame.find("\"slot_samples\":23040") != std::string::npos,
+                "nominal timing reports configured samples per slot");
+        require(frame.find("\"pending_samples\":10") != std::string::npos,
+                "nominal timing reports the pending fragment remainder");
+        require(frame.find("\"completed_slots\":998") != std::string::npos,
+                "nominal timing reports reconstructed slot count");
+        require(frame.find("\"latest_estimated_us\":125") != std::string::npos,
+                "nominal timing reports the proportional elapsed estimate");
+        require(frame.find("\"estimation\":\"sample_proportional_call_time\"") !=
+                    std::string::npos,
+                "nominal timing identifies its estimation method");
+        require(frame.find("\"calls\":250") != std::string::npos,
+                "fragment telemetry reports fragment call count");
+        require(frame.find("\"fragmented_nominal_slots\":200") != std::string::npos,
+                "fragment telemetry reports affected nominal slots");
+      } else if (frame.rfind("link-A ", 0) == 0) {
+        got_a = true;
+      }
+    }
+    require(got_b, "v3.0: SUB filtered to 'link-B' should receive at least one frame");
+    require(!got_a, "v3.0: SUB filtered to 'link-B' should NOT receive link-A frames");
+
+    zmq_close(sub);
+    zmq_ctx_term(sub_ctx);
+
+    // Stats should reflect frames sent (>0; exact count depends on the
+    // ~500 ms drain window and the 50 Hz rate, but it's definitely > 0).
+    const auto s = tserver.stats();
+    require(s.telemetry_frames > 0, "v3.0: telemetry_frames counter should advance");
+  }
+
+  // ── M4.5: what the control plane must refuse ───────────────────────────
+  //
+  // The four properties the milestone freezes -- Nt/Nr, port membership, the
+  // sample rate, and the fixed-vs-stochastic family -- are not addressable at
+  // all: they have no param and no message type, so an attempt to set one is
+  // refused by the whitelist rather than by a special case. Asserted here so
+  // that adding a param called "nt" later has to confront this test.
+  for (const char* param : {"nt", "nr", "sample_rate_hz", "rx_ports", "fixed_mimo"}) {
+    const std::string reply = server.handle_message(
+        std::string(R"({"link_id":"ue0-gnb0","param":")") + param + R"(","value":2})");
+    require(contains(reply, "\"ok\":false"),
+            "an immutable property must not be settable through the control plane");
+  }
+
+  // A fixed_mimo link refuses TAP-scope updates, because the matrix lives in
+  // the per-lane tap weights and the address is the link: one REQ would write
+  // one number over every lane and erase it. Scalar params stay allowed --
+  // path loss is a property of the link, not of a matrix entry.
+  {
+    ctl_b->fixed_mimo_declared = true;
+    const std::string tap_reply = server.handle_message(
+        R"({"link_id":"ue1-gnb0","param":"tap0_gain_db","value":-3.0})");
+    require(contains(tap_reply, "\"ok\":false"),
+            "a tap-scope update on a fixed_mimo link must be refused");
+    require(contains(tap_reply, "fixed_mimo"), "the refusal says why");
+
+    const std::string swap_reply = server.handle_message(
+        R"({"type":"profile_swap","link_id":"ue1-gnb0","taps":[{"delay_samples":0.0,"gain_db":0.0}]})");
+    require(contains(swap_reply, "\"ok\":false"),
+            "a profile_swap on a fixed_mimo link must be refused");
+
+    const std::string scalar_reply = server.handle_message(
+        R"({"link_id":"ue1-gnb0","param":"path_loss_db","value":-6.0})");
+    require(contains(scalar_reply, "\"ok\":true"),
+            "a scalar param on a fixed_mimo link stays allowed");
+    ctl_b->fixed_mimo_declared = false;
+  }
+
+  // Rejection must not stage an unsupported matrix or poison the next batch.
+  {
+    const std::string request = R"({"type":"matrix_profile_swap","link_id":"ue1-gnb0","nt":1,"nr":1,
+      "lanes":[{"rx_port":0,"tx_port":0,"taps":[{"delay_samples":5}]}]})";
+    const auto before = ctl_b->seqno.load();
+    const bool pending = ctl_b->matrix_profile_pending;
+    ctl_b->matrix_profile_supported = false;
+    const auto reply = server.handle_message(request);
+    require(contains(reply, "host staging"), "unsupported route rejected explicitly");
+    require(ctl_b->seqno.load() == before && ctl_b->matrix_profile_pending == pending,
+            "route rejection must not alter control state");
+    server.handle_message(R"({"type":"batch_begin","batch_id":"unsupported"})");
+    require(contains(server.handle_message(request), "host staging"), "batch rejects unsupported route");
+    server.handle_message(R"({"type":"batch_abort","batch_id":"unsupported"})");
+    require(ctl_b->seqno.load() == before, "aborted batch cannot advance sequence");
+    ctl_b->matrix_profile_supported = true;
+    require(contains(server.handle_message(request), "\"ok\":true"), "control recovers after rejected batch");
+  }
+
+  // Delay boundaries are the same for scalar and matrix profiles.
+  {
+    ctl_b->nt_hint = ctl_b->nr_hint = 1;
+    for (const std::string value : {"-1", "1023.01", "1e999"}) {
+      const auto before = ctl_b->seqno.load();
+      const auto reply = server.handle_message(
+          "{\"type\":\"matrix_profile_swap\",\"link_id\":\"ue1-gnb0\",\"nt\":1,\"nr\":1,"
+          "\"lanes\":[{\"rx_port\":0,\"tx_port\":0,\"taps\":[{\"delay_samples\":" + value + "}]}]}");
+      require(contains(reply, "\"ok\":false"), "invalid matrix delay rejected");
+      require(ctl_b->seqno.load() == before, "invalid delay cannot advance sequence");
+    }
+    const auto reply = server.handle_message(R"({"type":"matrix_profile_swap","link_id":"ue1-gnb0","nt":1,"nr":1,"force":true,
+      "lanes":[{"rx_port":0,"tx_port":0,"taps":[{"delay_samples":1023}]}]})");
+    require(contains(reply, "\"ok\":true"), "maximum matrix delay accepted");
+  }
+
+  // A Sionna-style matrix update is physical-link scoped: it must name the
+  // startup dimensions and cover every row-major lane exactly once.
+  {
+    ctl_a->nt_hint = 2;
+    ctl_a->nr_hint = 1;
+    const std::string ok = server.handle_message(R"({
+      "type":"matrix_profile_swap","link_id":"ue0-gnb0","nt":2,"nr":1,
+      "lanes":[
+        {"rx_port":0,"tx_port":1,"taps":[{"delay_samples":1.0,"gain_db":-6.0,"phase_rad":0.5}]},
+        {"rx_port":0,"tx_port":0,"taps":[{"delay_samples":0.0,"gain_db":-3.0,"phase_rad":0.0}]}
+      ]
+    })");
+    require(contains(ok, "\"ok\":true"), "a complete 1x2 matrix profile is accepted");
+    require(ctl_a->matrix_profile_pending, "the complete matrix is staged as one update");
+    require(!ctl_a->profile_pending, "matrix profile supersedes a scalar profile marker");
+    require(ctl_a->shadow_matrix_profile.nt == 2 &&
+            ctl_a->shadow_matrix_profile.nr == 1,
+            "matrix dimensions are retained in the physical-link shadow");
+    require(nearly(static_cast<float>(
+                ctl_a->shadow_matrix_profile.lanes[1].taps[0].phase_rad), 0.5F),
+            "lane addressing is canonical rx * Nt + tx order");
+
+    const std::string missing = server.handle_message(R"({
+      "type":"matrix_profile_swap","link_id":"ue0-gnb0","nt":2,"nr":1,
+      "lanes":[{"rx_port":0,"tx_port":0,"taps":[{"delay_samples":0,"gain_db":0}]}]
+    })");
+    require(contains(missing, "\"ok\":false"), "an incomplete matrix is rejected atomically");
+    const std::string resized = server.handle_message(R"({
+      "type":"matrix_profile_swap","link_id":"ue0-gnb0","nt":1,"nr":1,
+      "lanes":[{"rx_port":0,"tx_port":0,"taps":[{"delay_samples":0,"gain_db":0}]}]
+    })");
+    require(contains(resized, "\"ok\":false"), "runtime array resizing is rejected");
+
+    ctl_b->fixed_mimo_declared = true;
+    const std::string fixed = server.handle_message(R"({
+      "type":"matrix_profile_swap","link_id":"ue1-gnb0","nt":1,"nr":1,
+      "lanes":[{"rx_port":0,"tx_port":0,"taps":[{"delay_samples":0,"gain_db":0}]}]
+    })");
+    require(contains(fixed, "\"ok\":false") && contains(fixed, "fixed_mimo"),
+            "a pruned fixed_mimo link cannot accept a dynamic full matrix");
+    ctl_b->fixed_mimo_declared = false;
+  }
+
+  // A correlation_swap needs the link to have declared the block: enabling the
+  // machinery on a topology that never asked for it would be the worse default.
+  {
+    const std::string undeclared = server.handle_message(
+        R"({"type":"correlation_swap","link_id":"ue0-gnb0","kind":"kronecker","rx":[{"i":0,"j":1,"re":0.5,"im":0.0}]})");
+    require(contains(undeclared, "\"ok\":false"),
+            "a swap against a link that declared no correlation must be refused");
+
+    ctl_a->correlation_declared = true;
+    ctl_a->nt_hint = 2;
+    ctl_a->nr_hint = 2;
+    const std::string ok = server.handle_message(
+        R"({"type":"correlation_swap","link_id":"ue0-gnb0","kind":"kronecker","rx":[{"i":0,"j":1,"re":0.5,"im":0.25}]})");
+    require(contains(ok, "\"ok\":true"), "a well-formed correlation_swap is accepted");
+    require(ctl_a->correlation_pending, "the swap is staged for the next slot boundary");
+    require(ctl_a->shadow_correlation.lanes == 4, "the staged factor covers all four lanes");
+
+    // Out of range for the link's dimensions, and a magnitude no correlation
+    // can have: both refused before anything is staged.
+    ctl_a->correlation_pending = false;
+    const std::string bad_index = server.handle_message(
+        R"({"type":"correlation_swap","link_id":"ue0-gnb0","kind":"kronecker","rx":[{"i":0,"j":5,"re":0.5,"im":0.0}]})");
+    require(contains(bad_index, "\"ok\":false"), "an index outside the link's ports is refused");
+    const std::string too_big = server.handle_message(
+        R"({"type":"correlation_swap","link_id":"ue0-gnb0","kind":"kronecker","rx":[{"i":0,"j":1,"re":1.4,"im":0.0}]})");
+    require(contains(too_big, "\"ok\":false"), "a magnitude above 1 is refused");
+    require(!ctl_a->correlation_pending, "a refused swap stages nothing");
+  }
+
+  std::cout << "test_control_server OK\n";
+  return 0;
+}

@@ -1,0 +1,65 @@
+const {chromium}=require('/tmp/ocg-html-qa-20261028/node_modules/playwright');
+const fs=require('fs');
+const assert=require('assert/strict');
+const path=require('path');
+const root=path.resolve(__dirname,'..');
+const file='file://'+path.join(root,'profiling-explained.ko.html');
+const out=path.join(__dirname,'qa');fs.mkdirSync(out,{recursive:true});
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--disable-gpu','--disable-software-rasterizer','--use-gl=disabled']});
+ const page=await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
+ const errors=[],remote=[];page.on('pageerror',e=>errors.push(String(e)));
+ page.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url())});
+ await page.goto(file);await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
+ const links=await page.locator('a[href]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')));
+ const ids=await page.locator('[id]').evaluateAll(nodes=>nodes.map(n=>n.id));
+ assert.equal(ids.length,new Set(ids).size,'duplicate rendered IDs');
+ for(const href of links){
+  if(href.startsWith('#'))assert(ids.includes(href.slice(1)),`broken anchor ${href}`);
+  else if(!/^[a-z]+:/i.test(href))assert(fs.existsSync(path.resolve(root,href)),`missing evidence ${href}`);
+ }
+ await page.screenshot({path:path.join(out,'desktop-start.png')});
+ assert.match(await page.locator('#intro h1').innerText(),/기지국과 단말/);
+ assert.match(await page.locator('#prep-origin-calculation').innerText(),/76\.734/);
+ await page.locator('[data-prep-mode="rtx"]').click();assert.match(await page.locator('#prep-status').innerText(),/76\.7/);
+ assert.match(await page.locator('#prep-path').innerText(),/별도 배열/);
+ await page.locator('#prep-context').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'desktop-preparation-origin.png')});
+ await page.locator('[data-prep-mode="spark"]').click();assert.match(await page.locator('#prep-status').innerText(),/이미/);
+ assert.match(await page.locator('#prep-path').innerText(),/direct_in = 1/);
+ await page.locator('[data-direction="dl"]').click();assert.match(await page.locator('#flow-detail').innerText(),/DL/);
+ await page.locator('[data-flow="2"]').click();assert.match(await page.locator('#flow-detail').innerText(),/UE別|UE별/);
+ await page.locator('[data-direction="ul"]').click();
+ await page.locator('[data-case="1"]').click();assert.match(await page.locator('#timing-interpretation').innerText(),/여유 대기/);
+ const c1=Number((await page.locator('#cycle-total').innerText()).split(' ')[0]);assert(c1>.9&&c1<1.1);
+ await page.locator('[data-case="16"]').click();const c16=Number((await page.locator('#cycle-total').innerText()).split(' ')[0]);assert(c16>2.1&&c16<2.4);
+ await page.locator('#timing').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'desktop-timing.png')});
+ await page.locator('#preset-ready').click();assert.equal(await page.locator('#window-value').innerText(),'1.00 ms');
+ await page.locator('#preset-input').click();assert.equal(await page.locator('#window-value').innerText(),'0.00 ms');
+ await page.locator('#preset-output').click();assert.equal(await page.locator('#window-value').innerText(),'0.00 ms');assert.match(await page.locator('#window-reason').innerText(),/출력 공간/);
+ await page.locator('#input-amount').fill('25');await page.locator('#output-room').fill('80');assert.equal(await page.locator('#window-value').innerText(),'0.25 ms');
+ await page.locator('#waiting').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'desktop-input.png')});
+ await page.locator('#show-update').check();assert(await page.locator('#conditional-copy').isVisible());
+ await page.locator('[data-scale="antenna"]').click();assert(await page.locator('#antenna-table').isVisible());assert.match(await page.locator('#antenna-table').innerText(),/0\.339 \*/);
+ await page.locator('[data-scale="cell"]').click();assert(await page.locator('#cell-bars').isVisible());
+ await page.locator('[data-scale="ue"]').click();
+ await page.locator('#fix-sort').selectOption('ratio');assert.equal(await page.locator('#fix-bars .bar-row').first().locator('button').first().getAttribute('data-fix'),'ue5big-spin');
+ await page.locator('#fix-bars [data-fix="ue5big-spin-repeat"]').first().click();assert.match(await page.locator('#fix-detail').innerText(),/1\/30/);
+ await page.locator('#fix-bars [data-fix="cuda-blocking-sleep"]').first().click();assert.match(await page.locator('#fix-detail').innerText(),/0\.401/);
+ await page.locator('#fixes').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'desktop-fixes.png')});
+ const downloadPromise=page.waitForEvent('download');await page.locator('#download-data').click();const download=await downloadPromise;await download.saveAs(path.join(out,'downloaded-data.json'));
+ const data=JSON.parse(fs.readFileSync(path.join(out,'downloaded-data.json'),'utf8'));assert.equal(data.cases.length,4);assert.equal(data.fixes.length,10);assert(data.fixes.every(x=>x.strict===false));
+ const csvPromise=page.waitForEvent('download');await page.locator('#download-csv').click();const csv=await csvPromise;await csv.saveAs(path.join(out,'downloaded-trials.csv'));assert.equal(fs.readFileSync(path.join(out,'downloaded-trials.csv'),'utf8').trim().split('\n').length,11);
+ const checks=[];
+ for(const width of [1440,1024,768,390,320]){
+  await page.setViewportSize({width,height:900});await page.evaluate(()=>window.scrollTo(0,0));
+  const dims=await page.evaluate(()=>({viewport:innerWidth,body:document.body.scrollWidth,root:document.documentElement.scrollWidth}));
+  assert(dims.root<=width+1,`horizontal overflow at ${width}: ${JSON.stringify(dims)}`);checks.push(dims);
+  if(width===390)await page.screenshot({path:path.join(out,'mobile-start.png')});
+ }
+ await page.setViewportSize({width:390,height:844});await page.locator('#waiting').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,'mobile-input.png')});
+ await page.locator('#timing').scrollIntoViewIfNeeded();await page.locator('[data-case="4"]').click();assert.match(await page.locator('#calls-description').innerText(),/4 UE/);
+ await page.emulateMedia({media:'print'});await page.evaluate(()=>window.dispatchEvent(new Event('beforeprint')));assert.equal(await page.locator('details:not([open])').count(),0);
+ assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
+ const result={status:'passed',file,offline_requests:remote.length,page_errors:errors,viewport_checks:checks,checks:['rendered anchors and evidence links','project context and exact 76.734 provenance','RTX copy versus existing Spark direct mode','UL/DL stages','actual UE timing selection','input and output buffer constraints','conditional CUDA state transfer','boundary tabs','remedy sort and validity','JSON/CSV downloads','print expansion'],reference:{cycle1_ms:c1,cycle16_ms:c16}};
+ fs.writeFileSync(path.join(out,'browser-check.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});

@@ -1,5 +1,9 @@
 # Progress
 
+## Workspace checkpoint — 2026-10-29
+
+- Saved pre-redesign profiling, local patches, explanatory HTML and expanded UE GPU receiver work under `local-work/`. Large/raw evidence is indexed by `CHECKPOINT.json` for authenticated draft-release backup; production relay changes have not started.
+
 > **Entry rules:** One bullet per meaningful change; at most two sentences and 40 words. Record outcomes, decisive checks and blockers; link details and omit repeated context. Apply the [harness rules](AGENT_HARNESS.md#progress-entries) before finishing.
 
 ## Current Objective

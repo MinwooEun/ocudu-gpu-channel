@@ -1,0 +1,127 @@
+{
+  "name": "two-cell-tdd-8",
+  "description": "X5 baseline/control: 8 sionna_rt links (serving + intercell, both directions); no UE<->UE edge, so with different TDD patterns the only CLI path is the (pillar-shadowed) intercell one. robot_ring scene, two co-channel TDD n78 cells: gnb0 (-12, 6, 8 m) and gnb1 (+12, 6, 8 m) outside the ring, ue0 (-2, 0.8, 0.4 m) and ue1 (+2, 0.8, 0.4 m) inside it, 4 m apart on the line through the gap between pillar_1 and pillar_2 (y in 0.4..1.2). Each UE has LOS to its own site; the cross paths gnbX->ueY cross pillar_2 (x~0, y 1.2..2.0, 3 m high) at ~1.3 m height and are blocked (diffraction off), the UE<->UE path is LOS. Sionna dry-run taps (3489.42 MHz, gain offset 60 dB): serving -7.3 dB, intercell -47/-52 dB, UE<->UE +6.0 dB (13 dB above the serving path), gNB<->gNB -10.9 dB.",
+  "scene": "robot_ring",
+  "simple_road": false,
+  "solver": {
+    "max_depth": 3,
+    "samples_per_source": 200000,
+    "seed": 42,
+    "path_polylines": 6,
+    "propagation": {
+      "los": true,
+      "specular_reflection": true,
+      "diffuse_reflection": false,
+      "refraction": true,
+      "diffraction": false
+    }
+  },
+  "nodes": {
+    "gnb0": {
+      "start_m": [
+        -12.0,
+        6.0,
+        8.0
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "gnb1": {
+      "start_m": [
+        12.0,
+        6.0,
+        8.0
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue0": {
+      "start_m": [
+        -2.0,
+        0.8,
+        0.4
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue1": {
+      "start_m": [
+        2.0,
+        0.8,
+        0.4
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    }
+  },
+  "links": [
+    {
+      "from": "gnb0",
+      "to": "ue0",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "gnb1",
+      "to": "ue1",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "gnb0",
+      "to": "ue1",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "gnb1",
+      "to": "ue0",
+      "direction": "downlink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue0",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue1",
+      "to": "gnb1",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue0",
+      "to": "gnb1",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    },
+    {
+      "from": "ue1",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "sionna_rt"
+    }
+  ]
+}

@@ -1,0 +1,302 @@
+#pragma once
+// Device-side per-edge channel pipeline (Phase 2, shipped through D3).
+//
+// The per-edge channel work (multi-tap convolution + Jakes fading + Rician
+// LOS) runs on the GPU by default. The CUDA backend's prepare() builds one
+// DeviceLinkState per (dst_node x incoming edge); at serve time, if every
+// incoming edge of a destination node has a leading tdl step,
+// process_superposition() dispatches apply_channel_kernel + the per-link
+// delay_line ring update. Mixed (non-tdl-leading) nodes fall back to the
+// host-side stage_link path. The dispatch decision is observable via
+// ProcessorTimings.used_device_channel.
+//
+// See docs/history/designs/device-channel-pipeline.md for the staging plan and the
+// measured pre/post numbers.
+//
+// Memory model:
+//   - DeviceLinkState lives in GPU global memory, one per (dst_node × incoming
+//     edge). Topology fields are populated once at startup and never change
+//     during a run.
+//   - The cross-slot delay_line is updated by the kernel each serve.
+//   - slot_start_samples is NOT accumulated on the device: it is written each
+//     serve from the physical link's host-side clock (physical_link.h), so lanes
+//     of one link cannot drift into different instants of the same channel.
+//   - The kernel mirrors per-link state into shared memory for the duration
+//     of one slot's worth of work, then writes the cross-slot updates back.
+
+#include "ocudu_gpu_channel/config.h"
+#include "ocudu_gpu_channel/correlation.h"
+#include "ocudu_gpu_channel/delay.h"
+#include "ocudu_gpu_channel/iq.h"
+#include "ocudu_gpu_channel/mutable_params.h"
+#include <cstdint>
+
+namespace ocg {
+
+// Maximum taps per link the device-side state can hold. TR 38.901 TDL
+// profiles max at 24 taps; 32 leaves headroom for LOS-split / custom
+// configurations. Sized as a compile-time constant so DeviceLinkState fits
+// in a flat array (no device-side allocation).
+constexpr int kDeviceMaxTaps = 32;
+
+// Preallocated storage covers every accepted runtime delay plus the filter.
+constexpr int kDeviceMaxDelayLine = kMaxProfileDelaySamples + kTdlFracFilterTaps;
+
+// Reuse the host-side sub-ray count so device and host agree on the Jakes
+// generator. The device kernel loops `m < kDeviceMaxFadingSubrays` and uses
+// it as the M divisor for inv_sqrt_M -- if these ever drift apart, the
+// kernel would read uninitialised tail rays AND the normalisation would be
+// wrong. static_assert here so the build breaks rather than producing
+// silently miscalibrated fading at runtime.
+constexpr int kDeviceMaxFadingSubrays = kTdlFadingSinusoids;
+static_assert(kDeviceMaxFadingSubrays == kTdlFadingSinusoids,
+              "kDeviceMaxFadingSubrays must equal kTdlFadingSinusoids: the "
+              "device kernel reads M from the device constant but normalises "
+              "the host-drawn sub-ray array sized by kTdlFadingSinusoids");
+
+// Maximum coarse-grid points per tap for the device-side Jakes generator.
+// For the project's reference rate (23.04 MS/s, grid_us = 100, count = 23040)
+// the required grid_count is 11; 32 leaves headroom for higher sample rates
+// or shorter grid_us values. If runtime grid_count exceeds this, the kernel
+// clamps (slight interpolation accuracy loss; the host path is unaffected).
+constexpr int kDeviceMaxGridPoints = 32;
+
+// One correlated physical link, as the device sees it (M3.4): which edges of
+// this node are its lanes, in lane order l = r*Nt + t, and the mixing matrix L
+// with L L^H = R. Split into real and imaginary planes so the struct stays POD
+// and cudaMemcpy-able without a complex type on the device.
+//
+// Only correlated links get one. An iid link is absent from the table, and the
+// mixing kernel then never touches its grids -- which is what keeps an
+// uncorrelated topology bit-identical to its pre-M3 self.
+struct DeviceCorrelationGroup {
+  int n_lanes;
+  int edge_index[kMaxCorrelatedLanes];
+  float mixing_re[kMaxCorrelatedLanes][kMaxCorrelatedLanes];
+  float mixing_im[kMaxCorrelatedLanes][kMaxCorrelatedLanes];
+};
+
+// One per (dst_node × incoming edge). Built host-side from
+// LinkModelState + TdlFadingState + the link's TapSpec array, copied to
+// device once at prepare(). The kernel reads the topology fields read-only
+// and updates only the cross-slot state (delay_line, slot_start_samples).
+//
+// All fields are POD so the struct is cudaMemcpy-able.
+struct DeviceLinkState {
+  // ---- Topology (read-only after prepare) -------------------------------
+  int n_taps;                                                      // 1..kDeviceMaxTaps
+  int has_tdl;                                                     // 0 if the link has no leading tdl
+  int delay_line_size;                                             // active prefix of delay_line[]
+  int src_index;                                                   // D4: index into device_source_iq[] for this edge's source
+
+  int   tap_delay_int[kDeviceMaxTaps];                             // floor(delay_samples)
+  float tap_frac[kDeviceMaxTaps];                                  // delay_samples - floor
+  float tap_gain_amp[kDeviceMaxTaps];                              // 10^(gain_db/20)
+  float tap_cos_phi[kDeviceMaxTaps];                               // cos(phase_rad)
+  float tap_sin_phi[kDeviceMaxTaps];                               // sin(phase_rad)
+  float tap_polyphase[kDeviceMaxTaps][kTdlFracFilterTaps];         // 8-tap windowed-sinc
+
+  // ---- Fading config (read-only after prepare) --------------------------
+  int   fading_enabled;                                            // 0/1
+  int   fading_spectrum;                                           // 0=Jakes (only Jakes implemented)
+  float f_d_max_hz;
+  float grid_us;
+
+  int   tap_is_los[kDeviceMaxTaps];                                // 0/1 per tap
+  float tap_los_factor[kDeviceMaxTaps];                            // sqrt(K/(K+1))
+  float tap_rayleigh_factor[kDeviceMaxTaps];                       // sqrt(1/(K+1))
+  // Kernel recomputes omega_los_d = 2*pi*f_d_max*cos(angle) in DOUBLE so the
+  // long-run drift from float-precision omega matches the host path exactly.
+  // Storing the angle (small magnitude) instead of a precomputed omega keeps
+  // bit-equivalent precision on both backends.
+  float tap_los_angle_rad[kDeviceMaxTaps];                         // LOS arrival angle
+  float tap_phi_los[kDeviceMaxTaps];                               // LOS initial phase (M3.5: unused; see delay.h)
+  // M3.5: this edge's entry in its link's LOS matrix. The specular's phase
+  // relationship across lanes is declared, not drawn per lane.
+  float los_coeff_re;
+  float los_coeff_im;
+
+  float tap_alpha[kDeviceMaxTaps][kDeviceMaxFadingSubrays];        // sub-ray angles (uniform [0, 2pi))
+  float tap_phi[kDeviceMaxTaps][kDeviceMaxFadingSubrays];          // sub-ray initial phases
+
+  // ---- Cross-slot state (kernel reads + writes each serve) --------------
+  IqSample delay_line[kDeviceMaxDelayLine];
+  // Absolute sample index of the slot this state is about to be used for. Read
+  // by apply_channel_kernel as the fading time origin, and written each serve
+  // by update_delay_line_kernel from the value the host passes in -- the device
+  // holds a copy of the physical link's clock, not a counter of its own.
+  unsigned long long slot_start_samples;
+
+  // ---- Runtime-mutable scalar params (Phase 3 v1) -----------------------
+  // Populated at prepare() from YAML; in Phase 3 C2+ this field is also the
+  // destination of a snap-from-shadow step that runs at slot boundaries,
+  // before the H2D, when the ZMQ control plane has pushed an update. The
+  // kernel does NOT yet read from `live` in C1 — that wire-in lands in C2.
+  // Mirrors LinkModelState::live (CPU fallback) and LinkState::live (CPU
+  // backend) so both code paths converge on one source of truth per link.
+  MutableParams live;
+};
+
+// Populate a DeviceLinkState from the matching host-side ModelStep + the
+// per-link fading state (alpha/phi/phi_los) that was already drawn host-side
+// in prepare_tdl_fading_state(). Polyphase coefficients are taken from the
+// host-side cache rather than recomputed. This runs at prepare() time only,
+// once per link.
+//
+// `host_polyphase` and the alpha/phi arrays must already be sized for the
+// step's tap count (the caller's responsibility — typically taken straight
+// from LinkModelState::tdl_polyphase and TdlFadingState::tap_alpha/phi).
+//
+// Returns false if the link has more taps than kDeviceMaxTaps or a tap delay
+// exceeds the ring capacity; in that case the caller should fall back to the
+// host-side stage_link() path for this link.
+bool build_device_link_state(
+    const ModelStep& step,
+    const std::vector<std::array<float, kTdlFracFilterTaps>>& host_polyphase,
+    const TdlFadingState& host_fading,
+    int delay_line_size,
+    int src_index,
+    DeviceLinkState& out);
+
+// Phase 3 v1-fin-B: recompute the leading-tap (tap 0) derived fields in
+// `s` from `s.live` (tap0_delay_samples / tap0_gain_db / tap0_phase_rad /
+// los_k_db). Used by the snap-from-shadow path in cuda_backend.cu when
+// the ZMQ control plane has bumped the link's seqno: the host first D2H
+// reads the DeviceLinkState back to capture device-owned cross-slot
+// state (delay_line + slot_start_samples), calls this to refresh the
+// tap-0 derived fields from the snapped live values, then H2D re-uploads
+// the whole struct. tap_*[1..] are left untouched (multi-tap profile
+// swaps are v2). LOS factors are recomputed only when tap_is_los[0] is
+// set in the original YAML; los_k_db on a non-LOS tap is silently
+// ignored, matching the build_device_link_state semantics.
+void refresh_tap0_from_live(DeviceLinkState& s);
+
+// Phase 3 v2.0-F3b: recompute ALL per-tap derived fields in `s` from a
+// caller-supplied tap layout (`n_taps` × `taps[]` — the layout the ZMQ
+// control plane's profile_swap REQ delivered, stored as
+// LinkModelState::live_profile on the host side). Mirrors the per-tap
+// derivation in build_device_link_state, but uses the live tap layout
+// instead of the YAML chain step. Fading sub-config (alpha/phi
+// sub-rays, f_d_max_hz, grid_us) is NOT updated here — runtime
+// fading-swap is deferred to a follow-on (would need fresh sub-ray
+// draws + a regenerated coarse grid). The kernel-side fading params on
+// `s` keep whatever they were at prepare time.
+void refresh_all_taps_from_live(DeviceLinkState& s,
+                                int n_taps,
+                                const TapSpec* taps);
+
+// Per-edge channel kernel.
+//
+// For each (edge k, output sample idx), computes the multi-tap polyphase
+// convolution
+//     y[k][idx] = sum_{kt=0..n_taps-1} gain_kt · e^{j·phi_kt}
+//                     · sum_{i=0..7} h_kt[i] · x[idx − tau_int_kt + 3 − i]
+// where `h_kt` is the 8-tap windowed-sinc polyphase coefficient set
+// precomputed host-side. x reads come from
+// `source_iq[states[k].src_index * count + read_idx]` (Phase 2 D4: one
+// IQ slot per UNIQUE source, shared by every edge with that source) for
+// read_idx in [0, count) or from `states[k].delay_line` for negative
+// indices. Future indices (read_idx >= count) read as zero, matching the
+// host kernel.
+//
+// `source_iq`  : `n_sources * count` IqSamples (raw, one slot per source)
+// `out_buffer` : `n_links * count` IqSamples (shaped, per-edge slots)
+// `states`     : `n_links` DeviceLinkStates (topology, read-only; each
+//                carries `src_index` into source_iq)
+//
+// Non-tdl links (`states[k].has_tdl == 0`) pass-through unchanged
+// (copies source_iq[src_index] → out_buffer[k]).
+//
+// Launch: dim3(ceil(count / 256), n_links), dim3(256, 1, 1).
+//
+// Dispatched from process_superposition() whenever every incoming edge of
+// a destination node has a leading tdl step (D3+ default path). Mixed
+// nodes fall back to host-side stage_link.
+// `stream` is a `cudaStream_t` passed as `void*` so this header stays
+// includable without a CUDA toolchain. The implementation casts back.
+//
+// `sample_rate_hz` is required for the fading time math (slot_start_t,
+// grid_dt, LOS step_angle). The static path ignores it but the parameter
+// stays in the unified signature so the caller doesn't need to branch.
+// M3.3: builds every edge's Jakes coarse grid into `grid`, a device buffer of
+// `n_links * kDeviceMaxTaps * kDeviceMaxGridPoints` float2 (passed as float* so
+// this header stays includable without the CUDA toolchain). Edge k, tap kt,
+// point gp lives at (k * kDeviceMaxTaps + kt) * kDeviceMaxGridPoints + gp.
+//
+// It runs before apply_channel_kernel on the same stream. The grid used to be
+// built inside that kernel, once per sample block, and with only one lane in
+// view -- correlation (M3.4) is a map ACROSS the lanes of a link, so the grid
+// has to exist as data between the two steps.
+//
+// Launch: dim3(n_links), dim3(kDeviceMaxTaps) -- one thread per tap.
+void launch_generate_fading_grid_kernel(
+    const DeviceLinkState* states,
+    float* grid,
+    int n_links,
+    int count,
+    float sample_rate_hz,
+    void* stream);
+
+// Replaces each correlated link's independent grids w with g = L w, in place,
+// at every tap and grid point. Runs between the generator and the convolution
+// on the same stream -- the gap M3.3 opened.
+//
+// Launch: dim3(n_groups), dim3(256).
+void launch_mix_fading_grid_kernel(
+    float* grid,
+    const DeviceCorrelationGroup* groups,
+    const DeviceLinkState* states,
+    int n_groups,
+    int count,
+    float sample_rate_hz,
+    void* stream);
+
+// Where this slot's raw IQ of each source lives, handed to the channel kernels
+// by value (a __grid_constant__ parameter, so indexing it is a constant-bank
+// load, not a per-thread copy). Flat layout: source s at base + s * count, the
+// packed staging buffer. Direct layout (Z8): ptr[s] is the caller's own buffer
+// for source s, read in place on a device with pageable memory access, which
+// removes the host-side packing copy. A node with more sources than fit here
+// keeps the flat layout.
+constexpr int kDeviceMaxDirectSources = 128;
+struct DeviceSourceTable {
+  const IqSample* base = nullptr;
+  int direct = 0;
+  const IqSample* ptr[kDeviceMaxDirectSources] = {};
+};
+
+void launch_apply_channel_kernel_static(
+    const DeviceLinkState* states,
+    const DeviceSourceTable& sources,
+    const float* fading_grid,
+    IqSample* out_buffer,
+    int n_links,
+    int count,
+    float sample_rate_hz,
+    void* stream);
+
+// Roll the per-link delay_line ring forward and set each link's
+// slot_start_samples to the value the host supplies. Called after
+// launch_apply_channel_kernel so the cross-slot continuity matches the
+// host-side apply_tdl_step's post-loop ring update in delay.h. Reads source_iq
+// via `states[k].src_index` — same shared per-source layout as
+// apply_channel_kernel above (D4).
+//
+// `next_slot_start` is a device array of `n_links` values: entry k is the
+// absolute sample index at which edge k's NEXT slot begins, taken from that
+// edge's physical-link clock on the host (M2.3). The kernel assigns rather
+// than accumulates, so a device-side copy cannot develop a time of its own --
+// which is the whole point: every lane of a link must evaluate its channel at
+// the same instant, and that instant has one owner.
+//
+// Launch: dim3(n_links), dim3(1) — serial per link. The work per link is
+// at most kDeviceMaxDelayLine memory ops, trivial.
+void launch_update_delay_line_kernel(
+    DeviceLinkState* states,
+    const DeviceSourceTable& sources,
+    const unsigned long long* next_slot_start,
+    int n_links,
+    int count,
+    void* stream);
+
+} // namespace ocg

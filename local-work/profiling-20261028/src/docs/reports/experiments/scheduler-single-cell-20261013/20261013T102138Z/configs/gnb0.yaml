@@ -1,0 +1,89 @@
+# SPDX-FileCopyrightText: Copyright (C) 2021-2026 Software Radio Systems Limited
+# SPDX-License-Identifier: BSD-3-Clause-Open-MPI
+#
+# Derived from OCUDU configs/gnb_rf_b210_fdd_srsUE.yml for Docker/ZMQ
+# interop with ocudu-gpu-channel. Only the ru_sdr section is changed from
+# UHD/external-clock hardware to ZMQ endpoints on the Docker bridge.
+
+cu_cp:
+  amf:
+    addrs: 127.0.0.2
+    port: 38412
+    bind_addrs: 127.0.0.11
+    supported_tracking_areas:
+      - tac: 7
+        plmn_list:
+          - plmn: "00101"
+            tai_slice_support_list:
+              - sst: 1
+
+cu_up:
+  ngu:
+    socket:
+      - bind_addr: 127.0.0.11
+
+ru_sdr:
+  device_driver: zmq
+  device_args: tx_port=tcp://127.0.0.1:2000,rx_port=tcp://127.0.0.1:2001,base_srate=23.04e6
+  clock: default
+  srate: 23.04
+  tx_gain: 0
+  rx_gain: -55
+
+cell_cfg:
+  scheduler:
+    policy:
+      qos_sched:
+        combine_function: gbr_prioritized
+        pf_fairness_coeff: 2.0
+        prio_enabled: true
+        pdb_enabled: true
+        gbr_enabled: true
+  pci: 1
+  dl_arfcn: 368500
+  band: 3
+  channel_bandwidth_MHz: 20
+  common_scs: 15
+  plmn: "00101"
+  tac: 7
+  pdcch:
+    dedicated:
+      ss2_type: common
+      dci_format_0_1_and_1_1: false
+    common:
+      ss0_index: 0
+      coreset0_index: 12
+  prach:
+    prach_config_index: 1
+    prach_root_sequence_index: 1
+  pdsch:
+    mcs_table: qam64
+  pusch:
+    mcs_table: qam64
+
+log:
+  filename: /work/ocudu-native-workspace/results/logs/ocudu-scheduler-benchmark/20261013T102138Z/gnb0-internal.log
+  all_level: info
+  config_level: info
+
+pcap:
+  mac_enable: enable
+  mac_filename: /work/ocudu-native-workspace/results/logs/ocudu-scheduler-benchmark/20261013T102138Z/gnb0_mac.pcap
+  ngap_enable: enable
+  ngap_filename: /work/ocudu-native-workspace/results/logs/ocudu-scheduler-benchmark/20261013T102138Z/gnb0_ngap.pcap
+
+gnb_id: 411
+ran_node_name: gnb0
+
+# Appended by render-sionna-rank1-configs.py because OCUDU_NATIVE_GNB_METRICS is set.
+metrics:
+  enable_json: true
+  layers:
+    enable_sched: true
+    enable_sched_ue: true
+  periodicity:
+    du_report_period: 1000
+remote_control:
+  enabled: true
+  bind_addr: 127.0.0.1
+  port: 8001

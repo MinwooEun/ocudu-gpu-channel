@@ -1,0 +1,289 @@
+[
+  {
+    "node": "ue13",
+    "calls": 21244,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 1089.3474609999998,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.018300200000000003,
+      "request_until_receive": 770.6432593999999,
+      "receive_until_ring_push": 7.248470050000001,
+      "ring_ready_until_producer_observed": 311.43743135
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21244
+    },
+    "negative_ready_intervals": 269
+  },
+  {
+    "node": "ue7",
+    "calls": 24593,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 929.5891157,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0014864000000000001,
+      "request_until_receive": 644.46078975,
+      "receive_until_ring_push": 6.4182442,
+      "ring_ready_until_producer_observed": 278.70859535
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 24593
+    },
+    "negative_ready_intervals": 216
+  },
+  {
+    "node": "ue6",
+    "calls": 27068,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 596.1312843000001,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 393.8446634,
+      "receive_until_ring_push": 4.1111222000000005,
+      "ring_ready_until_producer_observed": 198.1754987
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 27068
+    },
+    "negative_ready_intervals": 188
+  },
+  {
+    "node": "ue15",
+    "calls": 24918,
+    "radio_ms": 20000.013020833332,
+    "data_us_per_radio_ms": 966.983204453643,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 673.6458173285044,
+      "receive_until_ring_push": 6.74239766041819,
+      "ring_ready_until_producer_observed": 286.5949894647204
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 24918
+    },
+    "negative_ready_intervals": 309
+  },
+  {
+    "node": "ue11",
+    "calls": 21109,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 840.7161471000001,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 556.48354195,
+      "receive_until_ring_push": 5.7749869,
+      "ring_ready_until_producer_observed": 278.45761825
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21109
+    },
+    "negative_ready_intervals": 296
+  },
+  {
+    "node": "gnb0",
+    "calls": 40250,
+    "radio_ms": 20000.000086805554,
+    "data_us_per_radio_ms": 1584.6715974720853,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 1001.6015687527711,
+      "receive_until_ring_push": 10.184217755797667,
+      "ring_ready_until_producer_observed": 572.8858109635164
+    },
+    "critical_source_counts": {
+      "ue6_p0": 9411,
+      "ue14_p0": 5942,
+      "ue15_p0": 2231,
+      "ue10_p0": 2193,
+      "ue9_p0": 3483,
+      "ue11_p0": 3621,
+      "ue7_p0": 1855,
+      "ue1_p0": 892,
+      "ue8_p0": 589,
+      "ue12_p0": 785,
+      "ue5_p0": 1808,
+      "ue0_p0": 2342,
+      "ue13_p0": 1510,
+      "ue3_p0": 348,
+      "ue4_p0": 880,
+      "ue2_p0": 2360
+    },
+    "negative_ready_intervals": 12
+  },
+  {
+    "node": "ue14",
+    "calls": 27236,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 719.03327735,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.001448,
+      "request_until_receive": 497.437228,
+      "receive_until_ring_push": 5.0564858500000005,
+      "ring_ready_until_producer_observed": 216.53811549999998
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 27236
+    },
+    "negative_ready_intervals": 186
+  },
+  {
+    "node": "ue3",
+    "calls": 21605,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 911.7335171,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 614.6236011,
+      "receive_until_ring_push": 6.27481715,
+      "ring_ready_until_producer_observed": 290.83509885
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21605
+    },
+    "negative_ready_intervals": 272
+  },
+  {
+    "node": "ue12",
+    "calls": 21289,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 865.1219922,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 582.16205335,
+      "receive_until_ring_push": 5.8121082,
+      "ring_ready_until_producer_observed": 277.14783065
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21289
+    },
+    "negative_ready_intervals": 262
+  },
+  {
+    "node": "ue1",
+    "calls": 21730,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 1066.12599845,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 752.61473585,
+      "receive_until_ring_push": 6.9841689,
+      "ring_ready_until_producer_observed": 306.52709369999997
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21730
+    },
+    "negative_ready_intervals": 229
+  },
+  {
+    "node": "ue5",
+    "calls": 21317,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 900.2567025000001,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 605.0499867,
+      "receive_until_ring_push": 6.12749405,
+      "ring_ready_until_producer_observed": 289.07922175
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21317
+    },
+    "negative_ready_intervals": 319
+  },
+  {
+    "node": "ue4",
+    "calls": 21622,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 838.24954615,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 555.37043425,
+      "receive_until_ring_push": 5.7371254,
+      "ring_ready_until_producer_observed": 277.14198650000003
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21622
+    },
+    "negative_ready_intervals": 263
+  },
+  {
+    "node": "ue10",
+    "calls": 21715,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 1007.0988979499999,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 696.06167885,
+      "receive_until_ring_push": 6.7702962499999995,
+      "ring_ready_until_producer_observed": 304.26692285
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21715
+    },
+    "negative_ready_intervals": 250
+  },
+  {
+    "node": "ue2",
+    "calls": 21835,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 941.58637015,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0183666,
+      "request_until_receive": 642.6795526999999,
+      "receive_until_ring_push": 6.39809775,
+      "ring_ready_until_producer_observed": 292.4903531
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21835
+    },
+    "negative_ready_intervals": 314
+  },
+  {
+    "node": "ue8",
+    "calls": 21060,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 784.5853949,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0031688,
+      "request_until_receive": 497.7750824,
+      "receive_until_ring_push": 5.4067457,
+      "ring_ready_until_producer_observed": 281.400398
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21060
+    },
+    "negative_ready_intervals": 243
+  },
+  {
+    "node": "ue0",
+    "calls": 21273,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 947.91265385,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 645.5668531,
+      "receive_until_ring_push": 6.55211815,
+      "ring_ready_until_producer_observed": 295.7936826
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21273
+    },
+    "negative_ready_intervals": 292
+  },
+  {
+    "node": "ue9",
+    "calls": 21316,
+    "radio_ms": 20000.0,
+    "data_us_per_radio_ms": 968.2992101,
+    "parts_us_per_radio_ms": {
+      "before_request": 0.0,
+      "request_until_receive": 671.358033,
+      "receive_until_ring_push": 6.6253136,
+      "ring_ready_until_producer_observed": 290.3158635
+    },
+    "critical_source_counts": {
+      "gnb0_p0": 21316
+    },
+    "negative_ready_intervals": 256
+  }
+]

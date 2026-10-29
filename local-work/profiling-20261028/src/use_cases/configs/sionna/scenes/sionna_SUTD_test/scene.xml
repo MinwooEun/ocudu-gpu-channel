@@ -1,0 +1,1179 @@
+<?xml version='1.0' encoding='utf-8'?>
+<scene version="2.1.0">
+  <bsdf type="itu-radio-material" id="concrete">
+    <string name="type" value="concrete" />
+    <float name="thickness" value="0.2" />
+  </bsdf>
+  <bsdf type="itu-radio-material" id="glass">
+    <string name="type" value="glass" />
+    <float name="thickness" value="0.2" />
+  </bsdf>
+  <bsdf type="itu-radio-material" id="medium_dry_ground">
+    <string name="type" value="medium_dry_ground" />
+    <float name="thickness" value="0.2" />
+  </bsdf>
+  <bsdf type="itu-radio-material" id="wet_ground">
+    <string name="type" value="wet_ground" />
+    <float name="thickness" value="0.2" />
+  </bsdf>
+  <shape type="ply" id="mesh-building_the_max_pavilion">
+    <string name="filename" value="meshes/building_the_max_pavilion.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_2">
+    <string name="filename" value="meshes/building_2.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="glass" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_1">
+    <string name="filename" value="meshes/building_1.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="glass" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_sia_sports_club">
+    <string name="filename" value="meshes/building_sia_sports_club.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_sutd_multifunction_sport_center">
+    <string name="filename" value="meshes/building_sutd_multifunction_sport_center.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_3">
+    <string name="filename" value="meshes/building_3.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="glass" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_4">
+    <string name="filename" value="meshes/building_4.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_6">
+    <string name="filename" value="meshes/building_6.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_7">
+    <string name="filename" value="meshes/building_7.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_8">
+    <string name="filename" value="meshes/building_8.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_changi_business_park_bus_terminal">
+    <string name="filename" value="meshes/building_changi_business_park_bus_terminal.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_9">
+    <string name="filename" value="meshes/building_9.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_sutd_parcel_d_building">
+    <string name="filename" value="meshes/building_sutd_parcel_d_building.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_10">
+    <string name="filename" value="meshes/building_10.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_5">
+    <string name="filename" value="meshes/building_5.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="glass" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_11">
+    <string name="filename" value="meshes/building_11.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_12">
+    <string name="filename" value="meshes/building_12.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_13">
+    <string name="filename" value="meshes/building_13.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_sutd_student_housing">
+    <string name="filename" value="meshes/building_sutd_student_housing.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_14">
+    <string name="filename" value="meshes/building_14.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_sutd_student_housing_2">
+    <string name="filename" value="meshes/building_sutd_student_housing_2.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_15">
+    <string name="filename" value="meshes/building_15.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_changi_bethany_church">
+    <string name="filename" value="meshes/building_changi_bethany_church.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_sutd_student_housing_3">
+    <string name="filename" value="meshes/building_sutd_student_housing_3.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_16">
+    <string name="filename" value="meshes/building_16.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_17">
+    <string name="filename" value="meshes/building_17.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_18">
+    <string name="filename" value="meshes/building_18.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_sutd_faculty_housing">
+    <string name="filename" value="meshes/building_sutd_faculty_housing.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_19">
+    <string name="filename" value="meshes/building_19.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_design_ai_fablab">
+    <string name="filename" value="meshes/building_design_ai_fablab.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_sutd_faculty_housing_2">
+    <string name="filename" value="meshes/building_sutd_faculty_housing_2.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_20">
+    <string name="filename" value="meshes/building_20.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_21">
+    <string name="filename" value="meshes/building_21.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_22">
+    <string name="filename" value="meshes/building_22.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_23">
+    <string name="filename" value="meshes/building_23.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_24">
+    <string name="filename" value="meshes/building_24.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_25">
+    <string name="filename" value="meshes/building_25.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_26">
+    <string name="filename" value="meshes/building_26.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_27">
+    <string name="filename" value="meshes/building_27.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_28">
+    <string name="filename" value="meshes/building_28.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_29">
+    <string name="filename" value="meshes/building_29.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_30">
+    <string name="filename" value="meshes/building_30.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_31">
+    <string name="filename" value="meshes/building_31.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_32">
+    <string name="filename" value="meshes/building_32.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_33">
+    <string name="filename" value="meshes/building_33.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_34">
+    <string name="filename" value="meshes/building_34.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_35">
+    <string name="filename" value="meshes/building_35.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_36">
+    <string name="filename" value="meshes/building_36.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_37">
+    <string name="filename" value="meshes/building_37.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_38">
+    <string name="filename" value="meshes/building_38.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_39">
+    <string name="filename" value="meshes/building_39.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_40">
+    <string name="filename" value="meshes/building_40.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_41">
+    <string name="filename" value="meshes/building_41.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_42">
+    <string name="filename" value="meshes/building_42.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_43">
+    <string name="filename" value="meshes/building_43.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_44">
+    <string name="filename" value="meshes/building_44.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_45">
+    <string name="filename" value="meshes/building_45.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_46">
+    <string name="filename" value="meshes/building_46.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_47">
+    <string name="filename" value="meshes/building_47.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_48">
+    <string name="filename" value="meshes/building_48.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_49">
+    <string name="filename" value="meshes/building_49.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-building_50">
+    <string name="filename" value="meshes/building_50.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_1">
+    <string name="filename" value="meshes/road_1.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_2">
+    <string name="filename" value="meshes/road_2.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_3">
+    <string name="filename" value="meshes/road_3.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_4">
+    <string name="filename" value="meshes/road_4.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_5">
+    <string name="filename" value="meshes/road_5.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_6">
+    <string name="filename" value="meshes/road_6.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_7">
+    <string name="filename" value="meshes/road_7.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_8">
+    <string name="filename" value="meshes/road_8.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_9">
+    <string name="filename" value="meshes/road_9.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_10">
+    <string name="filename" value="meshes/road_10.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_11">
+    <string name="filename" value="meshes/road_11.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_12">
+    <string name="filename" value="meshes/road_12.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_13">
+    <string name="filename" value="meshes/road_13.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_14">
+    <string name="filename" value="meshes/road_14.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_15">
+    <string name="filename" value="meshes/road_15.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_16">
+    <string name="filename" value="meshes/road_16.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_17">
+    <string name="filename" value="meshes/road_17.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_18">
+    <string name="filename" value="meshes/road_18.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_19">
+    <string name="filename" value="meshes/road_19.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_20">
+    <string name="filename" value="meshes/road_20.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_21">
+    <string name="filename" value="meshes/road_21.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_22">
+    <string name="filename" value="meshes/road_22.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_23">
+    <string name="filename" value="meshes/road_23.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_24">
+    <string name="filename" value="meshes/road_24.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_25">
+    <string name="filename" value="meshes/road_25.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_26">
+    <string name="filename" value="meshes/road_26.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_27">
+    <string name="filename" value="meshes/road_27.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_28">
+    <string name="filename" value="meshes/road_28.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_29">
+    <string name="filename" value="meshes/road_29.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_30">
+    <string name="filename" value="meshes/road_30.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_31">
+    <string name="filename" value="meshes/road_31.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_32">
+    <string name="filename" value="meshes/road_32.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_33">
+    <string name="filename" value="meshes/road_33.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_34">
+    <string name="filename" value="meshes/road_34.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_35">
+    <string name="filename" value="meshes/road_35.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_36">
+    <string name="filename" value="meshes/road_36.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_37">
+    <string name="filename" value="meshes/road_37.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_38">
+    <string name="filename" value="meshes/road_38.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_39">
+    <string name="filename" value="meshes/road_39.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_40">
+    <string name="filename" value="meshes/road_40.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_41">
+    <string name="filename" value="meshes/road_41.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_42">
+    <string name="filename" value="meshes/road_42.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_43">
+    <string name="filename" value="meshes/road_43.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_44">
+    <string name="filename" value="meshes/road_44.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_45">
+    <string name="filename" value="meshes/road_45.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_46">
+    <string name="filename" value="meshes/road_46.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_47">
+    <string name="filename" value="meshes/road_47.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_48">
+    <string name="filename" value="meshes/road_48.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_49">
+    <string name="filename" value="meshes/road_49.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_50">
+    <string name="filename" value="meshes/road_50.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_51">
+    <string name="filename" value="meshes/road_51.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_52">
+    <string name="filename" value="meshes/road_52.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_53">
+    <string name="filename" value="meshes/road_53.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_54">
+    <string name="filename" value="meshes/road_54.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_55">
+    <string name="filename" value="meshes/road_55.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_56">
+    <string name="filename" value="meshes/road_56.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_57">
+    <string name="filename" value="meshes/road_57.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_58">
+    <string name="filename" value="meshes/road_58.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_59">
+    <string name="filename" value="meshes/road_59.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_60">
+    <string name="filename" value="meshes/road_60.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_61">
+    <string name="filename" value="meshes/road_61.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_62">
+    <string name="filename" value="meshes/road_62.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_63">
+    <string name="filename" value="meshes/road_63.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_64">
+    <string name="filename" value="meshes/road_64.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_65">
+    <string name="filename" value="meshes/road_65.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_66">
+    <string name="filename" value="meshes/road_66.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_67">
+    <string name="filename" value="meshes/road_67.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_68">
+    <string name="filename" value="meshes/road_68.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_69">
+    <string name="filename" value="meshes/road_69.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_70">
+    <string name="filename" value="meshes/road_70.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_71">
+    <string name="filename" value="meshes/road_71.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_72">
+    <string name="filename" value="meshes/road_72.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_73">
+    <string name="filename" value="meshes/road_73.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_74">
+    <string name="filename" value="meshes/road_74.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_75">
+    <string name="filename" value="meshes/road_75.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_76">
+    <string name="filename" value="meshes/road_76.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_77">
+    <string name="filename" value="meshes/road_77.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_78">
+    <string name="filename" value="meshes/road_78.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_79">
+    <string name="filename" value="meshes/road_79.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_80">
+    <string name="filename" value="meshes/road_80.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_81">
+    <string name="filename" value="meshes/road_81.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_82">
+    <string name="filename" value="meshes/road_82.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_83">
+    <string name="filename" value="meshes/road_83.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_84">
+    <string name="filename" value="meshes/road_84.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_85">
+    <string name="filename" value="meshes/road_85.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_86">
+    <string name="filename" value="meshes/road_86.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_87">
+    <string name="filename" value="meshes/road_87.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_88">
+    <string name="filename" value="meshes/road_88.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_89">
+    <string name="filename" value="meshes/road_89.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_90">
+    <string name="filename" value="meshes/road_90.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_91">
+    <string name="filename" value="meshes/road_91.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_92">
+    <string name="filename" value="meshes/road_92.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_93">
+    <string name="filename" value="meshes/road_93.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_94">
+    <string name="filename" value="meshes/road_94.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_95">
+    <string name="filename" value="meshes/road_95.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_96">
+    <string name="filename" value="meshes/road_96.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_97">
+    <string name="filename" value="meshes/road_97.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_98">
+    <string name="filename" value="meshes/road_98.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_99">
+    <string name="filename" value="meshes/road_99.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_100">
+    <string name="filename" value="meshes/road_100.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_101">
+    <string name="filename" value="meshes/road_101.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_102">
+    <string name="filename" value="meshes/road_102.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_103">
+    <string name="filename" value="meshes/road_103.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_104">
+    <string name="filename" value="meshes/road_104.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_105">
+    <string name="filename" value="meshes/road_105.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_106">
+    <string name="filename" value="meshes/road_106.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_107">
+    <string name="filename" value="meshes/road_107.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_108">
+    <string name="filename" value="meshes/road_108.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_109">
+    <string name="filename" value="meshes/road_109.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_110">
+    <string name="filename" value="meshes/road_110.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_111">
+    <string name="filename" value="meshes/road_111.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_112">
+    <string name="filename" value="meshes/road_112.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_113">
+    <string name="filename" value="meshes/road_113.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_114">
+    <string name="filename" value="meshes/road_114.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_115">
+    <string name="filename" value="meshes/road_115.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_116">
+    <string name="filename" value="meshes/road_116.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_117">
+    <string name="filename" value="meshes/road_117.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_118">
+    <string name="filename" value="meshes/road_118.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_119">
+    <string name="filename" value="meshes/road_119.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_120">
+    <string name="filename" value="meshes/road_120.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_121">
+    <string name="filename" value="meshes/road_121.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_122">
+    <string name="filename" value="meshes/road_122.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_123">
+    <string name="filename" value="meshes/road_123.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_124">
+    <string name="filename" value="meshes/road_124.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_125">
+    <string name="filename" value="meshes/road_125.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_126">
+    <string name="filename" value="meshes/road_126.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_127">
+    <string name="filename" value="meshes/road_127.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_128">
+    <string name="filename" value="meshes/road_128.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_129">
+    <string name="filename" value="meshes/road_129.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_130">
+    <string name="filename" value="meshes/road_130.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_131">
+    <string name="filename" value="meshes/road_131.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_132">
+    <string name="filename" value="meshes/road_132.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_133">
+    <string name="filename" value="meshes/road_133.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_134">
+    <string name="filename" value="meshes/road_134.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_135">
+    <string name="filename" value="meshes/road_135.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_136">
+    <string name="filename" value="meshes/road_136.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-road_137">
+    <string name="filename" value="meshes/road_137.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="concrete" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_1">
+    <string name="filename" value="meshes/pitch_1.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-grass_1">
+    <string name="filename" value="meshes/grass_1.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-grass_2">
+    <string name="filename" value="meshes/grass_2.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-wood_1">
+    <string name="filename" value="meshes/wood_1.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-water_1">
+    <string name="filename" value="meshes/water_1.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="wet_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-wood_2">
+    <string name="filename" value="meshes/wood_2.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-wood_3">
+    <string name="filename" value="meshes/wood_3.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-park_1">
+    <string name="filename" value="meshes/park_1.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-grass_3">
+    <string name="filename" value="meshes/grass_3.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-grass_4">
+    <string name="filename" value="meshes/grass_4.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-water_2">
+    <string name="filename" value="meshes/water_2.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="wet_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-grass_5">
+    <string name="filename" value="meshes/grass_5.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-water_3">
+    <string name="filename" value="meshes/water_3.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="wet_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-water_4">
+    <string name="filename" value="meshes/water_4.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="wet_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_2">
+    <string name="filename" value="meshes/pitch_2.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-water_5">
+    <string name="filename" value="meshes/water_5.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="wet_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_3">
+    <string name="filename" value="meshes/pitch_3.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_4">
+    <string name="filename" value="meshes/pitch_4.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_5">
+    <string name="filename" value="meshes/pitch_5.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_6">
+    <string name="filename" value="meshes/pitch_6.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_7">
+    <string name="filename" value="meshes/pitch_7.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_8">
+    <string name="filename" value="meshes/pitch_8.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_9">
+    <string name="filename" value="meshes/pitch_9.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_10">
+    <string name="filename" value="meshes/pitch_10.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_11">
+    <string name="filename" value="meshes/pitch_11.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-pitch_12">
+    <string name="filename" value="meshes/pitch_12.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-water_6">
+    <string name="filename" value="meshes/water_6.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="wet_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-water_7">
+    <string name="filename" value="meshes/water_7.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="wet_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-water_8">
+    <string name="filename" value="meshes/water_8.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="wet_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-water_9">
+    <string name="filename" value="meshes/water_9.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="wet_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-water_10">
+    <string name="filename" value="meshes/water_10.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="wet_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-water_11">
+    <string name="filename" value="meshes/water_11.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="wet_ground" name="bsdf" />
+  </shape>
+  <shape type="ply" id="mesh-ground">
+    <string name="filename" value="meshes/ground.ply" />
+    <boolean name="face_normals" value="true" />
+    <ref id="medium_dry_ground" name="bsdf" />
+  </shape>
+</scene>

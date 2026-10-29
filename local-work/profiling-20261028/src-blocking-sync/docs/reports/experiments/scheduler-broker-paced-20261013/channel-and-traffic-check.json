@@ -1,0 +1,11 @@
+{
+  "grid_points_per_run": 1200,
+  "identical_profile_hashes": 1086,
+  "positions_identical": true,
+  "tap_count_identical": true,
+  "max_gain_difference_db": 0.000937477000000797,
+  "max_phase_difference_rad": 0.00013542500000000152,
+  "max_delay_difference_samples": 0.0,
+  "traffic_configuration_identical": true,
+  "only_cell_a_processes_present": true
+}

@@ -1,0 +1,89 @@
+--- a/src/broker.cpp
++++ b/src/broker.cpp
+@@ -1,3 +1,4 @@
++#include "diagnostic_trace.h"
+ #include "ocudu_gpu_channel/broker.h"
+ #include "ocudu_gpu_channel/timing_metrics.h"
+ #include "ocudu_gpu_channel/pacing.h"
+@@ -1111,6 +1112,7 @@
+     apply_thread_slack(knobs);
+     try {
+       RadioNodeRuntime& node = nodes[n];
++      DiagnosticTrace<13> diagnostic("producer-" + node.id);
+       const std::vector<std::size_t>& incoming = node.incoming;
+ 
+       std::vector<IqBuffer> inputs(incoming.size(), IqBuffer(node.batch));
+@@ -1319,11 +1321,13 @@
+         }
+         diag.state.store("process");
+         const auto t_process_start = std::chrono::steady_clock::now();
++        const auto cpu_begin = trace_cpu_ns();
+         const double read_us =
+             std::chrono::duration<double, std::micro>(t_process_start - t_read_start).count();
+         processor_->process_superposition(node.id, superposition, rx_model, node.sample_rate_hz,
+                                           std::span<std::span<IqSample>>(rows));
+         const auto t_commit_start = std::chrono::steady_clock::now();
++        const auto cpu_end = trace_cpu_ns();
+         const double process_us =
+             std::chrono::duration<double, std::micro>(t_commit_start - t_process_start).count();
+ 
+@@ -1376,7 +1380,8 @@
+         // owed that entire idle period and would spend it as a burst -- and a
+         // multi-port ZMQ radio dead-locks on a burst rather than absorbing it.
+         // See `pacing.h` for the OCUDU-side mechanism.
+-        const auto due = pacer.charge(std::chrono::steady_clock::now(), count);
++        const auto t_charge = std::chrono::steady_clock::now();
++        const auto due = pacer.charge(t_charge, count);
+         if (config_.runtime.pacing && due > std::chrono::steady_clock::now()) {
+           diag.state.store("throttle");
+           std::this_thread::sleep_until(due);
+@@ -1416,6 +1421,7 @@
+         record_process_us(diag, process_us);
+         store_us(diag.stage_us_bits[kProducerStageThrottle], throttle_us);
+         store_us(diag.stage_us_bits[kProducerStagePush], push_us);
++        diagnostic.add({static_cast<long long>(count), trace_ns(t_room_start), trace_ns(t_align_start), trace_ns(t_data_start), trace_ns(t_read_start), trace_ns(t_process_start), trace_ns(t_commit_start), trace_ns(t_charge), trace_ns(due), trace_ns(t_push_start), trace_ns(std::chrono::steady_clock::now()), cpu_begin, cpu_end});
+         diag.last_samples.store(count);
+         diag.progress.fetch_add(1);
+       }
+--- a/src/cuda_backend.cu
++++ b/src/cuda_backend.cu
+@@ -1,3 +1,4 @@
++#include "diagnostic_trace.h"
+ #include "ocudu_gpu_channel/backend.h"
+ #include "ocudu_gpu_channel/cuda_backend.h"
+ #include "ocudu_gpu_channel/delay.h"
+@@ -1495,8 +1496,16 @@
+       std::copy(row, row + count, outputs[r].begin());
+     }
+ 
+-    record_timings(sp.h2d_start, sp.h2d_done, sp.kernel_done, sp.d2h_done, call_start, total_start, out_start,
++    const auto diagnostic_gpu = record_timings(sp.h2d_start, sp.h2d_done, sp.kernel_done, sp.d2h_done, call_start, total_start, out_start,
+                    sp.use_device_channel, sp.zc_in || sp.zc_out || sp.zc_meta || sp.zc_direct_in);
++    static thread_local DiagnosticTrace<8> diagnostic("gpu-" + dst_key);
++    diagnostic.add({trace_ns(call_start), trace_ns(total_start), trace_ns(out_start),
++                    trace_ns(std::chrono::steady_clock::now()),
++                    static_cast<long long>(diagnostic_gpu.h2d_us*1000),
++                    static_cast<long long>(diagnostic_gpu.kernel_us*1000),
++                    static_cast<long long>(diagnostic_gpu.d2h_us*1000),
++                    static_cast<long long>(count)});
++
+   }
+ 
+   ProcessorTimings last_timings() const override
+@@ -1525,7 +1534,7 @@
+   }
+ 
+ private:
+-  void record_timings(cudaEvent_t h2d_start,
++  ProcessorTimings record_timings(cudaEvent_t h2d_start,
+                       cudaEvent_t h2d_done,
+                       cudaEvent_t kernel_done,
+                       cudaEvent_t d2h_done,
+@@ -1559,6 +1568,7 @@
+     last_timings_.host_prep_us = us(total_start - call_start);
+     last_timings_.host_out_us = us(end - out_start);
+     last_timings_.call_us = us(end - call_start);
++    return last_timings_;
+   }
+ 
+   // Builds a model chain into `ms`, advancing its per-step CFO phase and AWGN

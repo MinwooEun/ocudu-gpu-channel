@@ -1,0 +1,21 @@
+{
+  "window": "16 UE diagnostic second policy, post warmup until replay failure",
+  "duration_s": 7.860603332,
+  "groups": {
+    "ocudu-gpu-chann": {
+      "cpu_seconds": 15.721094304,
+      "runnable_wait_seconds": 188.790684336,
+      "mean_cores": 1.9999857059318151
+    },
+    "gnb": {
+      "cpu_seconds": 14.661977424,
+      "runnable_wait_seconds": 0.551609456,
+      "mean_cores": 1.8652483536870577
+    },
+    "srsue": {
+      "cpu_seconds": 35.235293888,
+      "runnable_wait_seconds": 215.500957616,
+      "mean_cores": 4.482517740662403
+    }
+  }
+}

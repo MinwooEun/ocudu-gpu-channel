@@ -1,0 +1,1 @@
+Dedicated container stopped. All 13 unrelated running containers preserved. Canonical channel source hashes restored; all 13 RTX CTest cases passed.

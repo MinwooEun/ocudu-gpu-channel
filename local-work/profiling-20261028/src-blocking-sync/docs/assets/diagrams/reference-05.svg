@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="background:#0f1420;color:#e7ecf5;--bg:#0f1420;--panel:#1a2233;--ink:#e7ecf5;--muted:#9aa7bd;--edge:#2c3850;--accent:#5db1ff;--warm:#ffb454;--good:#6fd08c;--cell:#0b101a" viewBox="0 0 1000 250" font-family="SF Mono,Menlo,monospace" font-size="12">
+    <text x="20" y="22" fill="#9aa7bd">Per-source IQ rings (one per radio TX) · sequence-tagged samples 0, 1, 2, …</text>
+
+    <!-- Ring src 0 -->
+    <text x="20" y="58" fill="#6fd08c" font-size="11">src 0 ring</text>
+    <g fill="#1a2233" stroke="#2c3850">
+      <rect x="100" y="42" width="40" height="28"/>
+      <rect x="140" y="42" width="40" height="28"/>
+      <rect x="180" y="42" width="40" height="28"/>
+      <rect x="220" y="42" width="40" height="28"/>
+      <rect x="260" y="42" width="40" height="28"/>
+      <rect x="300" y="42" width="40" height="28"/>
+      <rect x="340" y="42" width="40" height="28"/>
+      <rect x="380" y="42" width="40" height="28"/>
+    </g>
+    <g fill="#e7ecf5" text-anchor="middle" font-size="11">
+      <text x="120" y="60">0</text>
+      <text x="160" y="60">1</text>
+      <text x="200" y="60">2</text>
+      <text x="240" y="60">3</text>
+      <text x="280" y="60">4</text>
+      <text x="320" y="60">5</text>
+      <text x="360" y="60">6</text>
+      <text x="400" y="60">7</text>
+    </g>
+    <text x="438" y="60" fill="#9aa7bd" font-size="11">… next_seq</text>
+
+    <!-- Ring src 1 -->
+    <text x="20" y="116" fill="#6fd08c" font-size="11">src 1 ring</text>
+    <g fill="#1a2233" stroke="#2c3850">
+      <rect x="100" y="100" width="40" height="28"/>
+      <rect x="140" y="100" width="40" height="28"/>
+      <rect x="180" y="100" width="40" height="28"/>
+      <rect x="220" y="100" width="40" height="28"/>
+      <rect x="260" y="100" width="40" height="28"/>
+      <rect x="300" y="100" width="40" height="28"/>
+    </g>
+    <g fill="#e7ecf5" text-anchor="middle" font-size="11">
+      <text x="120" y="118">0</text>
+      <text x="160" y="118">1</text>
+      <text x="200" y="118">2</text>
+      <text x="240" y="118">3</text>
+      <text x="280" y="118">4</text>
+      <text x="320" y="118">5</text>
+    </g>
+    <text x="358" y="118" fill="#9aa7bd" font-size="11">… next_seq</text>
+
+    <!-- Common window highlight (HIGHLIGHT modifier: translucent amber + amber dashed border) -->
+    <rect x="98" y="34" width="244" height="104" fill="rgba(255,180,84,0.12)" stroke="#ffb454" stroke-dasharray="4 3"/>
+    <text x="220" y="158" fill="#ffb454" text-anchor="middle" font-size="11">common window = min(batch, min over k of (next_seq − cursor))</text>
+    <text x="220" y="174" fill="#9aa7bd" text-anchor="middle" font-size="10">(here 6 samples — src 1's ring limits the window)</text>
+
+    <!-- Cursor marker: orange arrow pointing up at column 0 from below the rings -->
+    <g stroke="#ffb454" stroke-width="2" fill="#ffb454">
+      <line x1="120" y1="148" x2="120" y2="142"/>
+      <polygon points="120,138 114,148 126,148"/>
+    </g>
+    <text x="120" y="190" fill="#ffb454" text-anchor="middle" font-size="11">cursor_k</text>
+    <text x="120" y="204" fill="#9aa7bd" text-anchor="middle" font-size="10">(seq 0 on 1st serve = epoch)</text>
+
+    <text x="500" y="222" fill="#ffb454" font-size="11" text-anchor="middle">→ after serve: every cursor += 6 (lockstep advance across all edges)</text>
+
+    <!-- Time discipline panel on right - simplified to virtual-time formula only -->
+    <rect x="600" y="42" width="380" height="90" rx="6" fill="#1a2233" stroke="#2c3850"/>
+    <text x="790" y="64" fill="#ffb454" text-anchor="middle">Time discipline</text>
+    <text x="620" y="92" fill="#cdd6e6" font-size="11">virtual time of dst[idx]:</text>
+    <text x="620" y="116" fill="#5db1ff" font-size="13">  t = (cursor_start + idx) / sample_rate</text>
+
+    <text x="500" y="244" fill="#cdd6e6" text-anchor="middle" font-size="11">Same column index across rings = same source-time instant — that is what makes superposition physical.</text>
+  </svg>

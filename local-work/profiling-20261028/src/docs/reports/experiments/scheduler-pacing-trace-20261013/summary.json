@@ -1,0 +1,34 @@
+[
+  {
+    "run": "20261013T110621Z",
+    "scheduler": "rr",
+    "valid_seconds": 120,
+    "gnb_slots_per_s": 998.9075911443398,
+    "gate_broker": {
+      "control_batches_committed": 1319,
+      "rx_requests": 444260,
+      "rx_starvations": 8,
+      "tx_pulls": 421755,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    },
+    "all_scheduled_packets_received": true
+  },
+  {
+    "run": "20261013T111356Z",
+    "scheduler": "qos",
+    "valid_seconds": 120,
+    "gnb_slots_per_s": 998.9707955802511,
+    "gate_broker": {
+      "control_batches_committed": 1319,
+      "rx_requests": 441281,
+      "rx_starvations": 13,
+      "tx_pulls": 421703,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    },
+    "all_scheduled_packets_received": true
+  }
+]

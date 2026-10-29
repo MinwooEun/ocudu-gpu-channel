@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "gnbs": {
+    "gnb0": {
+      "requested": "rr",
+      "found_in_config_dump": [
+        "rr"
+      ],
+      "ok": true,
+      "policy_block": "      rr_sched: ~\n"
+    }
+  }
+}

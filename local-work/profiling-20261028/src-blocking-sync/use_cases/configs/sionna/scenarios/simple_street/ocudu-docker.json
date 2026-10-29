@@ -1,0 +1,57 @@
+{
+  "name": "ocudu-docker-single-cell",
+  "scene": "sionna_simple_test",
+  "nodes": {
+    "gnb0": {
+      "start_m": [
+        32.5,
+        10.5,
+        60.0
+      ],
+      "mobility": "fixed",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    },
+    "ue0": {
+      "start_m": [
+        -70.0,
+        0.0,
+        1.5
+      ],
+      "velocity_mps": [
+        13.888888889,
+        0.0,
+        0.0
+      ],
+      "route_x_m": [
+        -82.0,
+        82.0
+      ],
+      "mobility": "car",
+      "array": {
+        "rows": 1,
+        "cols": 1,
+        "pattern": "iso",
+        "polarization": "V"
+      }
+    }
+  },
+  "links": [
+    {
+      "from": "gnb0",
+      "to": "ue0",
+      "direction": "downlink",
+      "model": "cuda_mvp"
+    },
+    {
+      "from": "ue0",
+      "to": "gnb0",
+      "direction": "uplink",
+      "model": "cuda_mvp"
+    }
+  ]
+}

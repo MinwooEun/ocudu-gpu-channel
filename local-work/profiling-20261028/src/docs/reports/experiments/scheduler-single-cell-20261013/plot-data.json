@@ -1,0 +1,12 @@
+{
+  "metric": "Arithmetic mean of per-second p99 one-way bulk-download UDP delay",
+  "unit": "ms",
+  "values": {
+    "rr": 10.761212,
+    "qos": 13.546253
+  },
+  "per_policy_valid_seconds": {
+    "rr": 120,
+    "qos": 120
+  }
+}

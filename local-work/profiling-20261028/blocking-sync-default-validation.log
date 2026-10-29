@@ -1,0 +1,14 @@
+Internal ctest changing into directory: /workspace/gpuch/profile-20261028/build-blocking-sync
+Test project /workspace/gpuch/profile-20261028/build-blocking-sync
+    Start  4: runtime_update_parity
+1/4 Test  #4: runtime_update_parity ............   Passed    0.36 sec
+    Start  5: matrix_profile_history
+2/4 Test  #5: matrix_profile_history ...........   Passed    1.25 sec
+    Start  7: processing
+3/4 Test  #7: processing .......................   Passed    1.07 sec
+    Start 10: broker
+4/4 Test #10: broker ...........................   Passed    5.43 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   8.11 sec

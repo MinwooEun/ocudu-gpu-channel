@@ -1,0 +1,15 @@
+live-fixes.ko.txt: OK
+live-fixes-results.csv: OK
+live-fixes-summary.json: OK
+live-fixes-channel-cpu.json: OK
+live-fixes.png: OK
+live-fixes.pdf: OK
+live-fixes-evidence.tar.gz: OK
+blocking-sync.patch: OK
+check_live_fixes.py: OK
+summarize_live_fixes.py: OK
+make_live_fixes_report.py: OK
+collect_fixes_after_runs.sh: OK
+fixes-cuda-blocking.log: OK
+blocking-sync-default-validation.log: OK
+fixes-gpu-final.csv: OK

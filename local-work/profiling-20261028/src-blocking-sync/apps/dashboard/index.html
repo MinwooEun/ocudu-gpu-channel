@@ -1,0 +1,1810 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OCUDU Sionna Channel Status</title>
+  <style>
+    :root { color-scheme: dark; --bg:#081019; --panel:#101d29; --line:#26394a; --text:#e9f2f8; --muted:#8ca4b5; --cyan:#42d3ff; --green:#53e58b; --amber:#ffc857; --red:#ff6577; }
+    * { box-sizing:border-box; }
+    [hidden] { display:none !important; }
+    body { margin:0; background:radial-gradient(circle at 30% 0,#102a3a 0,var(--bg) 42%); color:var(--text); font:14px/1.45 ui-sans-serif,system-ui,sans-serif; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:18px 24px; border-bottom:1px solid var(--line); background:#081019cc; position:sticky; top:0; z-index:2; backdrop-filter:blur(12px); }
+    h1 { margin:0; font-size:20px; letter-spacing:.02em; } .sub { color:var(--muted); font-size:12px; }
+    .pills { display:grid; grid-template-columns:repeat(4,190px); gap:8px; justify-content:end; }
+    .pill { border:1px solid var(--line); border-radius:99px; padding:5px 10px; color:var(--muted); text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #updatedPill { grid-column:4; }
+    .pill.ok { color:var(--green); border-color:#276d48; } .pill.bad { color:var(--amber); border-color:#6b5725; } .pill.fail { color:var(--red); border-color:#73313e; }
+    main { padding:20px 24px 40px; max-width:1500px; margin:auto; }
+    .grid { display:grid; grid-template-columns:minmax(430px,1.25fr) minmax(360px,.75fr); gap:16px; }
+    .panel { min-width:0; background:linear-gradient(145deg,#132331e8,#0d1822e8); border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:0 16px 50px #0004; }
+    .panel h2 { font-size:14px; margin:0 0 12px; color:#bed1de; text-transform:uppercase; letter-spacing:.08em; }
+    canvas { display:block; width:100%; height:520px; border-radius:10px; background:#07111a; border:1px solid #213443; }
+    .legend { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin-top:10px; color:var(--muted); font-size:12px; }
+    /* The scene reads as a cartographic inset: the OpenStreetMap standard
+       style's land/building/road values on a light ground, deliberately
+       lighter than the surrounding dashboard so it reads as a map. */
+    .scene-stage { position:relative; border-radius:10px; overflow:hidden; border:1px solid #cfc7bc; background:linear-gradient(180deg,#f7f5f1 0,#f2efe9 55%,#eae5dc 100%); }
+    .scene-stage canvas { border:0; border-radius:0; background:transparent; }
+    #scene3d { width:100%; height:520px; }
+    #scene3d canvas { height:100% !important; }
+    .scene-toolbar { position:absolute; top:10px; right:10px; display:flex; gap:6px; z-index:1; }
+    .scene-toolbar button { font:600 11px/1 ui-sans-serif,system-ui,sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#4a4136; background:#ffffffd9; border:1px solid #c2b8ae; border-radius:7px; padding:7px 10px; cursor:pointer; backdrop-filter:blur(8px); }
+    .scene-toolbar button:hover { border-color:#7a1220; color:#7a1220; }
+    .scene-toolbar button[aria-pressed="false"] { opacity:.42; }
+    /* ODbL 1.0 requires the OpenStreetMap credit to be visible wherever the
+       data is shown, so it sits on the scene itself, not only in the repo. */
+    .scene-credit { position:absolute; right:10px; bottom:10px; z-index:1; color:#6b6055; font-size:11px; background:#ffffffd9; border:1px solid #c2b8ae; border-radius:7px; padding:5px 9px; pointer-events:none; }
+    .scene-hint { position:absolute; left:12px; bottom:10px; z-index:1; color:#8a7f72; font-size:11px; letter-spacing:.04em; pointer-events:none; }
+    .scene-gainbar { position:absolute; left:12px; top:12px; z-index:1; display:flex; align-items:center; gap:8px; color:#6b6055; font-size:11px; font-variant-numeric:tabular-nums; pointer-events:none; }
+    .scene-gainbar i { display:block; width:120px; height:7px; border-radius:4px; border:1px solid #d5ccc1; background:linear-gradient(90deg,#ded8ce,#a9a096,#6b6055,#4a4136); }
+    .scene-status { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#8a7f72; font-size:13px; pointer-events:none; }
+    .scene-status.corner { inset:auto auto 10px 12px; color:#6b6055; font-size:11px; background:#ffffffd9; border:1px solid #c2b8ae; border-radius:7px; padding:5px 9px; }
+    .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
+    /* The two UE colours interleaved, as the crosstalk ray draws them. */
+    .dot-split { width:26px; height:3px; border-radius:2px; background:repeating-linear-gradient(90deg,#c0392b 0 5px,#2e7d4f 5px 10px); }
+    .stats { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:16px; }
+    .stat { padding:12px; border:1px solid var(--line); border-radius:10px; background:#09141d; }
+    .stat b { display:block; font-size:19px; font-variant-numeric:tabular-nums; } .stat span { color:var(--muted); font-size:11px; text-transform:uppercase; }
+    table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+    th,td { padding:8px 7px; border-bottom:1px solid #20323f; text-align:right; white-space:nowrap; }
+    th:first-child,td:first-child { text-align:left; } th { color:var(--muted); font-size:11px; text-transform:uppercase; }
+    tbody tr:hover { background:#172735; }
+    .scroll { max-height:420px; overflow:auto; }
+    .wide { grid-column:1/-1; }
+    .facts { display:grid; grid-template-columns:minmax(120px,.45fr) 1fr; gap:7px 12px; margin:0 0 18px; }
+    .facts dt { color:var(--muted); } .facts dd { margin:0; overflow-wrap:anywhere; }
+    .delivery { border:1px solid var(--line); border-radius:10px; background:#09141d; padding:12px; margin-bottom:16px; }
+    .delivery strong { display:block; color:var(--green); margin-bottom:4px; } .delivery strong.wait { color:var(--amber); }
+    .tag-ok { color:var(--green); } .tag-wait { color:var(--amber); } .mono { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    .foot { color:var(--muted); font-size:12px; margin-top:12px; }
+    .deadline-grid,.edge-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr)); gap:12px; }
+    .deadline-card,.edge-card { border:1px solid var(--line); border-radius:10px; background:#09141d; padding:12px; min-width:0; }
+    .card-head { display:flex; justify-content:space-between; gap:12px; align-items:baseline; margin-bottom:8px; }
+    .card-head strong { font-size:15px; } .card-head span { color:var(--muted); font-size:11px; }
+    .meter { height:10px; border-radius:99px; overflow:hidden; background:#202e39; margin:9px 0 6px; }
+    .meter > i { display:block; height:100%; background:var(--green); border-radius:inherit; }
+    .meter > i.warn { background:var(--amber); } .meter > i.fail { background:var(--red); }
+    .deadline-numbers { display:flex; justify-content:space-between; gap:10px; color:var(--muted); font-size:12px; }
+    .deadline-numbers b { color:var(--text); }
+    .deadline-cumulative { display:grid; grid-template-columns:repeat(5,minmax(72px,1fr)); gap:6px; margin-top:10px; }
+    .deadline-cumulative div { padding:7px; border:1px solid #20323f; border-radius:7px; background:#07111a; min-width:0; }
+    .deadline-cumulative b { display:block; font-size:13px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+    .deadline-cumulative span { color:var(--muted); font-size:9px; text-transform:uppercase; }
+    .metric-guide { margin-top:12px; border:1px solid #20323f; border-radius:9px; background:#07111a; padding:11px; color:var(--muted); font-size:11px; }
+    .metric-guide summary { cursor:pointer; color:#bed1de; font-weight:700; }
+    .metric-guide table { margin-top:8px; }
+    .metric-guide th,.metric-guide td { padding:6px; white-space:normal; vertical-align:top; text-align:left; }
+    .metric-guide p { margin:8px 0 0; }
+    .edge-meta { color:var(--muted); font-size:11px; margin-bottom:8px; overflow-wrap:anywhere; }
+    .brief { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; }
+    .brief h3 { margin:0 0 6px; font-size:16px; line-height:1.35; color:var(--text); }
+    .brief-head { margin:0 0 8px; font-size:12px; color:#bed1de; text-transform:uppercase; letter-spacing:.08em; }
+    .brief-head span { color:var(--muted); text-transform:none; letter-spacing:0; font-size:11px; font-weight:400; }
+    .brief-lede { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(240px,.9fr); gap:16px; align-items:start; }
+    .brief-lede p { margin:0; color:var(--muted); font-size:12.5px; }
+    .brief-modes { display:grid; gap:7px; }
+    .brief-mode { display:flex; align-items:baseline; gap:9px; min-width:0; }
+    .mode-pill { flex:none; border-radius:99px; padding:3px 11px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; }
+    .mode-pill.dl { color:var(--cyan); border:1px solid #285c6e; background:#0c2431; }
+    .mode-pill.ul { color:var(--amber); border:1px solid #6b5725; background:#2b2414; }
+    .mode-pill.tlm { color:var(--green); border:1px solid #276d48; background:#10251a; }
+    .mode-pill.sts { color:#b7a0ff; border:1px solid #4b3f6b; background:#191634; }
+    .plane-legend { display:flex; flex-wrap:wrap; gap:8px 20px; }
+    .plane-legend .brief-mode { flex:1 1 300px; }
+    .brief-mode span { color:var(--muted); font-size:11.5px; }
+    .arch-figure { display:block; width:100%; height:auto; border:1px solid #20323f; border-radius:10px; background:#07111a; }
+    .brief-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr)); gap:10px; }
+    .brief-card { border:1px solid #20323f; border-radius:9px; background:#07111a; padding:11px; min-width:0; }
+    .brief-card strong { display:block; color:#bed1de; margin-bottom:5px; font-size:12.5px; }
+    .brief-card p { margin:0 0 8px; color:var(--muted); font-size:11.5px; }
+    .brief-card .mono { color:var(--cyan); font-size:11px; overflow-wrap:anywhere; }
+    .score-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(270px,100%),1fr)); gap:10px; }
+    .score-card { border:1px solid #20323f; border-radius:9px; background:#07111a; padding:11px; min-width:0; }
+    .score-card strong { display:block; font-size:12.5px; margin-bottom:5px; }
+    .score-card b { display:block; font-size:15px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; margin-bottom:5px; }
+    .score-card p { margin:0; color:var(--muted); font-size:11.5px; }
+    .score-card.dl { border-color:#285c6e; } .score-card.dl strong,.score-card.dl b { color:var(--cyan); }
+    .score-card.ok { border-color:#276d48; } .score-card.ok strong,.score-card.ok b { color:var(--green); }
+    .score-card.gate { border-color:#73313e; } .score-card.gate strong,.score-card.gate b { color:var(--red); }
+    .brief-table th,.brief-table td { text-align:left; white-space:normal; vertical-align:top; padding:7px 8px; font-size:11.5px; }
+    .brief-table td.value { color:var(--text); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    .claim { border:1px solid #6b5725; border-radius:9px; background:#2b2414; color:#ffdd9e; padding:11px; font-size:11.5px; }
+    .claim b { color:var(--amber); }
+    .brief-repro { border:1px solid #20323f; border-radius:8px; background:#07111a; padding:10px; color:var(--cyan); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:11px; overflow-x:auto; white-space:pre; }
+    .outlook-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .outlook-card { position:relative; min-width:0; padding:17px 18px; border:1px solid #20323f; border-radius:11px; background:#07111a; overflow:hidden; }
+    .outlook-card::before { content:""; position:absolute; inset:0 auto 0 0; width:3px; background:var(--cyan); }
+    .outlook-card.academia::before { background:#b7a0ff; }
+    .outlook-label { display:inline-block; margin-bottom:9px; padding:3px 9px; border:1px solid #285c6e; border-radius:99px; color:var(--cyan); background:#0c2431; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+    .outlook-card.academia .outlook-label { color:#b7a0ff; border-color:#4b3f6b; background:#191634; }
+    .outlook-card h3 { margin:0 0 11px; color:var(--text); font-size:16px; line-height:1.35; }
+    .outlook-card ul { margin:0; padding-left:18px; color:var(--muted); }
+    .outlook-card li { margin:7px 0; padding-left:3px; }
+    .outlook-card.industry li::marker { color:var(--cyan); }
+    .outlook-card.academia li::marker { color:#b7a0ff; }
+    .tap-plot { width:100%; height:136px; display:block; border:1px solid #20323f; border-radius:8px; background:#07111a; margin-bottom:8px; }
+    .ran-table-wrap { overflow-x:auto; border:1px solid #20323f; border-radius:9px; background:#07111a; }
+    .ran-table { border-collapse:collapse; width:100%; min-width:900px; font-variant-numeric:tabular-nums; }
+    .ran-table th,.ran-table td { padding:7px 9px; font-size:11px; text-align:right; white-space:nowrap; border-bottom:1px solid #16242f; }
+    .ran-table th { position:sticky; top:0; background:#0c1822; color:var(--muted); font-size:9px; text-transform:uppercase; text-align:right; }
+    .ran-table th:first-child,.ran-table td:first-child { text-align:left; }
+    .ran-table tbody tr:last-child td { border-bottom:0; }
+    .ran-group { color:var(--cyan); font-size:10px; padding:7px 9px; background:#0a1620; border-bottom:1px solid #20323f; }
+    .ran-stale { color:var(--amber); font-size:11px; padding:6px 9px; margin-bottom:6px; border:1px solid #4a3a15; border-radius:9px; background:#1a1408; }
+    .lane-picker { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:0 0 9px; }
+    .lane-picker .lane-picker-label { color:var(--muted); font-size:11px; margin-right:2px; }
+    .lane-picker button { font:inherit; font-size:11px; line-height:1; padding:5px 10px; border-radius:99px; cursor:pointer; background:#0c1a24; border:1px solid #20323f; color:var(--muted); }
+    .lane-picker button:hover { border-color:#31506a; }
+    .lane-picker button.active { font-weight:600; }
+    .freq-block { border:1px solid #20323f; border-radius:8px; background:#07111a; overflow:hidden; margin:9px 0; }
+    .freq-head { display:flex; justify-content:space-between; gap:10px; padding:7px 9px; border-bottom:1px solid #20323f; color:var(--muted); font-size:10px; }
+    .freq-head b { color:var(--text); }
+    .freq-plot { width:100%; height:170px; display:block; background:#07111a; }
+    /* No scroll cap: every selected lane's tap table has to be readable
+       at once. Four stacked lanes are ~1090px, which the old 680px cap
+       hid lane 4 behind — it only ever fit while the gNB had two ports.
+       The grid puts two lanes side by side whenever the card is wide
+       enough, so All 4 stays about as tall as two stacked lanes. */
+    .lane-tables { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); gap:9px; align-items:start; }
+    .lane-tap-block { border:1px solid #20323f; border-radius:8px; background:#07111a; overflow-x:auto; }
+    .lane-tap-head { display:flex; justify-content:space-between; gap:10px; padding:7px; border-bottom:1px solid #20323f; color:var(--muted); font-size:10px; }
+    .lane-tap-head b { color:var(--text); }
+    .tap-table th,.tap-table td { padding:5px 6px; font-size:11px; }
+    .tap-table tbody tr { height:27px; }
+    .tap-table tr.empty-tap-row td { color:#40515e; }
+    .phase-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
+    .empty { text-align:center; color:var(--muted); padding:24px; border:1px dashed var(--line); border-radius:10px; }
+    .runtime-grid { display:grid; grid-template-columns:repeat(2,minmax(280px,1fr)); gap:12px; }
+    .node-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr)); gap:10px; }
+    .node-card { border:1px solid var(--line); border-radius:10px; background:#09141d; padding:12px; min-width:0; }
+    .node-card-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px; }
+    .node-card-head strong { font-size:17px; }
+    .node-kind { color:var(--cyan); border:1px solid #285c6e; border-radius:99px; padding:2px 8px; font-size:10px; text-transform:uppercase; }
+    .node-facts { display:grid; grid-template-columns:72px minmax(0,1fr); gap:6px 10px; margin:0; }
+    .node-facts dt { color:var(--muted); }
+    .node-facts dd { margin:0; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+    .hardware-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); gap:10px; margin-bottom:10px; }
+    .hardware-card { padding:10px; border:1px solid #20323f; border-radius:9px; background:#07111a; min-width:0; }
+    .hardware-card strong { display:block; color:#bed1de; margin-bottom:4px; overflow-wrap:anywhere; }
+    .hardware-card.active { color:#101820; background:#f4f7fa; border-color:#fff; box-shadow:0 0 0 1px #ffffff66,0 5px 18px #0005; }
+    .hardware-card.active strong { color:#101820; }
+    .hardware-card.active .gpu-lines { color:#40505c; }
+    .system-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:7px; margin:10px 0; }
+    .gpu-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin:10px 0; }
+    .gpu-metric { padding:8px; border:1px solid #20323f; border-radius:8px; background:#07111a; }
+    .gpu-metric b { display:block; font-size:16px; } .gpu-metric span { color:var(--muted); font-size:10px; text-transform:uppercase; }
+    .gpu-lines { color:var(--muted); font-size:11px; overflow-wrap:anywhere; }
+    .resource-charts { display:grid; grid-template-columns:repeat(2,minmax(340px,1fr)); gap:10px; margin-top:10px; }
+    .resource-chart-card { border:1px solid #20323f; border-radius:9px; background:#07111a; padding:9px; min-width:0; }
+    .resource-chart-card strong { display:block; color:#bed1de; font-size:12px; margin-bottom:6px; }
+    canvas.resource-history { width:100%; height:220px; border:0; border-radius:6px; }
+    .memory-process-table { border:1px solid #20323f; border-radius:8px; overflow:hidden; background:#091720; }
+    .memory-process-row { display:grid; grid-template-columns:minmax(130px,1.25fr) repeat(2,minmax(90px,1fr)); align-items:center; }
+    .memory-process-row + .memory-process-row { border-top:1px solid #20323f; }
+    .memory-process-row > div { padding:10px; min-width:0; }
+    .memory-process-head { color:var(--muted); background:#0c1822; font-size:9px; text-transform:uppercase; }
+    .memory-process-name b { display:block; color:var(--text); font-size:12px; }
+    .memory-process-name span { display:block; color:var(--muted); font-size:9px; overflow-wrap:anywhere; }
+    .memory-process-value { color:var(--text); font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; text-align:right; overflow-wrap:anywhere; }
+    .memory-explain { color:var(--muted); font-size:10px; line-height:1.5; margin-top:8px; }
+    .gpu-processes { display:grid; grid-template-columns:repeat(2,minmax(260px,1fr)); gap:12px; }
+    .gpu-process { min-width:0; padding:10px; border:1px solid #20323f; border-radius:9px; background:#07111a; }
+    .warmup-banner { margin:10px 0 0; padding:9px 11px; border:1px solid #6b5725; border-radius:8px; color:var(--amber); background:#2b2414; }
+    .warmup-banner.ok { color:var(--green); border-color:#276d48; background:#10251a; }
+    .loop-flow { display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin:10px 0; }
+    .loop-flow span { border:1px solid var(--line); border-radius:99px; padding:4px 8px; background:#07111a; }
+    .loop-flow i { color:var(--cyan); font-style:normal; }
+    @media (max-width:1300px) { header { align-items:flex-start; flex-direction:column; } .pills { width:100%; grid-template-columns:repeat(4,minmax(145px,1fr)); } }
+    @media (max-width:1100px) { .resource-charts { grid-template-columns:1fr; } .system-metrics { grid-template-columns:repeat(3,1fr); } }
+    @media (max-width:700px) { .pills { grid-template-columns:repeat(2,minmax(0,1fr)); } #updatedPill { grid-column:2; } .runtime-grid,.gpu-processes,.outlook-grid { grid-template-columns:1fr; } .system-metrics,.gpu-metrics { grid-template-columns:repeat(2,1fr); } .deadline-cumulative { grid-template-columns:repeat(2,1fr); } .memory-process-row { grid-template-columns:minmax(0,1.2fr) repeat(2,minmax(0,1fr)); } }
+    @media (max-width:950px) { .grid { grid-template-columns:minmax(0,1fr); } canvas { height:420px; } .brief-lede { grid-template-columns:minmax(0,1fr); } }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>OCUDU · Sionna Channel Status</h1><div class="sub">Read-only status view — the Sionna Bridge controls the Broker; this Web UI only displays runtime state</div></div>
+    <div class="pills"><span id="sionnaPill" class="pill bad">Sionna waiting</span><span id="telemetryPill" class="pill bad">Telemetry waiting</span><span id="controlPill" class="pill bad">Control ACK waiting</span><span id="backendPill" class="pill bad">Backend waiting</span><span id="updatedPill" class="pill">No update</span></div>
+  </header>
+  <main>
+    <div class="grid">
+      <section class="panel wide">
+        <h2>Rank-1 multi-antenna channel emulation · example</h2>
+        <div class="brief">
+          <div class="brief-lede">
+            <div>
+              <h3>A four-port gNB and a single-port UE communicate through a declared channel matrix.</h3>
+              <p>This diagram illustrates a rank-1 configuration using OCUDU and the srsUE software stack. Each radio is a set of antenna ports (<span class="mono">RadioNode</span>); the UE uses <span class="mono">nof_antennas = 1</span>. Synthetic demos use ZMQ peers instead of radio stacks. Live attachment, traffic and matrix correctness require separate checks; dashboard readiness alone does not establish them.</p>
+            </div>
+            <div class="brief-modes">
+              <div class="brief-mode"><span class="mode-pill dl">Downlink</span><span>4 gNB TX ports → 1 UE RX port · row vector (1×4) · MISO</span></div>
+              <div class="brief-mode"><span class="mode-pill ul">Uplink</span><span>1 UE TX port → 4 gNB RX ports · column vector (4×1) · SIMO</span></div>
+            </div>
+          </div>
+          <svg class="arch-figure" viewBox="0 0 1400 600" role="img" aria-label="Example architecture: an OCUDU 4T4R gNB and a single-antenna srsUE exchange traffic through the GPU channel emulator, which applies a 1x4 downlink row vector and a 4x1 uplink column vector to nominal 1 ms slots" font-family="ui-sans-serif,system-ui,sans-serif">
+            <rect x="20" y="24" width="320" height="540" rx="14" fill="#09141d" stroke="#285c6e"/>
+            <text x="180" y="66" text-anchor="middle" fill="#42d3ff" font-size="21" font-weight="700">OCUDU gNB</text>
+            <text x="180" y="88" text-anchor="middle" fill="#8ca4b5" font-size="12">4T4R · software base station</text>
+            <rect x="115" y="102" width="130" height="24" rx="12" fill="#0c2431" stroke="#285c6e"/>
+            <text x="180" y="118" text-anchor="middle" fill="#42d3ff" font-size="12" font-weight="700">4T4R example</text>
+            <text x="42" y="169" fill="#42d3ff" font-size="13" font-weight="700">TX ports ×4</text>
+            <text x="322" y="199" text-anchor="end" fill="#8ca4b5" font-size="12">tx0</text><rect x="333" y="187" width="14" height="14" rx="3" fill="#42d3ff"/>
+            <text x="322" y="231" text-anchor="end" fill="#8ca4b5" font-size="12">tx1</text><rect x="333" y="219" width="14" height="14" rx="3" fill="#42d3ff"/>
+            <text x="322" y="263" text-anchor="end" fill="#8ca4b5" font-size="12">tx2</text><rect x="333" y="251" width="14" height="14" rx="3" fill="#42d3ff"/>
+            <text x="322" y="295" text-anchor="end" fill="#8ca4b5" font-size="12">tx3</text><rect x="333" y="283" width="14" height="14" rx="3" fill="#42d3ff"/>
+            <text x="42" y="349" fill="#ffc857" font-size="13" font-weight="700">RX ports ×4</text>
+            <text x="322" y="389" text-anchor="end" fill="#8ca4b5" font-size="12">rx0</text><rect x="333" y="377" width="14" height="14" rx="3" fill="#ffc857"/>
+            <text x="322" y="421" text-anchor="end" fill="#8ca4b5" font-size="12">rx1</text><rect x="333" y="409" width="14" height="14" rx="3" fill="#ffc857"/>
+            <text x="322" y="453" text-anchor="end" fill="#8ca4b5" font-size="12">rx2</text><rect x="333" y="441" width="14" height="14" rx="3" fill="#ffc857"/>
+            <text x="322" y="485" text-anchor="end" fill="#8ca4b5" font-size="12">rx3</text><rect x="333" y="473" width="14" height="14" rx="3" fill="#ffc857"/>
+            <line x1="349" y1="194" x2="492" y2="242" stroke="#42d3ff" stroke-width="1.4"/>
+            <line x1="349" y1="226" x2="492" y2="242" stroke="#42d3ff" stroke-width="1.4"/>
+            <line x1="349" y1="258" x2="492" y2="242" stroke="#42d3ff" stroke-width="1.4"/>
+            <line x1="349" y1="290" x2="492" y2="242" stroke="#42d3ff" stroke-width="1.4"/>
+            <path d="M490,229 L512,242 L490,255 z" fill="#42d3ff"/>
+            <line x1="505" y1="432" x2="368" y2="384" stroke="#ffc857" stroke-width="1.4"/><path d="M370,377 L354,384 L370,391 z" fill="#ffc857"/>
+            <line x1="505" y1="432" x2="368" y2="416" stroke="#ffc857" stroke-width="1.4"/><path d="M370,409 L354,416 L370,423 z" fill="#ffc857"/>
+            <line x1="505" y1="432" x2="368" y2="448" stroke="#ffc857" stroke-width="1.4"/><path d="M370,441 L354,448 L370,455 z" fill="#ffc857"/>
+            <line x1="505" y1="432" x2="368" y2="480" stroke="#ffc857" stroke-width="1.4"/><path d="M370,473 L354,480 L370,487 z" fill="#ffc857"/>
+            <text x="425" y="134" text-anchor="middle" fill="#8ca4b5" font-size="11">4 ZMQ sockets</text>
+            <text x="425" y="149" text-anchor="middle" fill="#8ca4b5" font-size="11">cf32 @ 23.04 MS/s</text>
+            <text x="425" y="522" text-anchor="middle" fill="#ffc857" font-size="11" font-weight="700">4 branches,</text>
+            <text x="425" y="537" text-anchor="middle" fill="#ffc857" font-size="11" font-weight="700">scored row by row</text>
+            <rect x="510" y="24" width="390" height="540" rx="14" fill="#0b1a1f" stroke="#276d48"/>
+            <text x="705" y="66" text-anchor="middle" fill="#53e58b" font-size="21" font-weight="700">GPU Channel Emulator</text>
+            <text x="705" y="88" text-anchor="middle" fill="#8ca4b5" font-size="12">ocudu-gpu-channel · CUDA</text>
+            <text x="705" y="108" text-anchor="middle" fill="#53e58b" font-size="12">synthesises y = H·x once per 1 ms slot</text>
+            <text x="705" y="146" text-anchor="middle" fill="#42d3ff" font-size="13" font-weight="700">Downlink channel = row vector (1×4)</text>
+            <rect x="535" y="158" width="340" height="58" rx="8" fill="#07111a" stroke="#285c6e"/>
+            <text x="705" y="195" text-anchor="middle" fill="#e9f2f8" font-size="17" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">y = [ h0  h1  h2  h3 ] · x</text>
+            <text x="705" y="238" text-anchor="middle" fill="#8ca4b5" font-size="11.5">four transmit branches combine into one</text>
+            <text x="705" y="254" text-anchor="middle" fill="#8ca4b5" font-size="11.5">waveform at the handset's antenna</text>
+            <text x="705" y="300" text-anchor="middle" fill="#ffc857" font-size="13" font-weight="700">Uplink channel = column vector (4×1)</text>
+            <rect x="535" y="312" width="340" height="160" rx="8" fill="#07111a" stroke="#6b5725"/>
+            <text x="585" y="400" fill="#e9f2f8" font-size="17" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">y =</text>
+            <text x="705" y="348" text-anchor="middle" fill="#e9f2f8" font-size="15" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">[ g0 ]</text>
+            <text x="705" y="380" text-anchor="middle" fill="#e9f2f8" font-size="15" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">[ g1 ]</text>
+            <text x="705" y="412" text-anchor="middle" fill="#e9f2f8" font-size="15" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">[ g2 ]</text>
+            <text x="705" y="444" text-anchor="middle" fill="#e9f2f8" font-size="15" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">[ g3 ]</text>
+            <text x="800" y="400" fill="#e9f2f8" font-size="17" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">· x</text>
+            <text x="705" y="500" text-anchor="middle" fill="#8ca4b5" font-size="11.5">each receive port carries its own coefficient</text>
+            <line x1="900" y1="242" x2="1040" y2="242" stroke="#42d3ff" stroke-width="3.5"/><path d="M1038,232 L1058,242 L1038,252 z" fill="#42d3ff"/>
+            <line x1="1050" y1="432" x2="922" y2="432" stroke="#ffc857" stroke-width="3.5"/><path d="M924,422 L904,432 L924,442 z" fill="#ffc857"/>
+            <text x="985" y="134" text-anchor="middle" fill="#8ca4b5" font-size="11">1 ZMQ socket</text>
+            <text x="985" y="149" text-anchor="middle" fill="#8ca4b5" font-size="11">no RF front end</text>
+            <text x="985" y="226" text-anchor="middle" fill="#42d3ff" font-size="12" font-weight="700">1 combined stream</text>
+            <text x="985" y="416" text-anchor="middle" fill="#ffc857" font-size="12" font-weight="700">1 stream</text>
+            <rect x="1070" y="24" width="310" height="540" rx="14" fill="#09141d" stroke="#6b5725"/>
+            <text x="1225" y="66" text-anchor="middle" fill="#ffc857" font-size="21" font-weight="700">srsUE</text>
+            <text x="1225" y="88" text-anchor="middle" fill="#8ca4b5" font-size="12">software UE stack</text>
+            <rect x="1090" y="102" width="270" height="26" rx="8" fill="#2b2414" stroke="#6b5725"/>
+            <text x="1225" y="119" text-anchor="middle" fill="#ffc857" font-size="12" font-weight="700">nof_antennas = 1 (never changed)</text>
+            <rect x="1063" y="235" width="14" height="14" rx="3" fill="#42d3ff"/>
+            <text x="1090" y="247" fill="#e9f2f8" font-size="13">RX port ×1</text>
+            <text x="1090" y="265" fill="#8ca4b5" font-size="11.5">single-layer reception only</text>
+            <rect x="1063" y="425" width="14" height="14" rx="3" fill="#ffc857"/>
+            <text x="1090" y="437" fill="#e9f2f8" font-size="13">TX port ×1</text>
+            <text x="1090" y="455" fill="#8ca4b5" font-size="11.5">no UE-side beamforming</text>
+          </svg>
+          <div>
+            <h3 class="brief-head">How it is built</h3>
+            <div class="brief-grid">
+              <div class="brief-card"><strong>Antenna streams stay aligned</strong><p>All ports of one node share a single sample epoch owned by one producer thread, and a window is emitted whole — never split, never partial. Misalignment is made impossible by the data structure rather than checked for afterwards.</p><span class="mono">broker.cpp</span></div>
+              <div class="brief-card"><strong>One kernel launch per slot</strong><p>Edges into a destination row sit in a contiguous CSR range, so antenna count never multiplies launches. The grouping is built once at prepare time, not per slot.</p><span class="mono">superpose_kernel · row_begin[r]</span></div>
+              <div class="brief-card"><strong>Fading generated on-device</strong><p>TDL multi-tap, Jakes fading and Rician LOS grids are materialised in shared memory every slot, with no host round-trip. TR 38.901 TDL-A…E.</p><span class="mono">apply_steps_kernel</span></div>
+              <div class="brief-card"><strong>Real-time headroom</strong><p>Four-port p99 is 285 µs of the 1 ms slot (31 %) over n = 54,439 slots. Pinned staging buffers, no allocation anywhere on the hot path.</p><span class="mono">p50 115 µs · p99.9 675 µs</span></div>
+            </div>
+          </div>
+          <div>
+            <h3 class="brief-head">Scored on the wire, every run <span>— the same run captures the live waveform and checks it against the declared matrix H. Tolerance 1e-04, each receive port scored as its own row.</span></h3>
+            <div class="score-grid">
+              <div class="score-card dl"><strong>Uplink 1×4 — all four branches live</strong><b>4.66e-05 · 2.14e-05 · 1.68e-05 · 2.78e-05</b><p>per-row max |y − Hx| — each receive port scored separately</p></div>
+              <div class="score-card ok"><strong>Downlink 4×1 — multi-branch, no waiver</strong><b>5.27e-08</b><p>off-diagonal share 0.081 — other ports genuinely contribute</p></div>
+              <div class="score-card gate"><strong>Leave-one-out — passing alone is not accepted</strong><b>91.3 – 236.9</b><p>Remove any one link and the match must break, or the check fails. That range is the measured divergence when a link is removed.</p></div>
+            </div>
+          </div>
+          <div>
+            <h3 class="brief-head">Measured results</h3>
+            <div class="scroll"><table class="brief-table"><tbody>
+              <tr><td>Uplink 1×4 — all four branches live</td><td class="value">per-row max |y − Hx| = 4.66e-05 · 2.14e-05 · 1.68e-05 · 2.78e-05</td></tr>
+              <tr><td>Downlink 4×1 — multi-branch, no waiver</td><td class="value">5.27e-08, off-diagonal share 0.081</td></tr>
+              <tr><td>End-to-end procedure</td><td class="value">attach + PDU session + ping at 0 % loss</td></tr>
+              <tr><td>Data integrity</td><td class="value">overflow · sequence-gap · ZMQ error counters all zero</td></tr>
+              <tr><td>Array gain</td><td class="value">2×1 MRT vs port0-only = −0.54 dB measured, against −0.53 dB predicted (0.01 dB agreement)</td></tr>
+            </tbody></table></div>
+          </div>
+          <div class="claim"><b>Claim boundary</b> — not implemented and not claimed: rank &gt; 1 SU-MIMO · UE-side receive beamforming · closed-loop PMI · same-PRB MU-MIMO · “end-to-end 4×4 MIMO”. All results are stated as DL 2×1/4×1 MISO and UL 1×2/1×4 SIMO only. Multiple UEs are single-layer users sharing the time axis, not same-PRB MU-MIMO. Precoding weights are oracle-selected by the experimenter from channel knowledge, which implies no closed-loop PMI. Unverified signal replication is never called diversity — replication was measured to be 1.24 dB worse than MRT.</div>
+          <details class="metric-guide">
+            <summary>Backup material — integration findings, reproducibility, model coverage, downlink caveat</summary>
+            <p><b>What integrating two production stacks actually surfaced.</b> Every item below was confirmed by reading the source, and each has reproducible evidence.</p>
+            <table><thead><tr><th>Finding</th><th>Detail</th><th>Resolution</th></tr></thead><tbody>
+              <tr><td><b>OCUDU cannot combine fallback DCI with 2-port downlink</b></td><td>Multi-port DL requires the <span class="mono">ue_dedicated</span> search space and DCI format 1_1.</td><td>Pinned in the fixture; confirmed srsUE really does support 1_1/0_1.</td></tr>
+              <tr><td><b>srsUE does not implement 2-port CSI-RS</b></td><td>Per TS 38.211 Table 7.4.1.5.3-1, 2-port is row 3 → 6-bit frequency allocation → ASN.1 <span class="mono">other</span>, outside srsUE's whitelist. 4-port is row 4 (3-bit, FD-CDM2) and is recognised.</td><td>2-port runs with CSI off; multi-branch proven at 4 ports.</td></tr>
+              <tr><td><b>Defect in srsUE's CSI-RS RE accounting</b></td><td>Expected RE count is derived from density alone, but row 4 alone has density_one against a k-list length of 2 → <span class="mono">Unmatched number of RE (212 != 106)</span> → the UE discards the whole DL slot → zero PDSCH decodes.</td><td>Patched at source: unmatched errors 0, PDSCH decodes 0 → 19.</td></tr>
+              <tr><td><b>MAC pcap is incompatible with 2-port downlink</b></td><td>Enabling the instrumentation breaks the multi-port path.</td><td>Separated in the gates.</td></tr>
+              <tr><td><b>Intermittent 4-receiver uplink failures</b></td><td>With CSI off, the gNB's uplink link adaptation picks an over-aggressive MCS — a persistent ~20 % bimodal failure.</td><td>Capped via <span class="mono">pusch.max_ue_mcs: 9</span>, recorded in the fixture with its rationale.</td></tr>
+            </tbody></table>
+            <p><b>Validation boundaries:</b> multi-antenna emulation requires sample alignment, correct matrix processing and timely delivery. These are separate checks; successful attachment or matrix verification does not establish zero-miss real-time operation. Consult the dated validation reports for each tested configuration and its remaining timing failures.</p>
+            <p><b>Reproducibility:</b></p>
+            <div class="brief-repro">bash scripts/native/run-ocudu-rank1-2x1.sh   # 2×1 DL MISO + 1×2 UL SIMO
+bash scripts/native/run-ocudu-rank1-4x1.sh   # 4×1 DL MISO + 1×4 UL SIMO</div>
+            <p>Each script brings up the 5G core (Open5GS), the gNB, the GPU broker and the UE; performs attach, PDU session and ping; captures the wire in the same run; scores the matrix; and emits a verdict. Artefacts carry source commit hashes and binary SHA-256 (<span class="mono">source-evidence.json</span>), so it is always determinable which code produced a given number.</p>
+            <p><b>Channel model coverage:</b> TR 38.901 §7.7.2 TDL-A…TDL-E, multi-tap delay, Jakes fading, Rician LOS, spatial correlation, path loss, phase, CFO and AWGN. CPU and CUDA backends are held to agreement within 1e-3 by a standing regression test.</p>
+            <p><b>The downlink caveat:</b> in the baseline configuration (CSI disabled) the srsRAN scheduler sees the cell as single-port and selects codebook [1,0,0,0], so transmit ports 1–3 carry exactly zero power. That is the stack's real behaviour, and the gate declares it explicitly via <span class="mono">--allow-silent-source</span> rather than hiding it — a recorded measurement, not a relaxed check. Multi-branch downlink was therefore proven separately, in the CSI-enabled configuration: 5.27e-08 with no waiver, off-diagonal share 0.081. In that run, however, attach does not complete, so the two conditions do not yet hold in the same run, and the verdict table says so.</p>
+          </details>
+          <div class="foot">Conditions to quote alongside any number: RTX 5090 · 23.04 MS/s · 1 ms slot (batch 23040) · CUDA backend · <span class="mono">fixed_mimo</span> (1 tap) + TDL chain · percentiles come from a full-slot histogram and are always quoted with n · ctest 8/8, standing GPU sequence 9/9.</div>
+        </div>
+      </section>
+      <section class="panel wide">
+        <h2>Sionna RT bridge · how the live channel reaches the emulator</h2>
+        <div class="brief">
+          <div class="brief-lede">
+            <div>
+              <h3>Sionna RT does not sit on the IQ path. It re-solves the radio geometry twice a second and hands the emulator a new set of taps; the emulator keeps shaping every sample in the 1 ms slot regardless.</h3>
+              <p>The bridge is a Python process that owns the scene, moves the nodes, ray-traces every link, converts paths to taps and pushes them over the existing JSON control plane. The emulator swaps them in at a slot boundary and publishes what it actually applied. This dashboard is a third, strictly read-only observer that cross-checks the two.</p>
+            </div>
+            <div class="brief-modes plane-legend">
+              <div class="brief-mode"><span class="mode-pill dl">Control</span><span>bridge → emulator · ZMQ REQ/REP · <span class="mono">:5559</span></span></div>
+              <div class="brief-mode"><span class="mode-pill tlm">Telemetry</span><span>emulator → dashboard · ZMQ PUB/SUB · <span class="mono">:5560</span></span></div>
+              <div class="brief-mode"><span class="mode-pill sts">Status</span><span>bridge → dashboard · JSONL append and tail</span></div>
+              <div class="brief-mode"><span class="mode-pill ul">IQ data</span><span>radio stacks ↔ broker · ZMQ REP/REQ per device port</span></div>
+            </div>
+          </div>
+          <svg class="arch-figure" viewBox="0 0 1400 620" role="img" aria-label="The Sionna RT bridge re-traces the scene at 2 Hz and sends one atomic batch of matrix profile swaps over ZMQ REQ/REP to the ocudu-gpu-channel binary, which applies them at a slot boundary, shapes the IQ passing between the radio stacks, and publishes telemetry that this read-only web UI subscribes to" font-family="ui-sans-serif,system-ui,sans-serif">
+            <rect x="530" y="12" width="340" height="58" rx="9" fill="#07111a" stroke="#4b3f6b"/>
+            <text x="700" y="36" text-anchor="middle" fill="#b7a0ff" font-size="13" font-weight="700" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">results/sionna-2gnb-2ue.jsonl</text>
+            <text x="700" y="55" text-anchor="middle" fill="#8ca4b5" font-size="10.5">iteration record · timings, positions, taps, geometry</text>
+            <polyline points="185,100 185,41 514,41" fill="none" stroke="#b7a0ff" stroke-width="1.6"/><path d="M514,34 L528,41 L514,48 z" fill="#b7a0ff"/>
+            <text x="350" y="33" text-anchor="middle" fill="#8ca4b5" font-size="9">append_status() · one line per iteration</text>
+            <polyline points="870,41 1205,41 1205,90" fill="none" stroke="#b7a0ff" stroke-width="1.6"/><path d="M1198,88 L1205,102 L1212,88 z" fill="#b7a0ff"/>
+            <text x="1035" y="33" text-anchor="middle" fill="#8ca4b5" font-size="9">tail 0.25 s · 4 MiB window</text>
+            <g transform="translate(0,44)">
+            <rect x="20" y="56" width="330" height="374" rx="14" fill="#09141d" stroke="#285c6e"/>
+            <text x="185" y="88" text-anchor="middle" fill="#42d3ff" font-size="20" font-weight="700">Sionna RT bridge</text>
+            <text x="185" y="107" text-anchor="middle" fill="#8ca4b5" font-size="11">apps/sionna_bridge/run_bridge.py</text>
+            <rect x="105" y="118" width="160" height="22" rx="11" fill="#0c2431" stroke="#285c6e"/>
+            <text x="185" y="133" text-anchor="middle" fill="#42d3ff" font-size="11" font-weight="700">2 Hz update loop</text>
+            <circle cx="42" cy="166" r="9" fill="#0c2431" stroke="#285c6e"/><text x="42" y="170" text-anchor="middle" fill="#42d3ff" font-size="10" font-weight="700">1</text>
+            <text x="60" y="170" fill="#e9f2f8" font-size="12" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">update_positions()</text>
+            <text x="60" y="186" fill="#8ca4b5" font-size="10.5">UE0 car 13.9 m/s · UE1 walk 1.4 m/s</text>
+            <circle cx="42" cy="218" r="9" fill="#0c2431" stroke="#285c6e"/><text x="42" y="222" text-anchor="middle" fill="#42d3ff" font-size="10" font-weight="700">2</text>
+            <text x="60" y="222" fill="#e9f2f8" font-size="12" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">trace_all_profiles()</text>
+            <text x="60" y="238" fill="#8ca4b5" font-size="10.5">PathSolver · depth 3 · 200k samples/src</text>
+            <circle cx="42" cy="270" r="9" fill="#0c2431" stroke="#285c6e"/><text x="42" y="274" text-anchor="middle" fill="#42d3ff" font-size="10" font-weight="700">3</text>
+            <text x="60" y="274" fill="#e9f2f8" font-size="12" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">rays_to_taps()</text>
+            <text x="60" y="290" fill="#8ca4b5" font-size="10.5">≤ 32 taps · 1/16-sample delay quantum</text>
+            <circle cx="42" cy="322" r="9" fill="#0c2431" stroke="#285c6e"/><text x="42" y="326" text-anchor="middle" fill="#42d3ff" font-size="10" font-weight="700">4</text>
+            <text x="60" y="326" fill="#e9f2f8" font-size="12" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">send_matrix_profiles()</text>
+            <text x="60" y="342" fill="#8ca4b5" font-size="10.5">batch_begin → 10 swaps → batch_commit</text>
+            <circle cx="42" cy="374" r="9" fill="#0c2431" stroke="#285c6e"/><text x="42" y="378" text-anchor="middle" fill="#42d3ff" font-size="10" font-weight="700">5</text>
+            <text x="60" y="378" fill="#e9f2f8" font-size="12" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">append_status()</text>
+            <text x="60" y="394" fill="#8ca4b5" font-size="10.5">one JSON line per iteration</text>
+            <line x1="352" y1="242" x2="456" y2="242" stroke="#42d3ff" stroke-width="3"/><path d="M454,234 L468,242 L454,250 z" fill="#42d3ff"/>
+            <text x="409" y="196" text-anchor="middle" fill="#42d3ff" font-size="10" font-weight="700">ZMQ REQ → REP</text>
+            <text x="409" y="210" text-anchor="middle" fill="#8ca4b5" font-size="8.5" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">127.0.0.1:5559</text>
+            <text x="409" y="224" text-anchor="middle" fill="#8ca4b5" font-size="9">10 × matrix_profile_swap</text>
+            <line x1="456" y1="276" x2="368" y2="276" stroke="#42d3ff" stroke-width="1.4"/><path d="M370,269 L354,276 L370,283 z" fill="#42d3ff"/>
+            <text x="409" y="296" text-anchor="middle" fill="#8ca4b5" font-size="9">ACK · seqno ·</text>
+            <text x="409" y="308" text-anchor="middle" fill="#8ca4b5" font-size="9">warmup_until_slot</text>
+            <rect x="470" y="56" width="440" height="374" rx="14" fill="#0b1a1f" stroke="#276d48"/>
+            <text x="690" y="88" text-anchor="middle" fill="#53e58b" font-size="20" font-weight="700">GPU Channel Emulator</text>
+            <text x="690" y="107" text-anchor="middle" fill="#8ca4b5" font-size="11">one binary · control server + broker + telemetry</text>
+            <rect x="492" y="120" width="396" height="80" rx="8" fill="#07111a" stroke="#285c6e"/>
+            <text x="506" y="139" fill="#42d3ff" font-size="11.5" font-weight="700">ControlServer · ZMQ REP :5559</text>
+            <text x="506" y="156" fill="#8ca4b5" font-size="10.5">validates link_id, Nt/Nr, delay ≤ 1023, gain −100…+20 dB</text>
+            <text x="506" y="171" fill="#8ca4b5" font-size="10.5">batch_begin stages every swap · batch_commit applies them together</text>
+            <text x="506" y="186" fill="#8ca4b5" font-size="10.5">reply carries seqno and warmup_until_slot per link</text>
+            <rect x="492" y="210" width="396" height="68" rx="8" fill="#07111a" stroke="#20323f"/>
+            <text x="506" y="229" fill="#e9f2f8" font-size="11.5" font-weight="700">snap_physical_link() · slot boundary</text>
+            <text x="506" y="246" fill="#8ca4b5" font-size="10.5">runs once per link per slot, before any lane is shaped</text>
+            <text x="506" y="261" fill="#8ca4b5" font-size="10.5">shadow → live when seqno changes, warm-up opens only when history resets</text>
+            <rect x="492" y="288" width="396" height="62" rx="8" fill="#07111a" stroke="#276d48"/>
+            <text x="506" y="307" fill="#53e58b" font-size="11.5" font-weight="700">Broker · CUDA backend</text>
+            <text x="506" y="324" fill="#8ca4b5" font-size="10.5">23.04 MS/s · 1 ms slot = 23,040 samples</text>
+            <text x="506" y="339" fill="#8ca4b5" font-size="10.5">CSR superposition per destination row · fading on-device</text>
+            <rect x="492" y="362" width="396" height="52" rx="8" fill="#07111a" stroke="#276d48"/>
+            <text x="506" y="381" fill="#53e58b" font-size="11.5" font-weight="700">Telemetry · ZMQ PUB :5560 · 20 Hz</text>
+            <text x="506" y="399" fill="#8ca4b5" font-size="10.5">topic = link_id · slot, seqno, profile_active, warm-up, timing</text>
+            <line x1="912" y1="242" x2="1016" y2="242" stroke="#53e58b" stroke-width="3"/><path d="M1014,234 L1028,242 L1014,250 z" fill="#53e58b"/>
+            <text x="970" y="196" text-anchor="middle" fill="#53e58b" font-size="10" font-weight="700">ZMQ PUB → SUB</text>
+            <text x="970" y="210" text-anchor="middle" fill="#8ca4b5" font-size="8.5" font-family="ui-monospace,SFMono-Regular,Consolas,monospace">127.0.0.1:5560</text>
+            <text x="970" y="224" text-anchor="middle" fill="#8ca4b5" font-size="9">topic = link_id · 20 Hz</text>
+            <rect x="1030" y="56" width="350" height="374" rx="14" fill="#09141d" stroke="#26394a"/>
+            <text x="1205" y="88" text-anchor="middle" fill="#e9f2f8" font-size="20" font-weight="700">Web UI</text>
+            <text x="1205" y="107" text-anchor="middle" fill="#8ca4b5" font-size="11">apps/dashboard/server.py · 127.0.0.1:8080</text>
+            <circle cx="1050" cy="136" r="5" fill="#53e58b"/>
+            <text x="1064" y="140" fill="#e9f2f8" font-size="11.5" font-weight="700">telemetry-sub thread</text>
+            <text x="1064" y="157" fill="#8ca4b5" font-size="10.5">SUB :5560, all topics, 200 ms poll</text>
+            <circle cx="1050" cy="190" r="5" fill="#b7a0ff"/>
+            <text x="1064" y="194" fill="#e9f2f8" font-size="11.5" font-weight="700">sionna-jsonl-tail thread</text>
+            <text x="1064" y="211" fill="#8ca4b5" font-size="10.5">0.25 s poll over a 4 MiB tail window</text>
+            <circle cx="1050" cy="244" r="5" fill="#42d3ff"/>
+            <text x="1064" y="248" fill="#e9f2f8" font-size="11.5" font-weight="700">delivery_status()</text>
+            <text x="1064" y="265" fill="#8ca4b5" font-size="10.5">applied = observed seqno ≥ ACK seqno,</text>
+            <text x="1064" y="280" fill="#8ca4b5" font-size="10.5">and profile_active, and backend match</text>
+            <circle cx="1050" cy="313" r="5" fill="#e9f2f8"/>
+            <text x="1064" y="317" fill="#e9f2f8" font-size="11.5" font-weight="700">/api/status</text>
+            <text x="1064" y="334" fill="#8ca4b5" font-size="10.5">this dashboard polls it every 500 ms</text>
+            <text x="1050" y="376" fill="#8ca4b5" font-size="10.5">It never opens the control socket —</text>
+            <text x="1050" y="391" fill="#8ca4b5" font-size="10.5">the bridge alone drives the emulator.</text>
+            </g>
+            <line x1="470" y1="474" x2="470" y2="490" stroke="#276d48" stroke-width="1.4" stroke-dasharray="3 3"/>
+            <line x1="910" y1="474" x2="910" y2="490" stroke="#276d48" stroke-width="1.4" stroke-dasharray="3 3"/>
+            <rect x="470" y="490" width="440" height="76" rx="12" fill="#0b1a1f" stroke="#276d48"/>
+            <text x="690" y="518" text-anchor="middle" fill="#53e58b" font-size="20" font-weight="700">Broker — inside GPU Channel Emulator</text>
+            <text x="690" y="540" text-anchor="middle" fill="#8ca4b5" font-size="10.5">tx REQ pulls · superposes every edge into the destination row</text>
+            <text x="690" y="556" text-anchor="middle" fill="#8ca4b5" font-size="10.5">rx REP serves the impaired samples back · 23,040 per slot</text>
+            <rect x="44" y="496" width="280" height="64" rx="8" fill="#07111a" stroke="#6b5725"/>
+            <text x="184" y="524" text-anchor="middle" fill="#e9f2f8" font-size="20" font-weight="700">OCUDU gNB TX</text>
+            <text x="184" y="546" text-anchor="middle" fill="#8ca4b5" font-size="10.5">ZMQ REP binds · cf32 @ 23.04 MS/s</text>
+            <line x1="324" y1="528" x2="456" y2="528" stroke="#ffc857" stroke-width="2.5"/><path d="M454,521 L468,528 L454,535 z" fill="#ffc857"/>
+            <text x="393" y="515" text-anchor="middle" fill="#8ca4b5" font-size="9">23,040 samples = 1 ms</text>
+            <line x1="910" y1="528" x2="1062" y2="528" stroke="#ffc857" stroke-width="2.5"/><path d="M1060,521 L1074,528 L1060,535 z" fill="#ffc857"/>
+            <text x="986" y="515" text-anchor="middle" fill="#8ca4b5" font-size="9">impaired IQ</text>
+            <rect x="1076" y="496" width="280" height="64" rx="8" fill="#07111a" stroke="#6b5725"/>
+            <text x="1216" y="524" text-anchor="middle" fill="#e9f2f8" font-size="20" font-weight="700">srsUE RX</text>
+            <text x="1216" y="546" text-anchor="middle" fill="#8ca4b5" font-size="10.5">ZMQ REQ connects · pulls impaired samples</text>
+            <text x="700" y="600" text-anchor="middle" fill="#ffc857" font-size="12" font-weight="700">IQ data plane — the channel is applied here, and Sionna RT is never on this path</text>
+          </svg>
+          <div>
+            <h3 class="brief-head">What holds the two processes together</h3>
+            <div class="brief-grid">
+              <div class="brief-card"><strong>One atomic batch per iteration</strong><p>Every swap in a batch is staged, not applied, until <span class="mono">batch_commit</span> walks them and gives all ten links the same numerical apply-slot while bumping each sequence number. A failure sends <span class="mono">batch_abort</span>, so a half-updated channel graph never reaches the air interface.</p><span class="mono">channel_adapter.py · send_matrix_profiles()</span></div>
+              <div class="brief-card"><strong>Applied at a slot boundary, not on arrival</strong><p>The snapshot runs once per link per slot before any lane is shaped, and copies shadow to live only when the sequence number changes. Only a delay or other channel-setting change resets history and opens a warm-up window; gain/phase-only updates preserve recent signal samples.</p><span class="mono">physical_link.h · snap_physical_link()</span></div>
+              <div class="brief-card"><strong>Fading is never modelled twice</strong><p>Sionna already supplies instantaneous complex path coefficients, so the bridge ships the taps with the emulator's own stochastic Jakes process switched off. What you see in the tap tables is Sionna's geometry, not a second fading model layered on top.</p><span class="mono">fading.enabled = false</span></div>
+              <div class="brief-card"><strong>The dashboard observes, it never drives</strong><p>This page holds no control socket. It matches the ACK's sequence number against live telemetry from the backend, so “applied” means the backend really swapped the profile — not that a message was merely accepted.</p><span class="mono">server.py · delivery_status()</span></div>
+            </div>
+          </div>
+          <div>
+            <h3 class="brief-head">Planes and defaults</h3>
+            <div class="scroll"><table class="brief-table"><thead><tr><th>Plane</th><th>Direction and socket</th><th>Default endpoint</th><th>Cadence</th></tr></thead><tbody>
+              <tr><td>Control</td><td>bridge REQ → emulator REP</td><td class="value">tcp://127.0.0.1:5559</td><td>2 Hz batch · 5 s request timeout</td></tr>
+              <tr><td>Telemetry</td><td>emulator PUB → Web UI SUB</td><td class="value">tcp://127.0.0.1:5560</td><td>20 Hz · one frame per link per slot</td></tr>
+              <tr><td>Status</td><td>bridge appends → Web UI tails</td><td class="value">results/sionna-2gnb-2ue.jsonl</td><td>0.25 s poll · 4 MiB initial window</td></tr>
+              <tr><td>IQ data</td><td>producer REP ↔ broker ↔ consumer REQ</td><td class="value">tcp://127.0.0.1:3000–3103</td><td>23.04 MS/s · 23,040 samples per slot</td></tr>
+              <tr><td>Dashboard</td><td>browser → Web UI HTTP</td><td class="value">127.0.0.1:8080/api/status</td><td>500 ms browser poll</td></tr>
+            </tbody></table></div>
+          </div>
+          <div class="foot">The default 2×2 layout carries 10 links: 4 downlink, 4 uplink and 2 UE↔UE crosstalk. Link ids follow <span class="mono">source&gt;destination:model</span>, for example <span class="mono">gnb0&gt;ue0:sionna_rt</span> — byte-identical to the emulator's internal link key, which is why the telemetry topic is the link id itself. The scene is <span class="mono">simple_street_canyon</span> with a 14 m synthetic road; downlink 1842.5 MHz and uplink 1747.5 MHz are traced separately because each carrier needs its own solve.</div>
+        </div>
+      </section>
+      <section class="panel wide">
+        <h2>Applications &amp; outlook</h2>
+        <div class="outlook-grid">
+          <article class="outlook-card industry">
+            <span class="outlook-label">Industry</span>
+            <h3>Real-time RAN software validation before RF and field testing</h3>
+            <ul>
+              <li>Insert diverse channel and interference conditions between live gNB and UE stacks.</li>
+              <li>Preserve real RAN timing by keeping the IQ data path within the 1 ms slot deadline.</li>
+              <li>Use the platform for regression, interference, mobility, and MIMO feature validation.</li>
+              <li>Extend it toward pre-deployment validation of Open RAN xApps/rApps and AI-RAN algorithms.</li>
+            </ul>
+          </article>
+          <article class="outlook-card academia">
+            <span class="outlook-label">Academia</span>
+            <h3>A research platform for validating simulation algorithms against a live 5G stack</h3>
+            <ul>
+              <li>Evaluate new PHY, MIMO, and beamforming algorithms.</li>
+              <li>Study wireless digital twins by coupling live stacks with Sionna RT.</li>
+              <li>Explore AI-for-RAN methods for handover, power control, and interference management.</li>
+              <li>Study the trade-off between GPU throughput and the 1 ms real-time constraint.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Sionna environment · Near top-down 3D mobility</h2>
+        <div class="scene-stage">
+          <div id="scene3d"></div>
+          <canvas id="scene" width="900" height="560" hidden></canvas>
+          <div class="scene-gainbar" id="sceneGainBar" hidden><span id="sceneGainMin">—</span><i></i><span id="sceneGainMax">—</span><span>dB per ray · hue = cell</span></div>
+          <div class="scene-toolbar">
+            <button type="button" id="sceneRaysToggle" aria-pressed="true">Rays</button>
+            <button type="button" id="sceneLabelsToggle" aria-pressed="true">Labels</button>
+            <button type="button" id="sceneResetView">Reset view</button>
+          </div>
+          <div class="scene-hint">Drag to orbit · scroll to zoom · right-drag to pan</div>
+          <div class="scene-credit" id="sceneCredit" hidden></div>
+          <div class="scene-status" id="sceneStatus">Loading 3D scene…</div>
+        </div>
+        <div class="legend"><span><i class="dot" style="background:#0b6fa4"></i>gnb0</span><span><i class="dot" style="background:#6b3fa0"></i>gnb1</span><span><i class="dot" style="background:#c0392b"></i>Vehicle UE</span><span><i class="dot" style="background:#2e7d4f"></i>Pedestrian UE</span><span><i class="dot" style="background:#2b5f8a"></i>Reflection point</span><span><i class="dot dot-split"></i>UE↔UE crosstalk</span><span>Ray colour = cell</span></div>
+        <div class="legend" id="sceneMaterials" hidden></div>
+        <div class="foot">Rays take the colour of the cell on the link, and the fainter and thinner a ray is the weaker that path. Uplink and downlink of a pair are the same traced path, so the colour says which cell owns it and the scene reads as how far each cell reaches. A UE↔UE crosstalk path has no cell end and belongs to both handsets, so it keeps its own treatment: dashes that alternate between the two UE colours. Specular propagation is reciprocal, so an uplink ray retraces its downlink path exactly; each node pair is therefore drawn once, from the downlink where there is one. The two directions still differ in gain — FDD puts them on different carriers and ITU material properties are frequency dependent — so the tables below carry both. Ground cover is coloured by what OpenStreetMap says it is — water, grass, woodland, pitch — and buildings by the ITU P.2040 material the solver reflects them with. The real triangle mesh Sionna ray-traces against, plus the interaction points of the strongest rays on every link, re-read at each update. Geometry is included only in UI state and is not sent in GPU Channel control messages.</div>
+      </section>
+      <section class="panel">
+        <h2>Timing</h2>
+        <div class="stats">
+          <div class="stat"><b id="iteration">—</b><span>Sionna iteration</span></div>
+          <div class="stat"><b id="generation">—</b><span>Channel generation ms</span></div>
+          <div class="stat"><b id="controlTime">—</b><span>Send + ACK ms</span></div>
+          <div class="stat"><b id="generateToAck">—</b><span>Generation start → ACK ms</span></div>
+          <div class="stat"><b id="totalUpdate">—</b><span>Total update ms</span></div>
+          <div class="stat"><b id="freq">—</b><span>DL / UL MHz</span></div>
+        </div>
+        <h2>Delivery and application</h2>
+        <div class="delivery"><strong id="deliveryTitle" class="wait">Waiting for update</strong><span id="deliveryDetail" class="sub">Cross-checking per-link ACK sequence numbers against backend telemetry.</span></div>
+        <h2>Sionna runtime environment</h2>
+        <dl class="facts">
+          <dt>Scene</dt><dd id="envScene">—</dd>
+          <dt>Road</dt><dd id="envRoad">—</dd>
+          <dt>Solver</dt><dd id="envSolver">—</dd>
+          <dt>Propagation</dt><dd id="envPropagation">—</dd>
+          <dt>Sampling / update</dt><dd id="envRates">—</dd>
+          <dt>Control target</dt><dd id="envTarget">—</dd>
+        </dl>
+      </section>
+      <section class="panel wide">
+        <h2>Node and antenna status</h2>
+        <div id="nodeCards" class="node-grid"><div class="empty">Waiting for node data</div></div>
+        <div class="foot">Position and speed are taken from the latest Sionna iteration. Each node acts as both transmitter and receiver according to link direction.</div>
+      </section>
+      <section class="panel wide">
+        <h2>System resources · Sionna runtime loop</h2>
+        <article id="combinedGpuCard" class="deadline-card"></article>
+        <div class="delivery" style="margin-top:12px;margin-bottom:0">
+          <strong id="runtimeTitle" class="wait">Waiting for Sionna runtime</strong>
+          <div id="runtimeDetail" class="sub">Waiting for the runtime PID and current processing phase.</div>
+          <div class="loop-flow"><span>Initialize scene once</span><i>→</i><span>Recompute channels</span><i>→</i><span>Send profile batch + ACK</span><i>→</i><span>Wait for next update</span><i>↺</i></div>
+          <div id="runtimeConfig" class="gpu-lines"></div>
+        </div>
+        <div id="gpuMonitorNote" class="foot">GPU SM/VRAM values are sampled per PID, CPU/RAM values per Linux process, and PCIe H2D/D2H traffic for the entire GPU device.</div>
+      </section>
+      <section class="panel wide">
+        <h2>Per-link channels and delivery evidence</h2>
+        <div class="scroll"><table><thead><tr><th>Link</th><th>Matrix</th><th>Rays</th><th>Taps</th><th>Strongest</th><th>Delay</th><th>ACK seq</th><th>Live seq</th><th>Applied</th><th>Observed slot</th></tr></thead><tbody id="channelRows"></tbody></table></div>
+        <div class="foot">A Control ACK confirms batch reception by the C++ control server. An equal or newer live sequence number confirms that the channel backend applied the profile at a slot boundary.</div>
+      </section>
+      <section class="panel wide">
+        <h2>Estimated nominal-slot deadline utilization by receiving node</h2>
+        <div id="deadlineCards" class="deadline-grid"></div>
+        <details class="metric-guide" open>
+          <summary>Sample · fragment · nominal slot — definitions and estimation limits</summary>
+          <table><thead><tr><th>Term</th><th>Meaning in this dashboard</th></tr></thead><tbody>
+            <tr><td><b>Sample (샘플)</b></td><td>One complex IQ value on the time axis, per antenna port. At 23.04 MS/s one sample represents about 43.4 ns.</td></tr>
+            <tr><td><b>Fragment (조각)</b></td><td>One variable-size <span class="mono">process_superposition</span> call whose size differs from the configured nominal block. It is an implementation/transport window, not a 5G NR scheduling unit.</td></tr>
+            <tr><td><b>Nominal slot</b></td><td>Exactly <span class="mono">runtime.batch_samples</span> contiguous time samples. In the current 23.04 MS/s, 23,040-sample configuration this represents 1 ms. It equals an NR slot only when the configured numerology also defines a 1 ms slot.</td></tr>
+            <tr><td><b>Processing call</b></td><td>One backend invocation. Several calls may make one nominal slot, and one call may cross a nominal-slot boundary.</td></tr>
+          </tbody></table>
+          <p><b>Why fragments exist:</b> the Broker deliberately makes partial progress using the common input availability and output-ring headroom of all antenna ports. Requiring a full block can strand partial data and deadlock lock-step, multi-port radios.</p>
+          <p><b>Proportional estimate (<span class="mono">sample_proportional_call_time</span>):</b> when a call crosses a nominal boundary, its measured processing time is divided by the number of samples overlapping each nominal slot. All measured processing time is preserved, but the split is an estimate because fixed CUDA launch/transfer overhead cannot be assigned physically after the call. The metric includes only channel-backend wall time; input wait, output-room wait, pacing, and ZMQ transmission are excluded. Fragment counters are shown separately so transport fragmentation is not mistaken for compute deadline failure.</p>
+        </details>
+      </section>
+      <section class="panel wide">
+        <h2>Impulse and frequency response by edge link · Tap details</h2>
+        <div id="edgeCards" class="edge-grid"></div>
+        <div id="impulseNote" class="foot">The horizontal axis automatically frames the earliest and latest taps with a small margin. Waiting for the current sampling frequency. In delay ns, ns means nanoseconds.</div>
+      </section>
+      <section class="panel wide">
+        <h2>RAN KPIs by UE · gNB scheduler metrics</h2>
+        <div id="ranState" class="foot"></div>
+        <div id="ranCards"></div>
+        <div class="foot">Served by the gNB's own remote-control WebSocket — the same feed the official GUI subscribes to. Enable it by rendering the run with <span class="mono">OCUDU_NATIVE_GNB_METRICS=1</span> and starting the Web UI with <span class="mono">--gnb-metrics-endpoint ws://127.0.0.1:8001</span>. For multiple gNBs, repeat <span class="mono">--gnb-metrics-source gnb0=ws://127.0.0.1:18001</span> with a unique gNB name and endpoint. <b>BLER</b> is derived here as nok / (ok + nok) from the HARQ counters; every other value is reported by the scheduler as-is. An em dash means the scheduler reported nothing for that field in the period, including the values it signals as sentinels rather than omissions: <span class="mono">cqi = -1</span> for "no CSI report", and a SINR or RSRP mean sitting on the <span class="mono">-99.9 dB</span> clamp floor, which is where an unreported RSRP (-inf) and a DTX-pulled PUCCH SINR both land. Two sentinels cannot be told apart from readings and are shown as-is: <b>RI</b> falls back to 1 when no rank was reported, and <b>TA</b> and <b>PHR</b> report 0 when unobserved. This panel is read-only like the rest of the dashboard.</div>
+      </section>
+    </div>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id);
+    const finite = value => value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value));
+    const fmt = (v,n=1) => finite(v) ? Number(v).toFixed(n) : '—';
+    const fmtMib = value => finite(value) ? (Number(value)>=1024?`${fmt(Number(value)/1024,1)} GiB`:`${fmt(value,0)} MiB`) : '—';
+    const fmtRate = value => finite(value) ? (Number(value)>=1000?`${fmt(Number(value)/1000,2)} GB/s`:`${fmt(value,0)} MB/s`) : '—';
+    const esc = value => String(value??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const fmtClock = value => {const date=new Date(Number(value)),pad=(number,width=2)=>String(number).padStart(width,'0');return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(),3)}`};
+    // Every chart shows the same completed, wall-clock-aligned 1,000 ms
+    // interval. It advances as one block every 1,000 ms instead of sliding on
+    // every redraw; keeping several intervals in the response tolerates a
+    // delayed poll without leaving the new block empty.
+    const CHART_WINDOW_MS = 1000;
+    const CHART_POLL_MS = CHART_WINDOW_MS;
+    const STATUS_POLL_MS = 500;
+    // The Sionna bridge publishes at --update-hz (10 in the native gates), but
+    // render() rebuilds every card and table in the page and cannot run that
+    // often. The scene is cheap by comparison, so it gets its own poll at the
+    // bridge's cadence and the dashboard keeps the slow one — otherwise eight
+    // of every ten Sionna updates never reach the screen.
+    const SCENE_POLL_MS = 100;
+    const CHART_HISTORY_MS = CHART_WINDOW_MS * 2;
+    let lastStatus = null;
+    let lastRealtime = null;
+
+    function setPill(el, ok, text) { el.className = `pill ${ok?'ok':'bad'}`; el.textContent = text; }
+    function linkMap(channels) { return Object.fromEntries((channels||[]).map(c => [c.link_id,c])); }
+    function linkParts(linkId) {
+      const match=String(linkId||'').match(/^([^>]+)>([^:]+):(.+)$/);
+      return match?{source:match[1],destination:match[2],model:match[3]}:{source:'—',destination:'—',model:'—'};
+    }
+
+    function renderDeadlineCards(telemetry, ages = {}) {
+      const byDestination={};
+      for(const [linkId,payload] of Object.entries(telemetry||{})){
+        const timing=payload?.slot_processing||{}, destination=linkParts(linkId).destination;
+        if(!(Number(timing.deadline_us)>0) || destination==='—') continue;
+        const age=ages[linkId],stale=!(Number.isFinite(age)&&age>=0&&age<=2);
+        const candidate={...timing,stale,slot:payload.slot,backend:payload.backend,destination};
+        if(!byDestination[destination] || Number(candidate.slot)>=Number(byDestination[destination].slot)) byDestination[destination]=candidate;
+      }
+      const cards=Object.values(byDestination).sort((a,b)=>a.destination.localeCompare(b.destination)).map(item=>{
+        const nominal=item.nominal||{},fragments=item.fragments||{},calls=item.calls||{},slots=Number(nominal.completed_slots),misses=Number(nominal.deadline_misses),missRate=Number(nominal.deadline_miss_percent),usage=Number(nominal.usage_percent),bounded=Math.max(0,Math.min(100,usage)),level=usage>100?'fail':usage>80?'warn':'',hasNominal=slots>0,met=hasNominal&&nominal.deadline_met===true,fragmentCalls=Number(fragments.calls),fragmentRate=Number(fragments.call_percent);
+        return `<article class="deadline-card"><div class="card-head"><strong>${esc(item.destination)} RX</strong><span>${esc(String(item.backend||'backend').toUpperCase())} · process seq ${esc(item.slot)}</span></div><div><b>${hasNominal?`${fmt(nominal.latest_estimated_us,1)} µs`:'Waiting'}</b> / ${fmt(nominal.deadline_us,1)} µs <span class="${met&&!item.stale?'tag-ok':'tag-wait'}">${item.stale?'(stale · last observed)':hasNominal?`(${fmt(usage,1)}% · ${met?'MET':'MISSED'})`:'(nominal slot incomplete)'}</span></div><div class="meter"><i class="${level}" style="width:${hasNominal?bounded:0}%"></i></div><div class="deadline-numbers"><span><b>${Number(nominal.slot_samples||0).toLocaleString()}</b> samples / nominal slot</span><span><b>${Number(nominal.pending_samples||0).toLocaleString()}</b> pending · ${fmt(nominal.pending_estimated_us,1)} µs estimated</span></div><div class="deadline-cumulative"><div><b>${finite(slots)?slots.toLocaleString():'—'}</b><span>Nominal slots</span></div><div><b class="${misses>0?'tag-wait':'tag-ok'}">${finite(misses)?`${misses.toLocaleString()} · ${fmt(missRate,3)}%`:'—'}</b><span>Nominal misses</span></div><div><b>${fmt(nominal.p95_estimated_us,1)} µs</b><span>Estimated p95</span></div><div><b>${fmt(nominal.p99_estimated_us,1)} µs</b><span>Estimated p99</span></div><div><b>${fmt(nominal.max_estimated_us,1)} µs</b><span>Estimated max</span></div><div><b>${finite(fragmentCalls)?fragmentCalls.toLocaleString():'—'} · ${fmt(fragmentRate,3)}%</b><span>Fragment calls</span></div><div><b>${Number(fragments.fragmented_nominal_slots||0).toLocaleString()}</b><span>Fragmented slots</span></div><div><b>${Number(fragments.min_samples||0).toLocaleString()} / ${Number(fragments.max_samples||0).toLocaleString()}</b><span>Fragment min / max</span></div><div><b>${Number(calls.processed_calls||0).toLocaleString()}</b><span>Processing calls</span></div><div><b>${Number(item.processed_samples||0).toLocaleString()} · ${fmt(item.elapsed_us,1)} µs</b><span>Latest call</span></div></div></article>`;
+      }).join('');
+      $('deadlineCards').innerHTML=cards||'<div class="empty">Waiting for completed IQ processing records — data appears once the source/sink and Broker path are active.</div>';
+    }
+
+    function tapPlot(lanes, colors) {
+      const active=(lanes||[]).filter(lane=>Array.isArray(lane.taps)&&lane.taps.length),allTaps=active.flatMap(lane=>lane.taps.slice(0,8));
+      if(!allTaps.length) return '<div class="empty tap-plot">No taps</div>';
+      const num=(value,fallback)=>Number.isFinite(Number(value))?Number(value):fallback;
+      const W=420,H=136,left=30,right=12,top=26,base=102,delays=allTaps.map(t=>num(t.delay_samples,0)),gains=allTaps.map(t=>num(t.gain_db,-100)),minDelay=Math.max(0,Math.min(...delays)),maxDelay=Math.max(minDelay,...delays),tapSpan=maxDelay-minDelay,axisPadding=Math.max(.125,tapSpan*.12),unpaddedAxisMin=Math.max(0,minDelay-axisPadding),unpaddedAxisMax=maxDelay+axisPadding,roughStep=Math.max((unpaddedAxisMax-unpaddedAxisMin)/6,.001),stepPower=10**Math.floor(Math.log10(roughStep)),stepFraction=roughStep/stepPower,niceStepFraction=stepFraction<=1?1:stepFraction<=2?2:stepFraction<=5?5:10,axisStep=niceStepFraction*stepPower,plotMinDelay=Math.max(0,Math.floor(unpaddedAxisMin/axisStep)*axisStep),plotMaxDelay=Math.max(plotMinDelay+axisStep,Math.ceil(unpaddedAxisMax/axisStep)*axisStep),axisDigits=axisStep>=1?0:Math.min(3,Math.ceil(-Math.log10(axisStep))),maxGain=Math.max(...gains),minGain=Math.max(Math.min(...gains),maxGain-60);
+      const x=d=>left+(Math.max(plotMinDelay,Math.min(plotMaxDelay,d))-plotMinDelay)/(plotMaxDelay-plotMinDelay)*(W-left-right);
+      const y=g=>top+(maxGain===minGain?0:(maxGain-Math.max(g,minGain))/(maxGain-minGain)*(base-top));
+      const laneCount=active.length,legend=active.map((lane,laneIndex)=>{const color=colors[laneIndex%colors.length],label=`rx${lane.rx_port}←tx${lane.tx_port}`;return `<text x="${left+laneIndex*92}" y="14" fill="${color}" font-size="9">■ ${label}</text>`}).join('');
+      const stems=active.map((lane,laneIndex)=>{const color=colors[laneIndex%colors.length],stemOffset=laneCount>1?(laneIndex-(laneCount-1)/2)*3:0,dash=laneIndex%2?' stroke-dasharray="4 2"':'';return lane.taps.slice(0,8).map(t=>{const trueX=x(num(t.delay_samples,0)),tx=trueX+stemOffset,ty=y(num(t.gain_db,-100));return `<line x1="${tx}" y1="${base}" x2="${tx}" y2="${ty}" stroke="${color}" stroke-width="2"${dash}/><circle cx="${tx}" cy="${ty}" r="4" fill="#07111a" stroke="${color}" stroke-width="2"><title>lane (rx${lane.rx_port}, tx${lane.tx_port}) · gain ${fmt(t.gain_db,2)} dB · phase ${fmt(t.phase_rad,3)} rad / ${fmt(t.phase_deg,1)}° · delay ${fmt(t.delay_samples,3)} samples</title></circle>`}).join('')}).join('');
+      return `<svg class="tap-plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="overlaid matrix-lane tap impulse responses">${legend}<line x1="${left}" y1="${base}" x2="${W-right}" y2="${base}" stroke="#526573"/><line x1="${left}" y1="${top}" x2="${left}" y2="${base}" stroke="#526573"/>${stems}<text x="${left}" y="124" fill="#8ca4b5" font-size="9">${fmt(plotMinDelay,axisDigits)} samples</text><text x="${W-right}" y="124" text-anchor="end" fill="#8ca4b5" font-size="9">${fmt(plotMaxDelay,axisDigits)} samples</text><text x="4" y="${top+4}" fill="#8ca4b5" font-size="9">${fmt(maxGain,0)}</text><text x="4" y="${base}" fill="#8ca4b5" font-size="9">${fmt(minGain,0)}</text></svg>`;
+    }
+
+    // Discrete-time frequency response of one lane's complex tap set, evaluated
+    // directly rather than by FFT so fractional tap delays need no interpolation:
+    //   H(f) = sum_k 10^(gain_db/20) * exp(j*phase_rad) * exp(-j*2*pi*ratio*delay_samples)
+    // with ratio = f / sample_rate in [-0.5, 0.5]. Every tap contributes, unlike
+    // the eight-row impulse plot and tap tables, so the curve covers the whole
+    // profile the emulator applies.
+    function laneFrequencyResponse(lane, ratios) {
+      const num=(value,fallback)=>Number.isFinite(Number(value))?Number(value):fallback;
+      const taps=(lane?.taps||[]).map(tap=>({amplitude:10**(num(tap.gain_db,-200)/20),phase:num(tap.phase_rad,0),delay:num(tap.delay_samples,0)}));
+      return ratios.map(ratio=>{
+        let real=0,imaginary=0;
+        for(const tap of taps){const angle=tap.phase-2*Math.PI*ratio*tap.delay;real+=tap.amplitude*Math.cos(angle);imaginary+=tap.amplitude*Math.sin(angle)}
+        const magnitude=Math.hypot(real,imaginary);
+        return magnitude>0?20*Math.log10(magnitude):-200;
+      });
+    }
+
+    function frequencyResponsePlot(lanes, colors, sampleRateHz) {
+      const active=(lanes||[]).filter(lane=>Array.isArray(lane.taps)&&lane.taps.length);
+      if(!active.length) return '<div class="empty freq-plot">No taps</div>';
+      const W=420,H=170,left=34,right=12,top=26,base=132,POINTS=257;
+      const ratios=Array.from({length:POINTS},(_,index)=>-.5+index/(POINTS-1));
+      const curves=active.map(lane=>laneFrequencyResponse(lane,ratios));
+      const values=curves.flat().filter(Number.isFinite),maxDb=Math.ceil(Math.max(...values)),minDb=Math.max(Math.floor(Math.min(...values)),maxDb-40),span=Math.max(maxDb-minDb,1);
+      const x=ratio=>left+(ratio+.5)*(W-left-right),y=db=>top+(maxDb-Math.max(minDb,Math.min(maxDb,db)))/span*(base-top);
+      const grid=[0,.25,.5,.75,1].map(fraction=>`<line x1="${fmt(x(-.5+fraction),2)}" y1="${top}" x2="${fmt(x(-.5+fraction),2)}" y2="${base}" stroke="#203744" stroke-width=".7"/>`).join('')+[.25,.5,.75].map(fraction=>`<line x1="${left}" y1="${top+fraction*(base-top)}" x2="${W-right}" y2="${top+fraction*(base-top)}" stroke="#203744" stroke-width=".7"/>`).join('');
+      const legend=active.map((lane,laneIndex)=>`<text x="${left+laneIndex*92}" y="14" fill="${colors[laneIndex%colors.length]}" font-size="9">■ rx${lane.rx_port}←tx${lane.tx_port}</text>`).join('');
+      const traces=active.map((lane,laneIndex)=>{
+        const color=colors[laneIndex%colors.length],curve=curves[laneIndex],dash=laneIndex%2?' stroke-dasharray="4 2"':'';
+        const laneMax=Math.max(...curve),laneMin=Math.min(...curve),points=curve.map((db,index)=>`${fmt(x(ratios[index]),2)},${fmt(y(db),2)}`).join(' ');
+        return `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"${dash}><title>lane (rx${lane.rx_port}, tx${lane.tx_port}) · ${lane.taps.length} taps · |H| peak ${fmt(laneMax,2)} dB · deepest notch ${fmt(laneMin,2)} dB · in-band ripple ${fmt(laneMax-laneMin,2)} dB</title></polyline>`;
+      }).join('');
+      const edgeText=sampleRateHz>0?`${fmt(sampleRateHz/2e6,2)} MHz`:'0.5 fs',axisLabel=sampleRateHz>0?'Baseband offset from carrier':'Baseband offset (normalized to sample rate)';
+      return `<svg class="freq-plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="overlaid matrix-lane frequency responses">${grid}${legend}<line x1="${left}" y1="${base}" x2="${W-right}" y2="${base}" stroke="#526573"/><line x1="${left}" y1="${top}" x2="${left}" y2="${base}" stroke="#526573"/>${traces}<text x="${left}" y="146" fill="#8ca4b5" font-size="9">−${edgeText}</text><text x="${fmt(x(0),2)}" y="146" text-anchor="middle" fill="#8ca4b5" font-size="9">0</text><text x="${W-right}" y="146" text-anchor="end" fill="#8ca4b5" font-size="9">+${edgeText}</text><text x="${left-6}" y="${top+4}" text-anchor="end" fill="#8ca4b5" font-size="9">${maxDb}</text><text x="${left-6}" y="${base}" text-anchor="end" fill="#8ca4b5" font-size="9">${minDb}</text><text x="${(left+W-right)/2}" y="163" text-anchor="middle" fill="#bed1de" font-size="10">${axisLabel}</text><text x="8" y="86" fill="#bed1de" font-size="10" transform="rotate(-90 8 86)">|H| dB</text></svg>`;
+    }
+
+    // One button per antenna of the multi-port node. Which matrix axis
+    // that is depends on direction — a 4-port gNB receives on rx_port
+    // 0..3 in the uplink and transmits on tx_port 0..3 in the downlink,
+    // against a single-antenna UE either way — so the picker follows
+    // whichever axis actually varies and presents it as one antenna
+    // list. Labels are 1-based to read as physical antennas while the
+    // port indices underneath stay 0-based. A 1x1 edge has one lane and
+    // nothing to choose, so it gets no picker.
+    function laneOptions(lanes) {
+      const ports=key=>[...new Set(lanes.map(lane=>Number(lane[key])))].filter(Number.isFinite).sort((a,b)=>a-b);
+      const rxPorts=ports('rx_port'),txPorts=ports('tx_port');
+      const key=rxPorts.length>1?'rx_port':txPorts.length>1?'tx_port':null;
+      if(key===null)return null;
+      return (key==='rx_port'?rxPorts:txPorts).map((port,index)=>({
+        id:`ant${port}`,
+        label:`Antenna ${index+1}`,
+        match:lane=>Number(lane[key])===port,
+      }));
+    }
+
+    // Selected port per link_id. Uplink and downlink are separate links,
+    // so each direction keeps its own selection, and the choice survives
+    // the 500 ms status re-render that rebuilds these cards.
+    const laneSelection={};
+    let lastEdgeArgs=null;
+
+    function renderEdgeCards(channels, sampleRateHz) {
+      lastEdgeArgs=[channels,sampleRateHz];
+      const laneColors=['#42d3ff','#ff9f43','#53e58b','#b7a0ff','#f4d35e','#ff6577'];
+      const cards=(channels||[]).map(channel=>{
+        const parts={...linkParts(channel.link_id),source:channel.source||linkParts(channel.link_id).source,destination:channel.destination||linkParts(channel.link_id).destination,model:channel.model||linkParts(channel.link_id).model},fallbackLane={rx_port:channel.rx_port||0,tx_port:channel.tx_port||0,taps:channel.taps||[],ray_count:channel.ray_count,tap_count:channel.tap_count,total_path_power_db:channel.total_path_power_db},lanes=(Array.isArray(channel.lanes)&&channel.lanes.length?channel.lanes:[fallbackLane]).slice().sort((a,b)=>Number(a.rx_port)-Number(b.rx_port)||Number(a.tx_port)-Number(b.tx_port));
+        // Colour is bound to the lane's position in the full matrix, not
+        // to its position in the filtered view, so a lane keeps the same
+        // colour whether it is shown alone or overlaid with the others.
+        const colorOf=lane=>laneColors[lanes.indexOf(lane)%laneColors.length];
+        const options=laneOptions(lanes),selection=laneSelection[channel.link_id]??'all';
+        const active=options?options.find(option=>option.id===selection)??null:null;
+        const shownLanes=active?lanes.filter(active.match):lanes;
+        // Both plot helpers drop tapless lanes internally and then index
+        // their colour array by position in that filtered set, so apply
+        // the same predicate here or the colours shift off their lanes.
+        const plotLanes=shownLanes.filter(lane=>Array.isArray(lane.taps)&&lane.taps.length),plotColors=plotLanes.map(colorOf);
+        const picker=options?`<div class="lane-picker" data-link="${esc(channel.link_id)}"><button type="button" data-port="all" class="${active?'':'active'}"${active?'':' style="background:#1b2d3b;border-color:#31506a;color:#e9f2f8"'}>All ${lanes.length}</button>${options.map(option=>{const matched=lanes.filter(option.match),color=matched.length?colorOf(matched[0]):laneColors[0],on=active?.id===option.id;return `<button type="button" data-port="${option.id}" class="${on?'active':''}" style="${on?`background:${color};border-color:${color};color:#07111a`:`color:${color}`}">${option.label}</button>`}).join('')}</div>`:'';
+        const shownTapTotal=shownLanes.reduce((sum,lane)=>sum+(lane.taps||[]).length,0),bandwidthText=Number(sampleRateHz)>0?`${fmt(Number(sampleRateHz)/1e6,2)} MHz span`:'waiting for sample rate';
+        const scopeText=active?`${active.label} · ${shownLanes.length} of ${lanes.length} lane(s)`:`all ${lanes.length} lane(s)`;
+        const frequencyBlock=`<section class="freq-block"><div class="freq-head"><b>Frequency response · |H(f)| over ${scopeText}</b><span>${shownTapTotal} taps · ${bandwidthText}</span></div>${frequencyResponsePlot(plotLanes,plotColors,Number(sampleRateHz))}</section>`;
+        const laneTables=shownLanes.map(lane=>{const color=colorOf(lane),taps=(lane.taps||[]).slice(0,8),tapRows=Array.from({length:8},(_,rowIndex)=>{const t=taps[rowIndex];return t?`<tr><td>${rowIndex+1}</td><td>${fmt(t.gain_db,2)}</td><td><i class="phase-dot" style="background:${color}"></i>${fmt(t.phase_rad,3)} / ${fmt(t.phase_deg,1)}°</td><td>${fmt(t.delay_samples,3)}</td><td>${fmt(t.delay_ns,2)}</td></tr>`:`<tr class="empty-tap-row"><td>${rowIndex+1}</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>`}).join('');return `<section class="lane-tap-block"><div class="lane-tap-head"><b><i class="phase-dot" style="background:${color}"></i>Lane (rx${esc(lane.rx_port)}, tx${esc(lane.tx_port)})</b><span>${esc(lane.ray_count)} rays · ${esc(lane.tap_count)} taps · ${fmt(lane.total_path_power_db,2)} dB</span></div><table class="tap-table"><thead><tr><th>#</th><th>Gain dB</th><th>Phase rad / deg</th><th>Delay samples</th><th>Delay ns</th></tr></thead><tbody>${tapRows}</tbody></table></section>`}).join('');
+        const matrix=channel.matrix||{nt:1,nr:1},matrixText=`H ${matrix.nr||1}×${matrix.nt||1} · ${lanes.length} lane(s)`;
+        const viewText=active?`showing ${active.label} only`:'overlaid lane responses';
+        return `<article class="edge-card"><div class="card-head"><strong class="mono">${esc(parts.source)} → ${esc(parts.destination)}</strong><span>${esc(channel.direction)} · ${fmt(Number(channel.carrier_frequency_hz)/1e6,1)} MHz</span></div><div class="edge-meta">model ${esc(parts.model)} · ${matrixText} · ${viewText} · matrix total ${fmt(channel.total_path_power_db,1)} dB</div>${picker}${tapPlot(plotLanes,plotColors)}${frequencyBlock}<div class="lane-tables">${laneTables}</div></article>`;
+      }).join('');
+      $('edgeCards').innerHTML=cards||'<div class="empty">Waiting for Sionna channel profiles</div>';
+    }
+
+    // Per-UE RAN KPIs from the gNB scheduler feed. Every column below is a
+    // field the scheduler actually emits (see json_generators/du_high/
+    // scheduler.cpp); BLER is the only derived value, computed from the HARQ
+    // ok/nok counters. A UE row that omits a field renders as em dash rather
+    // than zero, so "not reported" never reads as "measured zero".
+    const RAN_COLUMNS=[
+      ['Identity',[
+        ['RNTI',r=>finite(r.rnti)?`0x${Number(r.rnti).toString(16)}`:'—'],
+        ['PCI',r=>fmt(r.pci,0)],
+      ]],
+      ['Link adaptation',[
+        ['CQI',r=>finite(r.cqi)&&Number(r.cqi)>=0?fmt(r.cqi,1):'—'],
+        ['DL RI',r=>fmt(r.dl_ri,2)],['UL RI',r=>fmt(r.ul_ri,2)],
+        ['DL MCS',r=>fmt(r.dl_mcs,1)],['UL MCS',r=>fmt(r.ul_mcs,1)],
+      ]],
+      ['Throughput',[
+        ['DL rate',r=>fmtBitrate(r.dl_brate)],['UL rate',r=>fmtBitrate(r.ul_brate)],
+      ]],
+      ['HARQ · BLER',[
+        ['DL ok/nok',r=>`${fmt(r.dl_nof_ok,0)} / ${fmt(r.dl_nof_nok,0)}`],
+        ['DL BLER',r=>fmtBler(r.dl_nof_ok,r.dl_nof_nok)],
+        ['UL ok/nok',r=>`${fmt(r.ul_nof_ok,0)} / ${fmt(r.ul_nof_nok,0)}`],
+        ['UL BLER',r=>fmtBler(r.ul_nof_ok,r.ul_nof_nok)],
+      ]],
+      ['Radio quality',[
+        ['PUSCH SINR',r=>fmtDb(r.pusch_snr_db)],
+        ['PUCCH SINR',r=>fmtDb(r.pucch_snr_db)],
+        ['PUSCH RSRP',r=>fmtDb(r.pusch_rsrp_db)],
+      ]],
+      ['Buffer · TA · PHR',[
+        ['BSR',r=>fmtBytes(r.bsr)],['DL buffer',r=>fmtBytes(r.dl_bs)],
+        ['TA',r=>fmtTa(r.ta_ns)],['PUSCH TA',r=>fmtTa(r.pusch_ta_ns)],
+        ['PHR',r=>finite(r.last_phr)?`${fmt(r.last_phr,0)} dB`:'—'],
+      ]],
+    ];
+    const fmtBitrate=value=>{const n=Number(value);if(!finite(value))return '—';
+      if(n>=1e9)return `${fmt(n/1e9,2)} Gb/s`;if(n>=1e6)return `${fmt(n/1e6,2)} Mb/s`;
+      if(n>=1e3)return `${fmt(n/1e3,1)} kb/s`;return `${fmt(n,0)} b/s`};
+    const fmtBytes=value=>{const n=Number(value);if(!finite(value))return '—';
+      if(n>=1048576)return `${fmt(n/1048576,2)} MiB`;if(n>=1024)return `${fmt(n/1024,1)} KiB`;
+      return `${fmt(n,0)} B`};
+    // The scheduler clamps its SINR and RSRP means into [-99.9, 99.9] and
+    // [-99.9, 0] before serialising them, so a value sitting on a clamp bound
+    // is the bound, not a measurement. An unreported RSRP arrives as -inf
+    // (cell_metrics_handler.cpp: no PUSCH RSRP report in the period) and lands
+    // on the floor; so does a PUCCH SINR mean that any DTX occasion pulled to
+    // -inf. Rendering -99.9 dB as a reading would report silence as the worst
+    // link ever measured, so the floor reads as "not reported" and the ceiling
+    // is marked as the bound it is. Float round-trips land a hair either side
+    // of the bound, hence the tolerance.
+    const RAN_DB_FLOOR=-99.9,RAN_DB_CEIL=99.9,RAN_DB_EPS=0.05;
+    const fmtDb=value=>{if(!finite(value))return '—';const n=Number(value);
+      if(n<=RAN_DB_FLOOR+RAN_DB_EPS)return '—';
+      if(n>=RAN_DB_CEIL-RAN_DB_EPS)return `≥ ${fmt(RAN_DB_CEIL,1)} dB`;
+      return `${fmt(n,1)} dB`};
+    const fmtTa=value=>finite(value)?`${fmt(Number(value)/1000,2)} µs`:'—';
+    const fmtBler=(ok,nok)=>{const good=Number(ok),bad=Number(nok);
+      if(!finite(ok)||!finite(nok)||good+bad<=0)return '—';
+      return `${fmt(bad/(good+bad)*100,2)}%`};
+
+    // The remote-control socket carries every metrics consumer of the gNB,
+    // not just the scheduler, so notifications and scheduler reports are
+    // counted apart: only the second kind says anything about UEs, and only
+    // its age tells the reader whether the table below is current.
+    function renderRanGroup(gnbId, ran) {
+      const state=ran?.state||'disabled',rows=ran?.ue_list||[];
+      const age=finite(ran?.age_seconds)?`${fmt(ran.age_seconds,1)}s ago`:'never';
+      const ueReports=Number(ran?.ue_reports||0);
+      const currentConnection=ran?.ue_list_current_connection!==false;
+      const waitingReport=!currentConnection||!ueReports;
+      const ueAge=finite(ran?.ue_list_age_seconds)?`${fmt(ran.ue_list_age_seconds,1)}s ago`:'never';
+      const detail={disabled:'Feed disabled — start the Web UI with --gnb-metrics-endpoint.',
+        connecting:'Opening the gNB remote-control WebSocket…',
+        subscribed:'Subscribed — waiting for the first metrics notification.',
+        connected:waitingReport?'Connected · waiting for scheduler report':ran?.ue_list_stale?'Connected · scheduler data stale':`Live · ${Number(ran?.messages||0).toLocaleString()} notifications · ${ueReports.toLocaleString()} scheduler reports · last ${age}`,
+        disconnected:`Disconnected${ran?.error?` · ${ran.error}`:''} — retrying with backoff.`}[state]||state;
+      const status=`<span class="${state==='connected'?'tag-ok':'tag-wait'}">${esc(state)}</span> · ${esc(detail)}`;
+      const stale=ueReports>0&&(ran?.ue_list_stale===true||!currentConnection||state!=='connected')
+        ?`<div class="ran-stale">${state==='connected'?(!currentConnection?'Waiting for a scheduler report on this connection':`Last scheduler report ${esc(ueAge)}`):'Connection unavailable'} — the rows below are the last reported values, not current ones.</div>`:'';
+      if(!rows.length){
+        const empty=state!=='connected'?'Waiting for gNB scheduler metrics.'
+          :ueReports?(stale?'Last scheduler report contained no UEs.':'gNB scheduler is reporting no connected UEs.')
+          :'Connected — no scheduler report on this feed yet; the other metrics consumers sharing the socket do not carry UE state.';
+        return `<section data-gnb-id="${esc(gnbId)}"><h3>${esc(gnbId)}</h3><div class="foot">${status}</div>${stale}<div class="empty">${esc(empty)}</div></section>`;
+      }
+      const header=RAN_COLUMNS.flatMap(([,cols])=>cols).map(([label])=>`<th>${esc(label)}</th>`).join('');
+      const groups=RAN_COLUMNS.map(([name,cols])=>`<th colspan="${cols.length}" style="text-align:center">${esc(name)}</th>`).join('');
+      const body=rows.map(row=>`<tr data-row-key="${esc(JSON.stringify([gnbId,row.pci,row.rnti]))}">${RAN_COLUMNS.flatMap(([,cols])=>cols).map(([,read])=>`<td>${esc(read(row))}</td>`).join('')}</tr>`).join('');
+      return `<section data-gnb-id="${esc(gnbId)}"><h3>${esc(gnbId)}</h3><div class="foot">${status}</div>${stale}<div class="ran-table-wrap"><table class="ran-table"><thead><tr>${groups}</tr><tr>${header}</tr></thead><tbody>${body}</tbody></table></div></section>`;
+    }
+
+    function renderRanCards(ran, gnbs) {
+      const entries=Object.entries(gnbs||{});
+      if(!entries.length)entries.push(['gnb0',ran||{}]);
+      const fresh=entries.filter(([,feed])=>feed.state==='connected'&&feed.ue_list_current_connection!==false&&Number(feed.ue_reports)>0&&feed.ue_list_age_seconds!=null&&!feed.ue_list_stale).length;
+      $('ranState').textContent=`${fresh}/${entries.length} gNB scheduler feeds fresh`;
+      $('ranCards').innerHTML=entries.map(([gnbId,feed])=>renderRanGroup(gnbId,feed)).join('');
+    }
+
+    function renderNodeCards(sionna) {
+      const env=sionna?.environment||{},configured=env.nodes||{},positions=sionna?.positions||{},velocities=sionna?.velocities_mps||{},antenna=env.antenna||{};
+      const ids=[...new Set([...Object.keys(configured),...Object.keys(positions)])].sort();
+      const antennaText=antenna.tx&&antenna.rx?(antenna.tx===antenna.rx?`${antenna.tx} (TX/RX)`:`TX ${antenna.tx} · RX ${antenna.rx}`):'—';
+      const cards=ids.map(id=>{
+        const node=configured[id]||{},position=Array.isArray(positions[id])?positions[id]:node.start_m,velocity=Array.isArray(velocities[id])?velocities[id]:node.velocity_mps,kind=node.mobility||'unknown',nodeAntennaText=node.tx_array&&node.rx_array?(node.tx_array===node.rx_array?`${node.tx_array} (TX/RX)`:`TX ${node.tx_array} · RX ${node.rx_array}`):antennaText;
+        const positionText=Array.isArray(position)?`x ${fmt(position[0],2)} · y ${fmt(position[1],2)} · z ${fmt(position[2],2)} m`:'—';
+        const speed=Array.isArray(velocity)?Math.hypot(...velocity.map(value=>Number(value)||0)):null;
+        const speedText=finite(speed)?`${fmt(speed,2)} m/s · ${fmt(speed*3.6,1)} km/h`:'—';
+        return `<article class="node-card"><div class="node-card-head"><strong class="mono">${esc(id)}</strong><span class="node-kind">${esc(kind)}</span></div><dl class="node-facts"><dt>Position</dt><dd>${positionText}</dd><dt>Speed</dt><dd>${speedText}</dd><dt>Antenna</dt><dd>${esc(nodeAntennaText)}</dd></dl></article>`;
+      }).join('');
+      $('nodeCards').innerHTML=cards||'<div class="empty">Waiting for node data</div>';
+    }
+
+    function renderGpuProcess(role, title, usage) {
+      const process=usage?.processes?.[role],running=process?.running===true,resident=process?.gpu_resident===true,pids=(process?.pids||[]).join(', ')||'—';
+      const gpuLines=(process?.gpus||[]).map(gpu=>`GPU ${gpu.gpu_index??'?'} · NVML SM sample ${fmt(gpu.sm_util_percent,0)}% · VRAM ${fmtMib(gpu.gpu_memory_mib)}`).join('<br>');
+      const state=running?(resident?'Running · GPU context detected':'Running · waiting for GPU sample'):'Not running';
+      return `<div class="gpu-process"><div class="card-head"><strong>${esc(title)}</strong><span class="${running?'tag-ok':'tag-wait'}">${state}</span></div><div class="gpu-metrics"><div class="gpu-metric"><b>${fmt(process?.sm_util_percent,0)}%</b><span>NVML sampled utilization</span></div><div class="gpu-metric"><b>${fmtMib(process?.gpu_memory_mib)}</b><span>VRAM</span></div><div class="gpu-metric"><b>${fmt(process?.cpu_util_percent,0)}%</b><span>CPU</span></div><div class="gpu-metric"><b>${fmtMib(process?.ram_rss_mib)}</b><span>RAM RSS</span></div></div><div class="gpu-lines">PID ${esc(pids)}<br>${gpuLines||'No per-GPU samples'}</div></div>`;
+    }
+
+    function renderHardware(usage) {
+      const cpu=usage?.hardware?.cpu||{},gpus=usage?.hardware?.gpus||[],processes=Object.values(usage?.processes||{}),cpuActive=processes.some(process=>process?.running===true),activeGpuIndexes=new Set(processes.filter(process=>process?.running===true).flatMap(process=>(process?.gpus||[]).map(gpu=>String(gpu.gpu_index))));
+      const cpuCard=`<div class="hardware-card ${cpuActive?'active':''}"><strong>CPU · ${esc(cpu.model||'Waiting for model')}</strong><div class="gpu-lines">${esc(cpu.physical_cores??'—')} physical cores · ${esc(cpu.logical_threads??'—')} logical threads · RAM ${fmtMib(cpu.ram_total_mib)}</div></div>`;
+      const gpuCards=gpus.map(gpu=>`<div class="hardware-card ${activeGpuIndexes.has(String(gpu.gpu_index))?'active':''}"><strong>GPU ${esc(gpu.gpu_index)} · ${esc(gpu.name)}</strong><div class="gpu-lines">${esc(gpu.sm_count??'—')} SM · VRAM ${fmtMib(gpu.memory_total_mib)} · PCIe Gen ${esc(gpu.pcie_gen??'—')} ×${esc(gpu.pcie_width??'—')}</div></div>`).join('');
+      return `<div class="hardware-grid">${gpuCards||'<div class="hardware-card"><strong>Waiting for GPU hardware sample</strong><div class="gpu-lines">Waiting for nvidia-smi device information.</div></div>'}${cpuCard}</div>`;
+    }
+
+    function renderMemorySummary(usage) {
+      const roles=usage?.processes||{},definitions=[['sionna','Sionna RT / Bridge'],['gpu_channel','GPU Channel'],['web_ui','Web UI']],rows=definitions.map(([role,label])=>{const process=roles?.[role]||{},pids=(process.pids||[]).join(', ')||'—',state=process.running===true?'Running':'Waiting';return `<div class="memory-process-row"><div class="memory-process-name"><b>${label}</b><span>${state} · PID ${esc(pids)}</span></div><div class="memory-process-value">${fmtMib(process.gpu_memory_mib)}</div><div class="memory-process-value">${fmtMib(process.ram_rss_mib)}</div></div>`}).join('');
+      return `<div class="resource-chart-card"><strong>Real-time memory by process</strong><div class="memory-process-table"><div class="memory-process-row memory-process-head"><div>Process</div><div style="text-align:right">VRAM</div><div style="text-align:right">RSS</div></div>${rows}</div><div class="memory-explain"><b>Sionna RT and the Bridge</b> run together in one <span class="mono">run_bridge.py</span> Python PID, so they share one row.<br><b>VRAM</b> is GPU device memory. <b>RSS</b> (Resident Set Size) is the CPU-side memory currently resident in physical RAM for that process.</div></div>`;
+    }
+
+    function activeWarmupLinks(telemetry) {
+      return Object.values(telemetry||{}).filter(payload=>Number(payload?.warmup_until_slot)>0&&Number(payload?.slot)<Number(payload?.warmup_until_slot));
+    }
+
+    function drawResourceChart(canvasId, source, config) {
+      const canvas=$(canvasId); if(!canvas)return;
+      const ctx=canvas.getContext('2d'),dpr=window.devicePixelRatio||1,rect=canvas.getBoundingClientRect(),W=rect.width,H=rect.height;
+      const pixelW=Math.max(1,Math.round(W*dpr)),pixelH=Math.max(1,Math.round(H*dpr));if(canvas.width!==pixelW||canvas.height!==pixelH){canvas.width=pixelW;canvas.height=pixelH}ctx.setTransform(dpr,0,0,dpr,0,0);
+      const left=52,right=10,top=43,bottom=23,plotW=W-left-right,plotH=H-top-bottom,now=Date.now(),windowMs=config.windowMs||CHART_WINDOW_MS,end=Math.floor(now/windowMs)*windowMs,start=end-windowMs,x=time=>left+(Number(time)-start)/windowMs*plotW,clipTime=time=>Math.max(start,Math.min(end,Number(time))),timeKey=config.timeKey||'sampled_unix_ms';
+      const timeOf=item=>Number(item?.[timeKey]),samples=(source?.history||[]).filter(item=>timeOf(item)>=start&&timeOf(item)<=end),events=(config.showEvents===false?[]:(config.events||source?.iterations||[])).filter(item=>{const eventStart=Number(item.started_unix_ms??item.observed_unix_ms),eventEnd=Number(item.ended_unix_ms??end);return eventStart<=end&&eventEnd>=start}),markerConfig=config.markers||null,markers=(markerConfig?.items||[]).map(item=>({item,time:Number(markerConfig.time(item))})).filter(marker=>Number.isFinite(marker.time)&&marker.time>=start&&marker.time<=end);
+      const numeric=value=>value===null||value===undefined||!Number.isFinite(Number(value))?null:Number(value),references=config.references||[],values=[...samples.flatMap(item=>config.series.map(series=>numeric(series.value(item))).filter(value=>value!==null)),...references.map(item=>numeric(item.value)).filter(value=>value!==null)],step=config.step||1,rawMin=values.length?Math.min(...values):0,rawMax=values.length?Math.max(...values):0,min=finite(config.fixedMin)?Number(config.fixedMin):(config.allowNegative?Math.floor(rawMin/step)*step:0),initialMax=finite(config.fixedMax)?Number(config.fixedMax):(config.allowNegative?(values.length?Math.ceil(rawMax/step)*step:step):Math.max(config.minMax||1,Math.ceil(rawMax/step)*step)),max=initialMax<=min?min+step:initialMax;
+      const y=value=>top+plotH-(Math.max(min,Math.min(max,Number(value)||0))-min)/(max-min)*plotH,maxGapMs=config.maxGapMs||Math.max(600,Number(source?.sampling?.target_interval_ms||500)*3);
+      ctx.clearRect(0,0,W,H);ctx.fillStyle='#07111a';ctx.fillRect(0,0,W,H);ctx.font='9px system-ui';
+      ctx.fillStyle='#091720';ctx.fillRect(left,top,plotW,plotH);for(const ratio of [0,.5,1]){const py=top+plotH-ratio*plotH,value=min+(max-min)*ratio;ctx.strokeStyle='#263947';ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(W-right,py);ctx.stroke();ctx.fillStyle='#8ca4b5';ctx.textAlign='right';ctx.fillText(config.axis(value),left-4,py+3)}
+      const tickDivisions=5,timeTicks=Array.from({length:tickDivisions+1},(_,index)=>start+index*windowMs/tickDivisions);timeTicks.forEach((time,index)=>{const px=x(time);ctx.strokeStyle='rgba(38,57,71,.72)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,top+plotH);ctx.stroke();ctx.fillStyle='#8ca4b5';ctx.font='8px system-ui';ctx.textAlign=index===0?'left':index===tickDivisions?'right':'center';ctx.fillText(fmtClock(time),px,H-7)});
+      events.forEach((event,index)=>{const started=Number(event.started_unix_ms??event.observed_unix_ms),ended=Number(event.ended_unix_ms??end),x0=x(clipTime(started)),x1=x(clipTime(ended));ctx.strokeStyle='rgba(233,242,248,.82)';ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(x0,top);ctx.lineTo(x0,top+plotH);ctx.stroke();ctx.save();ctx.setLineDash([3,3]);ctx.strokeStyle='rgba(66,211,255,.88)';ctx.beginPath();ctx.moveTo(x1,top);ctx.lineTo(x1,top+plotH);ctx.stroke();ctx.restore();if(x1-x0>12){ctx.fillStyle='#c7eefa';ctx.textAlign='center';ctx.font='8px system-ui';ctx.fillText(`i${event.iteration}`,x0+(x1-x0)/2,top+10+(index%2)*10)}});
+      const warmupEvents=config.showWarmups===true?events:[],measuredWarmups=warmupEvents.filter(event=>event.warmup_expected&&event.warmup_boundary_source==='backend'),unknownWarmups=warmupEvents.filter(event=>event.warmup_expected&&event.warmup_boundary_source!=='backend'),warmupMarkerWidth=6;measuredWarmups.forEach(event=>{const warmStart=Number(event.warmup_started_unix_ms),warmEnd=Number(event.warmup_ended_unix_ms);if(!Number.isFinite(warmStart)||!Number.isFinite(warmEnd)||warmStart>end||warmEnd<start)return;const x0=x(clipTime(warmStart)),x1=x(clipTime(warmEnd)),actualWidth=Math.max(0,x1-x0),visibleWidth=Math.max(warmupMarkerWidth,actualWidth),visibleX=Math.max(left,Math.min(W-right-visibleWidth,(x0+x1-visibleWidth)/2));ctx.fillStyle='rgba(255,101,119,.28)';ctx.fillRect(visibleX,top,visibleWidth,plotH);ctx.strokeStyle='rgba(255,101,119,.95)';ctx.strokeRect(visibleX+.5,top+.5,Math.max(1,visibleWidth-1),plotH-1);ctx.fillStyle='#ff9aaa';ctx.textAlign='center';ctx.font='bold 8px system-ui';ctx.fillText('W',visibleX+visibleWidth/2,top+plotH-4)});unknownWarmups.forEach(event=>{const unknownTime=Number(event.channel_arrived_unix_ms??event.warmup_started_unix_ms);if(!Number.isFinite(unknownTime)||unknownTime<start||unknownTime>end)return;const px=x(unknownTime);ctx.save();ctx.setLineDash([2,3]);ctx.strokeStyle='#f4d35e';ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,top+plotH);ctx.stroke();ctx.restore();ctx.fillStyle='#f4d35e';ctx.textAlign='center';ctx.font='bold 9px system-ui';ctx.fillText('?',px,top+plotH-4)});
+      references.forEach(reference=>{const value=numeric(reference.value);if(value===null||value<min||value>max)return;const py=y(value);ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle=reference.color||'#ff6577';ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(W-right,py);ctx.stroke();ctx.restore()});
+      config.series.forEach(series=>{ctx.strokeStyle=series.color;ctx.lineWidth=1.8;ctx.beginPath();let drawing=false,lastTime=null,lastY=null;samples.forEach(item=>{const value=numeric(series.value(item));if(value===null)return;const sampleTime=timeOf(item),px=x(sampleTime),py=y(value);if(drawing&&sampleTime-lastTime<=maxGapMs)ctx.lineTo(px,py);else{ctx.moveTo(sampleTime-start<=maxGapMs?left:px,py);if(px>left&&sampleTime-start<=maxGapMs)ctx.lineTo(px,py);drawing=true}lastTime=sampleTime;lastY=py});if(drawing&&end-lastTime<=maxGapMs)ctx.lineTo(x(end),lastY);ctx.stroke()});
+      markers.forEach(marker=>{const px=x(marker.time);ctx.strokeStyle=markerConfig.color||'#53e58b';ctx.lineWidth=1.5;ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,top+plotH);ctx.stroke()});
+      let legendX=left;config.series.forEach(series=>{ctx.fillStyle=series.color;ctx.textAlign='left';ctx.font='9px system-ui';ctx.fillText(`■ ${series.label}`,legendX,12);legendX+=ctx.measureText(`■ ${series.label}`).width+10});if(markers.length){const markerLegend=`│ ${markerConfig.label||'Event'}`;ctx.fillStyle=markerConfig.color||'#53e58b';ctx.fillText(markerLegend,legendX,12);legendX+=ctx.measureText(markerLegend).width+10}if(config.showEvents!==false){ctx.fillStyle='#e9f2f8';ctx.fillText('│ start',left,27);ctx.fillStyle='#42d3ff';ctx.fillText('┆ end',left+50,27);if(config.showWarmups===true){ctx.fillStyle='#ff6577';ctx.fillText('■ W measured warm-up',left+92,27);ctx.fillStyle='#f4d35e';ctx.fillText('? timing unavailable',left+200,27)}}
+      references.forEach(reference=>{ctx.fillStyle=reference.color||'#ff6577';ctx.fillText(`┄ ${reference.label}`,legendX,12);legendX+=ctx.measureText(`┄ ${reference.label}`).width+10});
+      if(!samples.length){ctx.fillStyle='#7890a2';ctx.textAlign='center';ctx.fillText(config.emptyText||'Waiting for samples',left+plotW/2,top+plotH/2)}
+    }
+
+    function drawResourceHistory(usage, history, runtime, sionna) {
+      const cpuCores=value=>finite(value)?Number(value)/100:null;
+      const iterations=history?.iterations||[],telemetryHistory=history?.telemetry||[],slotSource={history:telemetryHistory,iterations},palette=['#42d3ff','#ff9f43','#53e58b','#b7a0ff','#f4d35e'],destinations=[...new Set(telemetryHistory.map(item=>linkParts(item.link_id).destination).filter(id=>id!=='—'))].sort();
+      drawResourceChart('slotLatencyChart',slotSource,{timeKey:'observed_unix_ms',showWarmups:true,minMax:1000,step:500,axis:value=>`${Math.round(value)}µs`,maxGapMs:500,markers:{items:iterations,time:item=>item.channel_arrived_unix_ms,label:'Sionna channel',color:'#53e58b'},references:[{value:1000,label:'1 ms nominal deadline',color:'#ff6577'}],series:destinations.map((destination,index)=>({label:`${destination} RX`,color:palette[index%palette.length],value:item=>linkParts(item.link_id).destination===destination?item.slot_processing?.nominal?.latest_estimated_us:null})),emptyText:'Waiting for completed nominal-slot estimates'});
+      drawResourceChart('applicationCpuChart',usage,{minMax:1,step:1,axis:value=>`${fmt(value,1)}c`,series:[{label:'Sionna RT',color:'#42d3ff',value:item=>cpuCores(item.roles?.sionna?.cpu_util_percent)},{label:'GPU Channel',color:'#ff9f43',value:item=>cpuCores(item.roles?.gpu_channel?.cpu_util_percent)},{label:'Web UI',color:'#53e58b',value:item=>cpuCores(item.roles?.web_ui?.cpu_util_percent)},{label:'Other / OS',color:'#b7a0ff',value:item=>item.system?.other_os_cpu_cores}]});
+      drawResourceChart('pcieChart',usage,{minMax:250,step:250,axis:value=>value>=1000?`${fmt(value/1000,1)}G`:`${Math.round(value)}M`,series:[{label:'H2D',color:'#42d3ff',value:item=>item.pcie?.h2d_mb_s},{label:'D2H',color:'#ff9f43',value:item=>item.pcie?.d2h_mb_s}]});
+    }
+
+    function renderRuntime(runtime, usage, telemetry, delivery, history, sionna) {
+      const deliveryWarmup=(delivery?.links||[]).filter(item=>item.warming_up),warming=delivery?.links?deliveryWarmup:activeWarmupLinks(telemetry),warmupUntil=warming.reduce((value,item)=>Math.max(value,Number(item.warmup_until_slot)||0),0);
+      const system=usage?.system||{},gpus=usage?.hardware?.gpus||[],gpuUsed=gpus.length?gpus.reduce((sum,gpu)=>sum+(Number(gpu.memory_used_mib)||0),0):null,gpuTotal=gpus.length?gpus.reduce((sum,gpu)=>sum+(Number(gpu.memory_total_mib)||0),0):null,pcie=usage?.pcie||{};
+      $('combinedGpuCard').innerHTML=`${renderHardware(usage)}<div class="system-metrics"><div class="gpu-metric"><b>${fmt(system.cpu_util_percent,0)}%</b><span>Host CPU</span></div><div class="gpu-metric"><b>${fmtMib(system.used_mib)} / ${fmtMib(system.total_mib)}</b><span>Host RAM</span></div><div class="gpu-metric"><b>${fmtMib(gpuUsed)} / ${fmtMib(gpuTotal)}</b><span>GPU VRAM</span></div><div class="gpu-metric"><b>${fmtRate(pcie.h2d_mb_s)}</b><span>PCIe H2D</span></div><div class="gpu-metric"><b>${fmtRate(pcie.d2h_mb_s)}</b><span>PCIe D2H</span></div></div><div class="gpu-processes">${renderGpuProcess('sionna','Sionna RT',usage)}${renderGpuProcess('gpu_channel','GPU Channel',usage)}</div><div class="warmup-banner ${delivery?.backend_usable?'ok':''}">${delivery?.stale_links?'Backend telemetry stale · current output unconfirmed':warming.length?`⚠ ${warming.length} links warming up · output unavailable before slot ${warmupUntil}`:delivery?.backend_usable?'No links warming up · backend output is usable':'Waiting for fresh backend confirmation'}</div><div class="resource-charts"><div class="resource-chart-card"><strong>Estimated nominal-slot processing time (µs) · 1 ms reference</strong><canvas id="slotLatencyChart" class="resource-history"></canvas></div><div class="resource-chart-card"><strong>Application CPU (logical cores)</strong><canvas id="applicationCpuChart" class="resource-history"></canvas></div>${renderMemorySummary(usage)}<div class="resource-chart-card"><strong>PCIe throughput (MB/s)</strong><canvas id="pcieChart" class="resource-history"></canvas></div></div>`;
+      drawResourceHistory(usage,history,runtime,sionna);
+      const phaseLabels={initializing_scene:'initializing scene/solver',ready:'ready to start update loop',waiting_for_next_update:'waiting for next update',tracing_channels:'tracing Sionna RT channels',sending_control:'sending profile batch and waiting for ACK',stopped:'stopped',failed:'failed'};
+      const alive=runtime?.process_alive===true,phase=phaseLabels[runtime?.phase]||runtime?.phase||'waiting for runtime';
+      $('runtimeTitle').textContent=alive?`Single Sionna process running · ${phase}`:phase;
+      $('runtimeTitle').className=alive?'':'wait';
+      $('runtimeDetail').textContent=runtime?`PID ${runtime.process_id??'—'} · session ${runtime.session_id??'—'} · iteration ${runtime.iteration??'—'} · phase observed ${fmt(runtime.phase_age_seconds,1)}s ago`:'Waiting for the runtime PID and current processing phase.';
+      if(runtime){const duration=Number(runtime.configured_duration_seconds)===0?'runs until SIGINT':`stops after ${fmt(runtime.configured_duration_seconds,0)}s`,limit=Number(runtime.configured_iteration_limit)===0?'no iteration limit':`${runtime.configured_iteration_limit}-iteration limit`;$('runtimeConfig').textContent=`Scene/solver initialized once at process startup · recomputes ${runtime.link_count??'—'} links per iteration at ${fmt(runtime.target_update_hz,2)} Hz · ${duration} · ${limit}`}
+      else $('runtimeConfig').textContent='—';
+      const sampling=usage?.sampling,samplingText=sampling?`${sampling.backend} · ${sampling.target_interval_ms}ms samples · hardware refresh every ${sampling.hardware_interval_ms}ms`:'Waiting for sampling interval';
+      $('gpuMonitorNote').textContent=usage?.error?`Resource monitor error: ${usage.error}`:usage?.warning?`Partial hardware metric warning: ${usage.warning} · ${samplingText}`:`${samplingText} · SM is an average over the NVML sampling interval and is shown only in status cards. Time-series charts show completed 1,000 ms intervals using wall-clock timestamps; green lines mark Sionna channel ACKs.`;
+    }
+
+    // Node colours, shared by the 2D projection below and — as NODE_PALETTE —
+    // by the WebGL viewer at the end of the document. Both must agree: a
+    // marker and every ray leaving it carry the same colour.
+    const NODE_PALETTE_2D = {
+      gnb: ['#0b6fa4', '#6b3fa0'],
+      car: ['#c0392b', '#d4722c'],
+      pedestrian: ['#2e7d4f', '#6a8f2a'],
+      unknown: ['#8a6d3b'],
+    };
+    // Canvas pixels, the flat projection's counterpart to CROSSTALK_DASH_M.
+    const CROSSTALK_DASH_PX = 7;
+    function nodeHex(id, sionna) {
+      const kind = id.startsWith('gnb') ? 'gnb' : (sionna?.environment?.nodes?.[id]?.mobility || 'unknown');
+      const ramp = NODE_PALETTE_2D[kind] || NODE_PALETTE_2D.unknown;
+      return ramp[Number((id.match(/\d+$/) || ['0'])[0]) % ramp.length];
+    }
+    function nodeRgba(id, sionna, alpha) {
+      const hex = nodeHex(id, sionna);
+      const value = parseInt(hex.slice(1), 16);
+      return `rgba(${value >> 16 & 255},${value >> 8 & 255},${value & 255},${alpha})`;
+    }
+
+    // `window.sceneViewer` is installed by the WebGL module at the end of the
+    // document. It stays undefined when WebGL is unavailable, and the 2D
+    // projection below keeps the panel working.
+    function sceneRender(sionna) {
+      if (window.sceneViewer) { window.sceneViewer.update(sionna); return; }
+      drawScene(sionna);
+    }
+
+    // Same palette as the WebGL viewer, so the two renderers agree.
+    const KIND_HEX_2D = {
+      water:'#6fbfe4', grass:'#8ccf63', park:'#9ad97a', pitch:'#62c48a',
+      wood:'#5da65f', scrub:'#a7c98a', sand:'#e4d5a8',
+      road:'#232323', ground:'#e6e0d6',
+    };
+    const MATERIAL_HEX_2D = {
+      concrete:'#6b645d', brick:'#7c584a', glass:'#46687a', metal:'#646a71',
+      wood:'#7a6248', marble:'#8b8681', plasterboard:'#76706a',
+      plywood:'#7d6a52', chipboard:'#796751', floorboard:'#7f6a4f',
+      ceiling_board:'#847e76',
+      very_dry_ground:'#d8cfa8', medium_dry_ground:'#8ccf63', wet_ground:'#6fbfe4',
+    };
+    function surfaceHex2D(object) {
+      if (object.kind !== 'building') return KIND_HEX_2D[object.kind] || KIND_HEX_2D.ground;
+      return MATERIAL_HEX_2D[object.material] || '#6f6862';
+    }
+
+    function shade(hex, factor) {
+      const value = parseInt(hex.slice(1), 16);
+      const channel = shift => Math.max(0, Math.min(255, Math.round((value >> shift & 255) * factor)));
+      return `rgb(${channel(16)},${channel(8)},${channel(0)})`;
+    }
+
+    // Surfaces are coloured by ITU material, so the legend has to say which
+    // materials the scene actually contains — otherwise a scene that is
+    // almost all concrete just looks like a renderer that ignores material.
+    function renderMaterialLegend(mesh) {
+      const box = $('sceneMaterials');
+      if (!box) return;
+      const counts = new Map();
+      for (const object of mesh.objects || []) {
+        const key = object.kind === 'road' ? 'road surface' : object.material || 'unknown';
+        const entry = counts.get(key) || { count: 0, hex: surfaceHex2D(object) };
+        entry.count += 1;
+        counts.set(key, entry);
+      }
+      const items = [...counts.entries()].sort((a, b) => b[1].count - a[1].count);
+      box.innerHTML = '<span style="color:#8ca4b5">Surface material:</span>'
+        + items.map(([name, entry]) =>
+            `<span><i class="dot" style="background:${entry.hex};outline:1px solid #3a4c5a"></i>`
+            + `${esc(name.replace(/_/g, ' '))} · ${entry.count}</span>`).join('');
+      box.hidden = items.length === 0;
+    }
+
+    window.renderMaterialLegend = renderMaterialLegend;
+    let sceneMesh = null, sceneMeshRequested = false;
+    function ensureSceneMesh() {
+      if (sceneMeshRequested) return;
+      sceneMeshRequested = true;
+      fetch('/api/scene_mesh').then(response => response.json()).then(mesh => {
+        const credit = $('sceneCredit');
+        if (credit && mesh.source?.attribution) {
+          credit.textContent = mesh.source.attribution;
+          credit.hidden = false;
+        }
+        if (mesh.objects?.length) {
+          sceneMesh = mesh;
+          renderMaterialLegend(mesh);
+          sceneRender(lastStatus?.sionna);
+        }
+      }).catch(() => {});
+    }
+
+    // Draw the scene from its real triangles. The `scene_geometry` in the
+    // status record is only an axis-aligned box per mesh, which is fine for
+    // the six-box canyon but turns a city of bent roads into a heap of
+    // rectangles — so the mesh is preferred whenever it is available.
+    // Ground cover sits millimetres above the base plane, so depth alone
+    // cannot order it reliably. What each surface *is* decides who paints
+    // over whom; only buildings need real depth sorting among themselves.
+    const DRAW_ORDER = {
+      ground: 0, water: 1, wood: 1, grass: 1, park: 1, scrub: 1, sand: 1,
+      pitch: 2, road: 3, building: 4,
+    };
+
+    // The world does not move, so its projection and triangle list are built
+    // once per canvas size and blitted afterwards. At the 10 Hz scene poll,
+    // re-sorting a few thousand triangles every frame was itself enough to
+    // hold the picture back to about one update a second.
+    let sceneRaster = null;
+
+    function drawMeshScene(sionna, ctx, W, H) {
+      const positions = sionna?.positions || {};
+      const raw = p => [(p[0] - p[1]) * .707, (p[0] + p[1]) * .686 - (p[2] || 0) * .242];
+      if (sceneRaster && sceneRaster.width === W && sceneRaster.height === H) {
+        ctx.drawImage(sceneRaster.canvas, 0, 0, W, H);
+        drawSceneOverlay(ctx, sceneRaster.xyz, sionna);
+        return;
+      }
+      const world = [];
+      for (const object of sceneMesh.objects) {
+        const xs = object.positions;
+        for (let i = 0; i < xs.length; i += 3) world.push(raw([xs[i], xs[i + 1], xs[i + 2]]));
+      }
+      for (const position of Object.values(positions)) world.push(raw(position));
+      const pad = 30;
+      const xs = world.map(p => p[0]), ys = world.map(p => p[1]);
+      const minX = Math.min(...xs), maxX = Math.max(...xs);
+      const minY = Math.min(...ys), maxY = Math.max(...ys);
+      const spanX = Math.max(1, maxX - minX), spanY = Math.max(1, maxY - minY);
+      const scale = Math.min((W - 2 * pad) / spanX, (H - 2 * pad) / spanY);
+      const offsetX = (W - spanX * scale) / 2, offsetY = (H - spanY * scale) / 2;
+      const xyz = p => { const q = raw(p); return [offsetX + (q[0] - minX) * scale, offsetY + (q[1] - minY) * scale]; };
+
+      // Painter's algorithm: one flat list of triangles, far ones first.
+      const triangles = [];
+      for (const object of sceneMesh.objects) {
+        const hex = surfaceHex2D(object), points = object.positions, indices = object.indices;
+        for (let i = 0; i < indices.length; i += 3) {
+          const a = indices[i] * 3, b = indices[i + 1] * 3, c = indices[i + 2] * 3;
+          const va = [points[a], points[a + 1], points[a + 2]];
+          const vb = [points[b], points[b + 1], points[b + 2]];
+          const vc = [points[c], points[c + 1], points[c + 2]];
+          // Lambert term against a fixed sun, so walls read darker than roofs
+          // and the extrusion has depth without a real renderer.
+          const ux = vb[0] - va[0], uy = vb[1] - va[1], uz = vb[2] - va[2];
+          const vx = vc[0] - va[0], vy = vc[1] - va[1], vz = vc[2] - va[2];
+          let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+          const length = Math.hypot(nx, ny, nz) || 1;
+          nx /= length; ny /= length; nz /= length;
+          const lambert = Math.abs(nx * 0.40 - ny * 0.31 + nz * 0.86);
+          triangles.push({
+            priority: DRAW_ORDER[object.kind] ?? 1,
+            fill: shade(hex, 0.72 + 0.28 * lambert),
+            depth: (va[0] + va[1] + vb[0] + vb[1] + vc[0] + vc[1]) / 6
+                 - (va[2] + vb[2] + vc[2]) / 60,
+            points: [xyz(va), xyz(vb), xyz(vc)],
+          });
+        }
+      }
+      triangles.sort((a, b) => a.priority - b.priority || a.depth - b.depth);
+      for (const triangle of triangles) {
+        ctx.beginPath();
+        ctx.moveTo(triangle.points[0][0], triangle.points[0][1]);
+        ctx.lineTo(triangle.points[1][0], triangle.points[1][1]);
+        ctx.lineTo(triangle.points[2][0], triangle.points[2][1]);
+        ctx.closePath();
+        ctx.fillStyle = triangle.fill;
+        // Stroking with the fill colour hides the hairline seams canvas
+        // leaves between adjacent triangles.
+        ctx.strokeStyle = triangle.fill;
+        ctx.lineWidth = 1;
+        ctx.fill();
+        ctx.stroke();
+      }
+      // Keep the finished surfaces so the next poll only redraws the overlay.
+      const cache = document.createElement('canvas');
+      cache.width = Math.max(1, Math.round(W * (window.devicePixelRatio || 1)));
+      cache.height = Math.max(1, Math.round(H * (window.devicePixelRatio || 1)));
+      const cacheCtx = cache.getContext('2d');
+      cacheCtx.scale(cache.width / W, cache.height / H);
+      cacheCtx.drawImage(ctx.canvas, 0, 0, W, H);
+      sceneRaster = { width: W, height: H, canvas: cache, xyz };
+      drawSceneOverlay(ctx, xyz, sionna);
+    }
+
+    function drawScene(sionna) {
+      const canvas=$('scene'), ctx=canvas.getContext('2d'), dpr=window.devicePixelRatio||1;
+      const rect=canvas.getBoundingClientRect(), width=Math.round(rect.width*dpr), height=Math.round(rect.height*dpr);
+      if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      const W=rect.width,H=rect.height,positions=sionna?.positions||{},nodes=Object.entries(positions);
+      const geometry=sionna?.scene_geometry?.objects||[];
+      const worldPoints=[...nodes.map(([,position])=>position),...geometry.flatMap(item=>(item.footprint_xy_m||[]).flatMap(point=>[[point[0],point[1],Number(item.z_min_m)||0],[point[0],point[1],Number(item.z_max_m)||0]]))];
+      ctx.clearRect(0,0,W,H);ctx.fillStyle='#eee9e0';ctx.fillRect(0,0,W,H);
+      ensureSceneMesh();
+      if(sceneMesh){drawMeshScene(sionna,ctx,W,H);return}
+      if(!worldPoints.length){ctx.fillStyle='#8a7f72';ctx.textAlign='center';ctx.fillText('Waiting for Sionna scene data',W/2,H/2);return}
+
+      // Orthographic camera at roughly 76 degrees above the horizon: almost
+      // top-down, with just enough height projection to preserve shallow 3D.
+      const pad=42,raw=p=>[(Number(p[0])-Number(p[1]))*.707,(Number(p[0])+Number(p[1]))*.686-(Number(p[2])||0)*.242],projected=worldPoints.map(raw),xs=projected.map(p=>p[0]),ys=projected.map(p=>p[1]),minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys),spanX=Math.max(1,maxX-minX),spanY=Math.max(1,maxY-minY),scale=Math.min((W-2*pad)/spanX,(H-2*pad)/spanY),offsetX=(W-spanX*scale)/2,offsetY=(H-spanY*scale)/2;
+      const xyz=p=>{const q=raw(p);return [offsetX+(q[0]-minX)*scale,offsetY+(q[1]-minY)*scale]};
+      const atHeight=(points,z)=>(points||[]).map(point=>[point[0],point[1],z]);
+      const polygon=(points,fill,stroke='#c2b8ae')=>{if(!points?.length)return;ctx.beginPath();points.forEach((point,index)=>{const [x,y]=xyz(point);index?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke()};
+
+      for(const item of geometry.filter(item=>item.kind==='ground')) polygon(atHeight(item.footprint_xy_m,Number(item.z_max_m)||0),'#f2efe9','#e0dad0');
+      for(const item of geometry.filter(item=>item.kind==='road')){
+        const z=Number(item.z_max_m)||0;polygon(atHeight(item.footprint_xy_m,z),'#fefefe','#c8c0b6');
+        if(item.centerline_xy_m){const [start,end]=item.centerline_xy_m.map(point=>xyz([point[0],point[1],z+.02]));ctx.save();ctx.setLineDash([10,8]);ctx.strokeStyle='#c8b06a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(...start);ctx.lineTo(...end);ctx.stroke();ctx.restore()}
+      }
+      const buildings=geometry.filter(item=>item.kind==='building').sort((a,b)=>{const depth=item=>(item.footprint_xy_m||[]).reduce((sum,p)=>sum+p[0]+p[1],0)/Math.max(1,(item.footprint_xy_m||[]).length);return depth(a)-depth(b)});
+      for(const item of buildings){
+        const points=item.footprint_xy_m||[],z0=Number(item.z_min_m)||0,z1=Number(item.z_max_m)||0,height=Math.max(0,z1-z0),bottom=atHeight(points,z0),topFace=atHeight(points,z1);
+        // #d9d0c9 roof over walls stepped toward the #c2b8ae casing, so the
+        // extrusion reads as depth without leaving the map palette.
+        for(let i=0;i<points.length;i++){const next=(i+1)%points.length,wall=i%2?'#c6bcb2':'#d0c7bf';polygon([bottom[i],bottom[next],topFace[next],topFace[i]],wall,'#b7ada3')}
+        polygon(topFace,'#d9d0c9','#b7ada3');
+        const center=points.reduce((sum,p)=>[sum[0]+p[0]/points.length,sum[1]+p[1]/points.length],[0,0]),[x,y]=xyz([center[0],center[1],z1]);
+        // A city-scale scene has dozens of buildings and their labels turn
+        // into a grey smear. Label only the ones whose roof is wide enough on
+        // screen to hold the text; the 3D view labels the rest on zoom.
+        const roofXs=topFace.map(point=>xyz(point)[0]),roofWidth=Math.max(...roofXs)-Math.min(...roofXs);
+        if(roofWidth>92){const label=`${item.id} · ${fmt(height,0)}m`;ctx.font='700 13px system-ui';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.8)';ctx.strokeText(label,x,y+3);ctx.fillStyle='#6b6055';ctx.fillText(label,x,y+3)}
+      }
+      drawSceneOverlay(ctx, xyz, sionna);
+    }
+
+    // Links, nodes and labels sit on top of whichever surface renderer ran.
+    function drawSceneOverlay(ctx, xyz, sionna) {
+      const positions = sionna?.positions || {}, nodes = Object.entries(positions);
+      const channels=linkMap(sionna.channels);
+      for(const g of ['gnb0','gnb1']) for(const u of ['ue0','ue1']) if(positions[g]&&positions[u]){
+        const [x1,y1]=xyz(positions[g]),[x2,y2]=xyz(positions[u]),channel=channels[`${g}>${u}:sionna_rt`];
+        const gain=Number(channel?.strongest_tap_gain_db??-100),alpha=Math.max(.12,Math.min(.85,(gain+100)/80));
+        // The cell's colour, matching the 3D viewer: a link is read by which
+        // cell it belongs to, not by which end holds the handset.
+        ctx.strokeStyle=nodeRgba(g,sionna,alpha);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+      }
+      if(positions.ue0&&positions.ue1){
+        // Crosstalk has no gNB end and belongs to neither UE alone, so the
+        // curve is drawn once per UE in its own colour, the second pass
+        // offset by one dash into the first's gaps: one line whose dashes
+        // alternate between the two handsets.
+        const [x1,y1]=xyz(positions.ue0),[x2,y2]=xyz(positions.ue1),cross=channels['ue0>ue1:sionna_rt']||channels['ue1>ue0:sionna_rt'],gain=Number(cross?.strongest_tap_gain_db??-100),alpha=Math.max(.2,Math.min(.9,(gain+100)/80));
+        ctx.save();ctx.lineWidth=2.5;ctx.setLineDash([CROSSTALK_DASH_PX,CROSSTALK_DASH_PX]);
+        ['ue0','ue1'].forEach((id,index)=>{ctx.lineDashOffset=index*CROSSTALK_DASH_PX;ctx.strokeStyle=nodeRgba(id,sionna,alpha);ctx.beginPath();ctx.moveTo(x1,y1);ctx.quadraticCurveTo((x1+x2)/2,(y1+y2)/2-20,x2,y2);ctx.stroke()});
+        ctx.restore();
+      }
+
+      const mobility=sionna?.environment?.nodes||{};
+      for(const [id,position] of nodes){
+        const [x,y]=xyz(position),[gx,gy]=xyz([position[0],position[1],0]),kind=mobility[id]?.mobility||'unknown',color=nodeHex(id,sionna);ctx.save();ctx.setLineDash([3,3]);ctx.strokeStyle=nodeRgba(id,sionna,.55);ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(x,y);ctx.stroke();ctx.restore();ctx.lineWidth=2;ctx.strokeStyle='#ffffff';ctx.fillStyle=color;
+        if(id.startsWith('gnb')){ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.fill();ctx.stroke()}
+        else if(kind==='car'){ctx.fillRect(x-11,y-6,22,12);ctx.strokeRect(x-11,y-6,22,12);ctx.fillStyle='#ffffff';ctx.fillRect(x-7,y-8,5,3);ctx.fillRect(x+3,y-8,5,3)}
+        else{ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fill();ctx.stroke()}
+        ctx.font='700 15px system-ui';ctx.textAlign='left';ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.85)';ctx.strokeText(`${id} · ${kind}`,x+15,y+5);ctx.fillStyle='#4a4136';ctx.fillText(`${id} · ${kind}`,x+15,y+5);
+      }
+    }
+
+
+    function render(data) {
+      lastStatus=data; const feeds=data.feeds||{}, s=data.sionna, telemetry=data.telemetry||{}, delivery=data.delivery||{}, timing=s?.timing_ms||{}, env=s?.environment||{}, runtime=data.sionna_runtime, gpuUsage=data.gpu_usage, history=data.history||{};
+      const sionnaAlive=runtime?.process_alive===true;
+      const expectedLinks=delivery.expected_links||env.link_count||10;
+      setPill($('sionnaPill'),runtime?sionnaAlive:feeds.sionna_connected,runtime?(sionnaAlive?`Sionna PID ${runtime.process_id}`:'Sionna stopped'):(feeds.sionna_connected?`Sionna ${fmt(feeds.sionna_age_seconds)}s`:'Sionna waiting'));
+      setPill($('telemetryPill'),feeds.telemetry_connected,feeds.telemetry_connected?`Telemetry ${feeds.telemetry_link_count}/${expectedLinks}`:(feeds.telemetry_cached_link_count?'Telemetry stale':'Telemetry waiting'));
+      setPill($('controlPill'),delivery.control_received,delivery.control_received?`Control ACK ${delivery.control_received_links}/${delivery.expected_links}`:'Control ACK waiting');
+      const backend=(delivery.backend||'backend').toUpperCase();
+      const backendText=delivery.stale_links?`${backend} STALE ${delivery.stale_links}/${expectedLinks}`:delivery.warmup_links?`${backend} WARM-UP ${delivery.warmup_links}`:delivery.backend_usable?`${backend} READY ${delivery.backend_usable_links}/${expectedLinks}`:`${backend} APPLY ${delivery.backend_applied_links||0}/${expectedLinks}`;
+      setPill($('backendPill'),delivery.backend_usable,backendText);
+      $('updatedPill').textContent=new Date().toLocaleTimeString('en-GB',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}); $('iteration').textContent=s?.iteration??'—';
+      $('generation').textContent=fmt(timing.channel_generation??s?.trace_ms); $('controlTime').textContent=fmt(timing.control_transaction); $('generateToAck').textContent=fmt(timing.generate_to_control_ack); $('totalUpdate').textContent=fmt(timing.total_update);
+      const f=s?.frequencies_hz; $('freq').textContent=f?`${fmt(f.downlink/1e6)} / ${fmt(f.uplink/1e6)}`:'—';
+      const states=Object.fromEntries((delivery.links||[]).map(item=>[item.link_id,item]));
+      const rows=(s?.channels||[]).map(c=>{const state=states[c.link_id]||{},applied=state.applied,warming=state.warming_up,status=state.stale?'Stale · last observed':warming?`WARM-UP · unavailable before slot ${state.warmup_until_slot}`:applied?'Confirmed · usable':'Waiting',matrix=c.matrix||state.array||{nr:1,nt:1},matrixStatus=state.stale?'last observed':state.matrix_profile_active?'live':'waiting';return `<tr><td class="mono">${esc(c.link_id)}</td><td>${esc(matrix.nr||1)}×${esc(matrix.nt||1)} · ${matrixStatus}</td><td>${esc(c.ray_count)}</td><td>${esc(c.tap_count)}</td><td>${fmt(c.strongest_tap_gain_db)} dB</td><td>${fmt(c.last_delay_samples-c.first_delay_samples,2)} samples</td><td>${esc(state.expected_seqno)}</td><td>${esc(state.observed_seqno)}</td><td class="${applied&&!warming?'tag-ok':'tag-wait'}">${status}</td><td>${esc(state.observed_slot)}</td></tr>`}).join('');
+      $('channelRows').innerHTML=rows||'<tr><td colspan="10" style="text-align:center;color:#8ca4b5">Waiting for channel data</td></tr>';
+      const stateText={stale_backend_telemetry:'Backend telemetry stale · current output unconfirmed',backend_applied:'C++ received · backend applied · output usable',backend_warmup:'Backend applied · output unavailable during warm-up',awaiting_backend_telemetry:'C++ reception confirmed · waiting for backend application',partially_applied:'Some links confirmed as applied',partial_control_ack:'Incomplete Control ACK',accepted_without_seqnos:'ACK received · legacy response without sequence numbers',dry_run:'Dry run · nothing transmitted',control_rejected:'Control request rejected',waiting_for_sionna:'Waiting for Sionna update'};
+      $('deliveryTitle').textContent=stateText[delivery.state]||delivery.state||'Waiting for update'; $('deliveryTitle').className=delivery.backend_usable?'':'wait';
+      $('deliveryDetail').textContent=`batch ${delivery.batch_id??'—'} · control ${delivery.control_received_links||0}/${delivery.expected_links||0} · ${backend} live ${delivery.backend_applied_links||0}/${delivery.expected_links||0} · usable ${delivery.backend_usable_links||0}/${delivery.expected_links||0} · warm-up ${delivery.warmup_links||0}`;
+      $('envScene').textContent=env.scene||'—'; const road=env.simple_road||{}; $('envRoad').textContent=road.enabled?`${fmt(road.width_m,1)} m · ${road.surface_material}`:'Disabled (original floor)'; const solver=env.solver||{}; $('envSolver').textContent=solver.name?`${solver.name} · depth ${solver.max_depth} · ${Number(solver.samples_per_source||0).toLocaleString()} samples/source · seed ${solver.seed}`:'—';
+      const propagation=solver.propagation||{}; $('envPropagation').textContent=Object.entries(propagation).filter(([,on])=>on).map(([name])=>name.replaceAll('_',' ')).join(', ')||'—';
+      $('envRates').textContent=env.sample_rate_hz?`${fmt(env.sample_rate_hz/1e6,2)} MS/s · ${fmt(env.update_rate_hz,2)} Hz updates`:'—';
+      $('envTarget').textContent=env.dry_run?'dry run (no transmission)':`${env.control_endpoint||'—'} · ${backend}`;
+      const sampleRateHz=Number(env.sample_rate_hz),sampleRateText=sampleRateHz>0?`${fmt(sampleRateHz/1e6,2)} MS/s`:'waiting',samplePeriodText=sampleRateHz>0?`${fmt(1e9/sampleRateHz,2)} ns`:'—';
+      $('impulseNote').textContent=`All matrix lanes for one physical link share one overlaid impulse-response plot and use distinct colors. A small display-only horizontal stem offset keeps equal-delay/equal-gain lanes visible; tooltips and tables retain the exact delay, gain, and phase. Below it, the same lanes share one frequency-response plot: |H(f)| in dB is evaluated directly from every tap of the profile as H(f) = Σ 10^(gain/20)·e^(j·phase)·e^(−j2πf·delay), so fractional tap delays are exact and no window or FFT bin rounding is involved. The horizontal axis is the baseband offset from the link carrier over one full sampling band, ±${sampleRateHz>0?fmt(sampleRateHz/2e6,2)+' MHz':'half the sample rate'}, and the vertical axis is clamped to 40 dB below the strongest lane peak so deep fades stay readable. Hovering a curve reports that lane's peak, deepest notch, and in-band ripple. The current sampling frequency (sample rate) is ${sampleRateText}; one sample is ${samplePeriodText}. Each lane has its own eight-row tap table, with unused rows marked —. The port buttons above each edge filter both plots and the tap tables to one antenna port: the uplink card selects a gNB RX port and the downlink card a gNB TX port, since that is the side carrying the array. Each direction keeps its own selection, and All restores the overlay.`;
+      renderDeadlineCards(telemetry, feeds.telemetry_age_seconds||{});
+      renderEdgeCards(s?.channels,sampleRateHz);
+      renderNodeCards(s);
+      renderRanCards(data.ran, data.ran_gnbs);
+      renderRuntime(runtime,gpuUsage,telemetry,delivery,history,s);
+    }
+    // Two loops with very different costs. render() rebuilds every card,
+    // table and canvas in the page, which is far too expensive to run at
+    // the chart cadence, so it keeps the slow interval and now asks for a
+    // bounded history slice — at 500 Hz telemetry the unbounded retained
+    // buffer would otherwise dominate the response.
+    let statusInFlight=false,chartsInFlight=false;
+    function markStatusUnavailable(){
+      if(lastStatus){
+        const old=lastStatus,delivery=old.delivery||{};
+        const links=(delivery.links||[]).map(link=>({...link,fresh:false,stale:true,applied:false,usable:false,warming_up:false}));
+        const ages=Object.fromEntries(Object.keys(old.telemetry||{}).map(key=>[key,null]));
+        const unavailable=feed=>({...feed,state:'disconnected',error:'Dashboard status unavailable',ue_list_stale:true});
+        render({...old,ran:unavailable(old.ran),ran_gnbs:Object.fromEntries(Object.entries(old.ran_gnbs||{}).map(([id,feed])=>[id,unavailable(feed)])),feeds:{...old.feeds,telemetry_connected:false,telemetry_link_count:0,telemetry_age_seconds:ages},
+          delivery:{...delivery,state:'stale_backend_telemetry',backend_applied:false,backend_applied_links:0,
+            backend_usable:false,backend_usable_links:0,warmup_links:0,stale_links:links.length,links}});
+      }
+      setPill($('telemetryPill'),false,'UI feed error');
+      setPill($('backendPill'),false,'Backend status unavailable');
+      setPill($('sionnaPill'),false,'Sionna status unknown');
+    }
+    async function poll(){
+      if(statusInFlight)return; statusInFlight=true;
+      try{const r=await fetch(`/api/status?history_ms=${CHART_HISTORY_MS}`,{cache:'no-store',signal:AbortSignal.timeout(2000)});if(!r.ok)throw Error(r.status);render(await r.json())}
+      catch(e){markStatusUnavailable()}
+      finally{statusInFlight=false}
+    }
+    // Chart-only refresh: /api/realtime carries just the plotted series.
+    // One request advances all canvases to the next completed 1,000 ms block;
+    // the in-flight guard prevents a slow response from queueing another.
+    async function pollCharts(){
+      if(chartsInFlight)return; chartsInFlight=true;
+      try{const r=await fetch(`/api/realtime?history_ms=${CHART_HISTORY_MS}`,{cache:'no-store'});if(!r.ok)throw Error(r.status);lastRealtime=await r.json();redrawCharts()}
+      catch(e){/* keep the last drawn frame; poll() owns feed-error reporting */}
+      finally{chartsInFlight=false}
+    }
+    function redrawCharts(){
+      if(lastRealtime)drawResourceHistory({history:lastRealtime.gpu_history},lastRealtime.history,{target_update_hz:lastRealtime.target_update_hz},{environment:{update_rate_hz:lastRealtime.update_rate_hz}});
+      else if(lastStatus)drawResourceHistory(lastStatus.gpu_usage,lastStatus.history,lastStatus.sionna_runtime,lastStatus.sionna);
+    }
+    // Delegated so the handler survives the 500 ms rebuild of #edgeCards.
+    // Re-render immediately on click rather than waiting for the next
+    // status poll, so the selection feels instant.
+    $('edgeCards').addEventListener('click',event=>{
+      const button=event.target.closest('.lane-picker button');if(!button)return;
+      const linkId=button.closest('.lane-picker')?.dataset.link;if(!linkId)return;
+      laneSelection[linkId]=button.dataset.port;
+      if(lastEdgeArgs)renderEdgeCards(...lastEdgeArgs);
+    });
+    window.addEventListener('resize',()=>{sceneRender(lastStatus?.sionna);redrawCharts()});
+    // history_ms=0 keeps this off the retained telemetry buffer: the scene
+    // needs positions and path polylines, nothing historical.
+    let sceneInFlight=false;
+    async function pollScene(){
+      if(sceneInFlight)return; sceneInFlight=true;
+      try{const r=await fetch('/api/status?history_ms=0',{cache:'no-store'});if(!r.ok)throw Error(r.status);
+        const data=await r.json(); if(data.sionna){lastStatus={...(lastStatus||{}),...data}; sceneRender(data.sionna)}}
+      catch(e){/* poll() owns feed-error reporting */}
+      finally{sceneInFlight=false}
+    }
+    poll(); pollCharts(); pollScene();
+    setInterval(poll,STATUS_POLL_MS); setInterval(pollCharts,CHART_POLL_MS); setInterval(pollScene,SCENE_POLL_MS);
+  </script>
+  <script type="importmap">
+    {"imports":{"three":"/vendor/three.module.min.js"}}
+  </script>
+  <script type="module">
+    // WebGL viewer for the Sionna scene. It draws the real triangle mesh the
+    // solver traces against (fetched once from /api/scene_mesh) and the
+    // interaction points of the strongest rays on every link, which arrive
+    // with each status poll as `channels[].path_polylines`.
+    //
+    // Sionna is Z-up, so the world keeps Sionna metres verbatim and the
+    // camera's up vector is moved instead of rotating the geometry. Every
+    // coordinate below is therefore directly comparable to the numbers in
+    // the status JSON.
+    import * as THREE from 'three';
+    import { OrbitControls } from '/vendor/OrbitControls.js';
+    // WebGL ignores lineWidth on LineBasicMaterial almost everywhere, so a
+    // ray drawn with it is always one pixel. Line2 draws the line as screen-
+    // space quads, which is the only way to get a ray thick enough to follow.
+    import { Line2 } from '/vendor/Line2.js';
+    import { LineGeometry } from '/vendor/LineGeometry.js';
+    import { LineMaterial } from '/vendor/LineMaterial.js';
+
+    const host = document.getElementById('scene3d');
+    const statusOverlay = document.getElementById('sceneStatus');
+    const gainBar = document.getElementById('sceneGainBar');
+
+    function fail(message) {
+      host.hidden = true;
+      const fallback = document.getElementById('scene');
+      if (fallback) fallback.hidden = false;
+      if (statusOverlay) {
+        statusOverlay.textContent = message;
+        statusOverlay.classList.add('corner');
+      }
+      document.getElementById('sceneGainBar')?.setAttribute('hidden', '');
+      document.querySelector('.scene-toolbar')?.setAttribute('hidden', '');
+      document.querySelector('.scene-hint')?.setAttribute('hidden', '');
+      // The 2D projection measures the canvas it draws into, so a status
+      // poll that landed while it was still hidden produced nothing. Ask
+      // the page to redraw now that the element has a size.
+      window.dispatchEvent(new Event('resize'));
+    }
+
+    let renderer;
+    try {
+      // Deliberately NOT logarithmicDepthBuffer. It would help the precision
+      // problem below, but three.js implements it by writing gl_FragDepth in
+      // the fragment shader, and a shader-written depth replaces the
+      // rasteriser's — which discards polygon offset. The decal offsets on the
+      // ground cover are the reliable fix, so they win.
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    } catch (error) {
+      fail('WebGL unavailable — falling back to the 2D projection');
+      throw error;
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    // A map wants flat, faithful fills. ACES rolls highlights off and would
+    // pull the OSM land and building values away from what the legend and
+    // the CSS gradient show.
+    renderer.toneMapping = THREE.NoToneMapping;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    host.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0xe6e0d6, 220, 720);
+
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 4000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(120, -140, 95);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.maxPolarAngle = Math.PI * 0.495;   // never drop under the ground
+    controls.minDistance = 12;
+    controls.maxDistance = 900;
+
+    // Heavy ambient plus one soft sun: enough directional light to read
+    // building height, not enough to shade a facade away from its fill.
+    scene.add(new THREE.AmbientLight(0xffffff, 2.2));
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d2c8, 1.0));
+    const sun = new THREE.DirectionalLight(0xfffaf0, 1.15);
+    sun.position.set(90, -70, 160);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.bias = -0.0006;
+    scene.add(sun);
+
+    const grid = new THREE.GridHelper(600, 60, 0xc9c0b4, 0xded7cc);
+    grid.rotation.x = Math.PI / 2;   // GridHelper lies in XZ; Sionna wants XY
+    grid.position.z = -0.05;
+    scene.add(grid);
+
+    const worldGroup = new THREE.Group();
+    const rayGroup = new THREE.Group();
+    const nodeGroup = new THREE.Group();
+    scene.add(worldGroup, rayGroup, nodeGroup);
+
+    // Fills taken from the OpenStreetMap standard style (openstreetmap-carto,
+    // CC0): building #d9d0c9 over casing #c2b8ae, minor road white over a grey
+    // casing, land #f2efe9. Nothing here needs an OSM tile or OSM data.
+    // Ground cover and roads are coloured by what they are — a lawn has to
+    // read as green and a river as water — while buildings stay coloured by
+    // their ITU P.2040 material, which is what decides how they reflect.
+    const KIND_COLORS = {
+      water: 0x6fbfe4, grass: 0x8ccf63, park: 0x9ad97a, pitch: 0x62c48a,
+      wood: 0x5da65f, scrub: 0xa7c98a, sand: 0xe4d5a8,
+      road: 0x232323, ground: 0xe6e0d6,
+    };
+    // Buildings: the same material distinctions, darkened so they sit clearly
+    // above the ground cover instead of blending into it.
+    const MATERIAL_COLORS = {
+      concrete: 0x6b645d, brick: 0x7c584a, glass: 0x46687a, metal: 0x646a71,
+      wood: 0x7a6248, marble: 0x8b8681, plasterboard: 0x76706a,
+      plywood: 0x7d6a52, chipboard: 0x796751, floorboard: 0x7f6a4f,
+      ceiling_board: 0x847e76,
+      very_dry_ground: 0xd8cfa8, medium_dry_ground: 0x8ccf63, wet_ground: 0x6fbfe4,
+    };
+    const UNKNOWN_MATERIAL_COLOR = 0x6f6862;
+    function surfaceColor(object) {
+      if (object.kind !== 'building') {
+        return KIND_COLORS[object.kind] ?? KIND_COLORS.ground;
+      }
+      return MATERIAL_COLORS[object.material] ?? UNKNOWN_MATERIAL_COLOR;
+    }
+
+    // Paint order for the flat surfaces stacked on the ground plane. The
+    // millimetre gaps between them exist so the *solver* never has to pick
+    // arbitrarily between two coplanar faces; they are far too small to order
+    // on screen, so the renderer is told the order explicitly instead.
+    const SURFACE_ORDER = {
+      ground: 0, water: 1, wood: 1, grass: 1, park: 1, scrub: 1, sand: 1,
+      pitch: 2, road: 3, building: 0,
+    };
+
+    const MATERIALS = new Map();
+    function surfaceMaterial(object) {
+      const color = surfaceColor(object);
+      const order = SURFACE_ORDER[object.kind] ?? 0;
+      const key = `${color}:${order}`;
+      if (!MATERIALS.has(key)) {
+        MATERIALS.set(key, new THREE.MeshStandardMaterial({
+          color, roughness: 1.0, metalness: 0.0,
+          // Decal bias: each layer is pulled a little further toward the
+          // camera in depth-buffer space, which is what actually keeps a
+          // lawn above the ground and a road above the lawn.
+          polygonOffset: order > 0,
+          polygonOffsetFactor: -order,
+          polygonOffsetUnits: -4 * order,
+        }));
+      }
+      return MATERIALS.get(key);
+    }
+    const EDGE_MATERIAL = new THREE.LineBasicMaterial({ color: 0xc2b8ae });
+
+    let sceneBounds = null;
+    let framedOnce = false;
+
+    // Hue identifies the transmitter and never moves; received power is
+    // carried by saturation and lightness alone, so a weak ray fades toward
+    // the map ground while staying recognisably its transmitter's colour.
+    // (A plain RGB lerp toward the cream ground would drag every hue warm.)
+    const GROUND_LIGHTNESS = 0.93;
+    function rayColor(transmitterColor, t) {
+      const clamped = Math.min(1, Math.max(0, t));
+      const fade = 0.6 * (1 - clamped);
+      const hsl = new THREE.Color(transmitterColor).getHSL({});
+      return new THREE.Color().setHSL(
+        hsl.h,
+        hsl.s * (1 - 0.45 * fade),
+        hsl.l + (GROUND_LIGHTNESS - hsl.l) * fade,
+      );
+    }
+
+    function labelSprite(text, color) {
+      const scale = 4;
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      context.font = `700 ${15 * scale}px ui-sans-serif,system-ui,sans-serif`;
+      const width = Math.ceil(context.measureText(text).width) + 16 * scale;
+      canvas.width = width;
+      canvas.height = 22 * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.font = `700 ${15 * scale}px ui-sans-serif,system-ui,sans-serif`;
+      ctx.fillStyle = 'rgba(8,16,25,.78)';
+      ctx.beginPath();
+      ctx.roundRect(0, 0, canvas.width, canvas.height, 6 * scale);
+      ctx.fill();
+      ctx.fillStyle = color;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 8 * scale, canvas.height / 2);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true }));
+      sprite.renderOrder = 10;
+      // A fixed world height keeps the label legible while orbiting; the
+      // width follows the texture aspect so the text is never stretched.
+      const height = 6.5;
+      sprite.scale.set(height * (canvas.width / canvas.height), height, 1);
+      return sprite;
+    }
+
+    function disposeChildren(group) {
+      for (const child of group.children) {
+        child.traverse?.(item => {
+          item.geometry?.dispose?.();
+          const shared = item.material === EDGE_MATERIAL
+            || (item.material && [...MATERIALS.values()].includes(item.material));
+          if (item.material && !shared) {
+            item.material.map?.dispose?.();
+            item.material.dispose?.();
+          }
+        });
+      }
+      group.clear();
+    }
+
+    function buildWorld(mesh) {
+      disposeChildren(worldGroup);
+      const box = new THREE.Box3();
+      for (const object of mesh.objects || []) {
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(object.positions, 3));
+        geometry.setIndex(object.indices);
+        geometry.computeVertexNormals();
+        geometry.computeBoundingBox();
+        const item = new THREE.Mesh(geometry, surfaceMaterial(object));
+        item.renderOrder = SURFACE_ORDER[object.kind] ?? 0;
+        item.castShadow = object.kind === 'building';
+        item.receiveShadow = true;
+        item.name = object.id;
+        worldGroup.add(item);
+        if (object.kind === 'building') {
+          const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry, 25), EDGE_MATERIAL);
+          worldGroup.add(edges);
+        }
+        box.union(geometry.boundingBox);
+      }
+      if (!box.isEmpty()) {
+        sceneBounds = box;
+        const size = box.getSize(new THREE.Vector3());
+        const span = Math.max(size.x, size.y);
+        grid.scale.setScalar(Math.max(1, span / 300));
+        scene.fog.near = span * 1.1;
+        scene.fog.far = span * 4.5;
+        sun.shadow.camera.left = -span;
+        sun.shadow.camera.right = span;
+        sun.shadow.camera.top = span;
+        sun.shadow.camera.bottom = -span;
+        sun.shadow.camera.far = span * 6;
+        sun.shadow.camera.updateProjectionMatrix();
+      }
+      if (statusOverlay) statusOverlay.hidden = true;
+      window.renderMaterialLegend?.(mesh);
+      const credit = document.getElementById('sceneCredit');
+      if (credit && mesh.source?.attribution) {
+        credit.textContent = mesh.source.attribution;
+        credit.hidden = false;
+      }
+    }
+
+    function frameScene() {
+      if (!sceneBounds) return;
+      const center = sceneBounds.getCenter(new THREE.Vector3());
+      const size = sceneBounds.getSize(new THREE.Vector3());
+      const radius = Math.max(size.x, size.y, size.z) * 0.5;
+      const distance = radius / Math.sin((camera.fov * Math.PI) / 360) * 1.35;
+      controls.target.copy(center);
+      // Look in from the -Y quadrant and about 34 degrees up: high enough to
+      // read the street layout, low enough that the buildings have height.
+      camera.position.set(
+        center.x + distance * 0.62,
+        center.y - distance * 0.66,
+        center.z + distance * 0.56,
+      );
+      // Depth precision is set by the near:far ratio, and a 600 m scene whose
+      // ground cover sits a centimetre off the ground has none to spare. Both
+      // planes are fitted to the scene rather than left at fixed defaults.
+      camera.near = Math.max(1.0, radius / 40);
+      camera.far = distance * 3 + radius * 2;
+      camera.updateProjectionMatrix();
+      // The default 900 m ceiling is smaller than the framing distance of a
+      // campus-sized scene, so the opening view would be clamped inside it.
+      controls.maxDistance = distance * 2.5;
+      controls.minDistance = Math.max(5, radius / 60);
+      controls.update();
+    }
+
+    // One palette drives both a node's marker and the rays leaving it, so a
+    // ray can be traced back to its transmitter by colour alone. Values are
+    // dark enough to read against the light map ground. Nodes of the same
+    // kind take successive entries, keyed by the digits in their id, so
+    // gnb0 and gnb1 stay tellable apart.
+    const NODE_PALETTE = {
+      gnb: [0x0b6fa4, 0x6b3fa0],
+      car: [0xc0392b, 0xd4722c],
+      pedestrian: [0x2e7d4f, 0x6a8f2a],
+      unknown: [0x8a6d3b],
+    };
+    // Scene metres. Short enough that even a UE pair standing close together
+    // still shows both colours, long enough to read as dashes when they are
+    // across the campus from each other.
+    const CROSSTALK_DASH_M = 4.0;
+    function nodeKind(id, sionna) {
+      if (id.startsWith('gnb')) return 'gnb';
+      return sionna?.environment?.nodes?.[id]?.mobility || 'unknown';
+    }
+    function nodeColor(id, kind) {
+      const ramp = NODE_PALETTE[kind] || NODE_PALETTE.unknown;
+      const index = Number((id.match(/\d+$/) || ['0'])[0]);
+      return ramp[index % ramp.length];
+    }
+
+    function buildNodes(sionna) {
+      disposeChildren(nodeGroup);
+      const positions = sionna?.positions || {};
+      const mobility = sionna?.environment?.nodes || {};
+      for (const [id, position] of Object.entries(positions)) {
+        const isGnb = id.startsWith('gnb');
+        const kind = isGnb ? 'gnb' : (mobility[id]?.mobility || 'unknown');
+        const color = nodeColor(id, kind);
+        // Flat and unlit-looking, like a map symbol rather than a rendered
+        // object, so the marker colour is exactly the ray colour.
+        const material = new THREE.MeshStandardMaterial({
+          color, roughness: 0.6, metalness: 0.0, emissive: color, emissiveIntensity: 0.18,
+        });
+        let body;
+        if (isGnb) {
+          body = new THREE.Group();
+          const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, position[2], 12), material);
+          mast.rotation.x = Math.PI / 2;
+          mast.position.set(position[0], position[1], position[2] / 2);
+          const head = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.4, 3.2), material);
+          head.position.set(position[0], position[1], position[2] + 1.2);
+          body.add(mast, head);
+        } else if (kind === 'car') {
+          body = new THREE.Mesh(new THREE.BoxGeometry(4.4, 1.9, 1.5), material);
+          body.position.set(position[0], position[1], position[2]);
+        } else {
+          body = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 1.1, 4, 10), material);
+          body.rotation.x = Math.PI / 2;
+          body.position.set(position[0], position[1], position[2]);
+        }
+        body.traverse(item => { item.castShadow = true; });
+        nodeGroup.add(body);
+
+        // The drop line is what makes the height of a node readable at all
+        // in an orbiting view; without it a mast and a rooftop look alike.
+        const drop = new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(position[0], position[1], 0),
+            new THREE.Vector3(position[0], position[1], position[2]),
+          ]),
+          new THREE.LineDashedMaterial({ color, transparent: true, opacity: 0.55, dashSize: 1.2, gapSize: 1.0 }),
+        );
+        drop.computeLineDistances();
+        nodeGroup.add(drop);
+
+        const label = labelSprite(`${id} · ${kind}`, `#${color.toString(16).padStart(6, '0')}`);
+        label.position.set(position[0], position[1], position[2] + (isGnb ? 7.0 : 4.0));
+        label.userData.isLabel = true;
+        label.visible = showLabels;
+        nodeGroup.add(label);
+      }
+    }
+
+    const BOUNCE_GEOMETRY = new THREE.SphereGeometry(0.9, 12, 8);
+    // Neutral on purpose: an interaction point belongs to the scene, not to
+    // any one transmitter, so it must not read as a fifth node colour.
+    const BOUNCE_MATERIAL = new THREE.MeshBasicMaterial({ color: 0x2b5f8a });
+
+    // LineMaterial needs the drawing-buffer size to convert its pixel width,
+    // so every live ray material is kept for the resize handler.
+    let rayMaterials = [];
+    let lastSionna = null;
+
+    function buildRays(sionna) {
+      disposeChildren(rayGroup);
+      rayMaterials = [];
+      // Specular propagation is reciprocal: the uplink paths are the downlink
+      // paths walked backwards, on exactly the same geometry. Drawing both
+      // would put two lines on top of each other and show only whichever was
+      // drawn last, so each node pair is drawn once. Downlink is preferred
+      // because it exists for every gNB link; a UE-to-UE pair has neither.
+      const DIRECTION_RANK = { downlink: 0, uplink: 1, crosstalk: 2 };
+      const chosen = new Map();
+      for (const channel of sionna?.channels || []) {
+        if (!channel.path_polylines?.length) continue;
+        const key = [channel.source, channel.destination].sort().join('|')
+          + ':' + (channel.model || '');
+        const previous = chosen.get(key);
+        const rank = DIRECTION_RANK[channel.direction] ?? 3;
+        if (!previous || rank < (DIRECTION_RANK[previous.direction] ?? 3)) {
+          chosen.set(key, channel);
+        }
+      }
+      const channels = [...chosen.values()];
+      if (!channels.length) {
+        if (gainBar) gainBar.hidden = true;
+        return;
+      }
+      const gains = channels.flatMap(channel => channel.path_polylines.map(line => line.gain_db));
+      const minGain = Math.min(...gains);
+      const maxGain = Math.max(...gains);
+      const span = Math.max(1e-6, maxGain - minGain);
+      if (gainBar) {
+        gainBar.hidden = false;
+        document.getElementById('sceneGainMin').textContent = minGain.toFixed(0);
+        document.getElementById('sceneGainMax').textContent = maxGain.toFixed(0);
+      }
+
+      const bouncePoints = [];
+      for (const channel of channels) {
+        // Coloured by the cell on the link, not by whichever end transmits:
+        // uplink and downlink of a pair are one traced path, so the colour
+        // that means anything is which cell it belongs to. Reading the scene
+        // is then "how far does each cell reach", and where two cells overlap
+        // their colours meet on the same stretch of road. A UE-to-UE path has
+        // no cell end and belongs to both handsets equally, so it keeps its
+        // own treatment: laid twice in complementary dashes, alternating
+        // between the two UE colours.
+        const gnbEnd = [channel.source, channel.destination].find(id => id.startsWith('gnb'));
+        const owners = gnbEnd === undefined
+          ? [channel.source, channel.destination]
+          : [gnbEnd];
+        const crosstalk = gnbEnd === undefined;
+        for (const line of channel.path_polylines) {
+          const normalized = (line.gain_db - minGain) / span;
+          const points = line.points.map(point => new THREE.Vector3(point[0], point[1], point[2]));
+          owners.forEach((owner, index) => {
+            const geometry = new LineGeometry();
+            geometry.setPositions(line.points.flat());
+            const material = new LineMaterial({
+              color: rayColor(nodeColor(owner, nodeKind(owner, sionna)), normalized),
+              // Screen-space pixels. Stronger paths are drawn thicker as well
+              // as more solid, so the carrying rays stand out at any zoom.
+              linewidth: 1.0 + 1.6 * normalized,
+              transparent: true,
+              // The weakest rays stay visible but recede, so a dense scene
+              // still reads as "these two or three carry the link". Normal
+              // blending, not additive: on a light ground additive light
+              // pushes toward white and erases the ray.
+              opacity: 0.35 + 0.6 * normalized,
+              depthWrite: false,
+              // Equal dash and gap, the second pass offset by exactly one
+              // dash, so the two colours interleave into a single unbroken
+              // line rather than two dashed ones.
+              dashed: crosstalk,
+              dashSize: CROSSTALK_DASH_M,
+              gapSize: CROSSTALK_DASH_M,
+              dashOffset: index * CROSSTALK_DASH_M,
+            });
+            material.resolution.set(host.clientWidth || 1, host.clientHeight || 1);
+            rayMaterials.push(material);
+            const curve = new Line2(geometry, material);
+            curve.computeLineDistances();
+            curve.renderOrder = 5;
+            rayGroup.add(curve);
+          });
+          for (let i = 1; i < points.length - 1; i++) bouncePoints.push(points[i]);
+        }
+      }
+      if (bouncePoints.length) {
+        const bounces = new THREE.InstancedMesh(BOUNCE_GEOMETRY, BOUNCE_MATERIAL, bouncePoints.length);
+        const matrix = new THREE.Matrix4();
+        bouncePoints.forEach((point, index) => {
+          matrix.makeTranslation(point.x, point.y, point.z);
+          bounces.setMatrixAt(index, matrix);
+        });
+        bounces.instanceMatrix.needsUpdate = true;
+        rayGroup.add(bounces);
+      }
+      rayGroup.visible = showRays;
+    }
+
+    let showLabels = true;
+    let showRays = true;
+    document.getElementById('sceneRaysToggle').addEventListener('click', event => {
+      showRays = !showRays;
+      rayGroup.visible = showRays;
+      event.currentTarget.setAttribute('aria-pressed', String(showRays));
+    });
+    document.getElementById('sceneLabelsToggle').addEventListener('click', event => {
+      showLabels = !showLabels;
+      nodeGroup.traverse(item => { if (item.userData.isLabel) item.visible = showLabels; });
+      event.currentTarget.setAttribute('aria-pressed', String(showLabels));
+    });
+    document.getElementById('sceneResetView').addEventListener('click', frameScene);
+
+    function resize() {
+      const width = host.clientWidth || 1;
+      const height = host.clientHeight || 1;
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      for (const material of rayMaterials) material.resolution.set(width, height);
+    }
+    new ResizeObserver(resize).observe(host);
+    resize();
+
+    renderer.setAnimationLoop(() => {
+      controls.update();
+      renderer.render(scene, camera);
+    });
+
+    // The mesh is written once per bridge process, but the bridge may still
+    // be initialising its scene when the page loads, so a missing sidecar is
+    // retried rather than treated as an error.
+    let meshLoaded = false;
+    async function loadMesh() {
+      if (meshLoaded) return;
+      try {
+        const response = await fetch('/api/scene_mesh');
+        const mesh = await response.json();
+        if (!mesh.objects?.length) return;
+        buildWorld(mesh);
+        meshLoaded = true;
+        if (!framedOnce) { frameScene(); framedOnce = true; }
+      } catch (error) {
+        if (statusOverlay) statusOverlay.textContent = `Scene mesh unavailable: ${error}`;
+      }
+    }
+    loadMesh();
+
+    window.sceneViewer = {
+      update(sionna) {
+        if (!sionna) return;
+        lastSionna = sionna;
+        if (!meshLoaded) loadMesh();
+        buildNodes(sionna);
+        buildRays(sionna);
+      },
+      resize,
+    };
+  </script>
+</body>
+</html>

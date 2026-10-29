@@ -1,0 +1,20 @@
+Internal ctest changing into directory: /workspace/gpuch/profile-20261028/build-blocking-sync
+Test project /workspace/gpuch/profile-20261028/build-blocking-sync
+    Start  4: runtime_update_parity
+1/4 Test  #4: runtime_update_parity ............   Passed    0.32 sec
+    Start  5: matrix_profile_history
+2/4 Test  #5: matrix_profile_history ...........   Passed    2.52 sec
+    Start  7: processing
+3/4 Test  #7: processing .......................   Passed    1.10 sec
+    Start 10: broker
+4/4 Test #10: broker ...........................   Passed    5.43 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   9.37 sec
+START broker4-spin
+END broker4-spin rc 0 ratio 0.44612467886551477 valid_segments 4 gate passed
+START ue5big-spin
+END ue5big-spin rc 0 ratio 0.47495925056011296 valid_segments 30 gate passed
+START cuda-blocking-sleep
+END cuda-blocking-sleep rc 0 ratio 0.40123326378046315 valid_segments 30 gate passed

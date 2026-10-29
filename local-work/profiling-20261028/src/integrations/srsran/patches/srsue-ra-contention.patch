@@ -1,0 +1,178 @@
+diff --git a/srsue/hdr/stack/mac_nr/demux_nr.h b/srsue/hdr/stack/mac_nr/demux_nr.h
+index 5a57990..e58f9a0 100644
+--- a/srsue/hdr/stack/mac_nr/demux_nr.h
++++ b/srsue/hdr/stack/mac_nr/demux_nr.h
+@@ -24,6 +24,7 @@
+ 
+ #include "mac_nr_interfaces.h"
+ #include "srsran/common/block_queue.h"
++#include <functional>
+ #include "srsran/interfaces/ue_nr_interfaces.h"
+ #include "srsran/interfaces/ue_rlc_interfaces.h"
+ 
+@@ -55,7 +56,12 @@ public:
+   void     push_pdu_temp_crnti(srsran::unique_byte_buffer_t pdu, uint32_t tti);
+   uint64_t get_received_crueid();
+ 
++  /// Local patch (S16): Msg4 SDUs go to RLC only if this returns true for the
++  /// received UE Contention Resolution Identity.
++  void set_contention_id_check(std::function<bool(uint64_t)> check) { contention_id_check = std::move(check); }
++
+ private:
++  std::function<bool(uint64_t)> contention_id_check;
+   // internal helpers
+   void handle_pdu(srsran::mac_sch_pdu_nr& pdu_buffer, srsran::unique_byte_buffer_t pdu);
+ 
+diff --git a/srsue/hdr/stack/mac_nr/proc_ra_nr.h b/srsue/hdr/stack/mac_nr/proc_ra_nr.h
+index 252fba9..7d62e85 100644
+--- a/srsue/hdr/stack/mac_nr/proc_ra_nr.h
++++ b/srsue/hdr/stack/mac_nr/proc_ra_nr.h
+@@ -118,6 +118,7 @@ private:
+   // 38.321 Steps 5.1.1 - 5.1.6
+   void ra_procedure_initialization();
+   void ra_resource_selection();
++  uint32_t select_preamble_index();
+   void ra_preamble_transmission();
+   void ra_response_reception(const mac_interface_phy_nr::tb_action_dl_result_t& tb);
+   void ra_contention_resolution(bool received_con_res_matches_ue_id);
+diff --git a/srsue/src/stack/mac_nr/demux_nr.cc b/srsue/src/stack/mac_nr/demux_nr.cc
+index d691dc5..e8be77b 100644
+--- a/srsue/src/stack/mac_nr/demux_nr.cc
++++ b/srsue/src/stack/mac_nr/demux_nr.cc
+@@ -65,6 +65,24 @@ void demux_nr::push_bcch(srsran::unique_byte_buffer_t pdu)
+ void demux_nr::push_pdu_temp_crnti(srsran::unique_byte_buffer_t pdu, uint32_t tti)
+ {
+   received_crueid = 0;
++  // Local patch (S16): the pinned code handed Msg4's SDUs (RRCSetup) to RLC
++  // before contention resolution was checked, so a UE that lost contention
++  // still processed the winner's RRCSetup. Read the Contention Resolution CE
++  // first and pass the SDUs up only when it matches this UE.
++  rx_pdu_tcrnti.init_rx();
++  if (rx_pdu_tcrnti.unpack(pdu->msg, pdu->N_bytes) != SRSRAN_SUCCESS) {
++    return;
++  }
++  for (uint32_t i = 0; i < rx_pdu_tcrnti.get_num_subpdus(); ++i) {
++    srsran::mac_sch_subpdu_nr subpdu = rx_pdu_tcrnti.get_subpdu(i);
++    if (subpdu.get_lcid() == srsran::mac_sch_subpdu_nr::nr_lcid_sch_t::CON_RES_ID) {
++      received_crueid = subpdu.get_ue_con_res_id_ce_packed();
++    }
++  }
++  if (contention_id_check && !contention_id_check(received_crueid)) {
++    logger.warning("Dropping Temp C-RNTI PDU: Contention Resolution ID 0x%lx is not ours", received_crueid);
++    return;
++  }
+   handle_pdu(rx_pdu_tcrnti, std::move(pdu));
+ }
+ 
+diff --git a/srsue/src/stack/mac_nr/mac_nr.cc b/srsue/src/stack/mac_nr/mac_nr.cc
+index 5de1400..58115c8 100644
+--- a/srsue/src/stack/mac_nr/mac_nr.cc
++++ b/srsue/src/stack/mac_nr/mac_nr.cc
+@@ -74,6 +74,7 @@ int mac_nr::init(const mac_nr_args_t&  args_,
+     return SRSRAN_ERROR;
+   }
+ 
++  demux.set_contention_id_check([this](uint64_t rx_id) { return rntis.get_contention_id() == rx_id; });
+   if (demux.init(rlc, phy) != SRSRAN_SUCCESS) {
+     logger.error("Couldn't initialize demux unit.");
+     return SRSRAN_ERROR;
+@@ -344,6 +345,9 @@ void mac_nr::tb_decoded(const uint32_t cc_idx, const mac_nr_grant_dl_t& grant, t
+                result.ack ? "OK" : "KO");
+ 
+   write_pcap(cc_idx, grant, result);
++  // Local patch (S16): contention is resolved by a decoded TB carrying the
++  // Contention Resolution CE, not by a failed decode (HARQ may still recover).
++  const bool tb_decoded_ok = result.ack && result.payload != nullptr;
+ 
+   if (proc_ra.has_rar_rnti() && grant.rnti == proc_ra.get_rar_rnti()) {
+     if (result.ack && result.payload != nullptr) {
+@@ -360,7 +364,7 @@ void mac_nr::tb_decoded(const uint32_t cc_idx, const mac_nr_grant_dl_t& grant, t
+   }
+ 
+   // If proc ra is in contention resolution (RA connection request procedure)
+-  if (proc_ra.is_contention_resolution() && grant.rnti == rntis.get_temp_rnti()) {
++  if (proc_ra.is_contention_resolution() && grant.rnti == rntis.get_temp_rnti() && tb_decoded_ok) {
+     proc_ra.received_contention_resolution(contention_res_successful);
+   }
+ }
+diff --git a/srsue/src/stack/mac_nr/proc_ra_nr.cc b/srsue/src/stack/mac_nr/proc_ra_nr.cc
+index f94489d..7916e5e 100644
+--- a/srsue/src/stack/mac_nr/proc_ra_nr.cc
++++ b/srsue/src/stack/mac_nr/proc_ra_nr.cc
+@@ -23,6 +23,11 @@
+ #include "srsran/common/standard_streams.h"
+ #include "srsran/mac/mac_rar_pdu_nr.h"
+ #include "srsue/hdr/stack/mac_nr/mac_nr.h"
++#include <algorithm>
++#include <chrono>
++#include <cstdlib>
++#include <random>
++#include <unistd.h>
+ 
+ namespace srsue {
+ 
+@@ -168,6 +173,26 @@ void proc_ra_nr::ra_resource_selection()
+   ra_preamble_transmission();
+ }
+ 
++uint32_t proc_ra_nr::select_preamble_index()
++{
++  // 64 contention-based preambles per SSB is OCUDU's default
++  // (ssb-perRACH-OccasionAndCB-PreamblesPerSSB one/n64);
++  // SRSUE_PRACH_NUM_CB_PREAMBLES narrows the range for other cells.
++  static const char* fixed_env = std::getenv("SRSUE_PRACH_PREAMBLE_INDEX");
++  if (fixed_env != nullptr && *fixed_env != '\0') {
++    return static_cast<uint32_t>(std::strtoul(fixed_env, nullptr, 10)) % 64;
++  }
++  static const char* range_env = std::getenv("SRSUE_PRACH_NUM_CB_PREAMBLES");
++  uint32_t           range     = 64;
++  if (range_env != nullptr && *range_env != '\0') {
++    range = std::max<uint32_t>(1, std::min<uint32_t>(64, std::strtoul(range_env, nullptr, 10)));
++  }
++  static std::mt19937 generator(static_cast<uint32_t>(std::random_device{}()) ^
++                                (static_cast<uint32_t>(getpid()) << 16) ^
++                                static_cast<uint32_t>(std::chrono::steady_clock::now().time_since_epoch().count()));
++  return std::uniform_int_distribution<uint32_t>(0, range - 1)(generator);
++}
++
+ // 5.1.3 Random Access Preamble transmission
+ void proc_ra_nr::ra_preamble_transmission()
+ {
+@@ -175,7 +200,14 @@ void proc_ra_nr::ra_preamble_transmission()
+   preamble_received_target_power = rach_cfg.PreambleReceivedTargetPower + delta_preamble +
+                                    (preamble_transmission_counter - 1) * rach_cfg.powerRampingStep +
+                                    power_offset_2step_ra;
+-  preamble_index = 0;
++  // Local patch (ocudu-gpu-channel S16): the pinned code always sent preamble 0.
++  // UEs sharing one lock-step ZMQ broker reach the same PRACH occasion in the
++  // same virtual slot, so every UE collided on (occasion 0, preamble 0) and the
++  // gNB merged them onto one TC-RNTI. Pick a contention-based preamble per
++  // attempt (TS 38.321 5.1.2) from a per-process generator seeded from the pid
++  // and the wall clock -- not from virtual time, which is identical across UEs.
++  // SRSUE_PRACH_PREAMBLE_INDEX pins it, as the remote Docker smoke does.
++  preamble_index = select_preamble_index();
+   prach_occasion = 0;
+   // instruct the physical layer to transmit the Random Access Preamble using the selected PRACH occasion, corresponding
+   // RA-RNTI (if available), PREAMBLE_INDEX, and PREAMBLE_RECEIVED_TARGET_POWER.
+@@ -252,6 +284,21 @@ void proc_ra_nr::ra_contention_resolution(bool received_con_res_matches_ue_id)
+         srsran::enum_to_text(state_str_nr, (uint32_t)ra_state_t::MAX_RA_STATES, WAITING_FOR_CONTENTION_RESOLUTION));
+     return;
+   }
++  // Local patch (ocudu-gpu-channel S16): with no C-RNTI yet, Msg3 carried the
++  // CCCH SDU and contention is resolved only by a matching UE Contention
++  // Resolution Identity (TS 38.321 5.1.5). The pinned code also accepted any
++  // Msg4 when RRC started the procedure, so a UE that lost contention adopted
++  // the winner's C-RNTI and RRCSetup and later failed NAS integrity. On a
++  // mismatch, discard the TC-RNTI and retry with backoff.
++  const bool initial_access = mac.get_crnti() == SRSRAN_INVALID_RNTI;
++  if (initial_access && !received_con_res_matches_ue_id) {
++    logger.warning("Contention resolution failed: UE Contention Resolution Identity does not match, retrying RA");
++    srsran::console("Random Access contention lost, retrying\n");
++    contention_resolution_timer.stop();
++    state = WAITING_FOR_PRACH_SENT;
++    task_queue.push([this]() { ra_error(); });
++    return;
++  }
+   if (started_by == initiators_t::RRC || started_by == initiators_t::MAC || received_con_res_matches_ue_id) {
+     if (received_con_res_matches_ue_id) {
+       logger.info("Received CONRES ID matches transmitted UE ID");

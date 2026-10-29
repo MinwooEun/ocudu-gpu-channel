@@ -1,0 +1,247 @@
+diff --git a/lib/src/phy/common/phy_common.c b/lib/src/phy/common/phy_common.c
+index 46de21d..b5c8b9b 100644
+--- a/lib/src/phy/common/phy_common.c
++++ b/lib/src/phy/common/phy_common.c
+@@ -48,7 +48,7 @@ bool srsran_cellid_isvalid(uint32_t cell_id)
+ 
+ bool srsran_nofprb_isvalid(uint32_t nof_prb)
+ {
+-  if (nof_prb == 1 || (nof_prb >= 6 && nof_prb <= SRSRAN_MAX_PRB)) {
++  if (nof_prb == 1 || (nof_prb >= 6 && nof_prb <= SRSRAN_MAX_PRB) || nof_prb == 270 /* local */) {
+     return true;
+   } else {
+     return false;
+@@ -353,6 +353,8 @@ int srsran_symbol_sz_power2(uint32_t nof_prb)
+     return 1536;
+   } else if (nof_prb <= 110) {
+     return 2048;
++  } else if (nof_prb <= 275) {
++    return 4096; /* local: 270-PRB NR carrier */
+   } else {
+     return -1;
+   }
+@@ -376,6 +378,8 @@ int srsran_symbol_sz(uint32_t nof_prb)
+       return 1024;
+     } else if (nof_prb <= 110) {
+       return 1536;
++    } else if (nof_prb <= 275) {
++      return 4096; /* local: 270-PRB NR carrier (50 MHz, 15 kHz) for the PRACH path */
+     } else {
+       return SRSRAN_ERROR;
+     }
+@@ -400,6 +404,8 @@ int srsran_nof_prb(uint32_t symbol_sz)
+         return 75;
+       case 1536:
+         return 100;
++      case 4096:
++        return 270; /* local */
+     }
+   } else {
+     switch (symbol_sz) {
+@@ -415,6 +421,8 @@ int srsran_nof_prb(uint32_t symbol_sz)
+         return 75;
+       case 2048:
+         return 100;
++      case 4096:
++        return 270; /* local */
+     }
+   }
+   return SRSRAN_ERROR;
+@@ -424,14 +432,14 @@ bool srsran_symbol_sz_isvalid(uint32_t symbol_sz)
+ {
+   if (!use_standard_rates) {
+     if (symbol_sz == 128 || symbol_sz == 256 || symbol_sz == 384 || symbol_sz == 768 || symbol_sz == 1024 ||
+-        symbol_sz == 1536) {
++        symbol_sz == 1536 || symbol_sz == 4096) {
+       return true;
+     } else {
+       return false;
+     }
+   } else {
+     if (symbol_sz == 128 || symbol_sz == 256 || symbol_sz == 512 || symbol_sz == 1024 || symbol_sz == 1536 ||
+-        symbol_sz == 2048) {
++        symbol_sz == 2048 || symbol_sz == 4096) {
+       return true;
+     } else {
+       return false;
+diff --git a/lib/src/phy/common/phy_common_nr.c b/lib/src/phy/common/phy_common_nr.c
+index 4524743..22804a9 100644
+--- a/lib/src/phy/common/phy_common_nr.c
++++ b/lib/src/phy/common/phy_common_nr.c
+@@ -413,6 +413,8 @@ int srsran_carrier_to_cell(const srsran_carrier_nr_t* carrier, srsran_cell_t* ce
+     cell->nof_prb = 75;
+   } else if (carrier->nof_prb <= 106) {
+     cell->nof_prb = 100;
++  } else if (carrier->nof_prb == 270) {
++    cell->nof_prb = 270; /* local: 50 MHz 15 kHz carrier, 4096-point PRACH grid */
+   } else {
+     return SRSRAN_ERROR_OUT_OF_BOUNDS;
+   }
+diff --git a/lib/src/phy/phch/prach.c b/lib/src/phy/phch/prach.c
+index 0c3bdbe..7f1d847 100644
+--- a/lib/src/phy/phch/prach.c
++++ b/lib/src/phy/phch/prach.c
+@@ -558,7 +558,7 @@ int srsran_prach_set_cfg(srsran_prach_t* p, srsran_prach_cfg_t* cfg, uint32_t no
+ int srsran_prach_init(srsran_prach_t* p, uint32_t max_N_ifft_ul)
+ {
+   int ret = SRSRAN_ERROR;
+-  if (p != NULL && max_N_ifft_ul < 2049) {
++  if (p != NULL && max_N_ifft_ul < 4097) { /* local: 4096 for 270 PRB */
+     bzero(p, sizeof(srsran_prach_t));
+ 
+     p->max_N_ifft_ul = max_N_ifft_ul;
+@@ -622,7 +622,7 @@ int srsran_prach_set_cell_(srsran_prach_t*      p,
+                            srsran_tdd_config_t* tdd_config)
+ {
+   int ret = SRSRAN_ERROR;
+-  if (p != NULL && N_ifft_ul < 2049 && cfg->config_idx < 64 && cfg->root_seq_idx < MAX_ROOTS) {
++  if (p != NULL && N_ifft_ul < 4097 && cfg->config_idx < 64 && cfg->root_seq_idx < MAX_ROOTS) { /* local */
+     if (N_ifft_ul > p->max_N_ifft_ul) {
+       ERROR("PRACH: Error in set_cell(): N_ifft_ul (%d) must be lower or equal max_N_ifft_ul (%d) in init()",
+             N_ifft_ul,
+diff --git a/lib/src/phy/phch/pucch_cfg_nr.c b/lib/src/phy/phch/pucch_cfg_nr.c
+index 4d12889..b9275af 100644
+--- a/lib/src/phy/phch/pucch_cfg_nr.c
++++ b/lib/src/phy/phch/pucch_cfg_nr.c
+@@ -165,7 +165,7 @@ int srsran_pucch_nr_cfg_resource_valid(const srsran_pucch_nr_resource_t* resourc
+     return SRSRAN_ERROR_INVALID_INPUTS;
+   }
+ 
+-  if (resource->starting_prb > SRSRAN_MAX_NRE_NR - 1) {
++  if (resource->starting_prb > SRSRAN_MAX_PRB_NR - 1) { /* local S4: was SRSRAN_MAX_NRE_NR (156), rejects PUCCH above PRB 155 on wide carriers */
+     return SRSRAN_ERROR;
+   }
+ 
+@@ -175,7 +175,7 @@ int srsran_pucch_nr_cfg_resource_valid(const srsran_pucch_nr_resource_t* resourc
+     return SRSRAN_ERROR;
+   }
+ 
+-  if (resource->second_hop_prb > SRSRAN_MAX_NRE_NR - 1) {
++  if (resource->second_hop_prb > SRSRAN_MAX_PRB_NR - 1) { /* local S4 */
+     return SRSRAN_ERROR;
+   }
+ 
+diff --git a/lib/src/phy/ue/ue_dl_nr.c b/lib/src/phy/ue/ue_dl_nr.c
+index ecf9807..dd7489d 100644
+--- a/lib/src/phy/ue/ue_dl_nr.c
++++ b/lib/src/phy/ue/ue_dl_nr.c
+@@ -176,7 +176,10 @@ int srsran_ue_dl_nr_set_carrier(srsran_ue_dl_nr_t* q, const srsran_carrier_nr_t*
+       cfg.rx_window_offset      = UE_DL_NR_FFT_WINDOW_OFFSET;
+       cfg.phase_compensation_hz = carrier->dl_center_frequency_hz;
+ 
+-      srsran_ofdm_rx_init_cfg(&q->fft[i], &cfg);
++      if (srsran_ofdm_rx_init_cfg(&q->fft[i], &cfg) < SRSRAN_SUCCESS) {
++        ERROR("Error initialising DL OFDM for %d PRB (symbol_sz=%d)", carrier->nof_prb, cfg.symbol_sz);
++        return SRSRAN_ERROR;
++      }
+     }
+   }
+ 
+diff --git a/lib/src/phy/utils/phy_logger.c b/lib/src/phy/utils/phy_logger.c
+index 920b4dd..7ec784c 100644
+--- a/lib/src/phy/utils/phy_logger.c
++++ b/lib/src/phy/utils/phy_logger.c
+@@ -26,6 +26,7 @@
+ #include <stdarg.h>
+ #include <stdbool.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <string.h>
+ #include <sys/types.h>
+ /*********************************************************************
+@@ -46,9 +47,20 @@ void srsran_phy_log_print(phy_logger_level_t log_level, const char* format, ...)
+   char    tmp[256];
+   va_list args;
+   va_start(args, format);
+-  if (phy_log_handler) {
++  static int stderr_echo = -1;
++  if (stderr_echo < 0) {
++    const char* e = getenv("SRSRAN_PHY_LOG_STDERR"); /* local S4 diagnostic */
++    stderr_echo   = (e != NULL && e[0] != '0') ? 1 : 0;
++  }
++  if (phy_log_handler || stderr_echo) {
+     if (vsnprintf(tmp, 256, format, args) > 0) {
+-      phy_log_handler(log_level, callback_ctx, tmp);
++      if (stderr_echo && log_level == LOG_LEVEL_ERROR_S) {
++        fprintf(stderr, "[PHYLIB ERROR] %s\n", tmp);
++        fflush(stderr);
++      }
++      if (phy_log_handler) {
++        phy_log_handler(log_level, callback_ctx, tmp);
++      }
+     }
+   }
+   va_end(args);
+diff --git a/lib/src/radio/radio.cc b/lib/src/radio/radio.cc
+index 8124185..1bea649 100644
+--- a/lib/src/radio/radio.cc
++++ b/lib/src/radio/radio.cc
+@@ -32,7 +32,7 @@ namespace srsran {
+ 
+ radio::radio()
+ {
+-  zeros.resize(SRSRAN_SF_LEN_MAX, 0);
++  zeros.resize(4 * SRSRAN_SF_LEN_MAX, 0); /* local S4: 61.44 MHz slot = 61440 samples > SRSRAN_SF_LEN_MAX */
+   for (uint32_t i = 0; i < SRSRAN_MAX_CHANNELS; i++) {
+     dummy_buffers[i].resize(SRSRAN_SF_LEN_MAX * SRSRAN_NOF_SF_X_FRAME, 0);
+   }
+@@ -580,7 +580,7 @@ bool radio::tx_dev(const uint32_t& device_idx, rf_buffer_interface& buffer, cons
+       uint32_t gap_nsamples = abs(past_nsamples);
+       while (gap_nsamples > 0) {
+         // Transmission cannot exceed SRSRAN_SF_LEN_MAX (zeros buffer size limitation)
+-        uint32_t nzeros = SRSRAN_MIN(gap_nsamples, SRSRAN_SF_LEN_MAX);
++        uint32_t nzeros = SRSRAN_MIN(gap_nsamples, (uint32_t)zeros.size()); /* local S4 */
+ 
+         // Zeros transmission
+         int ret = srsran_rf_send_timed2(rf_device,
+diff --git a/srsue/hdr/phy/prach.h b/srsue/hdr/phy/prach.h
+index 84fd37b..5dc8c35 100644
+--- a/srsue/hdr/phy/prach.h
++++ b/srsue/hdr/phy/prach.h
+@@ -61,6 +61,7 @@ private:
+   srsran_cfo_t          cfo_h            = {};
+   srsran_prach_cfg_t    cfg              = {};
+   cf_t*                 signal_buffer    = nullptr;
++  uint32_t              signal_buffer_len = 0;
+   int                   preamble_idx     = -1;
+   uint32_t              len              = 0;
+   int                   allowed_subframe = 0;
+diff --git a/srsue/src/phy/nr/slot_sync.cc b/srsue/src/phy/nr/slot_sync.cc
+index 3028223..89ec3d8 100644
+--- a/srsue/src/phy/nr/slot_sync.cc
++++ b/srsue/src/phy/nr/slot_sync.cc
+@@ -24,7 +24,9 @@
+ namespace srsue {
+ namespace nr {
+ 
+-slot_sync::slot_sync(srslog::basic_logger& logger_) : logger(logger_), sfn_sync_buff(1) {}
++// local S4: rf_buffer_t(n) allocates n * SRSRAN_SF_LEN_MAX (30720) samples; a 61.44 MHz slot is 61440 samples,
++// so the 1-subframe buffer overflowed on 4096-FFT carriers (ASan, 2026-10-27). 4 subframes cover 122.88 MHz.
++slot_sync::slot_sync(srslog::basic_logger& logger_) : logger(logger_), sfn_sync_buff(4) {}
+ 
+ slot_sync::~slot_sync()
+ {
+diff --git a/srsue/src/phy/prach.cc b/srsue/src/phy/prach.cc
+index e8f6098..133fe87 100644
+--- a/srsue/src/phy/prach.cc
++++ b/srsue/src/phy/prach.cc
+@@ -50,7 +50,9 @@ void prach::init(uint32_t max_prb)
+ 
+   srsran_cfo_set_tol(&cfo_h, 0);
+ 
+-  signal_buffer = srsran_vec_cf_malloc(SRSRAN_MAX(MAX_LEN_SF * 30720U, SRSRAN_PRACH_MAX_LEN));
++  int sf_len_max = srsran_symbol_sz(max_prb) > 0 ? (int)SRSRAN_SF_LEN(srsran_symbol_sz(max_prb)) : 30720;
++  signal_buffer_len = SRSRAN_MAX(MAX_LEN_SF * (uint32_t)sf_len_max, SRSRAN_PRACH_MAX_LEN); /* local S4: 61440/sf at 270 PRB */
++  signal_buffer     = srsran_vec_cf_malloc(signal_buffer_len);
+   if (!signal_buffer) {
+     perror("malloc");
+     return;
+@@ -200,7 +202,7 @@ cf_t* prach::generate(float cfo, uint32_t* nof_sf, float* target_power)
+ {
+   std::lock_guard<std::mutex> lock(mutex);
+   if (!cell_initiated || preamble_idx < 0 || !nof_sf || unsigned(preamble_idx) >= max_preambles ||
+-      !srsran_cell_isvalid(&cell) || len >= MAX_LEN_SF * 30720 || len == 0) {
++      !srsran_cell_isvalid(&cell) || len >= signal_buffer_len || len == 0) {
+     Error("PRACH: Invalid parameters: cell_initiated=%d, preamble_idx=%d, cell.nof_prb=%d, len=%d",
+           cell_initiated,
+           preamble_idx,

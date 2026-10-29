@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" font-family="SF Mono,Menlo,monospace">
+  <rect width="1200" height="630" fill="#0f1420"/>
+
+  <!-- Decorative slot grid (subtle) -->
+  <g opacity="0.08" stroke="#5db1ff" stroke-width="1">
+    <line x1="0"   y1="80"  x2="1200" y2="80"/>
+    <line x1="0"   y1="555" x2="1200" y2="555"/>
+    <line x1="600" y1="80"  x2="600"  y2="555"/>
+  </g>
+
+  <!-- Subtitle (matches the page hero small-caps subtitle) -->
+  <text x="80" y="120" font-size="18" font-weight="600" fill="#5db1ff" letter-spacing="3">GPU CHANNEL EMULATOR  ·  5G NR SLOT CADENCE</text>
+
+  <!-- Title -->
+  <text x="80" y="200" font-size="72" font-weight="700" fill="#e7ecf5">ocudu-gpu-channel</text>
+
+  <!-- Byline -->
+  <text x="80" y="240" font-size="20" fill="#9aa7bd">by Zhouyou Gu, SUTD  ·  github.com/zhouyou-gu/ocudu-gpu-channel</text>
+
+  <!-- Tagline -->
+  <text x="80" y="310" font-size="28" fill="#cdd6e6">Real-time channel emulator for live srsRAN and OCUDU stacks.</text>
+  <text x="80" y="346" font-size="28" fill="#cdd6e6">TR 38.901 &#167;7.7.2 TDL profiles on the GPU at slot cadence.</text>
+
+  <!-- HOST → CUDA → RX flow -->
+  <g transform="translate(80, 400)">
+    <rect x="0" y="0" width="200" height="70" rx="10" fill="#13391f" stroke="#6fd08c" stroke-width="2"/>
+    <text x="100" y="34" text-anchor="middle" font-size="20" fill="#6fd08c">HOST</text>
+    <text x="100" y="54" text-anchor="middle" font-size="13" fill="#cdd6e6">ZMQ I/O · pack</text>
+
+    <line x1="200" y1="35" x2="245" y2="35" stroke="#9aa7bd" stroke-width="3"/>
+    <polygon points="245,28 263,35 245,42" fill="#9aa7bd"/>
+
+    <rect x="268" y="0" width="260" height="70" rx="10" fill="#0b101a" stroke="#5db1ff" stroke-width="2"/>
+    <text x="398" y="34" text-anchor="middle" font-size="20" fill="#5db1ff">CUDA</text>
+    <text x="398" y="54" text-anchor="middle" font-size="13" fill="#cdd6e6">apply_channel · superpose · rx</text>
+
+    <line x1="528" y1="35" x2="573" y2="35" stroke="#9aa7bd" stroke-width="3"/>
+    <polygon points="573,28 591,35 573,42" fill="#9aa7bd"/>
+
+    <rect x="596" y="0" width="200" height="70" rx="10" fill="#0b101a" stroke="#ffb454" stroke-width="2"/>
+    <text x="696" y="34" text-anchor="middle" font-size="20" fill="#ffb454">RX</text>
+    <text x="696" y="54" text-anchor="middle" font-size="13" fill="#cdd6e6">slot-paced REP</text>
+  </g>
+
+  <!-- Stat chips -->
+  <g transform="translate(80, 500)">
+    <rect x="0"   y="0" width="260" height="55" rx="8" fill="#181f2e" stroke="#2c3850" stroke-width="1"/>
+    <text x="130" y="26" text-anchor="middle" font-size="22" font-weight="700" fill="#5db1ff">500 &#181;s</text>
+    <text x="130" y="44" text-anchor="middle" font-size="12" fill="#9aa7bd">slot deadline @ 30 kHz SCS</text>
+
+    <rect x="270" y="0" width="260" height="55" rx="8" fill="#181f2e" stroke="#2c3850" stroke-width="1"/>
+    <text x="400" y="26" text-anchor="middle" font-size="22" font-weight="700" fill="#5db1ff">TR 38.901</text>
+    <text x="400" y="44" text-anchor="middle" font-size="12" fill="#9aa7bd">TDL-A..E · Jakes · Rician</text>
+
+    <rect x="540" y="0" width="260" height="55" rx="8" fill="#181f2e" stroke="#2c3850" stroke-width="1"/>
+    <text x="670" y="26" text-anchor="middle" font-size="20" font-weight="700"><tspan fill="#9aa7bd">58 ms</tspan> <tspan fill="#5db1ff">&#8594; 319 &#181;s</tspan></text>
+    <text x="670" y="44" text-anchor="middle" font-size="12" fill="#9aa7bd">CPU &#8594; GPU per-edge channel</text>
+
+    <rect x="810" y="0" width="260" height="55" rx="8" fill="#181f2e" stroke="#2c3850" stroke-width="1"/>
+    <text x="940" y="26" text-anchor="middle" font-size="22" font-weight="700" fill="#5db1ff">1e&#8209;3</text>
+    <text x="940" y="44" text-anchor="middle" font-size="12" fill="#9aa7bd">CPU&#8596;CUDA parity tolerance</text>
+  </g>
+
+  <!-- Bottom hint -->
+  <text x="80" y="605" font-size="14" fill="#9aa7bd">Open-source · C++17 · CUDA 12 · CMake · ZMQ REP/PUB</text>
+</svg>

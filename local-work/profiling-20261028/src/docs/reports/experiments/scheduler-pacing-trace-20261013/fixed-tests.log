@@ -1,0 +1,32 @@
+Internal ctest changing into directory: /work/ocudu-native-workspace/builds/ocudu-gpu-channel-cuda-release
+Test project /work/ocudu-native-workspace/builds/ocudu-gpu-channel-cuda-release
+      Start  1: config
+ 1/13 Test  #1: config ...........................   Passed    0.00 sec
+      Start  2: mutable_params
+ 2/13 Test  #2: mutable_params ...................   Passed    0.00 sec
+      Start  3: control_server
+ 3/13 Test  #3: control_server ...................   Passed    1.04 sec
+      Start  4: runtime_update_parity
+ 4/13 Test  #4: runtime_update_parity ............   Passed    0.16 sec
+      Start  5: matrix_profile_history
+ 5/13 Test  #5: matrix_profile_history ...........   Passed    1.01 sec
+      Start  6: hardware_probe
+ 6/13 Test  #6: hardware_probe ...................   Passed    0.01 sec
+      Start  7: processing
+ 7/13 Test  #7: processing .......................   Passed    0.81 sec
+      Start  8: cpu_parallel
+ 8/13 Test  #8: cpu_parallel .....................   Passed    0.01 sec
+      Start  9: ring
+ 9/13 Test  #9: ring .............................   Passed    0.00 sec
+      Start 10: broker
+10/13 Test #10: broker ...........................   Passed    5.45 sec
+      Start 11: sionna_rt_adapter
+11/13 Test #11: sionna_rt_adapter ................   Passed    0.06 sec
+      Start 12: sionna_web_ui
+12/13 Test #12: sionna_web_ui ....................   Passed    0.07 sec
+      Start 13: native_sionna_rank1_renderer
+13/13 Test #13: native_sionna_rank1_renderer .....   Passed    0.03 sec
+
+100% tests passed, 0 tests failed out of 13
+
+Total Test time (real) =   8.66 sec

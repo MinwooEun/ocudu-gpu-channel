@@ -1,0 +1,440 @@
+[
+  {
+    "report": "/workspace/gpuch/profile-20261028/nsys-boundary/u1-c1-bw100-a4x4-r0-trace1/timeline.nsys-rep",
+    "tables": [
+      "ANALYSIS_DETAILS",
+      "ANALYSIS_FILE",
+      "CUPTI_ACTIVITY_KIND_CUDA_EVENT",
+      "CUPTI_ACTIVITY_KIND_KERNEL",
+      "CUPTI_ACTIVITY_KIND_MEMCPY",
+      "CUPTI_ACTIVITY_KIND_RUNTIME",
+      "CUPTI_ACTIVITY_KIND_SYNCHRONIZATION",
+      "DIAGNOSTIC_EVENT",
+      "ENUM_CUDA_DEV_MEM_EVENT_OPER",
+      "ENUM_CUDA_FUNC_CACHE_CONFIG",
+      "ENUM_CUDA_KERNEL_LAUNCH_TYPE",
+      "ENUM_CUDA_MEMCPY_OPER",
+      "ENUM_CUDA_MEMPOOL_OPER",
+      "ENUM_CUDA_MEMPOOL_TYPE",
+      "ENUM_CUDA_MEM_KIND",
+      "ENUM_CUDA_SHARED_MEM_LIMIT_CONFIG",
+      "ENUM_CUDA_UNIF_MEM_ACCESS_TYPE",
+      "ENUM_CUDA_UNIF_MEM_MIGRATION",
+      "ENUM_CUPTI_STREAM_TYPE",
+      "ENUM_CUPTI_SYNC_TYPE",
+      "ENUM_DIAGNOSTIC_SEVERITY_LEVEL",
+      "ENUM_DIAGNOSTIC_SOURCE_TYPE",
+      "ENUM_DIAGNOSTIC_TIMESTAMP_SOURCE",
+      "ENUM_NSYS_EVENT_CLASS",
+      "ENUM_NSYS_EVENT_TYPE",
+      "ENUM_NSYS_GENERIC_EVENT_FIELD_ETW_FLAGS",
+      "ENUM_NSYS_GENERIC_EVENT_FIELD_ETW_PROPERTY",
+      "ENUM_NSYS_GENERIC_EVENT_FIELD_ETW_TYPE",
+      "ENUM_NSYS_GENERIC_EVENT_FIELD_TYPE",
+      "ENUM_NSYS_GENERIC_EVENT_GROUP",
+      "ENUM_NSYS_GENERIC_EVENT_SOURCE",
+      "META_DATA_CAPTURE",
+      "META_DATA_EXPORT",
+      "NVTX_EVENTS",
+      "PROCESSES",
+      "PROFILER_OVERHEAD",
+      "ProcessStreams",
+      "StringIds",
+      "TARGET_INFO_CUDA_CONTEXT_INFO",
+      "TARGET_INFO_CUDA_DEVICE",
+      "TARGET_INFO_CUDA_STREAM",
+      "TARGET_INFO_GPU",
+      "TARGET_INFO_NIC_INFO",
+      "TARGET_INFO_SESSION_START_TIME",
+      "TARGET_INFO_SYSTEM_ENV",
+      "ThreadNames"
+    ],
+    "kernels": {
+      "ocg::<unnamed>::generate_fading_grid_kernel(const ocg::DeviceLinkState *, float2 *, int, int, float)": {
+        "count": 17848,
+        "mean": 1.8510569251456745,
+        "p50": 1.408,
+        "p99": 11.392,
+        "max": 158.624,
+        "sum": 33037.664
+      },
+      "ocg::<unnamed>::apply_channel_kernel(const ocg::DeviceLinkState *, ocg::DeviceSourceTable, const float2 *, ocg::IqSample *, int, int, float)": {
+        "count": 17848,
+        "mean": 137.39341999103542,
+        "p50": 134.4,
+        "p99": 202.4,
+        "max": 432.352,
+        "sum": 2452197.76
+      },
+      "ocg::<unnamed>::update_delay_line_kernel(ocg::DeviceLinkState *, ocg::DeviceSourceTable, const unsigned long long *, int, int)": {
+        "count": 17847,
+        "mean": 18.046633719952933,
+        "p50": 14.656,
+        "p99": 39.872,
+        "max": 258.688,
+        "sum": 322078.272
+      },
+      "ocg::<unnamed>::superpose_kernel(ocg::<unnamed>::OutputRowTable, unsigned long, int, int, const int *, const ocg::IqSample *, const ocg::<unnamed>::GpuStep *, const int *)": {
+        "count": 17847,
+        "mean": 24.070856502493417,
+        "p50": 21.088,
+        "p99": 57.344,
+        "max": 249.6,
+        "sum": 429592.576
+      },
+      "ocg::<unnamed>::apply_steps_kernel(const ocg::IqSample *, ocg::IqSample *, unsigned long, const ocg::<unnamed>::GpuStep *, int)": {
+        "count": 71388,
+        "mean": 3.3550669580321624,
+        "p50": 2.816,
+        "p99": 12.192,
+        "max": 160.288,
+        "sum": 239511.52
+      }
+    },
+    "kernel_count": 142778,
+    "kernel_activity_window_s": 9.515643136,
+    "kernel_union_busy_s": 3.257545728,
+    "kernel_union_fraction": 0.3423358444029821,
+    "runtime_apis": {
+      "cuModuleGetLoadingMode": {
+        "count": 1,
+        "mean": 0.56,
+        "p50": 0.56,
+        "p99": 0.56,
+        "max": 0.56,
+        "sum": 0.56
+      },
+      "cudaGetDeviceProperties_v12000": {
+        "count": 1,
+        "mean": 0.08,
+        "p50": 0.08,
+        "p99": 0.08,
+        "max": 0.08,
+        "sum": 0.08
+      },
+      "cudaHostAlloc_v3020": {
+        "count": 8,
+        "mean": 1542.53,
+        "p50": 904.416,
+        "p99": 5191.12,
+        "max": 5191.12,
+        "sum": 12340.24
+      },
+      "cudaMalloc_v3020": {
+        "count": 14,
+        "mean": 70.69714285714285,
+        "p50": 2.176,
+        "p99": 424.768,
+        "max": 424.768,
+        "sum": 989.76
+      },
+      "cudaStreamCreateWithFlags_v5000": {
+        "count": 2,
+        "mean": 91.264,
+        "p50": 12.096,
+        "p99": 170.432,
+        "max": 170.432,
+        "sum": 182.528
+      },
+      "cudaEventCreate_v3020": {
+        "count": 8,
+        "mean": 0.9,
+        "p50": 0.32,
+        "p99": 2.752,
+        "max": 2.752,
+        "sum": 7.2
+      },
+      "cudaMemcpyAsync_v3020": {
+        "count": 107092,
+        "mean": 4.6335472304187055,
+        "p50": 3.056,
+        "p99": 24.784,
+        "max": 207.504,
+        "sum": 496215.84
+      },
+      "cudaStreamSynchronize_v3020": {
+        "count": 17850,
+        "mean": 219.26124907563025,
+        "p50": 173.856,
+        "p99": 530.864,
+        "max": 727.136,
+        "sum": 3913813.296
+      },
+      "cudaEventRecord_v3020": {
+        "count": 71392,
+        "mean": 4.608041909457643,
+        "p50": 2.576,
+        "p99": 24.256,
+        "max": 355.904,
+        "sum": 328977.328
+      },
+      "cuLibraryLoadData": {
+        "count": 2,
+        "mean": 334.208,
+        "p50": 75.408,
+        "p99": 593.008,
+        "max": 593.008,
+        "sum": 668.416
+      },
+      "cuLibraryGetKernel": {
+        "count": 5,
+        "mean": 0.9056000000000001,
+        "p50": 0.64,
+        "p99": 1.872,
+        "max": 1.872,
+        "sum": 4.5280000000000005
+      },
+      "cuKernelGetName": {
+        "count": 142784,
+        "mean": 0.136818691169879,
+        "p50": 0.08,
+        "p99": 0.8,
+        "max": 15.232,
+        "sum": 19535.52
+      },
+      "cudaLaunchKernel_v7000": {
+        "count": 142784,
+        "mean": 5.846515351860153,
+        "p50": 4.208,
+        "p99": 29.232,
+        "max": 1013.328,
+        "sum": 834788.848
+      }
+    },
+    "kernel_runtime_correlation_matched": 142778,
+    "post_api_return_to_kernel_start_us": {
+      "count": 142778,
+      "mean": 150.69070629928981,
+      "p50": 154.608,
+      "p99": 428.112,
+      "max": 709.728,
+      "sum": 21515317.664
+    },
+    "memcpy_by_kind": {
+      "1": {
+        "count": 107092,
+        "bytes": 11355688,
+        "activity_us": 51661.76000002861
+      }
+    }
+  },
+  {
+    "report": "/workspace/gpuch/profile-20261028/nsys-boundary/u16-c1-bw20-a1x1-r0-trace1/timeline.nsys-rep",
+    "tables": [
+      "ANALYSIS_DETAILS",
+      "ANALYSIS_FILE",
+      "CUPTI_ACTIVITY_KIND_CUDA_EVENT",
+      "CUPTI_ACTIVITY_KIND_KERNEL",
+      "CUPTI_ACTIVITY_KIND_MEMCPY",
+      "CUPTI_ACTIVITY_KIND_RUNTIME",
+      "CUPTI_ACTIVITY_KIND_SYNCHRONIZATION",
+      "DIAGNOSTIC_EVENT",
+      "ENUM_CUDA_DEV_MEM_EVENT_OPER",
+      "ENUM_CUDA_FUNC_CACHE_CONFIG",
+      "ENUM_CUDA_KERNEL_LAUNCH_TYPE",
+      "ENUM_CUDA_MEMCPY_OPER",
+      "ENUM_CUDA_MEMPOOL_OPER",
+      "ENUM_CUDA_MEMPOOL_TYPE",
+      "ENUM_CUDA_MEM_KIND",
+      "ENUM_CUDA_SHARED_MEM_LIMIT_CONFIG",
+      "ENUM_CUDA_UNIF_MEM_ACCESS_TYPE",
+      "ENUM_CUDA_UNIF_MEM_MIGRATION",
+      "ENUM_CUPTI_STREAM_TYPE",
+      "ENUM_CUPTI_SYNC_TYPE",
+      "ENUM_DIAGNOSTIC_SEVERITY_LEVEL",
+      "ENUM_DIAGNOSTIC_SOURCE_TYPE",
+      "ENUM_DIAGNOSTIC_TIMESTAMP_SOURCE",
+      "ENUM_NSYS_EVENT_CLASS",
+      "ENUM_NSYS_EVENT_TYPE",
+      "ENUM_NSYS_GENERIC_EVENT_FIELD_ETW_FLAGS",
+      "ENUM_NSYS_GENERIC_EVENT_FIELD_ETW_PROPERTY",
+      "ENUM_NSYS_GENERIC_EVENT_FIELD_ETW_TYPE",
+      "ENUM_NSYS_GENERIC_EVENT_FIELD_TYPE",
+      "ENUM_NSYS_GENERIC_EVENT_GROUP",
+      "ENUM_NSYS_GENERIC_EVENT_SOURCE",
+      "META_DATA_CAPTURE",
+      "META_DATA_EXPORT",
+      "NVTX_EVENTS",
+      "PROCESSES",
+      "PROFILER_OVERHEAD",
+      "ProcessStreams",
+      "StringIds",
+      "TARGET_INFO_CUDA_CONTEXT_INFO",
+      "TARGET_INFO_CUDA_DEVICE",
+      "TARGET_INFO_CUDA_STREAM",
+      "TARGET_INFO_GPU",
+      "TARGET_INFO_NIC_INFO",
+      "TARGET_INFO_SESSION_START_TIME",
+      "TARGET_INFO_SYSTEM_ENV",
+      "ThreadNames"
+    ],
+    "kernels": {
+      "ocg::<unnamed>::generate_fading_grid_kernel(const ocg::DeviceLinkState *, float2 *, int, int, float)": {
+        "count": 161481,
+        "mean": 1.4740839108006516,
+        "p50": 1.088,
+        "p99": 6.528,
+        "max": 226.848,
+        "sum": 238036.544
+      },
+      "ocg::<unnamed>::apply_channel_kernel(const ocg::DeviceLinkState *, ocg::DeviceSourceTable, const float2 *, ocg::IqSample *, int, int, float)": {
+        "count": 161480,
+        "mean": 11.54302006440426,
+        "p50": 7.904,
+        "p99": 57.056,
+        "max": 306.688,
+        "sum": 1863966.8800000001
+      },
+      "ocg::<unnamed>::update_delay_line_kernel(ocg::DeviceLinkState *, ocg::DeviceSourceTable, const unsigned long long *, int, int)": {
+        "count": 161480,
+        "mean": 4.454721228635125,
+        "p50": 4.032,
+        "p99": 10.432,
+        "max": 230.848,
+        "sum": 719348.384
+      },
+      "ocg::<unnamed>::superpose_kernel(ocg::<unnamed>::OutputRowTable, unsigned long, int, int, const int *, const ocg::IqSample *, const ocg::<unnamed>::GpuStep *, const int *)": {
+        "count": 161480,
+        "mean": 3.2056495417389153,
+        "p50": 2.56,
+        "p99": 10.688,
+        "max": 234.72,
+        "sum": 517648.288
+      },
+      "ocg::<unnamed>::apply_steps_kernel(const ocg::IqSample *, ocg::IqSample *, unsigned long, const ocg::<unnamed>::GpuStep *, int)": {
+        "count": 161479,
+        "mean": 1.9982389784430175,
+        "p50": 1.664,
+        "p99": 7.392,
+        "max": 226.912,
+        "sum": 322673.632
+      }
+    },
+    "kernel_count": 807400,
+    "kernel_activity_window_s": 9.547856448,
+    "kernel_union_busy_s": 2.951255968,
+    "kernel_union_fraction": 0.3091014181113084,
+    "runtime_apis": {
+      "cuModuleGetLoadingMode": {
+        "count": 1,
+        "mean": 0.656,
+        "p50": 0.656,
+        "p99": 0.656,
+        "max": 0.656,
+        "sum": 0.656
+      },
+      "cudaGetDeviceProperties_v12000": {
+        "count": 1,
+        "mean": 0.096,
+        "p50": 0.096,
+        "p99": 0.096,
+        "max": 0.096,
+        "sum": 0.096
+      },
+      "cudaHostAlloc_v3020": {
+        "count": 68,
+        "mean": 152.99882352941177,
+        "p50": 1.824,
+        "p99": 4164.032,
+        "max": 4164.032,
+        "sum": 10403.92
+      },
+      "cudaMalloc_v3020": {
+        "count": 119,
+        "mean": 5.56853781512605,
+        "p50": 1.36,
+        "p99": 149.936,
+        "max": 184.0,
+        "sum": 662.6560000000001
+      },
+      "cudaStreamCreateWithFlags_v5000": {
+        "count": 17,
+        "mean": 44.22870588235294,
+        "p50": 2.624,
+        "p99": 161.072,
+        "max": 161.072,
+        "sum": 751.888
+      },
+      "cudaEventCreate_v3020": {
+        "count": 68,
+        "mean": 0.5054117647058823,
+        "p50": 0.32,
+        "p99": 3.376,
+        "max": 3.376,
+        "sum": 34.368
+      },
+      "cudaMemcpyAsync_v3020": {
+        "count": 484477,
+        "mean": 6.6611978195043315,
+        "p50": 4.416,
+        "p99": 29.472,
+        "max": 3154.928,
+        "sum": 3227197.136
+      },
+      "cudaStreamSynchronize_v3020": {
+        "count": 161496,
+        "mean": 18.570231733293703,
+        "p50": 6.96,
+        "p99": 228.56,
+        "max": 2140.8,
+        "sum": 2999018.144
+      },
+      "cudaEventRecord_v3020": {
+        "count": 645920,
+        "mean": 4.673958162001486,
+        "p50": 3.28,
+        "p99": 21.648,
+        "max": 1131.728,
+        "sum": 3019003.056
+      },
+      "cuLibraryLoadData": {
+        "count": 2,
+        "mean": 279.992,
+        "p50": 111.136,
+        "p99": 448.848,
+        "max": 448.848,
+        "sum": 559.984
+      },
+      "cuLibraryGetKernel": {
+        "count": 5,
+        "mean": 0.6336,
+        "p50": 0.672,
+        "p99": 0.848,
+        "max": 0.848,
+        "sum": 3.168
+      },
+      "cuKernelGetName": {
+        "count": 807401,
+        "mean": 0.1397663267694739,
+        "p50": 0.096,
+        "p99": 0.592,
+        "max": 174.8,
+        "sum": 112847.472
+      },
+      "cudaLaunchKernel_v7000": {
+        "count": 807400,
+        "mean": 7.672272915531335,
+        "p50": 5.552,
+        "p99": 34.736,
+        "max": 3771.6,
+        "sum": 6194593.152
+      }
+    },
+    "kernel_runtime_correlation_matched": 807400,
+    "post_api_return_to_kernel_start_us": {
+      "count": 807400,
+      "mean": 8.808417141441664,
+      "p50": 0.0,
+      "p99": 149.248,
+      "max": 635.376,
+      "sum": 7111916.0
+    },
+    "memcpy_by_kind": {
+      "1": {
+        "count": 484477,
+        "bytes": 14112896,
+        "activity_us": 197246.75200054454
+      }
+    }
+  }
+]

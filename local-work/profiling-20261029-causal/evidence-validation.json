@@ -1,0 +1,248 @@
+{
+  "trace": {
+    "wire_files": [
+      {
+        "file": "srsue-2726478.wire",
+        "records": 535810,
+        "dropped": 0,
+        "sha256": "df1b16024135109fde9954556f774f5d03b9f6cdcf527864f96e114cc4a0bfb7"
+      },
+      {
+        "file": "srsue-2726468.wire",
+        "records": 520966,
+        "dropped": 0,
+        "sha256": "585cc6e567c3dd05656081213f01ef8104443b3fad7722bbb49d47ed64ef9c7c"
+      },
+      {
+        "file": "srsue-2726465.wire",
+        "records": 521749,
+        "dropped": 0,
+        "sha256": "91016da2a4cee7d6c1955f1b4e1d5318f9ed44addb252ee594da23ca91077848"
+      },
+      {
+        "file": "srsue-2726461.wire",
+        "records": 522321,
+        "dropped": 0,
+        "sha256": "813f141a09febbb37c5152cdbbe6bf9ca8c421198116cb90e84b9c6002972201"
+      },
+      {
+        "file": "srsue-2726438.wire",
+        "records": 520973,
+        "dropped": 0,
+        "sha256": "8d01ec9418a0fc1af79760478ba86224ddb62817ad88273f87821a44f7a3cc62"
+      },
+      {
+        "file": "srsue-2726450.wire",
+        "records": 537725,
+        "dropped": 0,
+        "sha256": "b9b9aaefc2493ebd2de3970b010bf472d309e562e46a88345aa9321e4f251ec4"
+      },
+      {
+        "file": "ocudu-gpu-channel-2726154.wire",
+        "records": 4629562,
+        "dropped": 0,
+        "sha256": "4431f066be9d02beacae021b46b0abb6dcd52f6491cd3a6eb167eb2078dfc440"
+      },
+      {
+        "file": "srsue-2726435.wire",
+        "records": 519840,
+        "dropped": 0,
+        "sha256": "dd1c7e89dd9bda4590e9cd619068554749ccfb8ea1712ac9a5f93a99193e2a39"
+      },
+      {
+        "file": "srsue-2726444.wire",
+        "records": 520256,
+        "dropped": 0,
+        "sha256": "d709c3c8eb2e40e151d764e3980233b0247606f122a837e5786a8a4ca29a1927"
+      },
+      {
+        "file": "srsue-2726482.wire",
+        "records": 535248,
+        "dropped": 0,
+        "sha256": "ed46ce5fc326a37063397ab8ccb75d9706e7995710d91fe2c06a7f0191a50ed5"
+      },
+      {
+        "file": "gnb-2726242.wire",
+        "records": 703674,
+        "dropped": 0,
+        "sha256": "baca1e7c2c52e39a906e07639b2aefb3ffafd7314974007e14d5febc8efce2e7"
+      },
+      {
+        "file": "srsue-2726447.wire",
+        "records": 520875,
+        "dropped": 0,
+        "sha256": "75d4e9271f3d1634fcf8aba0747bf81f2b024b263fdfaa7832ec02346c029488"
+      },
+      {
+        "file": "srsue-2726457.wire",
+        "records": 521051,
+        "dropped": 0,
+        "sha256": "37ebde366fbe6ef6840571938c1ad212a6a7325ab145bd773456625447ffdcb1"
+      },
+      {
+        "file": "srsue-2726471.wire",
+        "records": 518804,
+        "dropped": 0,
+        "sha256": "10fcadd3d9cfd38fe261abc585c1c90d1524b13794d6297cb3326790757675f5"
+      },
+      {
+        "file": "srsue-2726441.wire",
+        "records": 522160,
+        "dropped": 0,
+        "sha256": "9e692e6c6dea530b68e45e95bae108ab4b492ae3c051ad610bce764a58f448ac"
+      },
+      {
+        "file": "srsue-2726432.wire",
+        "records": 521224,
+        "dropped": 0,
+        "sha256": "3b0f50473d49a16652a72ac9e8920ee89a611c457cf0a2811b40b526f618c4c3"
+      },
+      {
+        "file": "srsue-2726474.wire",
+        "records": 519983,
+        "dropped": 0,
+        "sha256": "e8bdc4a45a658324c01bfcdbcbc9dac64cb7eacff2600e6078d97e5bddc31758"
+      },
+      {
+        "file": "gnb-2725879.wire",
+        "records": 0,
+        "dropped": 0,
+        "sha256": "0e0543460f3489e51d6bc7c8544653fad02e682f04d78b1ffb9ded2f8dad1441"
+      },
+      {
+        "file": "srsue-2726453.wire",
+        "records": 537843,
+        "dropped": 0,
+        "sha256": "b8289603f4d2ba1e9deeb22885c23c13b3e67bf9a466152370099eaf87aa3821"
+      }
+    ],
+    "gnb_input_sources": 16,
+    "matched_messages": 1029268,
+    "sample_gaps": 0,
+    "part_sum_check": true
+  },
+  "trace-repeat": {
+    "wire_files": [
+      {
+        "file": "srsue-2751752.wire",
+        "records": 519025,
+        "dropped": 0,
+        "sha256": "ed694f43bbd0f013c05ecff5d35400569167f6e8a6aa9888121675c79dda010d"
+      },
+      {
+        "file": "ocudu-gpu-channel-2751435.wire",
+        "records": 4608669,
+        "dropped": 0,
+        "sha256": "e1caad2e27a163b228abf5cebd09bca62aa15911c16ec31f4ddf56db8c6a2302"
+      },
+      {
+        "file": "srsue-2751728.wire",
+        "records": 518380,
+        "dropped": 0,
+        "sha256": "a262bdd99890e381bbb7038f82f3ee315d668c6350505ca8a1247addca100203"
+      },
+      {
+        "file": "srsue-2751755.wire",
+        "records": 517862,
+        "dropped": 0,
+        "sha256": "8290c71c9e60a318e9f4dbe7aa3d89f88d6c466d0f751870cdf8e4d21e3e0d96"
+      },
+      {
+        "file": "gnb-2751523.wire",
+        "records": 695910,
+        "dropped": 0,
+        "sha256": "d7ff77fae5c7b98e5c8b45e02bf5e037219576664e5ec73efe4e3351c8f7e550"
+      },
+      {
+        "file": "gnb-2751160.wire",
+        "records": 0,
+        "dropped": 0,
+        "sha256": "d48061adf9fc1baadc62fd1b899dfa3e552ad5ade7da829357cc856e62addc0e"
+      },
+      {
+        "file": "srsue-2751738.wire",
+        "records": 519861,
+        "dropped": 0,
+        "sha256": "317891a5c9fc297d615fd9481bec212e027ab4fca2fd83322dd2ed9cf336c628"
+      },
+      {
+        "file": "srsue-2751716.wire",
+        "records": 519565,
+        "dropped": 0,
+        "sha256": "eee8d8ca571a476b9433906689867cb9d3933ea20120de07a1fb5a721bd07731"
+      },
+      {
+        "file": "srsue-2751745.wire",
+        "records": 517833,
+        "dropped": 0,
+        "sha256": "18a029e5f8e3354cede63bdc68d010580690ab03da04c375ddc961812839fd0f"
+      },
+      {
+        "file": "srsue-2751731.wire",
+        "records": 537192,
+        "dropped": 0,
+        "sha256": "eb4bc85f07178d34c71f8358b4236bd46fc2e3e8a3d96287bbe75feba0249c23"
+      },
+      {
+        "file": "srsue-2751734.wire",
+        "records": 531423,
+        "dropped": 0,
+        "sha256": "ff8aef9a702180f1b0f196643dc00d7cb9f36ab0fd2c0780f687c6412632169f"
+      },
+      {
+        "file": "srsue-2751725.wire",
+        "records": 520675,
+        "dropped": 0,
+        "sha256": "5c13dc9b5a7c664e4b8f7862b267b1de27c5ee8878a7c7df0ca73899365b398c"
+      },
+      {
+        "file": "srsue-2751762.wire",
+        "records": 532492,
+        "dropped": 0,
+        "sha256": "5b7670946692a50d20d8375eddfb9ca4d7e87e96b2e2a15500c758cc8c9a2689"
+      },
+      {
+        "file": "srsue-2751749.wire",
+        "records": 519451,
+        "dropped": 0,
+        "sha256": "8235d389a23e98014297223a5438cbd57996052bae9edc2246a738d664677028"
+      },
+      {
+        "file": "srsue-2751741.wire",
+        "records": 519663,
+        "dropped": 0,
+        "sha256": "a0eecd8bd047fb64ac554e015800f92f117180c5968ed4f8b8088913c42ce8ea"
+      },
+      {
+        "file": "srsue-2751722.wire",
+        "records": 518670,
+        "dropped": 0,
+        "sha256": "7689176f65331ddcf4f54eae1d4fb4c07cbbc7fe9785612fd83794a91a491fa6"
+      },
+      {
+        "file": "srsue-2751713.wire",
+        "records": 519719,
+        "dropped": 0,
+        "sha256": "710e028292b02c26699ea8b400c2ea48f161552c611bcfbbdf374c913ed32444"
+      },
+      {
+        "file": "srsue-2751758.wire",
+        "records": 532666,
+        "dropped": 0,
+        "sha256": "8965ad69b1dc037ab70b69014f5f267319eed8747a5011dbfdb102afb9511150"
+      },
+      {
+        "file": "srsue-2751719.wire",
+        "records": 520201,
+        "dropped": 0,
+        "sha256": "6400dd9d82fa49dc74ef5e7a166761211ced2295281352c8e421d9d0d527bd04"
+      }
+    ],
+    "gnb_input_sources": 16,
+    "matched_messages": 1025208,
+    "sample_gaps": 0,
+    "part_sum_check": true
+  },
+  "frozen_input_hashes_match_all_trials": true,
+  "gpu_processes_after": ""
+}

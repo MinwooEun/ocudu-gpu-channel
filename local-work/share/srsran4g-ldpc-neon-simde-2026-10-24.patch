@@ -1,0 +1,1008 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d2654b270..5be91a52c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -466,6 +466,11 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+     endif(HAVE_SSE)
+   endif(NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+ 
++  option(SRSRAN_LDPC_SIMDE "Build the AVX2 LDPC encoder/decoder on non-x86 through SIMDe (NEON emulation)" OFF)
++  if(SRSRAN_LDPC_SIMDE AND NOT HAVE_AVX2)
++    add_definitions(-DSRSRAN_LDPC_SIMDE)
++    message(STATUS "LDPC: AVX2 encoder/decoder enabled through SIMDe")
++  endif()
+   if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
+     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIS_ARM -DHAVE_NEON")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIS_ARM")
+diff --git a/lib/include/srsran/phy/fec/ldpc/ldpc_decoder.h b/lib/include/srsran/phy/fec/ldpc/ldpc_decoder.h
+index 9164efe83..16f686669 100644
+--- a/lib/include/srsran/phy/fec/ldpc/ldpc_decoder.h
++++ b/lib/include/srsran/phy/fec/ldpc/ldpc_decoder.h
+@@ -49,6 +49,9 @@ typedef enum {
+   SRSRAN_LDPC_DECODER_C_AVX512,     /*!< \brief %Decoder working with 8-bit integer-valued LLRs (AVX512 version). */
+   SRSRAN_LDPC_DECODER_C_AVX512_FLOOD, /*!< \brief %Decoder working with 8-bit integer-valued LLRs, flooded scheduling
+                                    (AVX512 version). */
++#ifdef HAVE_NEON
++  SRSRAN_LDPC_DECODER_C_NEON, /*!< \brief %Decoder working with 8-bit integer-valued LLRs (NEON version, local port). */
++#endif
+ } srsran_ldpc_decoder_type_t;
+ 
+ /*!
+diff --git a/lib/include/srsran/phy/fec/ldpc/ldpc_encoder.h b/lib/include/srsran/phy/fec/ldpc/ldpc_encoder.h
+index 90db63cb6..f0057eaf8 100644
+--- a/lib/include/srsran/phy/fec/ldpc/ldpc_encoder.h
++++ b/lib/include/srsran/phy/fec/ldpc/ldpc_encoder.h
+@@ -39,7 +39,7 @@
+  */
+ typedef enum SRSRAN_API {
+   SRSRAN_LDPC_ENCODER_C = 0, /*!< \brief Non-optimized encoder. */
+-#if LV_HAVE_AVX2
++#if defined(LV_HAVE_AVX2) || defined(SRSRAN_LDPC_SIMDE)
+   SRSRAN_LDPC_ENCODER_AVX2, /*!< \brief SIMD-optimized encoder. */
+ #endif                      // LV_HAVE_AVX2
+ #if LV_HAVE_AVX512
+diff --git a/lib/src/phy/fec/CMakeLists.txt b/lib/src/phy/fec/CMakeLists.txt
+index 7f1d3d1c1..bd48772a4 100644
+--- a/lib/src/phy/fec/CMakeLists.txt
++++ b/lib/src/phy/fec/CMakeLists.txt
+@@ -30,4 +30,19 @@ add_subdirectory(polar)
+ add_subdirectory(test)
+ add_subdirectory(turbo)
+ 
++# SRSRAN_SIMDE_ROOT=<dir containing simde/> prefers that SIMDe checkout over the system headers.
++set(SRSRAN_SIMDE_ROOT "" CACHE PATH "SIMDe checkout root (optional, overrides /usr/include/simde)")
++set(SRSRAN_SIMDE_ROOT_FLAG "")
++if (SRSRAN_SIMDE_ROOT)
++  set(SRSRAN_SIMDE_ROOT_FLAG "-I${SRSRAN_SIMDE_ROOT}")
++endif()
++if (SRSRAN_LDPC_SIMDE AND NOT HAVE_AVX2)
++    # AVX2 LDPC sources (and the dispatchers) see LV_HAVE_AVX2 only in their own translation units;
++    # immintrin.h resolves to the SIMDe shim.
++    foreach(src ldpc_dec_c_avx2.c ldpc_dec_c_avx2long.c ldpc_dec_c_avx2_flood.c ldpc_dec_c_avx2long_flood.c
++                ldpc_enc_avx2.c ldpc_enc_avx2long.c ldpc_decoder.c ldpc_encoder.c)
++        set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/ldpc/${src} PROPERTIES
++            COMPILE_FLAGS "-DLV_HAVE_AVX2 -I${CMAKE_CURRENT_SOURCE_DIR}/ldpc/simde_shim ${SRSRAN_SIMDE_ROOT_FLAG}")
++    endforeach()
++endif()
+ add_library(srsran_fec OBJECT ${FEC_SOURCES})
+diff --git a/lib/src/phy/fec/ldpc/CMakeLists.txt b/lib/src/phy/fec/ldpc/CMakeLists.txt
+index c6a9e9ad6..4d23e3da3 100644
+--- a/lib/src/phy/fec/ldpc/CMakeLists.txt
++++ b/lib/src/phy/fec/ldpc/CMakeLists.txt
+@@ -18,7 +18,7 @@
+ # and at http://www.gnu.org/licenses/.
+ #
+ 
+-if (HAVE_AVX2)
++if (HAVE_AVX2 OR SRSRAN_LDPC_SIMDE)
+     set(AVX2_SOURCES
+             ldpc/ldpc_dec_c_avx2.c
+             ldpc/ldpc_dec_c_avx2long.c
+@@ -27,7 +27,7 @@ if (HAVE_AVX2)
+             ldpc/ldpc_enc_avx2.c
+             ldpc/ldpc_enc_avx2long.c
+             )
+-endif (HAVE_AVX2)
++endif ()
+ 
+ if (HAVE_AVX512)
+     set(AVX512_SOURCES
+@@ -39,7 +39,11 @@ if (HAVE_AVX512)
+             )
+ endif (HAVE_AVX512)
+ 
+-set(FEC_SOURCES ${FEC_SOURCES} ${AVX2_SOURCES} ${AVX512_SOURCES}
++if (HAVE_NEON)
++    set(NEON_SOURCES ldpc/ldpc_dec_c_neon.c)
++endif ()
++
++set(FEC_SOURCES ${FEC_SOURCES} ${AVX2_SOURCES} ${AVX512_SOURCES} ${NEON_SOURCES}
+         ldpc/base_graph.c
+         ldpc/ldpc_dec_f.c
+         ldpc/ldpc_dec_s.c
+diff --git a/lib/src/phy/fec/ldpc/ldpc_dec_all.h b/lib/src/phy/fec/ldpc/ldpc_dec_all.h
+index 5a7b5558f..f7367e556 100644
+--- a/lib/src/phy/fec/ldpc/ldpc_dec_all.h
++++ b/lib/src/phy/fec/ldpc/ldpc_dec_all.h
+@@ -813,4 +813,16 @@ int update_ldpc_soft_bits_c_avx512long_flood(void* p, const int8_t (*these_var_i
+  */
+ int extract_ldpc_message_c_avx512long_flood(void* p, uint8_t* message, uint16_t liftK);
+ 
++/* NEON (aarch64) layered decoder, any lifting size: local port of the AVX2 long decoder. */
++void* create_ldpc_dec_c_neon(uint8_t bgN, uint8_t bgM, uint16_t ls, float scaling_fctr);
++void  delete_ldpc_dec_c_neon(void* p);
++int   init_ldpc_dec_c_neon(void* p, const int8_t* llrs, uint16_t ls);
++int   update_ldpc_var_to_check_c_neon(void* p, int i_layer);
++int   update_ldpc_check_to_var_c_neon(void*           p,
++                                      int             i_layer,
++                                      const uint16_t* this_pcm,
++                                      const int8_t (*these_var_indices)[MAX_CNCT]);
++int   update_ldpc_soft_bits_c_neon(void* p, int i_layer, const int8_t (*these_var_indices)[MAX_CNCT]);
++int   extract_ldpc_message_c_neon(void* p, uint8_t* message, uint16_t liftK);
++
+ #endif // SRSRAN_LDPCDEC_ALL_H
+diff --git a/lib/src/phy/fec/ldpc/ldpc_dec_c_neon.c b/lib/src/phy/fec/ldpc/ldpc_dec_c_neon.c
+new file mode 100644
+index 000000000..1191584a0
+--- /dev/null
++++ b/lib/src/phy/fec/ldpc/ldpc_dec_c_neon.c
+@@ -0,0 +1,417 @@
++/**
++ * Copyright 2013-2023 Software Radio Systems Limited
++ *
++ * This file is part of srsRAN.
++ *
++ * srsRAN is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU Affero General Public License as
++ * published by the Free Software Foundation, either version 3 of
++ * the License, or (at your option) any later version.
++ *
++ * srsRAN is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU Affero General Public License for more details.
++ *
++ * A copy of the GNU Affero General Public License can be found in
++ * the LICENSE file in the top-level directory of this distribution
++ * and at http://www.gnu.org/licenses/.
++ *
++ */
++
++/*!
++ * \file ldpc_dec_c_neon.c
++ * \brief Definition of the LDPC decoder inner functions working
++ *    with 8-bit integer-valued LLRs, NEON (aarch64) version, any lifting size.
++ *
++ * Local port (minwoo, 2026-10-24) of srsRAN's AVX2 layered min-sum decoder
++ * (ldpc_dec_c_avx2long.c) to NEON. Same algorithm and the same 7/8-bit LLR
++ * saturation rules; each lifted node is stored as ceil(ls/16) 128-bit sub-nodes.
++ * Cyclic shifts are done with two memcpy calls per node instead of lane permutes.
++ *
++ * \author minwoo (port), original algorithm by Software Radio Systems Limited
++ * \date 2026
++ *
++ * \copyright Software Radio Systems Limited
++ */
++
++#include <stdint.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include "ldpc_dec_all.h"
++#include "srsran/phy/fec/ldpc/base_graph.h"
++#include "srsran/phy/utils/vector.h"
++
++#ifdef HAVE_NEON
++
++#include <arm_neon.h>
++
++#define NEON_B_SIZE 16 /*!< \brief Bytes per 128-bit NEON register. */
++
++static const int8_t infinity7 = (1U << 6U) - 1; /*!< \brief 7-bit "infinity" (63). */
++static const int8_t infinity8 = INT8_MAX;        /*!< \brief 8-bit "infinity" (127). */
++
++/*!
++ * \brief Inner registers for the LDPC decoder that works with 8-bit integer-valued LLRs (NEON version).
++ *
++ * All node arrays are laid out as [node][sub-node] int8x16_t vectors; a node has n_subnodes
++ * sub-nodes and the bytes beyond ls in the last sub-node are padding (kept at zero where it matters).
++ */
++struct ldpc_regs_c_neon {
++  int8x16_t* soft_bits;    /*!< \brief A-posteriori log-likelihood ratios, bgN nodes. */
++  int8x16_t* check_to_var; /*!< \brief Check-to-variable messages, bgM x (hrr+1) nodes. */
++  int8x16_t* var_to_check; /*!< \brief Variable-to-check messages, (hrr+1) nodes. */
++  int8x16_t* rotated_v2c;  /*!< \brief Rotated variable-to-check messages, MAX_CNCT nodes. */
++  int8x16_t* this_c2v;     /*!< \brief Helper node for the current check-to-variable message. */
++  int8x16_t* minp_v2c;     /*!< \brief Per-lane minimum |v2c| over the layer, one node. */
++  int8x16_t* mins_v2c;     /*!< \brief Per-lane second minimum |v2c|, one node. */
++  int8x16_t* prod_v2c;     /*!< \brief Per-lane sign product (0x00/0xFF masks), one node. */
++  int8x16_t* min_ix;       /*!< \brief Per-lane index of the minimum, one node. */
++
++  uint8_t  scaling_u8;  /*!< \brief Normalisation factor as a Q0.8 unsigned byte. */
++  uint16_t ls;          /*!< \brief Lifting size. */
++  uint8_t  hrr;         /*!< \brief Number of variable nodes in the high-rate region (before lifting). */
++  uint8_t  bgM;         /*!< \brief Number of check nodes (before lifting). */
++  uint8_t  bgN;         /*!< \brief Number of variable nodes (before lifting). */
++  uint8_t  n_subnodes;  /*!< \brief 128-bit sub-nodes per lifted node. */
++};
++
++static void* neon_alloc(size_t n_vectors)
++{
++  void* p = NULL;
++  if (posix_memalign(&p, 64, n_vectors * sizeof(int8x16_t)) != 0) {
++    return NULL;
++  }
++  memset(p, 0, n_vectors * sizeof(int8x16_t));
++  return p;
++}
++
++static void inner_var_to_check_c_neon(const int8x16_t* x, const int8x16_t* y, int8x16_t* z, int8_t clip, uint32_t len);
++static void rotate_node_right(const int8x16_t* in, int8x16_t* out, uint16_t shift, uint16_t ls, uint8_t n_subnodes);
++
++void* create_ldpc_dec_c_neon(uint8_t bgN, uint8_t bgM, uint16_t ls, float scaling_fctr)
++{
++  struct ldpc_regs_c_neon* vp = NULL;
++
++  uint8_t  bgK = bgN - bgM;
++  uint16_t hrr = bgK + 4;
++
++  if ((vp = SRSRAN_MEM_ALLOC(struct ldpc_regs_c_neon, 1)) == NULL) {
++    return NULL;
++  }
++  SRSRAN_MEM_ZERO(vp, struct ldpc_regs_c_neon, 1);
++
++  uint8_t n_subnodes = ls / NEON_B_SIZE + ((ls % NEON_B_SIZE) > 0);
++
++  if ((vp->soft_bits = neon_alloc((size_t)bgN * n_subnodes)) == NULL) {
++    delete_ldpc_dec_c_neon(vp);
++    return NULL;
++  }
++  if ((vp->check_to_var = neon_alloc((size_t)(hrr + 1) * bgM * n_subnodes)) == NULL) {
++    delete_ldpc_dec_c_neon(vp);
++    return NULL;
++  }
++  if ((vp->var_to_check = neon_alloc((size_t)(hrr + 1) * n_subnodes)) == NULL) {
++    delete_ldpc_dec_c_neon(vp);
++    return NULL;
++  }
++  if ((vp->rotated_v2c = neon_alloc((size_t)MAX_CNCT * n_subnodes)) == NULL) {
++    delete_ldpc_dec_c_neon(vp);
++    return NULL;
++  }
++  if ((vp->this_c2v = neon_alloc(n_subnodes)) == NULL) {
++    delete_ldpc_dec_c_neon(vp);
++    return NULL;
++  }
++  if ((vp->minp_v2c = neon_alloc(n_subnodes)) == NULL) {
++    delete_ldpc_dec_c_neon(vp);
++    return NULL;
++  }
++  if ((vp->mins_v2c = neon_alloc(n_subnodes)) == NULL) {
++    delete_ldpc_dec_c_neon(vp);
++    return NULL;
++  }
++  if ((vp->prod_v2c = neon_alloc(n_subnodes)) == NULL) {
++    delete_ldpc_dec_c_neon(vp);
++    return NULL;
++  }
++  if ((vp->min_ix = neon_alloc(n_subnodes)) == NULL) {
++    delete_ldpc_dec_c_neon(vp);
++    return NULL;
++  }
++
++  vp->bgM        = bgM;
++  vp->bgN        = bgN;
++  vp->hrr        = hrr;
++  vp->ls         = ls;
++  vp->n_subnodes = n_subnodes;
++
++  // Q0.8 scaling: floor(a * s) for a in [0, 127] matches the AVX2 (a * (s + 2^-16) * 65535) >> 16 result for s = 0.8.
++  float s = scaling_fctr * 256.0F + 0.5F;
++  if (s < 1.0F) {
++    s = 1.0F;
++  }
++  if (s > 255.0F) {
++    s = 255.0F;
++  }
++  vp->scaling_u8 = (uint8_t)s;
++
++  return vp;
++}
++
++void delete_ldpc_dec_c_neon(void* p)
++{
++  struct ldpc_regs_c_neon* vp = p;
++
++  if (vp == NULL) {
++    return;
++  }
++  free(vp->min_ix);
++  free(vp->prod_v2c);
++  free(vp->mins_v2c);
++  free(vp->minp_v2c);
++  free(vp->this_c2v);
++  free(vp->rotated_v2c);
++  free(vp->var_to_check);
++  free(vp->check_to_var);
++  free(vp->soft_bits);
++  free(vp);
++}
++
++int init_ldpc_dec_c_neon(void* p, const int8_t* llrs, uint16_t ls)
++{
++  struct ldpc_regs_c_neon* vp = p;
++
++  if (p == NULL) {
++    return -1;
++  }
++
++  const uint32_t node_bytes = (uint32_t)vp->n_subnodes * NEON_B_SIZE;
++  int8_t*        sb         = (int8_t*)vp->soft_bits;
++
++  // the first 2 x LS bits of the codeword are not sent
++  memset(sb, 0, 2 * node_bytes);
++  for (int i = 2; i < vp->bgN; i++) {
++    int8_t* node = sb + (size_t)i * node_bytes;
++    memcpy(node, llrs + (size_t)(i - 2) * ls, ls);
++    if (node_bytes > ls) {
++      memset(node + ls, 0, node_bytes - ls);
++    }
++  }
++
++  memset(vp->check_to_var, 0, (size_t)(vp->hrr + 1) * vp->bgM * vp->n_subnodes * sizeof(int8x16_t));
++  memset(vp->var_to_check, 0, (size_t)(vp->hrr + 1) * vp->n_subnodes * sizeof(int8x16_t));
++  memset(vp->min_ix, 0, (size_t)vp->n_subnodes * sizeof(int8x16_t));
++
++  return 0;
++}
++
++int update_ldpc_var_to_check_c_neon(void* p, int i_layer)
++{
++  struct ldpc_regs_c_neon* vp = p;
++
++  if (p == NULL) {
++    return -1;
++  }
++
++  int8x16_t* this_check_to_var = vp->check_to_var + (size_t)i_layer * (vp->hrr + 1) * vp->n_subnodes;
++
++  // Update the high-rate region.
++  inner_var_to_check_c_neon(
++      vp->soft_bits, this_check_to_var, vp->var_to_check, infinity7, (uint32_t)vp->hrr * vp->n_subnodes);
++
++  if (i_layer >= 4) {
++    // Update the extension region.
++    inner_var_to_check_c_neon(vp->soft_bits + (size_t)(vp->hrr + i_layer - 4) * vp->n_subnodes,
++                              this_check_to_var + (size_t)vp->hrr * vp->n_subnodes,
++                              vp->var_to_check + (size_t)vp->hrr * vp->n_subnodes,
++                              infinity7,
++                              vp->n_subnodes);
++  }
++
++  return 0;
++}
++
++int update_ldpc_check_to_var_c_neon(void*           p,
++                                    int             i_layer,
++                                    const uint16_t* this_pcm,
++                                    const int8_t (*these_var_indices)[MAX_CNCT])
++{
++  struct ldpc_regs_c_neon* vp = p;
++
++  if (p == NULL) {
++    return -1;
++  }
++
++  const int n_sub = vp->n_subnodes;
++
++  const int8x16_t int8_max = vdupq_n_s8(INT8_MAX);
++  for (int j = 0; j < n_sub; j++) {
++    vp->minp_v2c[j] = int8_max;
++    vp->mins_v2c[j] = int8_max;
++    vp->prod_v2c[j] = vdupq_n_s8(0);
++  }
++
++  // First pass: rotate, accumulate the sign product and the two smallest magnitudes per lane.
++  int8_t current_var_index = (*these_var_indices)[0];
++  for (int i = 0; (current_var_index != -1) && (i < MAX_CNCT); i++) {
++    uint16_t shift      = this_pcm[current_var_index];
++    int      i_v2c_base = ((current_var_index <= vp->hrr) ? current_var_index : vp->hrr) * n_sub;
++
++    int8x16_t*      this_rotated_v2c = vp->rotated_v2c + (size_t)i * n_sub;
++    const int8x16_t current_ix       = vdupq_n_s8((int8_t)i);
++
++    rotate_node_right(vp->var_to_check + i_v2c_base, this_rotated_v2c, shift, vp->ls, vp->n_subnodes);
++
++    for (int j = 0; j < n_sub; j++) {
++      int8x16_t v = this_rotated_v2c[j];
++      // sign product: flip the lanes where v is strictly negative
++      uint8x16_t neg = vcltzq_s8(v);
++      vp->prod_v2c[j] = veorq_s8(vp->prod_v2c[j], vreinterpretq_s8_u8(neg));
++
++      int8x16_t a = vqabsq_s8(v);
++      // new minimum?
++      uint8x16_t lt_minp = vcgtq_s8(vp->minp_v2c[j], a);
++      int8x16_t  help    = vbslq_s8(lt_minp, vp->minp_v2c[j], a); // max(a, minp) = the displaced value
++      vp->minp_v2c[j]    = vbslq_s8(lt_minp, a, vp->minp_v2c[j]);
++      vp->min_ix[j]      = vbslq_s8(lt_minp, current_ix, vp->min_ix[j]);
++      // new second minimum?
++      uint8x16_t lt_mins = vcgtq_s8(vp->mins_v2c[j], a);
++      vp->mins_v2c[j]    = vbslq_s8(lt_mins, help, vp->mins_v2c[j]);
++    }
++    current_var_index = (*these_var_indices)[(i + 1) % MAX_CNCT];
++  }
++
++  // Second pass: build each check-to-variable message and rotate it back.
++  int8x16_t* this_check_to_var = vp->check_to_var + (size_t)i_layer * (vp->hrr + 1) * n_sub;
++  const uint8x8_t sf           = vdup_n_u8(vp->scaling_u8);
++
++  current_var_index = (*these_var_indices)[0];
++  for (int i = 0; (current_var_index != -1) && (i < MAX_CNCT); i++) {
++    uint16_t shift      = this_pcm[current_var_index];
++    int      i_v2c_base = ((current_var_index <= vp->hrr) ? current_var_index : vp->hrr) * n_sub;
++
++    const int8x16_t* this_rotated_v2c = vp->rotated_v2c + (size_t)i * n_sub;
++    const int8x16_t  current_ix       = vdupq_n_s8((int8_t)i);
++
++    for (int j = 0; j < n_sub; j++) {
++      // final sign = sign(v2c) xor product of all signs in the layer
++      uint8x16_t final_neg = veorq_u8(vcltzq_s8(this_rotated_v2c[j]), vreinterpretq_u8_s8(vp->prod_v2c[j]));
++
++      // magnitude: the second minimum for the lane that holds the minimum, the minimum otherwise
++      uint8x16_t is_min = vceqq_s8(current_ix, vp->min_ix[j]);
++      int8x16_t  mag    = vbslq_s8(is_min, vp->mins_v2c[j], vp->minp_v2c[j]);
++
++      // normalised min-sum: floor(mag * scaling) with mag in [0, 127]
++      uint8x16_t magu = vreinterpretq_u8_s8(mag);
++      uint16x8_t lo   = vmull_u8(vget_low_u8(magu), sf);
++      uint16x8_t hi   = vmull_u8(vget_high_u8(magu), sf);
++      int8x16_t  scaled = vreinterpretq_s8_u8(vcombine_u8(vshrn_n_u16(lo, 8), vshrn_n_u16(hi, 8)));
++
++      vp->this_c2v[j] = vbslq_s8(final_neg, vnegq_s8(scaled), scaled);
++    }
++    // rotating right LS - shift positions is the same as rotating left shift positions
++    rotate_node_right(vp->this_c2v, this_check_to_var + i_v2c_base, (uint16_t)(vp->ls - shift), vp->ls, vp->n_subnodes);
++
++    current_var_index = (*these_var_indices)[(i + 1) % MAX_CNCT];
++  }
++
++  return 0;
++}
++
++int update_ldpc_soft_bits_c_neon(void* p, int i_layer, const int8_t (*these_var_indices)[MAX_CNCT])
++{
++  struct ldpc_regs_c_neon* vp = p;
++  if (p == NULL) {
++    return -1;
++  }
++
++  const int        n_sub             = vp->n_subnodes;
++  const int8x16_t* this_check_to_var = vp->check_to_var + (size_t)i_layer * (vp->hrr + 1) * n_sub;
++
++  const int8x16_t infty7     = vdupq_n_s8(infinity7);
++  const int8x16_t neg_infty7 = vdupq_n_s8(-infinity7);
++  const int8x16_t infty8     = vdupq_n_s8(infinity8);
++  const int8x16_t neg_infty8 = vdupq_n_s8(-infinity8);
++
++  int8_t current_var_index = (*these_var_indices)[0];
++  for (int i = 0; (current_var_index != -1) && (i < MAX_CNCT); i++) {
++    int        i_bit_base = ((current_var_index <= vp->hrr) ? current_var_index : vp->hrr) * n_sub;
++    int8x16_t* sb         = vp->soft_bits + (size_t)current_var_index * n_sub;
++    for (int j = 0; j < n_sub; j++) {
++      int8x16_t tmp = vqaddq_s8(this_check_to_var[i_bit_base + j], vp->var_to_check[i_bit_base + j]);
++      // tmp = (tmp > infty7) ? infty8 : tmp
++      tmp = vbslq_s8(vcgtq_s8(tmp, infty7), infty8, tmp);
++      // tmp = (tmp < -infty7) ? -infty8 : tmp
++      sb[j] = vbslq_s8(vcgtq_s8(neg_infty7, tmp), neg_infty8, tmp);
++    }
++    current_var_index = (*these_var_indices)[(i + 1) % MAX_CNCT];
++  }
++
++  return 0;
++}
++
++int extract_ldpc_message_c_neon(void* p, uint8_t* message, uint16_t liftK)
++{
++  if (p == NULL) {
++    return -1;
++  }
++  struct ldpc_regs_c_neon* vp = p;
++
++  const uint32_t node_bytes = (uint32_t)vp->n_subnodes * NEON_B_SIZE;
++  const int8_t*  sb         = (const int8_t*)vp->soft_bits;
++
++  for (int i = 0; i < liftK / vp->ls; i++) {
++    const int8_t* node = sb + (size_t)i * node_bytes;
++    for (int k = 0; k < vp->ls; k++) {
++      message[i * vp->ls + k] = (node[k] < 0);
++    }
++  }
++  return 0;
++}
++
++/*!
++ * z = clip(x - y) with saturation, and x = +/-infinity8 forces z = +/-infinity8.
++ */
++static void inner_var_to_check_c_neon(const int8x16_t* x, const int8x16_t* y, int8x16_t* z, int8_t clip, uint32_t len)
++{
++  const int8x16_t clip_v     = vdupq_n_s8(clip);
++  const int8x16_t neg_clip_v = vdupq_n_s8((int8_t)(-clip));
++  const int8x16_t infty8     = vdupq_n_s8(infinity8);
++  const int8x16_t neg_infty8 = vdupq_n_s8(-infinity8);
++
++  for (uint32_t i = 0; i < len; i++) {
++    int8x16_t xv = x[i];
++    int8x16_t zv = vqsubq_s8(xv, y[i]);
++    // z = (z > clip) ? clip : z ; z = (z < -clip) ? -clip : z
++    zv = vminq_s8(zv, clip_v);
++    zv = vmaxq_s8(zv, neg_clip_v);
++    // z = (x < infinity) ? z : infinity    (x == 127 -> 127)
++    zv = vbslq_s8(vcgtq_s8(infty8, xv), zv, infty8);
++    // z = (x > -infinity) ? z : -infinity  (x <= -127 -> -127)
++    z[i] = vbslq_s8(vcgtq_s8(xv, neg_infty8), zv, neg_infty8);
++  }
++}
++
++/*!
++ * out[k] = in[(k + shift) mod ls] for k < ls; the padding bytes of out are zeroed.
++ */
++static void rotate_node_right(const int8x16_t* in, int8x16_t* out, uint16_t shift, uint16_t ls, uint8_t n_subnodes)
++{
++  const int8_t* src = (const int8_t*)in;
++  int8_t*       dst = (int8_t*)out;
++  if (shift >= ls) {
++    shift = (uint16_t)(shift % ls);
++  }
++  memcpy(dst, src + shift, (size_t)(ls - shift));
++  if (shift != 0) {
++    memcpy(dst + (ls - shift), src, shift);
++  }
++  const uint32_t node_bytes = (uint32_t)n_subnodes * NEON_B_SIZE;
++  if (node_bytes > ls) {
++    memset(dst + ls, 0, node_bytes - ls);
++  }
++}
++
++#endif // HAVE_NEON
+diff --git a/lib/src/phy/fec/ldpc/ldpc_decoder.c b/lib/src/phy/fec/ldpc/ldpc_decoder.c
+index e7ac6d79f..0cff96c8f 100644
+--- a/lib/src/phy/fec/ldpc/ldpc_decoder.c
++++ b/lib/src/phy/fec/ldpc/ldpc_decoder.c
+@@ -295,6 +295,40 @@ static int init_c_flood(srsran_ldpc_decoder_t* q)
+   return 0;
+ }
+ 
++#ifdef HAVE_NEON
++/*! Carries out the actual destruction of the memory allocated to the decoder, 8-bit-LLR case (NEON implementation). */
++static void free_dec_c_neon(void* o)
++{
++  srsran_ldpc_decoder_t* q = o;
++  if (q->var_indices) {
++    free(q->var_indices);
++  }
++  if (q->pcm) {
++    free(q->pcm);
++  }
++  delete_ldpc_dec_c_neon(q->ptr);
++}
++
++/*! Carries out the decoding with 8-bit integer-valued LLRs (NEON implementation). */
++LDPC_DECODER_TEMPLATE(int8_t, c_neon);
++
++/*! Initializes the decoder to work with 8-bit integer-valued LLRs (NEON implementation). */
++static int init_c_neon(srsran_ldpc_decoder_t* q)
++{
++  q->free = free_dec_c_neon;
++
++  if ((q->ptr = create_ldpc_dec_c_neon(q->bgN, q->bgM, q->ls, q->scaling_fctr)) == NULL) {
++    ERROR("Create_ldpc_dec failed");
++    free_dec_c_neon(q);
++    return -1;
++  }
++
++  q->decode_c = decode_c_neon;
++
++  return 0;
++}
++#endif // HAVE_NEON
++
+ #ifdef LV_HAVE_AVX2
+ /*! Carries out the actual destruction of the memory allocated to the decoder, 8-bit-LLR case (AVX2 implementation). */
+ static void free_dec_c_avx2(void* o)
+@@ -615,6 +649,10 @@ int srsran_ldpc_decoder_init(srsran_ldpc_decoder_t* q, const srsran_ldpc_decoder
+       return init_c(q);
+     case SRSRAN_LDPC_DECODER_C_FLOOD:
+       return init_c_flood(q);
++#ifdef HAVE_NEON
++    case SRSRAN_LDPC_DECODER_C_NEON:
++      return init_c_neon(q);
++#endif // HAVE_NEON
+ #ifdef LV_HAVE_AVX2
+     case SRSRAN_LDPC_DECODER_C_AVX2:
+       if (ls <= SRSRAN_AVX2_B_SIZE) {
+diff --git a/lib/src/phy/fec/ldpc/simde_shim/immintrin.h b/lib/src/phy/fec/ldpc/simde_shim/immintrin.h
+new file mode 100644
+index 000000000..f61609dc1
+--- /dev/null
++++ b/lib/src/phy/fec/ldpc/simde_shim/immintrin.h
+@@ -0,0 +1,8 @@
++/* immintrin.h shim: lets srsRAN's AVX2 LDPC encoder/decoder compile on aarch64 through SIMDe
++ * (256-bit intrinsics emulated with NEON). Only on the include path of the LDPC AVX2 sources
++ * when SRSRAN_LDPC_SIMDE=ON. */
++#ifndef SRSRAN_LDPC_SIMDE_IMMINTRIN_SHIM_H
++#define SRSRAN_LDPC_SIMDE_IMMINTRIN_SHIM_H
++#define SIMDE_ENABLE_NATIVE_ALIASES
++#include <simde/x86/avx2.h>
++#endif
+diff --git a/lib/src/phy/fec/ldpc/test/CMakeLists.txt b/lib/src/phy/fec/ldpc/test/CMakeLists.txt
+index 6b931670e..f54b584a5 100644
+--- a/lib/src/phy/fec/ldpc/test/CMakeLists.txt
++++ b/lib/src/phy/fec/ldpc/test/CMakeLists.txt
+@@ -41,13 +41,18 @@ target_link_libraries(ldpc_rm_test srsran_phy)
+ add_executable(ldpc_rm_chain_test ldpc_rm_chain_test.c)
+ target_link_libraries(ldpc_rm_chain_test srsran_phy)
+ 
+-if(HAVE_AVX2)
++if(HAVE_AVX2 OR SRSRAN_LDPC_SIMDE)
+   add_executable(ldpc_enc_avx2_test ldpc_enc_avx2_test.c)
+   target_link_libraries(ldpc_enc_avx2_test srsran_phy)
+ 
+   add_executable(ldpc_dec_avx2_test ldpc_dec_avx2_test.c)
+   target_link_libraries(ldpc_dec_avx2_test srsran_phy)
+-endif(HAVE_AVX2)
++endif()
++
++if(HAVE_NEON)
++  add_executable(ldpc_dec_neon_test ldpc_dec_neon_test.c)
++  target_link_libraries(ldpc_dec_neon_test srsran_phy)
++endif()
+ 
+ if(HAVE_AVX512)
+   add_executable(ldpc_enc_avx512_test ldpc_enc_avx512_test.c)
+@@ -94,7 +99,7 @@ set(test_command ldpc_dec_test -b2)
+ ldpc_unit_tests(${lifting_sizes})
+ 
+ 
+-if (HAVE_AVX2)
++if (HAVE_AVX2 OR SRSRAN_LDPC_SIMDE)
+ 
+ set(test_name LDPC-ENC-AVX2-BG1)
+ set(test_command ldpc_enc_avx2_test -b1)
+diff --git a/lib/src/phy/fec/ldpc/test/ldpc_dec_neon_test.c b/lib/src/phy/fec/ldpc/test/ldpc_dec_neon_test.c
+new file mode 100644
+index 000000000..20808ee21
+--- /dev/null
++++ b/lib/src/phy/fec/ldpc/test/ldpc_dec_neon_test.c
+@@ -0,0 +1,255 @@
++/**
++ * Copyright 2013-2023 Software Radio Systems Limited
++ *
++ * This file is part of srsRAN.
++ *
++ * srsRAN is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU Affero General Public License as
++ * published by the Free Software Foundation, either version 3 of
++ * the License, or (at your option) any later version.
++ *
++ * srsRAN is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU Affero General Public License for more details.
++ *
++ * A copy of the GNU Affero General Public License can be found in
++ * the LICENSE file in the top-level directory of this distribution
++ * and at http://www.gnu.org/licenses/.
++ *
++ */
++
++/*!
++ * \file ldpc_dec_neon_test.c
++ * \brief Unit test for the LDPC decoder working with 8-bit integer-valued LLRs (AVX2 implementation).
++ *
++ * It decodes a batch of example codewords and compares the resulting messages
++ * with the expected ones. Reference messages and codewords are provided in
++ * files **examplesBG1.dat** and **examplesBG2.dat**.
++ *
++ * Synopsis: **ldpc_dec_c_test [options]**
++ *
++ * Options:
++ *  - **-b \<number\>** Base Graph (1 or 2. Default 1).
++ *  - **-l \<number\>** Lifting Size (according to 5GNR standard. Default 2).
++ */
++
++#include "srsran/phy/utils/vector.h"
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++
++#include "srsran/phy/fec/ldpc/ldpc_common.h"
++#include "srsran/phy/fec/ldpc/ldpc_decoder.h"
++#include "srsran/phy/utils/debug.h"
++
++srsran_basegraph_t base_graph = BG1; /*!< \brief Base Graph (BG1 or BG2). */
++int                lift_size  = 2;   /*!< \brief Lifting Size. */
++int                finalK;           /*!< \brief Number of uncoded bits (message length). */
++int                finalN;           /*!< \brief Number of coded bits (codeword length). */
++int                scheduling = 0;   /*!< \brief Message scheduling (0 for layered, 1 for flooded). */
++
++#define NOF_MESSAGES 10  /*!< \brief Number of codewords in the test. */
++static int nof_reps = 1; /*!< \brief Number of times tests are repeated (for computing throughput). */
++
++/*!
++ * \brief Prints test help when a wrong parameter is passed as input.
++ */
++void usage(char* prog)
++{
++  printf("Usage: %s [-bX] [-lX]\n", prog);
++  printf("\t-b Base Graph [(1 or 2) Default %d]\n", base_graph + 1);
++  printf("\t-l Lifting Size [Default %d]\n", lift_size);
++  printf("\t-x Scheduling [Default %c]\n", scheduling);
++  printf("\t-R Number of times tests are repeated (for computing throughput). [Default %d]\n", nof_reps);
++}
++
++/*!
++ * \brief Parses the input line.
++ */
++void parse_args(int argc, char** argv)
++{
++  int opt = 0;
++  while ((opt = getopt(argc, argv, "b:l:x:R:")) != -1) {
++    switch (opt) {
++      case 'b':
++        base_graph = (int)strtol(optarg, NULL, 10) - 1;
++        break;
++      case 'l':
++        lift_size = (int)strtol(optarg, NULL, 10);
++        break;
++      case 'x':
++        scheduling = (int)strtol(optarg, NULL, 10);
++        break;
++      case 'R':
++        nof_reps = (int)strtol(optarg, NULL, 10);
++        break;
++      default:
++        usage(argv[0]);
++        exit(-1);
++    }
++  }
++}
++
++/*!
++ * \brief Reads the example file.
++ */
++void get_examples(uint8_t* messages, //
++                  uint8_t* codewords,
++                  FILE*    ex_file)
++{
++  char mstr[15]; // message string
++  char cstr[15]; // codeword string
++  char tmp[15];
++  int  i = 0;
++  int  j = 0;
++
++  sprintf(mstr, "ls%dmsgs", lift_size);
++  sprintf(cstr, "ls%dcwds", lift_size);
++  do {
++    do {
++      tmp[0] = fgetc(ex_file);
++    } while (tmp[0] != 'l');
++    fscanf(ex_file, "%[^\n]", tmp + 1);
++    fgetc(ex_file); // discard newline
++  } while (strcmp(tmp, mstr) != 0);
++
++  // read messages
++  for (j = 0; j < NOF_MESSAGES; j++) {
++    for (i = 0; i < finalK; i++) {
++      int rc                   = fgetc(ex_file);
++      messages[j * finalK + i] = (uint8_t)(rc == '-' ? FILLER_BIT : rc - '0');
++    }
++    fgetc(ex_file); // discard newline
++  }
++
++  fscanf(ex_file, "%[^\n]", tmp);
++  if (strcmp(tmp, cstr) != 0) {
++    printf("Something went wrong while reading example file.\n");
++    exit(-1);
++  }
++  fgetc(ex_file); // discard newline
++
++  // read codewords
++  for (j = 0; j < NOF_MESSAGES; j++) {
++    for (i = 0; i < finalN; i++) {
++      int rc                    = fgetc(ex_file);
++      codewords[j * finalN + i] = (uint8_t)(rc == '-' ? FILLER_BIT : rc - '0');
++    }
++    fgetc(ex_file); // discard newline
++  }
++}
++
++/*!
++ * \brief Main test function.
++ */
++int main(int argc, char** argv)
++{
++  uint8_t* messages_true = NULL;
++  uint8_t* messages_sim  = NULL;
++  uint8_t* codewords     = NULL;
++  int8_t*  symbols       = NULL;
++  int      i             = 0;
++  int      j             = 0;
++  int      l             = 0;
++
++  FILE* ex_file = NULL;
++  char  file_name[1000];
++
++  parse_args(argc, argv);
++
++  srsran_ldpc_decoder_type_t dectype =
++      (scheduling == 0) ? SRSRAN_LDPC_DECODER_C_NEON : SRSRAN_LDPC_DECODER_C_NEON;
++
++  // Create LDPC configuration arguments
++  srsran_ldpc_decoder_args_t decoder_args = {};
++  decoder_args.type                       = dectype;
++  decoder_args.bg                         = base_graph;
++  decoder_args.ls                         = lift_size;
++  decoder_args.scaling_fctr               = 1.0f;
++
++  // create an LDPC decoder
++  srsran_ldpc_decoder_t decoder;
++  if (srsran_ldpc_decoder_init(&decoder, &decoder_args) != 0) {
++    perror("decoder init");
++    exit(-1);
++  }
++
++  printf("Test LDPC decoder:\n");
++  printf("  Base Graph      -> BG%d\n", decoder.bg + 1);
++  printf("  Lifting Size    -> %d\n", decoder.ls);
++  printf("  Protograph      -> M = %d, N = %d, K = %d\n", decoder.bgM, decoder.bgN, decoder.bgK);
++  printf("  Lifted graph    -> M = %d, N = %d, K = %d\n", decoder.liftM, decoder.liftN, decoder.liftK);
++  printf("  Final code rate -> K/(N-2) = %d/%d = 1/%d\n",
++         decoder.liftK,
++         decoder.liftN - 2 * lift_size,
++         decoder.bg == BG1 ? 3 : 5);
++  printf("  Scheduling: %s\n", scheduling ? "flooded" : "layered");
++
++  finalK = decoder.liftK;
++  finalN = decoder.liftN - 2 * lift_size;
++
++  messages_true = srsran_vec_u8_malloc(finalK * NOF_MESSAGES);
++  messages_sim  = srsran_vec_u8_malloc(finalK * NOF_MESSAGES);
++  codewords     = srsran_vec_u8_malloc(finalN * NOF_MESSAGES);
++  symbols       = srsran_vec_i8_malloc(finalN * NOF_MESSAGES);
++  if (!messages_true || !messages_sim || !codewords || !symbols) {
++    perror("malloc");
++    exit(-1);
++  }
++
++  sprintf(file_name, "examplesBG%d.dat", base_graph + 1);
++  printf("\nReading example file %s...\n", file_name);
++  ex_file = fopen(file_name, "re");
++  if (ex_file == NULL) {
++    perror("fopen");
++    exit(-1);
++  }
++
++  get_examples(messages_true, codewords, ex_file);
++
++  fclose(ex_file);
++
++  for (i = 0; i < NOF_MESSAGES * finalN; i++) {
++    symbols[i] = codewords[i] == 1 ? -2 : 2;
++  }
++
++  printf("\nDecoding test messages...\n");
++  struct timeval t[3];
++  double         elapsed_time = 0;
++
++  for (j = 0; j < NOF_MESSAGES; j++) {
++    printf("  codeword %d\n", j);
++    gettimeofday(&t[1], NULL);
++    for (l = 0; l < nof_reps; l++) {
++      srsran_ldpc_decoder_decode_c(&decoder, symbols + j * finalN, messages_sim + j * finalK, finalN);
++    }
++
++    gettimeofday(&t[2], NULL);
++    get_time_interval(t);
++    elapsed_time += t[0].tv_sec + 1e-6 * t[0].tv_usec;
++  }
++  printf("Elapsed time: %e s\n", elapsed_time);
++
++  printf("\nVerifing results...\n");
++  for (i = 0; i < NOF_MESSAGES * finalK; i++) {
++    if ((1U & messages_sim[i]) != (1U & messages_true[i])) {
++      perror("wrong!!");
++      exit(-1);
++    }
++  }
++
++  printf("Estimated throughput:\n  %e word/s\n  %e bit/s (information)\n  %e bit/s (encoded)\n",
++         NOF_MESSAGES / elapsed_time,
++         NOF_MESSAGES * finalK / elapsed_time,
++         NOF_MESSAGES * finalN / elapsed_time);
++
++  printf("\nTest completed successfully!\n\n");
++
++  free(symbols);
++  free(codewords);
++  free(messages_sim);
++  free(messages_true);
++  srsran_ldpc_decoder_free(&decoder);
++}
+diff --git a/lib/src/phy/phch/sch_nr.c b/lib/src/phy/phch/sch_nr.c
+index cab53cd49..0d20a7b31 100644
+--- a/lib/src/phy/phch/sch_nr.c
++++ b/lib/src/phy/phch/sch_nr.c
+@@ -20,6 +20,9 @@
+  */
+ 
+ #include "srsran/phy/phch/sch_nr.h"
++#include <stdlib.h>
++#include <string.h>
++#include "srsran/phy/utils/slot_trace.h"
+ #include "srsran/config.h"
+ #include "srsran/phy/fec/cbsegm.h"
+ #include "srsran/phy/fec/ldpc/ldpc_common.h"
+@@ -230,7 +233,7 @@ int srsran_sch_nr_init_tx(srsran_sch_nr_t* q, const srsran_sch_nr_args_t* args)
+     encoder_type = SRSRAN_LDPC_ENCODER_AVX512;
+   }
+ #else // LV_HAVE_AVX512
+-#ifdef LV_HAVE_AVX2
++#if defined(LV_HAVE_AVX2) || defined(SRSRAN_LDPC_SIMDE)
+   if (!args->disable_simd) {
+     encoder_type = SRSRAN_LDPC_ENCODER_AVX2;
+   }
+@@ -295,12 +298,37 @@ int srsran_sch_nr_init_rx(srsran_sch_nr_t* q, const srsran_sch_nr_args_t* args)
+     decoder_type = args->decoder_use_flooded ? SRSRAN_LDPC_DECODER_C_AVX512_FLOOD : SRSRAN_LDPC_DECODER_C_AVX512;
+   }
+ #else // LV_HAVE_AVX512
+-#ifdef LV_HAVE_AVX2
++#if defined(LV_HAVE_AVX2) || defined(SRSRAN_LDPC_SIMDE)
+   if (!args->disable_simd) {
+     decoder_type = args->decoder_use_flooded ? SRSRAN_LDPC_DECODER_C_AVX2_FLOOD : SRSRAN_LDPC_DECODER_C_AVX2;
+   }
+ #endif // LV_HAVE_AVX2
+ #endif // LV_HAVE_AVX512
++#ifdef HAVE_NEON
++  // Local port: native NEON layered decoder (ldpc_dec_c_neon.c) is the default on aarch64.
++  if (!args->disable_simd && !args->decoder_use_flooded) {
++    decoder_type = SRSRAN_LDPC_DECODER_C_NEON;
++  }
++#endif // HAVE_NEON
++  {
++    // Local A/B knob: SRSRAN_LDPC_DECODER=c|simde|neon
++    const char* sel = getenv("SRSRAN_LDPC_DECODER");
++    if (sel != NULL) {
++      if (strcmp(sel, "c") == 0) {
++        decoder_type = SRSRAN_LDPC_DECODER_C;
++      }
++#if defined(LV_HAVE_AVX2) || defined(SRSRAN_LDPC_SIMDE)
++      if (strcmp(sel, "simde") == 0 || strcmp(sel, "avx2") == 0) {
++        decoder_type = SRSRAN_LDPC_DECODER_C_AVX2;
++      }
++#endif
++#ifdef HAVE_NEON
++      if (strcmp(sel, "neon") == 0) {
++        decoder_type = SRSRAN_LDPC_DECODER_C_NEON;
++      }
++#endif
++    }
++  }
+ 
+   // If the scaling factor is not provided use a default value that allows decoding all possible combinations of nPRB
+   // and MCS indexes for all possible MCS tables
+@@ -323,6 +351,13 @@ int srsran_sch_nr_init_rx(srsran_sch_nr_t* q, const srsran_sch_nr_args_t* args)
+     decoder_args.ls                         = ls;
+     decoder_args.scaling_fctr               = scaling_factor;
+     decoder_args.max_nof_iter               = args->max_nof_iter;
++    {
++      // diagnostic knob: SRSRAN_LDPC_MAX_ITER overrides the LDPC iteration cap (lock-step real-time analysis)
++      const char* st_it__ = getenv("SRSRAN_LDPC_MAX_ITER");
++      if (st_it__ != NULL && atoi(st_it__) > 0) {
++        decoder_args.max_nof_iter = (uint32_t)atoi(st_it__);
++      }
++    }
+ 
+     q->decoder_bg1[ls] = SRSRAN_MEM_ALLOC(srsran_ldpc_decoder_t, 1);
+     if (!q->decoder_bg1[ls]) {
+@@ -647,8 +682,10 @@ static int sch_nr_decode(srsran_sch_nr_t*        q,
+                 tb->rv,
+                 cfg.Qm,
+                 cfg.Nref);
++    const int64_t st_rm0__ = st_now_ns();
+     int n_llr =
+         srsran_ldpc_rm_rx_c(&q->rx_rm, input_ptr, rm_buffer, E, cfg.F, cfg.bg, cfg.Z, tb->rv, tb->mod, cfg.Nref);
++    st_ev("schnr", "RM", 0, ST_US(st_rm0__), E, n_llr);
+     if (n_llr < SRSRAN_SUCCESS) {
+       ERROR("Error in LDPC rate mateching");
+       return SRSRAN_ERROR;
+@@ -661,7 +698,9 @@ static int sch_nr_decode(srsran_sch_nr_t*        q,
+     }
+ 
+     // Decode. if CRC=KO, then ret=0
++    const int64_t st_ld0__ = st_now_ns();
+     int ret = srsran_ldpc_decoder_decode_crc_c(decoder, rm_buffer, q->temp_cb, n_llr, crc);
++    st_ev("schnr", "LDPC", 0, ST_US(st_ld0__), n_llr, (ret == 0) ? -(long long)decoder->max_nof_iter : ret);
+     if (ret < SRSRAN_SUCCESS) {
+       ERROR("Error decoding CB");
+       return SRSRAN_ERROR;

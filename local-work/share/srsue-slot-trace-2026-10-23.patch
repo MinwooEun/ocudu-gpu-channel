@@ -1,0 +1,515 @@
+diff --git a/lib/include/srsran/phy/utils/slot_trace.h b/lib/include/srsran/phy/utils/slot_trace.h
+new file mode 100644
+index 000000000..7e69cf7e6
+--- /dev/null
++++ b/lib/include/srsran/phy/utils/slot_trace.h
+@@ -0,0 +1,58 @@
++/* slot_trace.h -- per-translation-unit CSV trace of per-slot timing for srsUE lock-step analysis.
++ * Enabled by SRSUE_SLOT_TRACE_DIR=<dir>; writes <dir>/<pid>-<tag>.csv with columns t_ns,ev,tti,a,b,c
++ * (t_ns = CLOCK_MONOTONIC, same clock as the broker hop trace). Diagnostic only. */
++#ifndef SRSRAN_SLOT_TRACE_H
++#define SRSRAN_SLOT_TRACE_H
++#include <pthread.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <time.h>
++#include <unistd.h>
++
++static inline int64_t st_now_ns(void)
++{
++  struct timespec ts;
++  clock_gettime(CLOCK_MONOTONIC, &ts);
++  return (int64_t)ts.tv_sec * 1000000000LL + ts.tv_nsec;
++}
++static FILE*          st_f_ __attribute__((unused))    = NULL;
++static pthread_once_t st_once_ __attribute__((unused)) = PTHREAD_ONCE_INIT;
++static const char*    st_tag_ __attribute__((unused))  = "x";
++static void __attribute__((unused)) st_flush_(void)
++{
++  if (st_f_ != NULL) {
++    fflush(st_f_);
++  }
++}
++static void __attribute__((unused)) st_open_(void)
++{
++  const char* d = getenv("SRSUE_SLOT_TRACE_DIR");
++  if (d == NULL || *d == '\0') {
++    return;
++  }
++  char p[1024];
++  snprintf(p, sizeof(p), "%s/%d-%s.csv", d, (int)getpid(), st_tag_);
++  st_f_ = fopen(p, "w");
++  if (st_f_ == NULL) {
++    return;
++  }
++  setvbuf(st_f_, NULL, _IOFBF, 1 << 20);
++  fprintf(st_f_, "t_ns,ev,tti,a,b,c\n");
++  atexit(st_flush_);
++}
++static inline void st_ev(const char* tag, const char* ev, uint32_t tti, long long a, long long b, long long c)
++{
++  static unsigned long n = 0; /* benign race: only paces fflush */
++  st_tag_                = tag;
++  pthread_once(&st_once_, st_open_);
++  if (st_f_ == NULL) {
++    return;
++  }
++  fprintf(st_f_, "%lld,%s,%u,%lld,%lld,%lld\n", (long long)st_now_ns(), ev, tti, a, b, c);
++  if ((++n & 1023) == 0) {
++    fflush(st_f_);
++  }
++}
++#define ST_US(t0) ((long long)((st_now_ns() - (t0)) / 1000))
++#endif
+diff --git a/lib/src/phy/phch/pdsch_nr.c b/lib/src/phy/phch/pdsch_nr.c
+index 9fc0be4fa..3b7811b65 100644
+--- a/lib/src/phy/phch/pdsch_nr.c
++++ b/lib/src/phy/phch/pdsch_nr.c
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include "srsran/phy/phch/pdsch_nr.h"
++#include "srsran/phy/utils/slot_trace.h"
+ #include "srsran/phy/ch_estimation/csi_rs.h"
+ #include "srsran/phy/common/phy_common_nr.h"
+ #include "srsran/phy/mimo/layermap.h"
+@@ -453,9 +454,11 @@ static inline int pdsch_nr_decode_codeword(srsran_pdsch_nr_t*         q,
+ 
+   // Demodulation
+   int8_t* llr = (int8_t*)q->b[tb->cw_idx];
++  const int64_t st_dm0__ = st_now_ns();
+   if (srsran_demod_soft_demodulate_b(tb->mod, q->d[tb->cw_idx], llr, tb->nof_re)) {
+     return SRSRAN_ERROR;
+   }
++  st_ev("pdsch", "DEMOD", 0, ST_US(st_dm0__), tb->nof_re, tb->mod);
+ 
+   // EVM
+   if (q->evm_buffer != NULL) {
+@@ -475,7 +478,10 @@ static inline int pdsch_nr_decode_codeword(srsran_pdsch_nr_t*         q,
+   }
+ 
+   // Decode SCH
+-  if (srsran_dlsch_nr_decode(&q->sch, &cfg->sch_cfg, tb, llr, &res->tb[tb->cw_idx]) < SRSRAN_SUCCESS) {
++  const int64_t st_sch0__ = st_now_ns();
++  const int     st_schret__ = srsran_dlsch_nr_decode(&q->sch, &cfg->sch_cfg, tb, llr, &res->tb[tb->cw_idx]);
++  st_ev("pdsch", "SCH", 0, ST_US(st_sch0__), tb->nof_bits, tb->tbs);
++  if (st_schret__ < SRSRAN_SUCCESS) {
+     ERROR("Error in DL-SCH encoding");
+     return SRSRAN_ERROR;
+   }
+@@ -519,6 +525,7 @@ int srsran_pdsch_nr_decode(srsran_pdsch_nr_t*           q,
+   }
+ 
+   // Demapping from virtual to physical resource blocks
++  const int64_t st_eq0__ = st_now_ns();
+   uint32_t nof_re_get = srsran_pdsch_nr_get(q, cfg, grant, q->x[0], sf_symbols[0]);
+   if (nof_re_get != nof_re) {
+     ERROR("Inconsistent number of RE (%d!=%d)", nof_re_get, nof_re);
+@@ -538,6 +545,7 @@ int srsran_pdsch_nr_decode(srsran_pdsch_nr_t*           q,
+   // Antenna port demapping
+   // ... Not implemented
+   srsran_predecoding_single(q->x[0], channel->ce[0][0], q->d[0], NULL, nof_re, 1.0f, channel->noise_estimate);
++  st_ev("pdsch", "EQ", 0, ST_US(st_eq0__), nof_re, 0);
+ 
+   // Layer demapping
+   if (grant->nof_layers > 1) {
+diff --git a/lib/src/phy/phch/sch_nr.c b/lib/src/phy/phch/sch_nr.c
+index cab53cd49..cab59516a 100644
+--- a/lib/src/phy/phch/sch_nr.c
++++ b/lib/src/phy/phch/sch_nr.c
+@@ -20,6 +20,8 @@
+  */
+ 
+ #include "srsran/phy/phch/sch_nr.h"
++#include <stdlib.h>
++#include "srsran/phy/utils/slot_trace.h"
+ #include "srsran/config.h"
+ #include "srsran/phy/fec/cbsegm.h"
+ #include "srsran/phy/fec/ldpc/ldpc_common.h"
+@@ -323,6 +325,13 @@ int srsran_sch_nr_init_rx(srsran_sch_nr_t* q, const srsran_sch_nr_args_t* args)
+     decoder_args.ls                         = ls;
+     decoder_args.scaling_fctr               = scaling_factor;
+     decoder_args.max_nof_iter               = args->max_nof_iter;
++    {
++      // diagnostic knob: SRSRAN_LDPC_MAX_ITER overrides the LDPC iteration cap (lock-step real-time analysis)
++      const char* st_it__ = getenv("SRSRAN_LDPC_MAX_ITER");
++      if (st_it__ != NULL && atoi(st_it__) > 0) {
++        decoder_args.max_nof_iter = (uint32_t)atoi(st_it__);
++      }
++    }
+ 
+     q->decoder_bg1[ls] = SRSRAN_MEM_ALLOC(srsran_ldpc_decoder_t, 1);
+     if (!q->decoder_bg1[ls]) {
+@@ -647,8 +656,10 @@ static int sch_nr_decode(srsran_sch_nr_t*        q,
+                 tb->rv,
+                 cfg.Qm,
+                 cfg.Nref);
++    const int64_t st_rm0__ = st_now_ns();
+     int n_llr =
+         srsran_ldpc_rm_rx_c(&q->rx_rm, input_ptr, rm_buffer, E, cfg.F, cfg.bg, cfg.Z, tb->rv, tb->mod, cfg.Nref);
++    st_ev("schnr", "RM", 0, ST_US(st_rm0__), E, n_llr);
+     if (n_llr < SRSRAN_SUCCESS) {
+       ERROR("Error in LDPC rate mateching");
+       return SRSRAN_ERROR;
+@@ -661,7 +672,9 @@ static int sch_nr_decode(srsran_sch_nr_t*        q,
+     }
+ 
+     // Decode. if CRC=KO, then ret=0
++    const int64_t st_ld0__ = st_now_ns();
+     int ret = srsran_ldpc_decoder_decode_crc_c(decoder, rm_buffer, q->temp_cb, n_llr, crc);
++    st_ev("schnr", "LDPC", 0, ST_US(st_ld0__), n_llr, (ret == 0) ? -(long long)decoder->max_nof_iter : ret);
+     if (ret < SRSRAN_SUCCESS) {
+       ERROR("Error decoding CB");
+       return SRSRAN_ERROR;
+diff --git a/lib/src/phy/rf/rf_zmq_imp_tx.c b/lib/src/phy/rf/rf_zmq_imp_tx.c
+index 43f94f26d..3116a6845 100644
+--- a/lib/src/phy/rf/rf_zmq_imp_tx.c
++++ b/lib/src/phy/rf/rf_zmq_imp_tx.c
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include "rf_zmq_imp_trx.h"
++#include "srsran/phy/utils/slot_trace.h"
+ #include <inttypes.h>
+ #include <srsran/config.h>
+ #include <srsran/phy/utils/vector.h>
+@@ -112,7 +113,9 @@ static int _rf_zmq_tx_baseband(rf_zmq_tx_t* q, cf_t* buffer, uint32_t nsamples)
+     // Receive Transmit request is socket type is REPLY
+     if (q->socket_type == ZMQ_REP) {
+       uint8_t dummy;
++      const int64_t st_r0__ = st_now_ns();
+       n = zmq_recv(q->sock, &dummy, sizeof(dummy), 0);
++      st_ev("zmqtx", "ZREQ", 0, ST_US(st_r0__), (long long)q->nsamples, (buffer == NULL || buffer == q->zeros));
+       if (n < 0) {
+         if (rf_zmq_handle_error(q->id, "tx request receive")) {
+           n = SRSRAN_ERROR;
+@@ -139,7 +142,9 @@ static int _rf_zmq_tx_baseband(rf_zmq_tx_t* q, cf_t* buffer, uint32_t nsamples)
+ 
+     // Send base-band if request was received
+     if (n > 0) {
++      const int64_t st_s0__ = st_now_ns();
+       n = zmq_send(q->sock, buf, (size_t)sample_sz * nsamples, 0);
++      st_ev("zmqtx", "ZSND", 0, ST_US(st_s0__), (long long)nsamples, (long long)q->nsamples + nsamples);
+       if (n < 0) {
+         if (rf_zmq_handle_error(q->id, "tx baseband send")) {
+           n = SRSRAN_ERROR;
+diff --git a/lib/src/phy/ue/ue_dl_nr.c b/lib/src/phy/ue/ue_dl_nr.c
+index ecf9807eb..31373177f 100644
+--- a/lib/src/phy/ue/ue_dl_nr.c
++++ b/lib/src/phy/ue/ue_dl_nr.c
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include "srsran/phy/ue/ue_dl_nr.h"
++#include "srsran/phy/utils/slot_trace.h"
+ #include <complex.h>
+ 
+ #define UE_DL_NR_PDCCH_CORR_DEFAULT_THR 0.5f
+@@ -578,13 +579,17 @@ int srsran_ue_dl_nr_decode_pdsch(srsran_ue_dl_nr_t*         q,
+                                  const srsran_sch_cfg_nr_t* cfg,
+                                  srsran_pdsch_res_nr_t*     res)
+ {
++  const int64_t st_ce0__ = st_now_ns();
+   if (srsran_dmrs_sch_estimate(&q->dmrs_pdsch, slot, cfg, &cfg->grant, q->sf_symbols[0], &q->chest) < SRSRAN_SUCCESS) {
+     return SRSRAN_ERROR;
+   }
++  st_ev("uedl", "CHEST", slot->idx, ST_US(st_ce0__), cfg->grant.nof_prb, 0);
+ 
++  const int64_t st_pd0__ = st_now_ns();
+   if (srsran_pdsch_nr_decode(&q->pdsch, cfg, &cfg->grant, &q->chest, q->sf_symbols, res) < SRSRAN_SUCCESS) {
+     return SRSRAN_ERROR;
+   }
++  st_ev("uedl", "PDEC", slot->idx, ST_US(st_pd0__), cfg->grant.nof_prb, (long long)(res->tb[0].avg_iter * 10));
+ 
+   if (SRSRAN_DEBUG_ENABLED && get_srsran_verbose_level() >= SRSRAN_VERBOSE_INFO && !is_handler_registered()) {
+     char str[512];
+diff --git a/srsue/src/phy/nr/cc_worker.cc b/srsue/src/phy/nr/cc_worker.cc
+index 4c69d5dc5..33f18399b 100644
+--- a/srsue/src/phy/nr/cc_worker.cc
++++ b/srsue/src/phy/nr/cc_worker.cc
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include "srsue/hdr/phy/nr/cc_worker.h"
++#include "srsran/phy/utils/slot_trace.h"
+ #include "srsran/common/band_helper.h"
+ #include "srsran/common/buffer_pool.h"
+ #include "srsran/common/string_helpers.h"
+@@ -272,7 +273,10 @@ bool cc_worker::decode_pdsch_dl()
+   pdsch_cfg.grant.tb[0].softbuffer.rx = dl_action.tb.softbuffer;
+ 
+   // Decode actual PDSCH transmission
+-  if (srsran_ue_dl_nr_decode_pdsch(&ue_dl, &dl_slot_cfg, &pdsch_cfg, &pdsch_res) < SRSRAN_SUCCESS) {
++  const int64_t st_pd0__  = st_now_ns();
++  const int     st_pdret__ = srsran_ue_dl_nr_decode_pdsch(&ue_dl, &dl_slot_cfg, &pdsch_cfg, &pdsch_res);
++  st_ev("ccw", pdsch_res.tb[0].crc ? "PDok" : "PDnok", dl_slot_cfg.idx, pdsch_cfg.grant.tb[0].tbs, pdsch_cfg.grant.tb[0].mcs + 100 * pdsch_cfg.grant.nof_prb, ST_US(st_pd0__));
++  if (st_pdret__ < SRSRAN_SUCCESS) {
+     ERROR("Error decoding PDSCH");
+     return false;
+   }
+@@ -517,12 +521,15 @@ bool cc_worker::work_dl()
+     return true;
+   }
+ 
++  const int64_t st_m0__ = st_now_ns();
+   // Measure CSI
+   if (not measure_csi()) {
+     logger.error("Error measuring, aborting work DL");
+     return false;
+   }
+ 
++  st_ev("ccw", "CSI", dl_slot_cfg.idx, ST_US(st_m0__), 0, 0);
++
+   // Compensate CFO from TRS measurements
+   if (std::isnormal(phy.args.enable_worker_cfo)) {
+     float dl_cfo_hz   = phy.get_dl_cfo();
+@@ -535,13 +542,17 @@ bool cc_worker::work_dl()
+   }
+ 
+   // Run FFT
++  const int64_t st_f0__ = st_now_ns();
+   srsran_ue_dl_nr_estimate_fft(&ue_dl, &dl_slot_cfg);
++  st_ev("ccw", "FFT", dl_slot_cfg.idx, ST_US(st_f0__), 0, 0);
+ 
+   // Decode PDCCH DL first
++  const int64_t st_c0__ = st_now_ns();
+   decode_pdcch_dl();
+ 
+   // Decode PDCCH UL after
+   decode_pdcch_ul();
++  st_ev("ccw", "PDCCH", dl_slot_cfg.idx, ST_US(st_c0__), 0, 0);
+ 
+   // Decode PDSCH
+   if (not decode_pdsch_dl()) {
+@@ -640,7 +651,10 @@ bool cc_worker::work_ul()
+     data.uci                    = uci_data.value;
+ 
+     // Encode PUSCH transmission
+-    if (srsran_ue_ul_nr_encode_pusch(&ue_ul, &ul_slot_cfg, &pusch_cfg, &data) < SRSRAN_SUCCESS) {
++    const int64_t st_pu0__  = st_now_ns();
++    const int     st_puret__ = srsran_ue_ul_nr_encode_pusch(&ue_ul, &ul_slot_cfg, &pusch_cfg, &data);
++    st_ev("ccw", "PU", ul_slot_cfg.idx, pusch_cfg.grant.tb[0].tbs, pusch_cfg.grant.tb[0].mcs + 100 * pusch_cfg.grant.nof_prb, ST_US(st_pu0__));
++    if (st_puret__ < SRSRAN_SUCCESS) {
+       ERROR("Encoding PUSCH");
+       return false;
+     }
+diff --git a/srsue/src/phy/nr/sf_worker.cc b/srsue/src/phy/nr/sf_worker.cc
+index fbba2d027..3c6364872 100644
+--- a/srsue/src/phy/nr/sf_worker.cc
++++ b/srsue/src/phy/nr/sf_worker.cc
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include "srsue/hdr/phy/nr/sf_worker.h"
++#include "srsran/phy/utils/slot_trace.h"
+ #include "srsran/common/standard_streams.h"
+ 
+ #ifdef ENABLE_GUI
+@@ -84,15 +85,22 @@ void sf_worker::set_context(const srsran::phy_common_interface::worker_context_t
+ void sf_worker::work_imp()
+ {
+   srsran::rf_buffer_t tx_buffer = {};
++  const uint32_t      st_tti__  = context.sf_idx;
++  int64_t             st_t__    = st_now_ns();
++  st_ev("worker", "WS", st_tti__, get_id(), 0, 0);
+ 
+   // Perform DL processing
+   for (auto& w : cc_workers) {
+     w->work_dl();
+   }
+ 
++  st_ev("worker", "DL", st_tti__, ST_US(st_t__), 0, 0);
++  st_t__ = st_now_ns();
+   // Align workers, wait for previous workers to finish DL processing before starting UL processing
+   phy_state.dl_ul_semaphore.wait(this);
+   phy_state.dl_ul_semaphore.release();
++  st_ev("worker", "DU", st_tti__, ST_US(st_t__), 0, 0);
++  st_t__ = st_now_ns();
+ 
+   // Check if PRACH is available
+   if (prach_ptr != nullptr) {
+@@ -102,6 +110,7 @@ void sf_worker::work_imp()
+ 
+     // Transmit NR PRACH
+     common.worker_end(context, true, tx_buffer);
++    st_ev("worker", "WEp", st_tti__, ST_US(st_t__), 0, 0);
+ 
+     // Reset PRACH pointer
+     prach_ptr = nullptr;
+@@ -119,9 +128,12 @@ void sf_worker::work_imp()
+     tx_buffer.set(i + phy_state.args.rf_channel_offset, cc_workers[i]->get_tx_buffer(0));
+   }
+   tx_buffer.set_nof_samples(sf_len);
++  st_ev("worker", "UL", st_tti__, ST_US(st_t__), 0, 0);
++  st_t__ = st_now_ns();
+ 
+   // Always call worker_end before returning
+   common.worker_end(context, true, tx_buffer);
++  st_ev("worker", "WE", st_tti__, ST_US(st_t__), 0, 0);
+ 
+   // Tell the plotting thread to draw the plots
+ #ifdef ENABLE_GUI
+diff --git a/srsue/src/phy/phy_common.cc b/srsue/src/phy/phy_common.cc
+index 88f290732..899edf065 100644
+--- a/srsue/src/phy/phy_common.cc
++++ b/srsue/src/phy/phy_common.cc
+@@ -24,6 +24,7 @@
+ 
+ #include "srsran/srsran.h"
+ #include "srsue/hdr/phy/phy_common.h"
++#include "srsran/phy/utils/slot_trace.h"
+ 
+ #define Error(fmt, ...)                                                                                                \
+   if (SRSRAN_DEBUG_ENABLED)                                                                                            \
+@@ -553,7 +554,9 @@ bool phy_common::get_dl_pending_ack(srsran_ul_sf_cfg_t* sf, uint32_t cc_idx, srs
+ void phy_common::worker_end(const worker_context_t& w_ctx, const bool& tx_enable, srsran::rf_buffer_t& buffer)
+ {
+   // Wait for the green light to transmit in the current TTI
++  const int64_t st_s0__ = st_now_ns();
+   semaphore.wait(w_ctx.worker_ptr);
++  st_ev("phyc", "SEM", w_ctx.sf_idx, ST_US(st_s0__), w_ctx.last, tx_enable);
+ 
+   // For each channel set or combine baseband
+   if (tx_enable) {
+@@ -595,7 +598,9 @@ void phy_common::worker_end(const worker_context_t& w_ctx, const bool& tx_enable
+     }
+ 
+     // Actual baseband transmission
++    const int64_t st_x0__ = st_now_ns();
+     radio_h->tx(tx_buffer, tx_time);
++    st_ev("phyc", "TX", w_ctx.sf_idx, ST_US(st_x0__), tx_buffer.get_nof_samples(), 1);
+ 
+   } else {
+     if (radio_h->is_continuous_tx()) {
+@@ -610,7 +615,9 @@ void phy_common::worker_end(const worker_context_t& w_ctx, const bool& tx_enable
+           }
+ 
+           zeros_multi.set_nof_samples(buffer.get_nof_samples());
++          const int64_t st_z0__ = st_now_ns();
+           radio_h->tx(zeros_multi, tx_time);
++          st_ev("phyc", "TX", w_ctx.sf_idx, ST_US(st_z0__), buffer.get_nof_samples(), 0);
+         }
+       }
+     } else {
+diff --git a/srsue/src/phy/sync.cc b/srsue/src/phy/sync.cc
+index c62aa6d5c..0d300fcd5 100644
+--- a/srsue/src/phy/sync.cc
++++ b/srsue/src/phy/sync.cc
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include "srsue/hdr/phy/sync.h"
++#include "srsran/phy/utils/slot_trace.h"
+ #include "srsran/common/standard_streams.h"
+ #include "srsran/phy/channel/channel.h"
+ #include "srsran/srsran.h"
+@@ -569,6 +570,7 @@ void sync::run_camping_in_sync_state(lte::sf_worker*      lte_worker,
+ 
+     // NR worker needs to be launched first, phy_common::worker_end expects first the NR worker and the LTE worker.
+     worker_com->semaphore.push(nr_worker);
++    st_ev("sync", "START", tti, 0, 0, 0);
+     nr_worker_pool->start_worker(nr_worker);
+   }
+ 
+@@ -589,6 +591,7 @@ void sync::run_camping_in_sync_state(lte::sf_worker*      lte_worker,
+ }
+ void sync::run_camping_state()
+ {
++  const int64_t       st_ww0__    = st_now_ns();
+   lte::sf_worker*     lte_worker  = lte_worker_pool->wait_worker(tti);
+   srsran::rf_buffer_t sync_buffer = {};
+ 
+@@ -607,6 +610,8 @@ void sync::run_camping_state()
+     }
+   }
+ 
++  st_ev("sync", "WW", tti, ST_US(st_ww0__), 0, 0);
++
+   // Map carrier/antenna buffers to worker buffers
+   uint32_t cc_idx = 0;
+   for (uint32_t lte_cc_idx = 0; lte_cc_idx < worker_com->args->nof_lte_carriers; lte_cc_idx++, cc_idx++) {
+@@ -627,7 +632,9 @@ void sync::run_camping_state()
+   }
+ 
+   // Primary Cell (PCell) Synchronization
++  const int64_t st_rx0__ = st_now_ns();
+   int sync_result = srsran_ue_sync_zerocopy(&ue_sync, sync_buffer.to_cf_t(), lte_worker->get_buffer_len());
++  st_ev("sync", "RX", tti, ST_US(st_rx0__), sync_result, 0);
+   cfo             = srsran_ue_sync_get_cfo(&ue_sync);
+   sfo             = srsran_ue_sync_get_sfo(&ue_sync);
+ 
+diff --git a/srsue/src/phy/sync_sa.cc b/srsue/src/phy/sync_sa.cc
+index 5529aaf79..3351bd1a2 100644
+--- a/srsue/src/phy/sync_sa.cc
++++ b/srsue/src/phy/sync_sa.cc
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include "srsue/hdr/phy/nr/sync_sa.h"
++#include "srsran/phy/utils/slot_trace.h"
+ #include "srsran/radio/rf_buffer.h"
+ 
+ namespace srsue {
+@@ -295,17 +296,22 @@ void sync_sa::run_state_sfn_sync()
+ 
+ void sync_sa::run_state_cell_camping()
+ {
++  const int64_t  st_ww0__  = st_now_ns();
+   nr::sf_worker* nr_worker = workers.wait_worker(tti);
+   if (nr_worker == nullptr) {
+     running = false;
+     return;
+   }
++  st_ev("sync", "WW", tti, ST_US(st_ww0__), 0, 0);
+ 
+   // Receive samples
+   srsran::rf_buffer_t rf_buffer = {};
+   rf_buffer.set_nof_samples(slot_sz);
+   rf_buffer.set(0, nr_worker->get_buffer(0, 0));
+-  if (not slot_synchronizer.run_camping(rf_buffer, last_rx_time)) {
++  const int64_t st_rx0__ = st_now_ns();
++  const bool    st_ok__  = slot_synchronizer.run_camping(rf_buffer, last_rx_time);
++  st_ev("sync", "RX", tti, ST_US(st_rx0__), st_ok__, 0);
++  if (not st_ok__) {
+     logger.error("SYNC: detected out-of-sync... skipping slot ...");
+     is_pending_tx_end = true;
+     nr_worker->release();
+@@ -324,6 +330,7 @@ void sync_sa::run_state_cell_camping()
+   nr_worker->set_context(context);
+ 
+   // NR worker needs to be launched first, phy_common::worker_end expects first the NR worker and the LTE worker.
++  st_ev("sync", "START", tti, 0, 0, 0);
+   tti_semaphore.push(nr_worker);
+   workers.start_worker(nr_worker);
+ 
+@@ -358,7 +365,9 @@ void sync_sa::worker_end(const srsran::phy_common_interface::worker_context_t& w
+                          srsran::rf_buffer_t&                                  tx_buffer)
+ {
+   // Wait for the green light to transmit in the current TTI
++  const int64_t st_s0__ = st_now_ns();
+   tti_semaphore.wait(w_ctx.worker_ptr);
++  st_ev("sync", "SEM", w_ctx.sf_idx, ST_US(st_s0__), w_ctx.last, tx_enable);
+ 
+   // Add current time alignment
+   srsran::rf_timestamp_t tx_time = w_ctx.tx_time; // get transmit time from the last worker
+@@ -367,7 +376,9 @@ void sync_sa::worker_end(const srsran::phy_common_interface::worker_context_t& w
+   // Check if any worker had a transmission
+   if (tx_enable) {
+     // Actual baseband transmission
++    const int64_t st_x0__ = st_now_ns();
+     radio->tx(tx_buffer, tx_time);
++    st_ev("sync", "TX", w_ctx.sf_idx, ST_US(st_x0__), tx_buffer.get_nof_samples(), 1);
+   } else {
+     if (radio->is_continuous_tx()) {
+       if (is_pending_tx_end) {
+@@ -377,7 +388,9 @@ void sync_sa::worker_end(const srsran::phy_common_interface::worker_context_t& w
+         if (!radio->get_is_start_of_burst()) {
+           srsran::rf_buffer_t zeros_multi;
+           zeros_multi.set_nof_samples(tx_buffer.get_nof_samples());
++          const int64_t st_z0__ = st_now_ns();
+           radio->tx(zeros_multi, tx_time);
++          st_ev("sync", "TX", w_ctx.sf_idx, ST_US(st_z0__), tx_buffer.get_nof_samples(), 0);
+         }
+       }
+     } else {

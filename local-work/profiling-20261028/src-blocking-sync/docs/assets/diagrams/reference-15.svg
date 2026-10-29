@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="background:#0f1420;color:#e7ecf5;--bg:#0f1420;--panel:#1a2233;--ink:#e7ecf5;--muted:#9aa7bd;--edge:#2c3850;--accent:#5db1ff;--warm:#ffb454;--good:#6fd08c;--cell:#0b101a" viewBox="0 0 1000 410" font-family="SF Mono,Menlo,monospace" font-size="12">
+    <defs>
+      <marker id="are" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+        <path d="M0,0 L9,4.5 L0,9 z" fill="#5db1ff"/>
+      </marker>
+    </defs>
+    <rect x="20" y="20" width="960" height="40" rx="4" fill="#1a2233" stroke="#2c3850"/>
+    <text x="500" y="44" fill="#e7ecf5" text-anchor="middle">load into per-thread registers:  i = staged[k·count + idx].i  ·  q = staged[k·count + idx].q</text>
+    <line x1="500" y1="64" x2="500" y2="82" stroke="#5db1ff" marker-end="url(#are)"/>
+    <rect x="20" y="90" width="960" height="240" rx="8" fill="#0b101a" stroke="#5db1ff"/>
+    <text x="500" y="112" fill="#5db1ff" text-anchor="middle">apply_chain():  for step_idx in 0 … step_count − 1:  switch (steps[step_idx].type)</text>
+    <rect x="30" y="130" width="305" height="190" rx="6" fill="#0b101a" stroke="#5db1ff"/>
+    <text x="182" y="150" fill="#5db1ff" text-anchor="middle">Scale</text>
+    <text x="182" y="166" fill="#9aa7bd" text-anchor="middle" font-size="11">path-loss · tdl no-op</text>
+    <line x1="50" y1="180" x2="315" y2="180" stroke="#2c3850"/>
+    <text x="50" y="206" fill="#e7ecf5">i ← step.a · i</text>
+    <text x="50" y="226" fill="#e7ecf5">q ← step.a · q</text>
+    <text x="50" y="266" fill="#9aa7bd" font-size="11">step.a built host-side from</text>
+    <text x="50" y="282" fill="#9aa7bd" font-size="11">gain_db or path_loss_db.</text>
+    <rect x="345" y="130" width="305" height="190" rx="6" fill="#0b101a" stroke="#5db1ff"/>
+    <text x="497" y="150" fill="#5db1ff" text-anchor="middle">Phase  /  CFO</text>
+    <text x="497" y="166" fill="#9aa7bd" text-anchor="middle" font-size="11">sincos + complex multiply</text>
+    <line x1="365" y1="180" x2="630" y2="180" stroke="#2c3850"/>
+    <text x="365" y="200" fill="#e7ecf5">φ = step.a + step.b · idx</text>
+    <text x="365" y="220" fill="#e7ecf5">(c, s) = sincosf(φ)</text>
+    <text x="365" y="244" fill="#e7ecf5">(i, q) ← (i·c − q·s,  i·s + q·c)</text>
+    <text x="365" y="262" fill="#9aa7bd" font-size="11">simultaneous: both use the original (i, q)</text>
+    <text x="365" y="288" fill="#9aa7bd" font-size="11">b = 0  →  static phase rotate.</text>
+    <text x="365" y="304" fill="#9aa7bd" font-size="11">b = 2π·f_cfo / f_s  →  CFO drift.</text>
+    <rect x="660" y="130" width="305" height="190" rx="6" fill="#0b101a" stroke="#5db1ff"/>
+    <text x="812" y="150" fill="#5db1ff" text-anchor="middle">AddNoise  (AWGN)</text>
+    <text x="812" y="166" fill="#9aa7bd" text-anchor="middle" font-size="11">counter-based Philox</text>
+    <line x1="680" y1="180" x2="945" y2="180" stroke="#2c3850"/>
+    <text x="680" y="200" fill="#e7ecf5">rng = Philox4_32_10(</text>
+    <text x="680" y="216" fill="#e7ecf5">  step.seed, step.counter + idx)</text>
+    <text x="680" y="236" fill="#e7ecf5">n = curand_normal2(rng)</text>
+    <text x="680" y="256" fill="#e7ecf5">i ← i + step.a · n.x</text>
+    <text x="680" y="272" fill="#e7ecf5">q ← q + step.a · n.y</text>
+    <text x="680" y="296" fill="#9aa7bd" font-size="11">stateless: same (seed, ctr + idx)</text>
+    <text x="680" y="312" fill="#9aa7bd" font-size="11">→ same noise, every run.</text>
+    <line x1="500" y1="334" x2="500" y2="352" stroke="#5db1ff" marker-end="url(#are)"/>
+    <rect x="20" y="360" width="960" height="40" rx="4" fill="#0b101a" stroke="#5db1ff"/>
+    <text x="500" y="384" fill="#e7ecf5" text-anchor="middle">acc_i += i  ·  acc_q += q       (dst[idx] = (acc_i, acc_q) once all N edges are summed)</text>
+  </svg>

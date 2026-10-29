@@ -1,0 +1,1019 @@
+{
+  "single_cell_only": true,
+  "no_diagnostic_interposer": true,
+  "cpu_sets_match": true,
+  "snapshots": [
+    {
+      "unix_ns": 1791906651949912237,
+      "run_ids": [
+        "20261013T154902Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906780676422518,
+      "run_ids": [
+        "20261013T155148Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906790677531120,
+      "run_ids": [
+        "20261013T155148Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906800678670740,
+      "run_ids": [
+        "20261013T155148Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906810679797336,
+      "run_ids": [
+        "20261013T155148Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906820681175114,
+      "run_ids": [
+        "20261013T155148Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906830682268603,
+      "run_ids": [
+        "20261013T155148Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906840683764710,
+      "run_ids": [
+        "20261013T155148Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906850684923144,
+      "run_ids": [
+        "20261013T155148Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906860685840993,
+      "run_ids": [
+        "20261013T155148Z"
+      ],
+      "processes": [
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906870686852318,
+      "run_ids": [
+        "20261013T155148Z"
+      ],
+      "processes": [
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906880687623821,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906890688700798,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906900689817820,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906910690898944,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906920691996843,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906930693085693,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906940694175708,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906950695269217,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906960696358098,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906970697437333,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906980698542324,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791906990699658015,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907000700749730,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907010701843333,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907020702992855,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907030703892348,
+      "run_ids": [
+        "20261013T155436Z"
+      ],
+      "processes": [
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907040704263100,
+      "run_ids": [],
+      "processes": []
+    },
+    {
+      "unix_ns": 1791907050705078750,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907060706301765,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907070707345436,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907080708418521,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907090709551655,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907100710641645,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907110711718109,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907120712805347,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907130713879796,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907140714986940,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907150716080852,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907160717173652,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907170718253656,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907180719388058,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907190720438131,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "ocudu-gpu-chann",
+          "cpus": "20"
+        },
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907200721214173,
+      "run_ids": [
+        "20261013T155722Z"
+      ],
+      "processes": [
+        {
+          "name": "gnb",
+          "cpus": "0-7"
+        },
+        {
+          "name": "srsue",
+          "cpus": "8-19"
+        }
+      ]
+    },
+    {
+      "unix_ns": 1791907210721565954,
+      "run_ids": [],
+      "processes": []
+    },
+    {
+      "unix_ns": 1791907220721898129,
+      "run_ids": [],
+      "processes": []
+    },
+    {
+      "unix_ns": 1791907230722238595,
+      "run_ids": [],
+      "processes": []
+    }
+  ]
+}
