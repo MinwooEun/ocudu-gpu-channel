@@ -1020,6 +1020,13 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
   if (knobs.ready_workers > 0) ready_queue = std::make_unique<ProducerReadyQueue>(nodes.size());
   // Immutable source -> destination-node map; notify only consumers of this IQ.
   std::vector<std::vector<std::size_t>> consumers(ports.size());
+  std::vector<std::vector<std::size_t>> outgoing(ports.size());
+  for (std::size_t k = 0; k < links.size(); ++k) outgoing[links[k].src_index].push_back(k);
+  std::vector<std::atomic_bool> transport_dirty(ports.size());
+  for (auto& dirty : transport_dirty) dirty.store(true);
+  const auto mark_transport = [&](std::size_t p) {
+    return knobs.multiplex && !transport_dirty[p].exchange(true);
+  };
   for (std::size_t n = 0; n < nodes.size(); ++n) {
     for (const auto k : nodes[n].incoming) {
       auto& list = consumers[links[k].src_index];
@@ -1033,10 +1040,8 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
     std::uint64_t min_cursor = dev.tx_ring.next_sequence();
     bool has_consumer = false;
     bool has_outgoing = false;
-    for (const auto& link : links) {
-      if (link.src_index != d) {
-        continue;
-      }
+    for (const auto k : outgoing[d]) {
+      const auto& link = links[k];
       has_outgoing = true;
       if (!link.cursor_init.load()) {
         min_cursor = dev.tx_ring.earliest_sequence();
@@ -1234,7 +1239,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         bool room_stall_reported = false;
         auto next_room_report = t_room_start + kStallReportInterval;
         while (!stop_requested.load()) {
-          const auto observed = ready_queue ? ready_queue->generation(n) : 0;
+          const auto observed = ready_queue ? ready_queue->generation(n, ProducerReadyQueue::Event::Room) : 0;
           room = node.batch;
           for (const std::size_t r : node.rx_ports) {
             room = std::min(room, rx_headroom(*ports[r]));
@@ -1249,7 +1254,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
             room_stall_reported = true;
             next_room_report = now + kStallReportInterval;
           }
-          if (ready_queue) co_await ready_queue->wait(n, observed, next_room_report);
+          if (ready_queue) co_await ready_queue->wait(n, observed, next_room_report, ProducerReadyQueue::Event::Room);
           else wait_tick(knobs, t_room_start);
         }
         // Only a genuine resume clears; a stop request is a shutdown, not
@@ -1490,7 +1495,9 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         }
         node_sample += count;
 
-        transport_wakeup.notify(); // Consumed source IQ releases puller room.
+        bool wake_tx = false;
+        for (const auto k : incoming) wake_tx = mark_transport(links[k].src_index) || wake_tx;
+        if (wake_tx) transport_wakeup.notify();
 
         // (G) Throttle: cap the production cadence at the node sample rate so
         // the lock-step radio runs at real time, not faster. The pacer refuses
@@ -1531,7 +1538,9 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         const double push_us =
             std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t_push_start).count();
         trace.add(HopEvent::ProducePushed, count);
-        transport_wakeup.notify(); // A held REP request may now have its row.
+        bool wake_rx = false;
+        for (const auto p : node.rx_ports) wake_rx = mark_transport(p) || wake_rx;
+        if (wake_rx) transport_wakeup.notify();
 
         store_us(diag.stage_us_bits[kProducerStageRoom], room_us);
         store_us(diag.stage_us_bits[kProducerStageAlign], align_us);
@@ -1634,7 +1643,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
         if (take == 0) {
           break; // stop requested while waiting for a row
         }
-        if (ready_queue && in_ring.empty()) ready_queue->notify(port.node_index);
+        if (ready_queue && in_ring.empty()) ready_queue->notify(port.node_index, ProducerReadyQueue::Event::Room);
         trace.add(HopEvent::RepRowPopped, take);
         const auto t_send_start = std::chrono::steady_clock::now();
         const double pop_us =
@@ -1658,7 +1667,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
           port.rx_ring.discard_before(port.rx_cursor);
           port.rx_slots.pop_front();
         }
-        if (ready_queue && !in_ring.empty()) ready_queue->notify(port.node_index);
+        if (ready_queue && !in_ring.empty()) ready_queue->notify(port.node_index, ProducerReadyQueue::Event::Room);
         const double send_us =
             std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t_send_start).count();
         trace.add(HopEvent::RepReplySent, take);
@@ -1707,12 +1716,15 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
       for (const auto& port : ports) states.push_back(std::make_unique<State>(*port));
       std::vector<zmq_pollitem_t> poll_items;
       poll_items.reserve(1 + 2 * ports.size());
+      std::vector<std::size_t> poll_ports;
+      poll_ports.reserve(1 + 2 * ports.size());
       while (!stop_requested.load()) {
         bool progressed = false;
         // Drain BEFORE checking rings. Events during/after the check stay in
         // eventfd and force the following poll to return, even before it starts.
         transport_wakeup.drain();
         for (std::size_t p = 0; p < ports.size(); ++p) {
+          if (!transport_dirty[p].exchange(false)) continue;
           auto& port = *ports[p];
           auto& state = *states[p];
           auto& pull = puller_diag[p];
@@ -1740,7 +1752,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
                 state.pending_counted = false;
                 zmq_msg_close(&state.held);
                 zmq_msg_init(&state.held);
-                progressed = true;
+                progressed = true; transport_dirty[p].store(true);
                 // Recompute room after the push before issuing another request.
                 state.room_for_request = tx_headroom(p) >= port.batch;
               } else {
@@ -1758,7 +1770,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               if (send_request(port.tx_req.get(), ZMQ_DONTWAIT)) {
                 state.outstanding = true;
                 puller_trace[p].add(HopEvent::PullReqSent, 0);
-                progressed = true;
+                progressed = true; transport_dirty[p].store(true);
               }
             }
             if (state.outstanding) {
@@ -1773,7 +1785,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
                 state.pending_data = knobs.fewer_copies
                     ? static_cast<const IqSample*>(zmq_msg_data(&state.held)) : state.receive.data();
                 puller_trace[p].add(HopEvent::PullReplyRecv, samples);
-                progressed = true;
+                progressed = true; transport_dirty[p].store(true);
               }
             }
             if (!state.outstanding && !state.room_for_request && state.pending == 0)
@@ -1789,7 +1801,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               store_us(rep.stage_us_bits[kRepStageWaitReq],
                        std::chrono::duration<double, std::micro>(state.row_start - state.request_start).count());
               rep_trace[p].add(HopEvent::RepReqRecv, 0);
-              progressed = true;
+              progressed = true; transport_dirty[p].store(true);
             } else if (zmq_errno() != EAGAIN && zmq_errno() != EINTR) {
               throw std::runtime_error(std::string("rx request failed: ") + zmq_strerror(zmq_errno()));
             }
@@ -1811,7 +1823,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               }
             }
             if (state.take > 0) {
-              if (state.in_ring.empty()) ready_queue->notify(port.node_index);
+              if (state.in_ring.empty()) ready_queue->notify(port.node_index, ProducerReadyQueue::Event::Room);
               state.reply = state.in_ring.empty()
                   ? std::span<const IqSample>(state.reply_buffer.data(), state.take) : state.in_ring;
               rep_trace[p].add(HopEvent::RepRowPopped, state.take);
@@ -1820,7 +1832,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
                        std::chrono::duration<double, std::micro>(state.send_start - state.row_start).count());
               append_capture(port.rx_capture, port.capture_limit, port.capture_skip,
                              port.rx_wire_samples, state.reply.data(), state.take);
-              progressed = true;
+              progressed = true; transport_dirty[p].store(true);
             }
           }
           if (state.take > 0) {
@@ -1833,7 +1845,7 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
                   port.rx_ring.discard_before(port.rx_cursor);
                   port.rx_slots.pop_front();
                 }
-                ready_queue->notify(port.node_index);
+                ready_queue->notify(port.node_index, ProducerReadyQueue::Event::Room);
               }
               rep_trace[p].add(HopEvent::RepReplySent, state.take);
               store_us(rep.stage_us_bits[kRepStageSend],
@@ -1846,27 +1858,35 @@ BrokerStats Broker::run(std::chrono::milliseconds duration)
               state.reply = {};
               state.request_accepted = false;
               state.request_start = std::chrono::steady_clock::now();
-              progressed = true;
+              progressed = true; transport_dirty[p].store(true);
             }
           }
         }
         if (progressed) continue;
         poll_items.clear();
+        poll_ports.clear();
+        poll_ports.push_back(ports.size()); // eventfd has no port.
+        const auto add_poll = [&](void* socket, short events, std::size_t p) {
+          poll_items.push_back({socket, 0, events, 0});
+          poll_ports.push_back(p);
+        };
         poll_items.push_back({nullptr, transport_wakeup.fd(), ZMQ_POLLIN, 0});
         for (std::size_t p = 0; p < ports.size(); ++p) {
           const auto& port = *ports[p];
           const auto& state = *states[p];
           if (port.tx_port >= 0 && state.pending == 0) {
-            if (state.outstanding) poll_items.push_back({port.tx_req.get(), 0, ZMQ_POLLIN, 0});
-            else if (state.room_for_request) poll_items.push_back({port.tx_req.get(), 0, ZMQ_POLLOUT, 0});
+            if (state.outstanding) add_poll(port.tx_req.get(), ZMQ_POLLIN, p);
+            else if (state.room_for_request) add_poll(port.tx_req.get(), ZMQ_POLLOUT, p);
           }
           if (port.rx_port >= 0) {
-            if (!state.request_accepted) poll_items.push_back({port.rx_rep.get(), 0, ZMQ_POLLIN, 0});
-            else if (state.take > 0) poll_items.push_back({port.rx_rep.get(), 0, ZMQ_POLLOUT, 0});
+            if (!state.request_accepted) add_poll(port.rx_rep.get(), ZMQ_POLLIN, p);
+            else if (state.take > 0) add_poll(port.rx_rep.get(), ZMQ_POLLOUT, p);
           }
         }
         if (zmq_poll(poll_items.data(), static_cast<int>(poll_items.size()), 100) < 0 && zmq_errno() != EINTR)
           throw std::runtime_error(std::string("transport poll failed: ") + zmq_strerror(zmq_errno()));
+        for (std::size_t i = 1; i < poll_items.size(); ++i)
+          if (poll_items[i].revents) transport_dirty[poll_ports[i]].store(true);
       }
     } catch (const std::exception& e) {
       report_thread_error("transport", e);

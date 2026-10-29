@@ -13,6 +13,9 @@ cases={
  'ready2':{'OCUDU_NATIVE_CHANNEL_BUILD':BUILD,'OCG_BROKER_READY_WORKERS':'2'},
  'legacy-clean':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-mux','OCG_BROKER_READY_WORKERS':'0'},
  'mux2':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-mux','OCG_BROKER_READY_WORKERS':'2','OCG_BROKER_MULTIPLEX':'1'},
+ 'mux2-v2':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-v2','OCG_BROKER_READY_WORKERS':'2','OCG_BROKER_MULTIPLEX':'1'},
+ 'mux4-v2':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-v2','OCG_BROKER_READY_WORKERS':'4','OCG_BROKER_MULTIPLEX':'1'},
+ 'legacy-v2':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-v2','OCG_BROKER_READY_WORKERS':'0'},
  'mux1':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-mux','OCG_BROKER_READY_WORKERS':'1','OCG_BROKER_MULTIPLEX':'1'},
  'mux4':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-mux','OCG_BROKER_READY_WORKERS':'4','OCG_BROKER_MULTIPLEX':'1'},
  'mux2-repeat':{'OCUDU_NATIVE_CHANNEL_BUILD':'/workspace/gpuch/relay-ready-20261029/build-mux','OCG_BROKER_READY_WORKERS':'2','OCG_BROKER_MULTIPLEX':'1'},
@@ -31,7 +34,15 @@ for name in a.cases:
       '--run-root',str(d/'runtime'),'--scenario',str(FROZEN/'scenario.json'),'--channel-bundle',str(FROZEN/'channel'),'--traffic-bundle',str(FROZEN/'traffic'),
       '--policy','rr','--link-adaptation','harq_olla','--ue-count',str(a.ues),'--profile','mixed','--seed','20261016','--attach-timeout','240',
       '--awgn-snr-db','40','--tx-power-ul','300','--gnb-rx-gain','-55','--warmup-seconds','10','--channel-build',env.get('OCUDU_NATIVE_CHANNEL_BUILD',str(P/'build'))]
- metadata=dict(case=name,ue_count=a.ues,changes=cases[name],command=cmd,env={k:v for k,v in env.items() if k.startswith(('OC','SINGLE')) or k in ('LD_LIBRARY_PATH','PATH')},
+ binaries=[pathlib.Path(env.get('SINGLE_CELL_GNB_BINARY',env['OCUDU_NATIVE_GNB_BINARY'])),
+           pathlib.Path('/workspace/ocudu-spark-ranb/builds/srsran4g-zmq-local/srsue/src/srsue'),
+           pathlib.Path(env['OCUDU_NATIVE_CHANNEL_BUILD'])/'ocudu-gpu-channel']
+ binary_hashes={str(f):hashlib.sha256(f.read_bytes()).hexdigest() for f in binaries}
+ expected=['ec2b1338a702f0646af07492fa65c284c945e484d399c1fbba6c58ca3b18e0be',
+           '0e32b703176460d387b1abdeac7984fa983062448203064144e83768ea3fff74']
+ if [binary_hashes[str(f)] for f in binaries[:2]] != expected:
+  raise RuntimeError('CUDA gNB / CPU srsUE binary differs from PR10 control')
+ metadata=dict(case=name,ue_count=a.ues,binary_hashes=binary_hashes,changes=cases[name],command=cmd,env={k:v for k,v in env.items() if k.startswith(('OC','SINGLE')) or k in ('LD_LIBRARY_PATH','PATH')},
    frozen_bundle=str(FROZEN),input_hashes={str(f.relative_to(FROZEN)):hashlib.sha256(f.read_bytes()).hexdigest() for f in FROZEN.rglob('*') if f.is_file()})
  (d/'launch.json').write_text(json.dumps(metadata,indent=2));print('START',name,flush=True);start=time.monotonic()
  with (d/'runner.log').open('w') as log:

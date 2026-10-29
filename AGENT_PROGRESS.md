@@ -310,3 +310,8 @@ Continue the active relay patch below: finish Spark multiplex correctness tests,
 - Producer-only queue measured 0.415489 radio/wall ratio with 5/30 valid segments on frozen PR10 16-UE inputs; it regresses against historical ~0.448 and is not a successful remedy. Single transport-loop validation is next.
 
 - Spark passed all five targeted tests: queue races/timers, legacy relay, producer queue, multiplex relay, and bit-exact CUDA 2×2 IQ parity against legacy. Clean 16-UE baseline/multiplex live comparisons are running sequentially.
+
+- A two-second `/proc` diagnostic window in clean legacy mode observed 63 broker-process threads, 4.018 CPU-seconds scheduled and 44.745 aggregate thread-seconds waiting runnable. This is a bounded observation, not a whole-run latency percentile.
+
+- Clean legacy measured 0.454120 (10/30 valid); first multiplex measured 0.378296 (30/30 valid), with zero sequence gaps/overflows/ZMQ errors but 637 starvations. Scheduler contention fell; end-to-end speed regressed, so multiplex remains experimental.
+- Reduced unnecessary wakeups using input/room-specific generations and per-port transport readiness; all five targeted tests pass again. Two-worker revised multiplex measured 0.396374 (0/30 valid); four-worker trial is running.

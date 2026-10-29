@@ -43,6 +43,7 @@ private:
 class ProducerReadyQueue {
 public:
   using Clock = std::chrono::steady_clock;
+  enum class Event : std::size_t { Input = 0, Room = 1 };
   explicit ProducerReadyQueue(std::size_t nodes) : entries_(nodes) {}
 
   void attach(std::size_t node, ProducerTask::Handle handle)
@@ -51,10 +52,10 @@ public:
     entries_[node].handle = handle;
     enqueue(node);
   }
-  std::uint64_t generation(std::size_t node)
+  std::uint64_t generation(std::size_t node, Event event = Event::Input)
   {
     std::lock_guard lock(mutex_);
-    return entries_[node].generation;
+    return entries_[node].generation[static_cast<std::size_t>(event)];
   }
   struct Metrics {
     std::uint64_t signals = 0;
@@ -65,14 +66,16 @@ public:
   // Read after all workers join; queue time starts when a node becomes queued,
   // not when it first starts waiting for IQ. It excludes channel execution.
   Metrics metrics(std::size_t node) const { return entries_[node].metrics; }
-  void notify(std::size_t node)
+  void notify(std::size_t node, Event event = Event::Input)
   {
     std::lock_guard lock(mutex_);
     auto& e = entries_[node];
-    ++e.generation;
+    ++e.generation[static_cast<std::size_t>(event)];
     ++e.metrics.signals;
-    if (e.waiting && !e.running && e.event_wait) enqueue(node);
-    cv_.notify_all();
+    if (e.waiting && !e.running && e.event_wait && e.event == event) {
+      enqueue(node);
+      cv_.notify_one();
+    }
   }
   struct Wait {
     ProducerReadyQueue& queue;
@@ -80,6 +83,7 @@ public:
     std::uint64_t observed;
     Clock::time_point deadline;
     bool event_wait;
+    Event event;
     bool await_ready() const noexcept { return false; }
     void await_suspend(std::coroutine_handle<>) const
     {
@@ -89,16 +93,17 @@ public:
       e.observed = observed;
       e.deadline = deadline;
       e.event_wait = event_wait;
+      e.event = event;
     }
     void await_resume() const noexcept {}
   };
-  Wait wait(std::size_t node, std::uint64_t observed, Clock::time_point deadline)
+  Wait wait(std::size_t node, std::uint64_t observed, Clock::time_point deadline, Event event = Event::Input)
   {
-    return {*this, node, observed, deadline, true};
+    return {*this, node, observed, deadline, true, event};
   }
   Wait until(std::size_t node, Clock::time_point deadline)
   {
-    return {*this, node, 0, deadline, false};
+    return {*this, node, 0, deadline, false, Event::Input};
   }
   void stop()
   {
@@ -115,7 +120,7 @@ public:
       for (std::size_t n = 0; n < entries_.size(); ++n) {
         auto& e = entries_[n];
         if (!e.waiting || e.running || e.queued) continue;
-        if (e.deadline <= now || (e.event_wait && e.generation != e.observed)) enqueue(n);
+        if (e.deadline <= now || (e.event_wait && e.generation[static_cast<std::size_t>(e.event)] != e.observed)) enqueue(n);
         else next = std::min(next, e.deadline);
       }
       if (ready_.empty()) {
@@ -140,8 +145,8 @@ public:
       lock.lock();
       e.running = false;
       if (e.waiting && (e.deadline <= Clock::now() ||
-                        (e.event_wait && e.generation != e.observed))) enqueue(n);
-      cv_.notify_all();
+                        (e.event_wait && e.generation[static_cast<std::size_t>(e.event)] != e.observed))) enqueue(n);
+      cv_.notify_one();
     }
   }
 private:
@@ -149,7 +154,8 @@ private:
     ProducerTask::Handle handle{};
     Metrics metrics;
     Clock::time_point queued_at{};
-    std::uint64_t generation = 0;
+    std::uint64_t generation[2] = {};
+    Event event = Event::Input;
     std::uint64_t observed = 0;
     Clock::time_point deadline = Clock::time_point::max();
     bool running = false;

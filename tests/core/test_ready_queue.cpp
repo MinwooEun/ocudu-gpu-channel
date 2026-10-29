@@ -60,6 +60,8 @@ int main()
     queue.run([](std::exception_ptr) { require(false, "coroutine exception"); });
   });
   wait_for([&] { return timer_waiting.load(); });
+  // A room event must not resume the node waiting for input.
+  for (int i = 0; i < 1000; ++i) queue.notify(1, Queue::Event::Room);
   while (!timer_done) { queue.notify(2); std::this_thread::yield(); }
   wait_for([&] { return completed.load() == 3; });
   queue.stop();
