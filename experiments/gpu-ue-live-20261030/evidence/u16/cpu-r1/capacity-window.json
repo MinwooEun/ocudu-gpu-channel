@@ -1,0 +1,7414 @@
+{
+  "case": "cpu-r1",
+  "activation": [
+    {
+      "pid": "3009263",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009266",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009269",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009272",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009275",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009278",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009281",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009284",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009287",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009290",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009293",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009296",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009299",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009304",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009308",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    },
+    {
+      "pid": "3009311",
+      "binary": "/workspace/gpuch/s4/build-s1/srsue/src/srsue",
+      "environment": {
+        "SRSRAN_UE_DL_CUDA": "0",
+        "SRSRAN_LDPC_DECODER": null,
+        "SRSRAN_LDPC_CUDA_SYNC": null,
+        "CUDA_MPS_PIPE_DIRECTORY": "/tmp/ocudu-mps-ogj640ds"
+      }
+    }
+  ],
+  "wall_s": 4.033303679,
+  "radio_s": 1.8820000868055555,
+  "radio_wall_ratio": 0.46233471659760694,
+  "ue_cpu_s": 19.2942248,
+  "ue_scheduled_cores": 4.783727270638774,
+  "ue_cpu_seconds_per_radio_second": 10.251978698231293,
+  "ue_roles_cpu_s": {
+    "srsue": 2.0760706079999998,
+    "TASKWORKER0": 0.0,
+    "TASKWORKER1": 0.0,
+    "PHY_CMD": 0.0,
+    "ZMQbg/Reaper": 0.0,
+    "ZMQbg/IO/0": 3.833649504,
+    "SYNC": 1.7504479519999998,
+    "STACK": 1.76874096,
+    "WORKER0": 4.847941104,
+    "WORKER1": 4.925263039999999,
+    "WORKER2": 0.0,
+    "METRICS_HUB": 0.024612112000000002,
+    "GW": 0.06749952000000001
+  },
+  "ue_cores": {
+    "cpu13": {
+      "busy_fraction": 0.9925187032418953,
+      "total_ticks": 401
+    },
+    "cpu14": {
+      "busy_fraction": 0.9551122194513716,
+      "total_ticks": 401
+    },
+    "cpu17": {
+      "busy_fraction": 0.970074812967581,
+      "total_ticks": 401
+    },
+    "cpu18": {
+      "busy_fraction": 0.9296482412060302,
+      "total_ticks": 398
+    },
+    "cpu19": {
+      "busy_fraction": 0.9551122194513716,
+      "total_ticks": 401
+    }
+  },
+  "broker_pid": "3008992",
+  "first_clock": {
+    "midpoint_ns": 3088748694625044,
+    "roundtrip_ns": 251966,
+    "sample": 1330145285,
+    "link": "ue0>gnb0:sionna_rt"
+  },
+  "last_clock": {
+    "midpoint_ns": 3088752765269145,
+    "roundtrip_ns": 251822,
+    "sample": 1373506567,
+    "link": "ue0>gnb0:sionna_rt"
+  },
+  "processes": {
+    "3008992": {
+      "cpu_s": 8.073694815999998,
+      "runqueue_s": 88.412601584,
+      "roles": {
+        "ocudu-gpu-chann": 5.319856352,
+        "cuda00001400006": 0.0,
+        "cuda-EvtHandlr": 0.000449472,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 1.6354727039999999,
+        "ZMQbg/IO/1": 1.117916288
+      }
+    },
+    "3009263": {
+      "cpu_s": 0.96007616,
+      "runqueue_s": 8.095401008,
+      "roles": {
+        "srsue": 0.10346280000000001,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.176892,
+        "SYNC": 0.09231224,
+        "STACK": 0.09704776,
+        "WORKER0": 0.2328144,
+        "WORKER1": 0.250440016,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.001403472,
+        "GW": 0.005703472
+      }
+    },
+    "3009266": {
+      "cpu_s": 0.97732248,
+      "runqueue_s": 7.077095632,
+      "roles": {
+        "srsue": 0.10588166400000001,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.193501632,
+        "SYNC": 0.095502848,
+        "WORKER0": 0.239582016,
+        "STACK": 0.096924352,
+        "WORKER1": 0.242005696,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.00145616,
+        "GW": 0.002468112
+      }
+    },
+    "3009269": {
+      "cpu_s": 1.000130176,
+      "runqueue_s": 7.841157856000001,
+      "roles": {
+        "srsue": 0.106853568,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.17584328,
+        "SYNC": 0.092489392,
+        "STACK": 0.101470928,
+        "WORKER0": 0.248749632,
+        "WORKER1": 0.26778144,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.001499776,
+        "GW": 0.00544216
+      }
+    },
+    "3009272": {
+      "cpu_s": 0.981009392,
+      "runqueue_s": 8.009817344,
+      "roles": {
+        "srsue": 0.100993952,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.17534776,
+        "SYNC": 0.093252688,
+        "STACK": 0.098282256,
+        "WORKER0": 0.256971872,
+        "WORKER1": 0.252037264,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.001554448,
+        "GW": 0.002569152
+      }
+    },
+    "3009275": {
+      "cpu_s": 0.999440256,
+      "runqueue_s": 7.103020288000001,
+      "roles": {
+        "srsue": 0.11167392,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.18979248,
+        "SYNC": 0.094133632,
+        "STACK": 0.09712664,
+        "WORKER0": 0.23918632,
+        "WORKER1": 0.260954736,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.001303488,
+        "GW": 0.00526904
+      }
+    },
+    "3009278": {
+      "cpu_s": 0.9418250879999999,
+      "runqueue_s": 7.806427392000002,
+      "roles": {
+        "srsue": 0.10151024,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.179238272,
+        "SYNC": 0.090330432,
+        "STACK": 0.0905,
+        "WORKER0": 0.237884912,
+        "WORKER1": 0.238221024,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.001538128,
+        "GW": 0.00260208
+      }
+    },
+    "3009281": {
+      "cpu_s": 2.0169867679999998,
+      "runqueue_s": 8.675384064,
+      "roles": {
+        "srsue": 0.218736336,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.428171488,
+        "SYNC": 0.158835808,
+        "STACK": 0.163477872,
+        "WORKER0": 0.515926384,
+        "WORKER1": 0.52163704,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.001991232,
+        "GW": 0.008210608
+      }
+    },
+    "3009284": {
+      "cpu_s": 1.9489430719999998,
+      "runqueue_s": 8.089255744,
+      "roles": {
+        "srsue": 0.20250311999999998,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.40825712,
+        "SYNC": 0.158104112,
+        "STACK": 0.159218576,
+        "WORKER0": 0.493329664,
+        "WORKER1": 0.521538848,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.002069312,
+        "GW": 0.00392232
+      }
+    },
+    "3009287": {
+      "cpu_s": 1.000262256,
+      "runqueue_s": 8.054940832,
+      "roles": {
+        "srsue": 0.10615136,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.174354816,
+        "SYNC": 0.09300384,
+        "WORKER0": 0.264872912,
+        "STACK": 0.099891712,
+        "WORKER1": 0.255007264,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.001547584,
+        "GW": 0.005432768
+      }
+    },
+    "3009290": {
+      "cpu_s": 0.9549156000000001,
+      "runqueue_s": 7.005493151999999,
+      "roles": {
+        "srsue": 0.10521963200000001,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.18737352,
+        "SYNC": 0.09653304,
+        "WORKER0": 0.236903632,
+        "STACK": 0.094577008,
+        "WORKER1": 0.230188912,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.001423472,
+        "GW": 0.002696384
+      }
+    },
+    "3009293": {
+      "cpu_s": 0.996077008,
+      "runqueue_s": 7.805369552,
+      "roles": {
+        "srsue": 0.109563168,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.173179632,
+        "SYNC": 0.091374624,
+        "STACK": 0.098473088,
+        "WORKER0": 0.261702784,
+        "WORKER1": 0.254885824,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.001508608,
+        "GW": 0.00538928
+      }
+    },
+    "3009296": {
+      "cpu_s": 0.96149408,
+      "runqueue_s": 8.031238048,
+      "roles": {
+        "srsue": 0.099191888,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.177536656,
+        "SYNC": 0.092653952,
+        "STACK": 0.093716288,
+        "WORKER0": 0.25054848,
+        "WORKER1": 0.243929904,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.001427744,
+        "GW": 0.002489168
+      }
+    },
+    "3009299": {
+      "cpu_s": 0.7970414880000001,
+      "runqueue_s": 6.913325983999999,
+      "roles": {
+        "srsue": 0.093141408,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.188058704,
+        "SYNC": 0.095572688,
+        "STACK": 0.069863584,
+        "WORKER0": 0.174216304,
+        "WORKER1": 0.175630112,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.000334144,
+        "GW": 0.000224544
+      }
+    },
+    "3009304": {
+      "cpu_s": 0.9133896160000001,
+      "runqueue_s": 7.7772242239999985,
+      "roles": {
+        "srsue": 0.101023328,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.177139392,
+        "SYNC": 0.092498992,
+        "STACK": 0.087480704,
+        "WORKER0": 0.223675584,
+        "WORKER1": 0.227397504,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.00156648,
+        "GW": 0.002607632
+      }
+    },
+    "3009308": {
+      "cpu_s": 1.969805728,
+      "runqueue_s": 8.599436143999998,
+      "roles": {
+        "srsue": 0.214064816,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.421610608,
+        "SYNC": 0.157268912,
+        "STACK": 0.167324976,
+        "WORKER0": 0.494578016,
+        "WORKER1": 0.504411616,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.002012336,
+        "GW": 0.008534448
+      }
+    },
+    "3009311": {
+      "cpu_s": 1.8755056319999999,
+      "runqueue_s": 8.045702864,
+      "roles": {
+        "srsue": 0.19609940799999998,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 0.407352144,
+        "SYNC": 0.156580752,
+        "STACK": 0.153365216,
+        "WORKER0": 0.476998192,
+        "WORKER1": 0.47919584,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.001975728,
+        "GW": 0.003938352
+      }
+    }
+  },
+  "note": "Four-second observation; scheduler running time includes that thread user and system execution. CPU roles alone do not identify individual arithmetic functions.",
+  "before": {
+    "monotonic_ns": 3088748731577622,
+    "threads": {
+      "3008992": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          286772832,
+          156260912,
+          6595
+        ],
+        "cpus": "15-16"
+      },
+      "3008997": {
+        "pid": "3008992",
+        "comm": "cuda00001400006",
+        "schedstat": [
+          161376,
+          0,
+          2
+        ],
+        "cpus": "15-16"
+      },
+      "3009000": {
+        "pid": "3008992",
+        "comm": "cuda-EvtHandlr",
+        "schedstat": [
+          14498672,
+          29805248,
+          1311
+        ],
+        "cpus": "15-16"
+      },
+      "3009003": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          12134669984,
+          11914528848,
+          594457
+        ],
+        "cpus": "15-16"
+      },
+      "3009004": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1185635600,
+          723560368,
+          12976
+        ],
+        "cpus": "15-16"
+      },
+      "3009005": {
+        "pid": "3008992",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          16528,
+          134896,
+          1
+        ],
+        "cpus": "15-16"
+      },
+      "3009006": {
+        "pid": "3008992",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          11387513408,
+          19599839280,
+          1116375
+        ],
+        "cpus": "15-16"
+      },
+      "3009007": {
+        "pid": "3008992",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          17408,
+          0,
+          1
+        ],
+        "cpus": "15-16"
+      },
+      "3009008": {
+        "pid": "3008992",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          17040,
+          0,
+          2
+        ],
+        "cpus": "15-16"
+      },
+      "3009014": {
+        "pid": "3008992",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          8080,
+          0,
+          1
+        ],
+        "cpus": "15-16"
+      },
+      "3009015": {
+        "pid": "3008992",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          33788861520,
+          29771867056,
+          1642628
+        ],
+        "cpus": "15-16"
+      },
+      "3009016": {
+        "pid": "3008992",
+        "comm": "ZMQbg/IO/1",
+        "schedstat": [
+          34809366816,
+          28019192368,
+          1718456
+        ],
+        "cpus": "15-16"
+      },
+      "3009018": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1277798192,
+          2336380448,
+          115679
+        ],
+        "cpus": "15-16"
+      },
+      "3009019": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1003867952,
+          1986645648,
+          115590
+        ],
+        "cpus": "15-16"
+      },
+      "3009020": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1108379216,
+          2177841248,
+          115576
+        ],
+        "cpus": "15-16"
+      },
+      "3009021": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1067186864,
+          2042193376,
+          115579
+        ],
+        "cpus": "15-16"
+      },
+      "3009022": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1023436656,
+          2199084080,
+          115583
+        ],
+        "cpus": "15-16"
+      },
+      "3009023": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1233732480,
+          2370078512,
+          115564
+        ],
+        "cpus": "15-16"
+      },
+      "3009024": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1090391184,
+          2297571552,
+          115578
+        ],
+        "cpus": "15-16"
+      },
+      "3009025": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1118709184,
+          2350464832,
+          115562
+        ],
+        "cpus": "15-16"
+      },
+      "3009026": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1146812144,
+          2575016480,
+          115562
+        ],
+        "cpus": "15-16"
+      },
+      "3009027": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1220415728,
+          2198115008,
+          115567
+        ],
+        "cpus": "15-16"
+      },
+      "3009028": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1156113376,
+          2318987792,
+          115567
+        ],
+        "cpus": "15-16"
+      },
+      "3009029": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1005889008,
+          2020002240,
+          115587
+        ],
+        "cpus": "15-16"
+      },
+      "3009030": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1193901360,
+          2396745024,
+          115566
+        ],
+        "cpus": "15-16"
+      },
+      "3009031": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1262897936,
+          2369434416,
+          115556
+        ],
+        "cpus": "15-16"
+      },
+      "3009032": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1055149824,
+          2252732896,
+          115575
+        ],
+        "cpus": "15-16"
+      },
+      "3009033": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1022347680,
+          1964321744,
+          115582
+        ],
+        "cpus": "15-16"
+      },
+      "3009034": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1069707808,
+          2476489984,
+          115585
+        ],
+        "cpus": "15-16"
+      },
+      "3009035": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          11330916528,
+          118537230016,
+          3991005
+        ],
+        "cpus": "15-16"
+      },
+      "3009036": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6442393632,
+          123211881280,
+          4593868
+        ],
+        "cpus": "15-16"
+      },
+      "3009037": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6391643360,
+          123270315456,
+          4514222
+        ],
+        "cpus": "15-16"
+      },
+      "3009038": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6334802528,
+          123351304208,
+          4652744
+        ],
+        "cpus": "15-16"
+      },
+      "3009039": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6408004992,
+          123223118320,
+          4525313
+        ],
+        "cpus": "15-16"
+      },
+      "3009040": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6267660672,
+          123486523536,
+          4569060
+        ],
+        "cpus": "15-16"
+      },
+      "3009041": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6524679696,
+          123112944944,
+          4820299
+        ],
+        "cpus": "15-16"
+      },
+      "3009042": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6965816640,
+          123028392016,
+          4865530
+        ],
+        "cpus": "15-16"
+      },
+      "3009043": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6677187520,
+          123049491216,
+          4548501
+        ],
+        "cpus": "15-16"
+      },
+      "3009044": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6519908544,
+          123139921152,
+          4832537
+        ],
+        "cpus": "15-16"
+      },
+      "3009045": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6403813040,
+          123138619408,
+          4631565
+        ],
+        "cpus": "15-16"
+      },
+      "3009046": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6551067184,
+          123094468560,
+          4849897
+        ],
+        "cpus": "15-16"
+      },
+      "3009047": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6535680304,
+          123165302928,
+          4751293
+        ],
+        "cpus": "15-16"
+      },
+      "3009048": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6609365792,
+          123109790576,
+          4875005
+        ],
+        "cpus": "15-16"
+      },
+      "3009049": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6475950336,
+          123225443520,
+          4645298
+        ],
+        "cpus": "15-16"
+      },
+      "3009050": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6787654832,
+          123199830992,
+          4740886
+        ],
+        "cpus": "15-16"
+      },
+      "3009051": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6794335472,
+          122828695856,
+          4761338
+        ],
+        "cpus": "15-16"
+      },
+      "3009052": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          3162666336,
+          109513774208,
+          2710674
+        ],
+        "cpus": "15-16"
+      },
+      "3009053": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1921533488,
+          45794309936,
+          947667
+        ],
+        "cpus": "15-16"
+      },
+      "3009054": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1905917920,
+          45614099968,
+          793727
+        ],
+        "cpus": "15-16"
+      },
+      "3009055": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1824686368,
+          43927559664,
+          786778
+        ],
+        "cpus": "15-16"
+      },
+      "3009056": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1820506944,
+          45323711072,
+          807485
+        ],
+        "cpus": "15-16"
+      },
+      "3009057": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1908733888,
+          47006237584,
+          855154
+        ],
+        "cpus": "15-16"
+      },
+      "3009058": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1876861248,
+          43808627888,
+          880204
+        ],
+        "cpus": "15-16"
+      },
+      "3009059": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1507978048,
+          13048225152,
+          300770
+        ],
+        "cpus": "15-16"
+      },
+      "3009060": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1577208736,
+          23232464000,
+          392153
+        ],
+        "cpus": "15-16"
+      },
+      "3009061": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1926097312,
+          44877051600,
+          947356
+        ],
+        "cpus": "15-16"
+      },
+      "3009062": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1874037232,
+          46578186336,
+          831676
+        ],
+        "cpus": "15-16"
+      },
+      "3009063": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1915649344,
+          44739471632,
+          947126
+        ],
+        "cpus": "15-16"
+      },
+      "3009064": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1922536688,
+          45349281808,
+          917968
+        ],
+        "cpus": "15-16"
+      },
+      "3009065": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1998542288,
+          47230110704,
+          1010711
+        ],
+        "cpus": "15-16"
+      },
+      "3009066": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1878267072,
+          44543706096,
+          882557
+        ],
+        "cpus": "15-16"
+      },
+      "3009067": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1471183936,
+          12783289792,
+          281497
+        ],
+        "cpus": "15-16"
+      },
+      "3009068": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1582433392,
+          22127423296,
+          377713
+        ],
+        "cpus": "15-16"
+      },
+      "3009263": {
+        "pid": "3009263",
+        "comm": "srsue",
+        "schedstat": [
+          191493056,
+          567638592,
+          565
+        ],
+        "cpus": "17"
+      },
+      "3009302": {
+        "pid": "3009263",
+        "comm": "srsue",
+        "schedstat": [
+          1213260032,
+          65412926768,
+          393284
+        ],
+        "cpus": "17"
+      },
+      "3009392": {
+        "pid": "3009263",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          18944,
+          1622816,
+          2
+        ],
+        "cpus": "17"
+      },
+      "3009394": {
+        "pid": "3009263",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          7888,
+          382800,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009428": {
+        "pid": "3009263",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          439552,
+          3144336,
+          33
+        ],
+        "cpus": "17"
+      },
+      "3009433": {
+        "pid": "3009263",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2066656,
+          9699088,
+          53
+        ],
+        "cpus": "17"
+      },
+      "3009434": {
+        "pid": "3009263",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          15152,
+          560896,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009437": {
+        "pid": "3009263",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5359676848,
+          44632351344,
+          269075
+        ],
+        "cpus": "17"
+      },
+      "3009525": {
+        "pid": "3009263",
+        "comm": "srsue",
+        "schedstat": [
+          1734790848,
+          36601268000,
+          219473
+        ],
+        "cpus": "17"
+      },
+      "3009541": {
+        "pid": "3009263",
+        "comm": "SYNC",
+        "schedstat": [
+          2866015584,
+          4219456,
+          123232
+        ],
+        "cpus": "17"
+      },
+      "3009550": {
+        "pid": "3009263",
+        "comm": "STACK",
+        "schedstat": [
+          2990686992,
+          53547327424,
+          635206
+        ],
+        "cpus": "17"
+      },
+      "3009556": {
+        "pid": "3009263",
+        "comm": "WORKER0",
+        "schedstat": [
+          6494522608,
+          159907936,
+          29751
+        ],
+        "cpus": "17"
+      },
+      "3009580": {
+        "pid": "3009263",
+        "comm": "WORKER1",
+        "schedstat": [
+          6854094992,
+          153387488,
+          29685
+        ],
+        "cpus": "17"
+      },
+      "3009594": {
+        "pid": "3009263",
+        "comm": "WORKER2",
+        "schedstat": [
+          20448,
+          4816,
+          5
+        ],
+        "cpus": "17"
+      },
+      "3009599": {
+        "pid": "3009263",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          40687552,
+          442121904,
+          1414
+        ],
+        "cpus": "17"
+      },
+      "3009706": {
+        "pid": "3009263",
+        "comm": "GW",
+        "schedstat": [
+          113456304,
+          1995742144,
+          9358
+        ],
+        "cpus": "17"
+      },
+      "3009266": {
+        "pid": "3009266",
+        "comm": "srsue",
+        "schedstat": [
+          188816624,
+          568206704,
+          543
+        ],
+        "cpus": "18"
+      },
+      "3009305": {
+        "pid": "3009266",
+        "comm": "srsue",
+        "schedstat": [
+          1066875504,
+          61634681744,
+          417777
+        ],
+        "cpus": "18"
+      },
+      "3009391": {
+        "pid": "3009266",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          12480,
+          876080,
+          2
+        ],
+        "cpus": "18"
+      },
+      "3009395": {
+        "pid": "3009266",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          10672,
+          358320,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009429": {
+        "pid": "3009266",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          470432,
+          3582128,
+          40
+        ],
+        "cpus": "18"
+      },
+      "3009432": {
+        "pid": "3009266",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          1987808,
+          1300688,
+          54
+        ],
+        "cpus": "18"
+      },
+      "3009436": {
+        "pid": "3009266",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          18720,
+          2596288,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009438": {
+        "pid": "3009266",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          6020907152,
+          42936612320,
+          281649
+        ],
+        "cpus": "18"
+      },
+      "3009522": {
+        "pid": "3009266",
+        "comm": "srsue",
+        "schedstat": [
+          2014710928,
+          36579980272,
+          225559
+        ],
+        "cpus": "18"
+      },
+      "3009540": {
+        "pid": "3009266",
+        "comm": "SYNC",
+        "schedstat": [
+          2960851392,
+          4471856,
+          123170
+        ],
+        "cpus": "18"
+      },
+      "3009553": {
+        "pid": "3009266",
+        "comm": "WORKER0",
+        "schedstat": [
+          6223307088,
+          143795936,
+          29626
+        ],
+        "cpus": "18"
+      },
+      "3009554": {
+        "pid": "3009266",
+        "comm": "STACK",
+        "schedstat": [
+          2770478672,
+          51594279792,
+          656297
+        ],
+        "cpus": "18"
+      },
+      "3009576": {
+        "pid": "3009266",
+        "comm": "WORKER1",
+        "schedstat": [
+          6363750160,
+          138243648,
+          29560
+        ],
+        "cpus": "18"
+      },
+      "3009593": {
+        "pid": "3009266",
+        "comm": "WORKER2",
+        "schedstat": [
+          19344,
+          6096,
+          5
+        ],
+        "cpus": "18"
+      },
+      "3009596": {
+        "pid": "3009266",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          41134448,
+          403183104,
+          1378
+        ],
+        "cpus": "18"
+      },
+      "3009704": {
+        "pid": "3009266",
+        "comm": "GW",
+        "schedstat": [
+          50018416,
+          851973152,
+          4413
+        ],
+        "cpus": "18"
+      },
+      "3009269": {
+        "pid": "3009269",
+        "comm": "srsue",
+        "schedstat": [
+          190250928,
+          590691248,
+          595
+        ],
+        "cpus": "19"
+      },
+      "3009303": {
+        "pid": "3009269",
+        "comm": "srsue",
+        "schedstat": [
+          1230031664,
+          65269797584,
+          394508
+        ],
+        "cpus": "19"
+      },
+      "3009403": {
+        "pid": "3009269",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          15808,
+          2885872,
+          2
+        ],
+        "cpus": "19"
+      },
+      "3009406": {
+        "pid": "3009269",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          5376,
+          16768,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009445": {
+        "pid": "3009269",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          417264,
+          5323968,
+          36
+        ],
+        "cpus": "19"
+      },
+      "3009450": {
+        "pid": "3009269",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2504768,
+          3140656,
+          66
+        ],
+        "cpus": "19"
+      },
+      "3009458": {
+        "pid": "3009269",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          13360,
+          853040,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009466": {
+        "pid": "3009269",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5475669104,
+          44731568784,
+          271545
+        ],
+        "cpus": "19"
+      },
+      "3009529": {
+        "pid": "3009269",
+        "comm": "srsue",
+        "schedstat": [
+          1853331248,
+          37812575168,
+          224323
+        ],
+        "cpus": "19"
+      },
+      "3009547": {
+        "pid": "3009269",
+        "comm": "SYNC",
+        "schedstat": [
+          2847464432,
+          4208448,
+          124270
+        ],
+        "cpus": "19"
+      },
+      "3009569": {
+        "pid": "3009269",
+        "comm": "STACK",
+        "schedstat": [
+          2927026496,
+          53766770320,
+          633029
+        ],
+        "cpus": "19"
+      },
+      "3009573": {
+        "pid": "3009269",
+        "comm": "WORKER0",
+        "schedstat": [
+          6594958448,
+          147802752,
+          29826
+        ],
+        "cpus": "19"
+      },
+      "3009588": {
+        "pid": "3009269",
+        "comm": "WORKER1",
+        "schedstat": [
+          7043248992,
+          140722880,
+          29782
+        ],
+        "cpus": "19"
+      },
+      "3009607": {
+        "pid": "3009269",
+        "comm": "WORKER2",
+        "schedstat": [
+          19872,
+          75888,
+          5
+        ],
+        "cpus": "19"
+      },
+      "3009609": {
+        "pid": "3009269",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          40916656,
+          490694816,
+          1367
+        ],
+        "cpus": "19"
+      },
+      "3009703": {
+        "pid": "3009269",
+        "comm": "GW",
+        "schedstat": [
+          105225568,
+          1953868144,
+          9307
+        ],
+        "cpus": "19"
+      },
+      "3009272": {
+        "pid": "3009272",
+        "comm": "srsue",
+        "schedstat": [
+          185847040,
+          581279952,
+          675
+        ],
+        "cpus": "17"
+      },
+      "3009325": {
+        "pid": "3009272",
+        "comm": "srsue",
+        "schedstat": [
+          1087422752,
+          64970455248,
+          394631
+        ],
+        "cpus": "17"
+      },
+      "3009404": {
+        "pid": "3009272",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          16608,
+          1515152,
+          2
+        ],
+        "cpus": "17"
+      },
+      "3009407": {
+        "pid": "3009272",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          6720,
+          807984,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009444": {
+        "pid": "3009272",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          429968,
+          3146608,
+          38
+        ],
+        "cpus": "17"
+      },
+      "3009451": {
+        "pid": "3009272",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          1815104,
+          10372960,
+          51
+        ],
+        "cpus": "17"
+      },
+      "3009456": {
+        "pid": "3009272",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          14928,
+          572944,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009465": {
+        "pid": "3009272",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5363191152,
+          44914670064,
+          268699
+        ],
+        "cpus": "17"
+      },
+      "3009528": {
+        "pid": "3009272",
+        "comm": "srsue",
+        "schedstat": [
+          1767118896,
+          36326706816,
+          220059
+        ],
+        "cpus": "17"
+      },
+      "3009549": {
+        "pid": "3009272",
+        "comm": "SYNC",
+        "schedstat": [
+          2904028544,
+          4574304,
+          123579
+        ],
+        "cpus": "17"
+      },
+      "3009562": {
+        "pid": "3009272",
+        "comm": "STACK",
+        "schedstat": [
+          2753262528,
+          53787538768,
+          634847
+        ],
+        "cpus": "17"
+      },
+      "3009575": {
+        "pid": "3009272",
+        "comm": "WORKER0",
+        "schedstat": [
+          6217435744,
+          152608272,
+          29811
+        ],
+        "cpus": "17"
+      },
+      "3009591": {
+        "pid": "3009272",
+        "comm": "WORKER1",
+        "schedstat": [
+          6282547200,
+          157790448,
+          29580
+        ],
+        "cpus": "17"
+      },
+      "3009614": {
+        "pid": "3009272",
+        "comm": "WORKER2",
+        "schedstat": [
+          19504,
+          5120,
+          5
+        ],
+        "cpus": "17"
+      },
+      "3009616": {
+        "pid": "3009272",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          41944976,
+          447149040,
+          1450
+        ],
+        "cpus": "17"
+      },
+      "3009693": {
+        "pid": "3009272",
+        "comm": "GW",
+        "schedstat": [
+          50978144,
+          925176064,
+          4497
+        ],
+        "cpus": "17"
+      },
+      "3009275": {
+        "pid": "3009275",
+        "comm": "srsue",
+        "schedstat": [
+          185731760,
+          559630800,
+          571
+        ],
+        "cpus": "18"
+      },
+      "3009330": {
+        "pid": "3009275",
+        "comm": "srsue",
+        "schedstat": [
+          1190997616,
+          61868041120,
+          416547
+        ],
+        "cpus": "18"
+      },
+      "3009397": {
+        "pid": "3009275",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          15088,
+          1819600,
+          2
+        ],
+        "cpus": "18"
+      },
+      "3009400": {
+        "pid": "3009275",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          11536,
+          354688,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009435": {
+        "pid": "3009275",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          583472,
+          5237264,
+          42
+        ],
+        "cpus": "18"
+      },
+      "3009440": {
+        "pid": "3009275",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2240960,
+          2504992,
+          41
+        ],
+        "cpus": "18"
+      },
+      "3009447": {
+        "pid": "3009275",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          11664,
+          528720,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009454": {
+        "pid": "3009275",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5852004048,
+          41886206528,
+          276820
+        ],
+        "cpus": "18"
+      },
+      "3009527": {
+        "pid": "3009275",
+        "comm": "srsue",
+        "schedstat": [
+          1982448272,
+          36651179728,
+          223747
+        ],
+        "cpus": "18"
+      },
+      "3009542": {
+        "pid": "3009275",
+        "comm": "SYNC",
+        "schedstat": [
+          2927635184,
+          4234592,
+          122503
+        ],
+        "cpus": "18"
+      },
+      "3009558": {
+        "pid": "3009275",
+        "comm": "STACK",
+        "schedstat": [
+          2873453744,
+          51510653216,
+          656221
+        ],
+        "cpus": "18"
+      },
+      "3009559": {
+        "pid": "3009275",
+        "comm": "WORKER0",
+        "schedstat": [
+          6244448592,
+          142085408,
+          29486
+        ],
+        "cpus": "18"
+      },
+      "3009581": {
+        "pid": "3009275",
+        "comm": "WORKER1",
+        "schedstat": [
+          6799128336,
+          139041184,
+          29430
+        ],
+        "cpus": "18"
+      },
+      "3009598": {
+        "pid": "3009275",
+        "comm": "WORKER2",
+        "schedstat": [
+          17856,
+          3952,
+          5
+        ],
+        "cpus": "18"
+      },
+      "3009601": {
+        "pid": "3009275",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          40909808,
+          437522272,
+          1380
+        ],
+        "cpus": "18"
+      },
+      "3009695": {
+        "pid": "3009275",
+        "comm": "GW",
+        "schedstat": [
+          105979520,
+          1701197760,
+          9199
+        ],
+        "cpus": "18"
+      },
+      "3009278": {
+        "pid": "3009278",
+        "comm": "srsue",
+        "schedstat": [
+          190575824,
+          597710624,
+          578
+        ],
+        "cpus": "19"
+      },
+      "3009328": {
+        "pid": "3009278",
+        "comm": "srsue",
+        "schedstat": [
+          1101087664,
+          64862469888,
+          395936
+        ],
+        "cpus": "19"
+      },
+      "3009408": {
+        "pid": "3009278",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          16144,
+          2319808,
+          2
+        ],
+        "cpus": "19"
+      },
+      "3009410": {
+        "pid": "3009278",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          12912,
+          696304,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009453": {
+        "pid": "3009278",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          441648,
+          6348816,
+          38
+        ],
+        "cpus": "19"
+      },
+      "3009457": {
+        "pid": "3009278",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2080160,
+          242672,
+          38
+        ],
+        "cpus": "19"
+      },
+      "3009469": {
+        "pid": "3009278",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          13408,
+          1730336,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009473": {
+        "pid": "3009278",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5519041168,
+          45586385600,
+          271273
+        ],
+        "cpus": "19"
+      },
+      "3009531": {
+        "pid": "3009278",
+        "comm": "srsue",
+        "schedstat": [
+          1865783296,
+          37135126944,
+          222093
+        ],
+        "cpus": "19"
+      },
+      "3009552": {
+        "pid": "3009278",
+        "comm": "SYNC",
+        "schedstat": [
+          2814626144,
+          4412896,
+          123082
+        ],
+        "cpus": "19"
+      },
+      "3009570": {
+        "pid": "3009278",
+        "comm": "STACK",
+        "schedstat": [
+          2766185120,
+          53916698848,
+          632966
+        ],
+        "cpus": "19"
+      },
+      "3009572": {
+        "pid": "3009278",
+        "comm": "WORKER0",
+        "schedstat": [
+          6215621904,
+          139604288,
+          29825
+        ],
+        "cpus": "19"
+      },
+      "3009586": {
+        "pid": "3009278",
+        "comm": "WORKER1",
+        "schedstat": [
+          6350360800,
+          142302256,
+          29840
+        ],
+        "cpus": "19"
+      },
+      "3009605": {
+        "pid": "3009278",
+        "comm": "WORKER2",
+        "schedstat": [
+          298960,
+          12000,
+          6
+        ],
+        "cpus": "19"
+      },
+      "3009606": {
+        "pid": "3009278",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          41151584,
+          428411984,
+          1424
+        ],
+        "cpus": "19"
+      },
+      "3009696": {
+        "pid": "3009278",
+        "comm": "GW",
+        "schedstat": [
+          50355424,
+          900598336,
+          4497
+        ],
+        "cpus": "19"
+      },
+      "3009281": {
+        "pid": "3009281",
+        "comm": "srsue",
+        "schedstat": [
+          212236432,
+          239021392,
+          512
+        ],
+        "cpus": "13"
+      },
+      "3009317": {
+        "pid": "3009281",
+        "comm": "srsue",
+        "schedstat": [
+          2477642880,
+          70526104880,
+          350782
+        ],
+        "cpus": "13"
+      },
+      "3009358": {
+        "pid": "3009281",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          28432,
+          933344,
+          2
+        ],
+        "cpus": "13"
+      },
+      "3009360": {
+        "pid": "3009281",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          10880,
+          29664,
+          1
+        ],
+        "cpus": "13"
+      },
+      "3009363": {
+        "pid": "3009281",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          857808,
+          2790352,
+          38
+        ],
+        "cpus": "13"
+      },
+      "3009367": {
+        "pid": "3009281",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          3547808,
+          19190848,
+          64
+        ],
+        "cpus": "13"
+      },
+      "3009370": {
+        "pid": "3009281",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          24656,
+          1396656,
+          1
+        ],
+        "cpus": "13"
+      },
+      "3009372": {
+        "pid": "3009281",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          13671489392,
+          51968024272,
+          352307
+        ],
+        "cpus": "13"
+      },
+      "3009383": {
+        "pid": "3009281",
+        "comm": "srsue",
+        "schedstat": [
+          4045318720,
+          53950801968,
+          273108
+        ],
+        "cpus": "13"
+      },
+      "3009389": {
+        "pid": "3009281",
+        "comm": "SYNC",
+        "schedstat": [
+          5074436576,
+          20748464,
+          141385
+        ],
+        "cpus": "13"
+      },
+      "3009390": {
+        "pid": "3009281",
+        "comm": "STACK",
+        "schedstat": [
+          5145101232,
+          60021859056,
+          545607
+        ],
+        "cpus": "13"
+      },
+      "3009398": {
+        "pid": "3009281",
+        "comm": "WORKER0",
+        "schedstat": [
+          13640486528,
+          236988592,
+          29357
+        ],
+        "cpus": "13"
+      },
+      "3009425": {
+        "pid": "3009281",
+        "comm": "WORKER1",
+        "schedstat": [
+          13884360896,
+          234298048,
+          29375
+        ],
+        "cpus": "13"
+      },
+      "3009443": {
+        "pid": "3009281",
+        "comm": "WORKER2",
+        "schedstat": [
+          35680,
+          10176,
+          5
+        ],
+        "cpus": "13"
+      },
+      "3009448": {
+        "pid": "3009281",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          63401456,
+          419444992,
+          1426
+        ],
+        "cpus": "13"
+      },
+      "3009698": {
+        "pid": "3009281",
+        "comm": "GW",
+        "schedstat": [
+          161914016,
+          2547699424,
+          9244
+        ],
+        "cpus": "13"
+      },
+      "3009284": {
+        "pid": "3009284",
+        "comm": "srsue",
+        "schedstat": [
+          213150688,
+          234439376,
+          526
+        ],
+        "cpus": "14"
+      },
+      "3009315": {
+        "pid": "3009284",
+        "comm": "srsue",
+        "schedstat": [
+          2239891584,
+          67943002000,
+          365380
+        ],
+        "cpus": "14"
+      },
+      "3009359": {
+        "pid": "3009284",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          29264,
+          1413328,
+          2
+        ],
+        "cpus": "14"
+      },
+      "3009361": {
+        "pid": "3009284",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          10640,
+          28976,
+          1
+        ],
+        "cpus": "14"
+      },
+      "3009364": {
+        "pid": "3009284",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          890080,
+          4912352,
+          44
+        ],
+        "cpus": "14"
+      },
+      "3009368": {
+        "pid": "3009284",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          3235616,
+          23195936,
+          56
+        ],
+        "cpus": "14"
+      },
+      "3009371": {
+        "pid": "3009284",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          24704,
+          627824,
+          1
+        ],
+        "cpus": "14"
+      },
+      "3009373": {
+        "pid": "3009284",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          13195956976,
+          47295040000,
+          347488
+        ],
+        "cpus": "14"
+      },
+      "3009382": {
+        "pid": "3009284",
+        "comm": "srsue",
+        "schedstat": [
+          3902176496,
+          50239526688,
+          262121
+        ],
+        "cpus": "14"
+      },
+      "3009388": {
+        "pid": "3009284",
+        "comm": "SYNC",
+        "schedstat": [
+          4997222016,
+          18753088,
+          134941
+        ],
+        "cpus": "14"
+      },
+      "3009393": {
+        "pid": "3009284",
+        "comm": "STACK",
+        "schedstat": [
+          4934015952,
+          58260290576,
+          565302
+        ],
+        "cpus": "14"
+      },
+      "3009396": {
+        "pid": "3009284",
+        "comm": "WORKER0",
+        "schedstat": [
+          13011604032,
+          236150240,
+          29400
+        ],
+        "cpus": "14"
+      },
+      "3009418": {
+        "pid": "3009284",
+        "comm": "WORKER1",
+        "schedstat": [
+          13545932720,
+          234691488,
+          29404
+        ],
+        "cpus": "14"
+      },
+      "3009439": {
+        "pid": "3009284",
+        "comm": "WORKER2",
+        "schedstat": [
+          41152,
+          9872,
+          5
+        ],
+        "cpus": "14"
+      },
+      "3009441": {
+        "pid": "3009284",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          64216320,
+          384028256,
+          1435
+        ],
+        "cpus": "14"
+      },
+      "3009697": {
+        "pid": "3009284",
+        "comm": "GW",
+        "schedstat": [
+          77045104,
+          1171422688,
+          4422
+        ],
+        "cpus": "14"
+      },
+      "3009287": {
+        "pid": "3009287",
+        "comm": "srsue",
+        "schedstat": [
+          190263136,
+          616673760,
+          803
+        ],
+        "cpus": "17"
+      },
+      "3009352": {
+        "pid": "3009287",
+        "comm": "srsue",
+        "schedstat": [
+          1214582768,
+          65399536000,
+          393008
+        ],
+        "cpus": "17"
+      },
+      "3009419": {
+        "pid": "3009287",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          13136,
+          2499872,
+          2
+        ],
+        "cpus": "17"
+      },
+      "3009427": {
+        "pid": "3009287",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          12704,
+          1056464,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009479": {
+        "pid": "3009287",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          459232,
+          3063408,
+          40
+        ],
+        "cpus": "17"
+      },
+      "3009482": {
+        "pid": "3009287",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          1948624,
+          13392464,
+          65
+        ],
+        "cpus": "17"
+      },
+      "3009486": {
+        "pid": "3009287",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          13168,
+          962800,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009489": {
+        "pid": "3009287",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5344132016,
+          44977811824,
+          268821
+        ],
+        "cpus": "17"
+      },
+      "3009535": {
+        "pid": "3009287",
+        "comm": "srsue",
+        "schedstat": [
+          1773520176,
+          36774924640,
+          220651
+        ],
+        "cpus": "17"
+      },
+      "3009561": {
+        "pid": "3009287",
+        "comm": "SYNC",
+        "schedstat": [
+          2885718336,
+          4524400,
+          123772
+        ],
+        "cpus": "17"
+      },
+      "3009579": {
+        "pid": "3009287",
+        "comm": "WORKER0",
+        "schedstat": [
+          6514699712,
+          161088528,
+          29879
+        ],
+        "cpus": "17"
+      },
+      "3009585": {
+        "pid": "3009287",
+        "comm": "STACK",
+        "schedstat": [
+          2908685888,
+          53633395200,
+          634198
+        ],
+        "cpus": "17"
+      },
+      "3009597": {
+        "pid": "3009287",
+        "comm": "WORKER1",
+        "schedstat": [
+          6504827456,
+          161655392,
+          29786
+        ],
+        "cpus": "17"
+      },
+      "3009620": {
+        "pid": "3009287",
+        "comm": "WORKER2",
+        "schedstat": [
+          19472,
+          5152,
+          5
+        ],
+        "cpus": "17"
+      },
+      "3009623": {
+        "pid": "3009287",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          38673408,
+          443430416,
+          1320
+        ],
+        "cpus": "17"
+      },
+      "3009701": {
+        "pid": "3009287",
+        "comm": "GW",
+        "schedstat": [
+          110003376,
+          1979350192,
+          9338
+        ],
+        "cpus": "17"
+      },
+      "3009290": {
+        "pid": "3009290",
+        "comm": "srsue",
+        "schedstat": [
+          189500400,
+          636869216,
+          759
+        ],
+        "cpus": "18"
+      },
+      "3009351": {
+        "pid": "3009290",
+        "comm": "srsue",
+        "schedstat": [
+          1065193040,
+          61531803120,
+          417769
+        ],
+        "cpus": "18"
+      },
+      "3009416": {
+        "pid": "3009290",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          12128,
+          1708176,
+          2
+        ],
+        "cpus": "18"
+      },
+      "3009423": {
+        "pid": "3009290",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          11584,
+          592208,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009474": {
+        "pid": "3009290",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          397776,
+          6090640,
+          36
+        ],
+        "cpus": "18"
+      },
+      "3009480": {
+        "pid": "3009290",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2120192,
+          262240,
+          53
+        ],
+        "cpus": "18"
+      },
+      "3009485": {
+        "pid": "3009290",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          13184,
+          1602336,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009488": {
+        "pid": "3009290",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5872552688,
+          41751305248,
+          278237
+        ],
+        "cpus": "18"
+      },
+      "3009534": {
+        "pid": "3009290",
+        "comm": "srsue",
+        "schedstat": [
+          2002734672,
+          36501801840,
+          225226
+        ],
+        "cpus": "18"
+      },
+      "3009564": {
+        "pid": "3009290",
+        "comm": "SYNC",
+        "schedstat": [
+          2982618784,
+          4548384,
+          123157
+        ],
+        "cpus": "18"
+      },
+      "3009583": {
+        "pid": "3009290",
+        "comm": "WORKER0",
+        "schedstat": [
+          6435525600,
+          145243440,
+          29505
+        ],
+        "cpus": "18"
+      },
+      "3009587": {
+        "pid": "3009290",
+        "comm": "STACK",
+        "schedstat": [
+          2745020992,
+          51649289680,
+          655372
+        ],
+        "cpus": "18"
+      },
+      "3009600": {
+        "pid": "3009290",
+        "comm": "WORKER1",
+        "schedstat": [
+          6330816560,
+          140485312,
+          29435
+        ],
+        "cpus": "18"
+      },
+      "3009626": {
+        "pid": "3009290",
+        "comm": "WORKER2",
+        "schedstat": [
+          16704,
+          5504,
+          5
+        ],
+        "cpus": "18"
+      },
+      "3009627": {
+        "pid": "3009290",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          42704064,
+          434479552,
+          1411
+        ],
+        "cpus": "18"
+      },
+      "3009700": {
+        "pid": "3009290",
+        "comm": "GW",
+        "schedstat": [
+          51450688,
+          808265648,
+          4467
+        ],
+        "cpus": "18"
+      },
+      "3009293": {
+        "pid": "3009293",
+        "comm": "srsue",
+        "schedstat": [
+          188027680,
+          594206896,
+          574
+        ],
+        "cpus": "19"
+      },
+      "3009347": {
+        "pid": "3009293",
+        "comm": "srsue",
+        "schedstat": [
+          1222539840,
+          65241389792,
+          394061
+        ],
+        "cpus": "19"
+      },
+      "3009409": {
+        "pid": "3009293",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          18096,
+          1249952,
+          2
+        ],
+        "cpus": "19"
+      },
+      "3009413": {
+        "pid": "3009293",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          8624,
+          1908512,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009455": {
+        "pid": "3009293",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          460672,
+          7921168,
+          39
+        ],
+        "cpus": "19"
+      },
+      "3009462": {
+        "pid": "3009293",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2586736,
+          2886256,
+          66
+        ],
+        "cpus": "19"
+      },
+      "3009472": {
+        "pid": "3009293",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          12480,
+          1413744,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009476": {
+        "pid": "3009293",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5386230368,
+          44384001328,
+          269391
+        ],
+        "cpus": "19"
+      },
+      "3009530": {
+        "pid": "3009293",
+        "comm": "srsue",
+        "schedstat": [
+          1841029648,
+          37669742976,
+          223792
+        ],
+        "cpus": "19"
+      },
+      "3009548": {
+        "pid": "3009293",
+        "comm": "SYNC",
+        "schedstat": [
+          2843372928,
+          4298128,
+          124476
+        ],
+        "cpus": "19"
+      },
+      "3009567": {
+        "pid": "3009293",
+        "comm": "STACK",
+        "schedstat": [
+          2922687792,
+          53780443440,
+          633192
+        ],
+        "cpus": "19"
+      },
+      "3009574": {
+        "pid": "3009293",
+        "comm": "WORKER0",
+        "schedstat": [
+          6717074752,
+          145526336,
+          29669
+        ],
+        "cpus": "19"
+      },
+      "3009590": {
+        "pid": "3009293",
+        "comm": "WORKER1",
+        "schedstat": [
+          6874915376,
+          144080880,
+          29613
+        ],
+        "cpus": "19"
+      },
+      "3009608": {
+        "pid": "3009293",
+        "comm": "WORKER2",
+        "schedstat": [
+          18016,
+          4208,
+          5
+        ],
+        "cpus": "19"
+      },
+      "3009611": {
+        "pid": "3009293",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          39965616,
+          505696768,
+          1360
+        ],
+        "cpus": "19"
+      },
+      "3009666": {
+        "pid": "3009293",
+        "comm": "GW",
+        "schedstat": [
+          106530224,
+          1980496000,
+          9323
+        ],
+        "cpus": "19"
+      },
+      "3009296": {
+        "pid": "3009296",
+        "comm": "srsue",
+        "schedstat": [
+          188711744,
+          605478176,
+          752
+        ],
+        "cpus": "17"
+      },
+      "3009355": {
+        "pid": "3009296",
+        "comm": "srsue",
+        "schedstat": [
+          1074224160,
+          64955149824,
+          394779
+        ],
+        "cpus": "17"
+      },
+      "3009412": {
+        "pid": "3009296",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          17360,
+          1460336,
+          2
+        ],
+        "cpus": "17"
+      },
+      "3009414": {
+        "pid": "3009296",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          5904,
+          163424,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009459": {
+        "pid": "3009296",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          424944,
+          2418656,
+          39
+        ],
+        "cpus": "17"
+      },
+      "3009470": {
+        "pid": "3009296",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          1972144,
+          11291840,
+          49
+        ],
+        "cpus": "17"
+      },
+      "3009477": {
+        "pid": "3009296",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          14944,
+          969984,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009478": {
+        "pid": "3009296",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5376990240,
+          45135513376,
+          269695
+        ],
+        "cpus": "17"
+      },
+      "3009532": {
+        "pid": "3009296",
+        "comm": "srsue",
+        "schedstat": [
+          1731875104,
+          36236307344,
+          220048
+        ],
+        "cpus": "17"
+      },
+      "3009565": {
+        "pid": "3009296",
+        "comm": "SYNC",
+        "schedstat": [
+          2855363712,
+          4326944,
+          123926
+        ],
+        "cpus": "17"
+      },
+      "3009577": {
+        "pid": "3009296",
+        "comm": "STACK",
+        "schedstat": [
+          2814284480,
+          53734537424,
+          634433
+        ],
+        "cpus": "17"
+      },
+      "3009582": {
+        "pid": "3009296",
+        "comm": "WORKER0",
+        "schedstat": [
+          6515491984,
+          153120224,
+          29779
+        ],
+        "cpus": "17"
+      },
+      "3009595": {
+        "pid": "3009296",
+        "comm": "WORKER1",
+        "schedstat": [
+          6403878816,
+          158861792,
+          29679
+        ],
+        "cpus": "17"
+      },
+      "3009618": {
+        "pid": "3009296",
+        "comm": "WORKER2",
+        "schedstat": [
+          25040,
+          151520,
+          5
+        ],
+        "cpus": "17"
+      },
+      "3009622": {
+        "pid": "3009296",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          38279872,
+          424467776,
+          1310
+        ],
+        "cpus": "17"
+      },
+      "3009702": {
+        "pid": "3009296",
+        "comm": "GW",
+        "schedstat": [
+          50335696,
+          987094976,
+          4426
+        ],
+        "cpus": "17"
+      },
+      "3009299": {
+        "pid": "3009299",
+        "comm": "srsue",
+        "schedstat": [
+          188670656,
+          627411680,
+          780
+        ],
+        "cpus": "18"
+      },
+      "3009356": {
+        "pid": "3009299",
+        "comm": "srsue",
+        "schedstat": [
+          920683936,
+          61128698928,
+          419439
+        ],
+        "cpus": "18"
+      },
+      "3009426": {
+        "pid": "3009299",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          19488,
+          2103200,
+          3
+        ],
+        "cpus": "18"
+      },
+      "3009431": {
+        "pid": "3009299",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          10416,
+          8416,
+          3
+        ],
+        "cpus": "18"
+      },
+      "3009483": {
+        "pid": "3009299",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          426720,
+          8724656,
+          35
+        ],
+        "cpus": "18"
+      },
+      "3009484": {
+        "pid": "3009299",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          1737968,
+          10049792,
+          54
+        ],
+        "cpus": "18"
+      },
+      "3009490": {
+        "pid": "3009299",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          14144,
+          760144,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009491": {
+        "pid": "3009299",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5877124208,
+          42635495840,
+          277162
+        ],
+        "cpus": "18"
+      },
+      "3009536": {
+        "pid": "3009299",
+        "comm": "srsue",
+        "schedstat": [
+          2003381392,
+          35129965680,
+          225487
+        ],
+        "cpus": "18"
+      },
+      "3009568": {
+        "pid": "3009299",
+        "comm": "SYNC",
+        "schedstat": [
+          3024403952,
+          4513984,
+          123191
+        ],
+        "cpus": "18"
+      },
+      "3009584": {
+        "pid": "3009299",
+        "comm": "STACK",
+        "schedstat": [
+          2606835424,
+          51769174784,
+          655569
+        ],
+        "cpus": "18"
+      },
+      "3009589": {
+        "pid": "3009299",
+        "comm": "WORKER0",
+        "schedstat": [
+          5474714656,
+          145823968,
+          29534
+        ],
+        "cpus": "18"
+      },
+      "3009617": {
+        "pid": "3009299",
+        "comm": "WORKER1",
+        "schedstat": [
+          5484091696,
+          140272112,
+          29298
+        ],
+        "cpus": "18"
+      },
+      "3009630": {
+        "pid": "3009299",
+        "comm": "WORKER2",
+        "schedstat": [
+          22128,
+          5312,
+          5
+        ],
+        "cpus": "18"
+      },
+      "3009631": {
+        "pid": "3009299",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          23344000,
+          215450752,
+          783
+        ],
+        "cpus": "18"
+      },
+      "3009667": {
+        "pid": "3009299",
+        "comm": "GW",
+        "schedstat": [
+          37468416,
+          645896224,
+          3648
+        ],
+        "cpus": "18"
+      },
+      "3009304": {
+        "pid": "3009304",
+        "comm": "srsue",
+        "schedstat": [
+          189170672,
+          596382112,
+          590
+        ],
+        "cpus": "19"
+      },
+      "3009357": {
+        "pid": "3009304",
+        "comm": "srsue",
+        "schedstat": [
+          1091221104,
+          64892489920,
+          395496
+        ],
+        "cpus": "19"
+      },
+      "3009415": {
+        "pid": "3009304",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          12064,
+          1138768,
+          2
+        ],
+        "cpus": "19"
+      },
+      "3009420": {
+        "pid": "3009304",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          11504,
+          567744,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009471": {
+        "pid": "3009304",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          429664,
+          5741104,
+          36
+        ],
+        "cpus": "19"
+      },
+      "3009475": {
+        "pid": "3009304",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2045024,
+          2288624,
+          46
+        ],
+        "cpus": "19"
+      },
+      "3009481": {
+        "pid": "3009304",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          17216,
+          4027424,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009487": {
+        "pid": "3009304",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5460058336,
+          45059018352,
+          270398
+        ],
+        "cpus": "19"
+      },
+      "3009533": {
+        "pid": "3009304",
+        "comm": "srsue",
+        "schedstat": [
+          1826370064,
+          36669860384,
+          220258
+        ],
+        "cpus": "19"
+      },
+      "3009555": {
+        "pid": "3009304",
+        "comm": "SYNC",
+        "schedstat": [
+          2862006432,
+          4315296,
+          122618
+        ],
+        "cpus": "19"
+      },
+      "3009571": {
+        "pid": "3009304",
+        "comm": "STACK",
+        "schedstat": [
+          2656963088,
+          54036313872,
+          633049
+        ],
+        "cpus": "19"
+      },
+      "3009578": {
+        "pid": "3009304",
+        "comm": "WORKER0",
+        "schedstat": [
+          6246422112,
+          146837520,
+          29786
+        ],
+        "cpus": "19"
+      },
+      "3009592": {
+        "pid": "3009304",
+        "comm": "WORKER1",
+        "schedstat": [
+          6063666624,
+          140921968,
+          29715
+        ],
+        "cpus": "19"
+      },
+      "3009612": {
+        "pid": "3009304",
+        "comm": "WORKER2",
+        "schedstat": [
+          20752,
+          6480,
+          5
+        ],
+        "cpus": "19"
+      },
+      "3009619": {
+        "pid": "3009304",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          40162704,
+          478259168,
+          1369
+        ],
+        "cpus": "19"
+      },
+      "3009694": {
+        "pid": "3009304",
+        "comm": "GW",
+        "schedstat": [
+          51054832,
+          909931552,
+          4467
+        ],
+        "cpus": "19"
+      },
+      "3009308": {
+        "pid": "3009308",
+        "comm": "srsue",
+        "schedstat": [
+          212999312,
+          263589664,
+          834
+        ],
+        "cpus": "13"
+      },
+      "3009353": {
+        "pid": "3009308",
+        "comm": "srsue",
+        "schedstat": [
+          2441529232,
+          70329654880,
+          350613
+        ],
+        "cpus": "13"
+      },
+      "3009362": {
+        "pid": "3009308",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          26928,
+          716432,
+          2
+        ],
+        "cpus": "13"
+      },
+      "3009365": {
+        "pid": "3009308",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          22560,
+          89376,
+          2
+        ],
+        "cpus": "13"
+      },
+      "3009374": {
+        "pid": "3009308",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          897168,
+          4587008,
+          47
+        ],
+        "cpus": "13"
+      },
+      "3009376": {
+        "pid": "3009308",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          3400896,
+          23822144,
+          63
+        ],
+        "cpus": "13"
+      },
+      "3009378": {
+        "pid": "3009308",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          18640,
+          1952416,
+          1
+        ],
+        "cpus": "13"
+      },
+      "3009380": {
+        "pid": "3009308",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          13746676528,
+          52035872336,
+          349480
+        ],
+        "cpus": "13"
+      },
+      "3009384": {
+        "pid": "3009308",
+        "comm": "srsue",
+        "schedstat": [
+          4066706224,
+          53887475712,
+          269255
+        ],
+        "cpus": "13"
+      },
+      "3009402": {
+        "pid": "3009308",
+        "comm": "SYNC",
+        "schedstat": [
+          5060928384,
+          20512096,
+          138195
+        ],
+        "cpus": "13"
+      },
+      "3009421": {
+        "pid": "3009308",
+        "comm": "STACK",
+        "schedstat": [
+          5107881968,
+          60072523200,
+          545175
+        ],
+        "cpus": "13"
+      },
+      "3009422": {
+        "pid": "3009308",
+        "comm": "WORKER0",
+        "schedstat": [
+          13635888096,
+          234951136,
+          29463
+        ],
+        "cpus": "13"
+      },
+      "3009442": {
+        "pid": "3009308",
+        "comm": "WORKER1",
+        "schedstat": [
+          14018459952,
+          235104112,
+          29461
+        ],
+        "cpus": "13"
+      },
+      "3009461": {
+        "pid": "3009308",
+        "comm": "WORKER2",
+        "schedstat": [
+          36352,
+          9216,
+          5
+        ],
+        "cpus": "13"
+      },
+      "3009464": {
+        "pid": "3009308",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          57600112,
+          386725840,
+          1273
+        ],
+        "cpus": "13"
+      },
+      "3009705": {
+        "pid": "3009308",
+        "comm": "GW",
+        "schedstat": [
+          165466752,
+          2548453504,
+          9311
+        ],
+        "cpus": "13"
+      },
+      "3009311": {
+        "pid": "3009311",
+        "comm": "srsue",
+        "schedstat": [
+          213026048,
+          256699952,
+          713
+        ],
+        "cpus": "14"
+      },
+      "3009354": {
+        "pid": "3009311",
+        "comm": "srsue",
+        "schedstat": [
+          2204926016,
+          68097087440,
+          365852
+        ],
+        "cpus": "14"
+      },
+      "3009366": {
+        "pid": "3009311",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          22144,
+          950288,
+          2
+        ],
+        "cpus": "14"
+      },
+      "3009369": {
+        "pid": "3009311",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          9184,
+          26736,
+          1
+        ],
+        "cpus": "14"
+      },
+      "3009375": {
+        "pid": "3009311",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          867408,
+          2757248,
+          40
+        ],
+        "cpus": "14"
+      },
+      "3009377": {
+        "pid": "3009311",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          3182784,
+          19020224,
+          56
+        ],
+        "cpus": "14"
+      },
+      "3009379": {
+        "pid": "3009311",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          22128,
+          312768,
+          1
+        ],
+        "cpus": "14"
+      },
+      "3009381": {
+        "pid": "3009311",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          13359139056,
+          47617357696,
+          353236
+        ],
+        "cpus": "14"
+      },
+      "3009387": {
+        "pid": "3009311",
+        "comm": "srsue",
+        "schedstat": [
+          3972819488,
+          50515270992,
+          268914
+        ],
+        "cpus": "14"
+      },
+      "3009405": {
+        "pid": "3009311",
+        "comm": "SYNC",
+        "schedstat": [
+          4997664080,
+          19362240,
+          138492
+        ],
+        "cpus": "14"
+      },
+      "3009417": {
+        "pid": "3009311",
+        "comm": "STACK",
+        "schedstat": [
+          4884186368,
+          58301386080,
+          564974
+        ],
+        "cpus": "14"
+      },
+      "3009430": {
+        "pid": "3009311",
+        "comm": "WORKER0",
+        "schedstat": [
+          13510542416,
+          237169056,
+          29415
+        ],
+        "cpus": "14"
+      },
+      "3009449": {
+        "pid": "3009311",
+        "comm": "WORKER1",
+        "schedstat": [
+          13393807232,
+          235500032,
+          29332
+        ],
+        "cpus": "14"
+      },
+      "3009460": {
+        "pid": "3009311",
+        "comm": "WORKER2",
+        "schedstat": [
+          34800,
+          7840,
+          5
+        ],
+        "cpus": "14"
+      },
+      "3009463": {
+        "pid": "3009311",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          57391440,
+          346186480,
+          1282
+        ],
+        "cpus": "14"
+      },
+      "3009699": {
+        "pid": "3009311",
+        "comm": "GW",
+        "schedstat": [
+          76926304,
+          1155478112,
+          4422
+        ],
+        "cpus": "14"
+      }
+    },
+    "cores": {
+      "cpu0": [
+        2350716,
+        6491,
+        4282379,
+        300614030,
+        70033,
+        0,
+        86440,
+        0,
+        0,
+        0
+      ],
+      "cpu1": [
+        2480978,
+        6581,
+        4999963,
+        300418447,
+        55135,
+        0,
+        72447,
+        0,
+        0,
+        0
+      ],
+      "cpu2": [
+        2472583,
+        5338,
+        5070901,
+        300385493,
+        63996,
+        0,
+        64360,
+        0,
+        0,
+        0
+      ],
+      "cpu3": [
+        2486182,
+        7104,
+        5017604,
+        300455527,
+        48325,
+        0,
+        65825,
+        0,
+        0,
+        0
+      ],
+      "cpu4": [
+        2495493,
+        5969,
+        4765216,
+        300624301,
+        48654,
+        0,
+        76315,
+        0,
+        0,
+        0
+      ],
+      "cpu5": [
+        5402565,
+        33558,
+        6787471,
+        295418928,
+        53513,
+        0,
+        90987,
+        0,
+        0,
+        0
+      ],
+      "cpu6": [
+        5898524,
+        30267,
+        7243697,
+        294545862,
+        49988,
+        0,
+        87932,
+        0,
+        0,
+        0
+      ],
+      "cpu7": [
+        5070483,
+        29992,
+        6312985,
+        296207003,
+        51113,
+        0,
+        97397,
+        0,
+        0,
+        0
+      ],
+      "cpu8": [
+        5221724,
+        32125,
+        5673942,
+        296742063,
+        48214,
+        0,
+        91822,
+        0,
+        0,
+        0
+      ],
+      "cpu9": [
+        5494918,
+        31807,
+        5244546,
+        297018219,
+        42573,
+        0,
+        97787,
+        0,
+        0,
+        0
+      ],
+      "cpu10": [
+        2379381,
+        16308,
+        4339934,
+        300950569,
+        63943,
+        0,
+        94396,
+        0,
+        0,
+        0
+      ],
+      "cpu11": [
+        2609244,
+        16117,
+        4923605,
+        300175007,
+        50312,
+        0,
+        80143,
+        0,
+        0,
+        0
+      ],
+      "cpu12": [
+        2663068,
+        15716,
+        4979614,
+        300096838,
+        61306,
+        0,
+        72253,
+        0,
+        0,
+        0
+      ],
+      "cpu13": [
+        3657236,
+        15760,
+        5860468,
+        298236728,
+        42157,
+        0,
+        236136,
+        0,
+        0,
+        0
+      ],
+      "cpu14": [
+        4230512,
+        15539,
+        5096161,
+        298525760,
+        44716,
+        0,
+        145027,
+        0,
+        0,
+        0
+      ],
+      "cpu15": [
+        6091491,
+        32421,
+        10693893,
+        291254711,
+        45666,
+        0,
+        232072,
+        0,
+        0,
+        0
+      ],
+      "cpu16": [
+        5992928,
+        30294,
+        10365002,
+        291629842,
+        45495,
+        0,
+        254290,
+        0,
+        0,
+        0
+      ],
+      "cpu17": [
+        6422121,
+        30658,
+        8743279,
+        292758768,
+        44251,
+        0,
+        230021,
+        0,
+        0,
+        0
+      ],
+      "cpu18": [
+        5899793,
+        28881,
+        4913217,
+        297023899,
+        47624,
+        0,
+        183691,
+        0,
+        0,
+        0
+      ],
+      "cpu19": [
+        5715071,
+        30933,
+        4695888,
+        296860249,
+        40259,
+        0,
+        187482,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "after": {
+    "monotonic_ns": 3088752764881301,
+    "threads": {
+      "3008992": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          287909104,
+          161042304,
+          6796
+        ],
+        "cpus": "15-16"
+      },
+      "3008997": {
+        "pid": "3008992",
+        "comm": "cuda00001400006",
+        "schedstat": [
+          161376,
+          0,
+          2
+        ],
+        "cpus": "15-16"
+      },
+      "3009000": {
+        "pid": "3008992",
+        "comm": "cuda-EvtHandlr",
+        "schedstat": [
+          14948144,
+          31553360,
+          1351
+        ],
+        "cpus": "15-16"
+      },
+      "3009003": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          12738472816,
+          12492963312,
+          624567
+        ],
+        "cpus": "15-16"
+      },
+      "3009004": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1222831936,
+          744382368,
+          13378
+        ],
+        "cpus": "15-16"
+      },
+      "3009005": {
+        "pid": "3008992",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          16528,
+          134896,
+          1
+        ],
+        "cpus": "15-16"
+      },
+      "3009006": {
+        "pid": "3008992",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          11961874256,
+          20561739632,
+          1172869
+        ],
+        "cpus": "15-16"
+      },
+      "3009007": {
+        "pid": "3008992",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          17408,
+          0,
+          1
+        ],
+        "cpus": "15-16"
+      },
+      "3009008": {
+        "pid": "3008992",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          17040,
+          0,
+          2
+        ],
+        "cpus": "15-16"
+      },
+      "3009014": {
+        "pid": "3008992",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          8080,
+          0,
+          1
+        ],
+        "cpus": "15-16"
+      },
+      "3009015": {
+        "pid": "3008992",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          34849973376,
+          30873560544,
+          1694389
+        ],
+        "cpus": "15-16"
+      },
+      "3009016": {
+        "pid": "3008992",
+        "comm": "ZMQbg/IO/1",
+        "schedstat": [
+          35927283104,
+          29038358416,
+          1773217
+        ],
+        "cpus": "15-16"
+      },
+      "3009018": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1328507600,
+          2419061120,
+          119417
+        ],
+        "cpus": "15-16"
+      },
+      "3009019": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1037508944,
+          2049862112,
+          119326
+        ],
+        "cpus": "15-16"
+      },
+      "3009020": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1137797488,
+          2245520880,
+          119308
+        ],
+        "cpus": "15-16"
+      },
+      "3009021": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1113922176,
+          2128515040,
+          119313
+        ],
+        "cpus": "15-16"
+      },
+      "3009022": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1051561408,
+          2279399760,
+          119319
+        ],
+        "cpus": "15-16"
+      },
+      "3009023": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1281219632,
+          2460500400,
+          119299
+        ],
+        "cpus": "15-16"
+      },
+      "3009024": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1119695248,
+          2366242768,
+          119311
+        ],
+        "cpus": "15-16"
+      },
+      "3009025": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1150466976,
+          2416519232,
+          119296
+        ],
+        "cpus": "15-16"
+      },
+      "3009026": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1176137488,
+          2655275152,
+          119296
+        ],
+        "cpus": "15-16"
+      },
+      "3009027": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1252439456,
+          2259898240,
+          119301
+        ],
+        "cpus": "15-16"
+      },
+      "3009028": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1185093280,
+          2395413872,
+          119301
+        ],
+        "cpus": "15-16"
+      },
+      "3009029": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1038827184,
+          2085178464,
+          119325
+        ],
+        "cpus": "15-16"
+      },
+      "3009030": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1222031744,
+          2474254064,
+          119302
+        ],
+        "cpus": "15-16"
+      },
+      "3009031": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1310050752,
+          2459534416,
+          119290
+        ],
+        "cpus": "15-16"
+      },
+      "3009032": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1083265600,
+          2320075296,
+          119308
+        ],
+        "cpus": "15-16"
+      },
+      "3009033": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1054579456,
+          2030301472,
+          119321
+        ],
+        "cpus": "15-16"
+      },
+      "3009034": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1098086224,
+          2556925376,
+          119319
+        ],
+        "cpus": "15-16"
+      },
+      "3009035": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          11688463456,
+          122204259344,
+          4067263
+        ],
+        "cpus": "15-16"
+      },
+      "3009036": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6623848256,
+          127056994032,
+          4686225
+        ],
+        "cpus": "15-16"
+      },
+      "3009037": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6558407392,
+          127135713520,
+          4601976
+        ],
+        "cpus": "15-16"
+      },
+      "3009038": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6503186416,
+          127210157456,
+          4742152
+        ],
+        "cpus": "15-16"
+      },
+      "3009039": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6571342768,
+          127082200896,
+          4602952
+        ],
+        "cpus": "15-16"
+      },
+      "3009040": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6447507456,
+          127327022752,
+          4657053
+        ],
+        "cpus": "15-16"
+      },
+      "3009041": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6710649104,
+          126955046688,
+          4929415
+        ],
+        "cpus": "15-16"
+      },
+      "3009042": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          7159251600,
+          126862366928,
+          4967379
+        ],
+        "cpus": "15-16"
+      },
+      "3009043": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6856772624,
+          126890981456,
+          4637524
+        ],
+        "cpus": "15-16"
+      },
+      "3009044": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6688482752,
+          127004471808,
+          4924066
+        ],
+        "cpus": "15-16"
+      },
+      "3009045": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6574115824,
+          126976763200,
+          4724719
+        ],
+        "cpus": "15-16"
+      },
+      "3009046": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6719268080,
+          126961341888,
+          4936571
+        ],
+        "cpus": "15-16"
+      },
+      "3009047": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6716533184,
+          127007608880,
+          4837850
+        ],
+        "cpus": "15-16"
+      },
+      "3009048": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6791140320,
+          126957761920,
+          4975711
+        ],
+        "cpus": "15-16"
+      },
+      "3009049": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6658733296,
+          127076856608,
+          4741504
+        ],
+        "cpus": "15-16"
+      },
+      "3009050": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6966196320,
+          127046796432,
+          4826105
+        ],
+        "cpus": "15-16"
+      },
+      "3009051": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          6955596048,
+          126694727920,
+          4826297
+        ],
+        "cpus": "15-16"
+      },
+      "3009052": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          3259386960,
+          113043317488,
+          2788400
+        ],
+        "cpus": "15-16"
+      },
+      "3009053": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1971631984,
+          46676781488,
+          960909
+        ],
+        "cpus": "15-16"
+      },
+      "3009054": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1967194208,
+          46903998144,
+          819295
+        ],
+        "cpus": "15-16"
+      },
+      "3009055": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1878514448,
+          44976366704,
+          805672
+        ],
+        "cpus": "15-16"
+      },
+      "3009056": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1870817712,
+          46247855472,
+          822315
+        ],
+        "cpus": "15-16"
+      },
+      "3009057": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1965060896,
+          48307356736,
+          873353
+        ],
+        "cpus": "15-16"
+      },
+      "3009058": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1930306096,
+          44765782240,
+          896468
+        ],
+        "cpus": "15-16"
+      },
+      "3009059": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1552794480,
+          13254180640,
+          304589
+        ],
+        "cpus": "15-16"
+      },
+      "3009060": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1624895888,
+          23839729936,
+          401124
+        ],
+        "cpus": "15-16"
+      },
+      "3009061": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1977126144,
+          45747158608,
+          959399
+        ],
+        "cpus": "15-16"
+      },
+      "3009062": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1929409744,
+          47928751968,
+          854989
+        ],
+        "cpus": "15-16"
+      },
+      "3009063": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1967146000,
+          45805762592,
+          962005
+        ],
+        "cpus": "15-16"
+      },
+      "3009064": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1973778176,
+          46203428720,
+          933074
+        ],
+        "cpus": "15-16"
+      },
+      "3009065": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          2056992256,
+          48597952112,
+          1033581
+        ],
+        "cpus": "15-16"
+      },
+      "3009066": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1927883760,
+          45544842416,
+          895205
+        ],
+        "cpus": "15-16"
+      },
+      "3009067": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1516713504,
+          13080632160,
+          287388
+        ],
+        "cpus": "15-16"
+      },
+      "3009068": {
+        "pid": "3008992",
+        "comm": "ocudu-gpu-chann",
+        "schedstat": [
+          1629841008,
+          22749518912,
+          385232
+        ],
+        "cpus": "15-16"
+      },
+      "3009263": {
+        "pid": "3009263",
+        "comm": "srsue",
+        "schedstat": [
+          191513920,
+          568290464,
+          569
+        ],
+        "cpus": "17"
+      },
+      "3009302": {
+        "pid": "3009263",
+        "comm": "srsue",
+        "schedstat": [
+          1257591824,
+          67899957936,
+          404335
+        ],
+        "cpus": "17"
+      },
+      "3009392": {
+        "pid": "3009263",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          18944,
+          1622816,
+          2
+        ],
+        "cpus": "17"
+      },
+      "3009394": {
+        "pid": "3009263",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          7888,
+          382800,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009428": {
+        "pid": "3009263",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          439552,
+          3144336,
+          33
+        ],
+        "cpus": "17"
+      },
+      "3009433": {
+        "pid": "3009263",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2066656,
+          9699088,
+          53
+        ],
+        "cpus": "17"
+      },
+      "3009434": {
+        "pid": "3009263",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          15152,
+          560896,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009437": {
+        "pid": "3009263",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5536568848,
+          46561450432,
+          277597
+        ],
+        "cpus": "17"
+      },
+      "3009525": {
+        "pid": "3009263",
+        "comm": "srsue",
+        "schedstat": [
+          1793900992,
+          38062517328,
+          226895
+        ],
+        "cpus": "17"
+      },
+      "3009541": {
+        "pid": "3009263",
+        "comm": "SYNC",
+        "schedstat": [
+          2958327824,
+          4332976,
+          127391
+        ],
+        "cpus": "17"
+      },
+      "3009550": {
+        "pid": "3009263",
+        "comm": "STACK",
+        "schedstat": [
+          3087734752,
+          55618241776,
+          653794
+        ],
+        "cpus": "17"
+      },
+      "3009556": {
+        "pid": "3009263",
+        "comm": "WORKER0",
+        "schedstat": [
+          6727337008,
+          165204528,
+          30734
+        ],
+        "cpus": "17"
+      },
+      "3009580": {
+        "pid": "3009263",
+        "comm": "WORKER1",
+        "schedstat": [
+          7104535008,
+          158241344,
+          30655
+        ],
+        "cpus": "17"
+      },
+      "3009594": {
+        "pid": "3009263",
+        "comm": "WORKER2",
+        "schedstat": [
+          20448,
+          4816,
+          5
+        ],
+        "cpus": "17"
+      },
+      "3009599": {
+        "pid": "3009263",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          42091024,
+          462580816,
+          1459
+        ],
+        "cpus": "17"
+      },
+      "3009706": {
+        "pid": "3009263",
+        "comm": "GW",
+        "schedstat": [
+          119159776,
+          2111474464,
+          9816
+        ],
+        "cpus": "17"
+      },
+      "3009266": {
+        "pid": "3009266",
+        "comm": "srsue",
+        "schedstat": [
+          188836816,
+          569144000,
+          548
+        ],
+        "cpus": "18"
+      },
+      "3009305": {
+        "pid": "3009266",
+        "comm": "srsue",
+        "schedstat": [
+          1106382416,
+          63840233552,
+          430758
+        ],
+        "cpus": "18"
+      },
+      "3009391": {
+        "pid": "3009266",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          12480,
+          876080,
+          2
+        ],
+        "cpus": "18"
+      },
+      "3009395": {
+        "pid": "3009266",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          10672,
+          358320,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009429": {
+        "pid": "3009266",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          470432,
+          3582128,
+          40
+        ],
+        "cpus": "18"
+      },
+      "3009432": {
+        "pid": "3009266",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          1987808,
+          1300688,
+          54
+        ],
+        "cpus": "18"
+      },
+      "3009436": {
+        "pid": "3009266",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          18720,
+          2596288,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009438": {
+        "pid": "3009266",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          6214408784,
+          44492245824,
+          290528
+        ],
+        "cpus": "18"
+      },
+      "3009522": {
+        "pid": "3009266",
+        "comm": "srsue",
+        "schedstat": [
+          2081065488,
+          37957402336,
+          232872
+        ],
+        "cpus": "18"
+      },
+      "3009540": {
+        "pid": "3009266",
+        "comm": "SYNC",
+        "schedstat": [
+          3056354240,
+          4657616,
+          127154
+        ],
+        "cpus": "18"
+      },
+      "3009553": {
+        "pid": "3009266",
+        "comm": "WORKER0",
+        "schedstat": [
+          6462889104,
+          148427824,
+          30583
+        ],
+        "cpus": "18"
+      },
+      "3009554": {
+        "pid": "3009266",
+        "comm": "STACK",
+        "schedstat": [
+          2867403024,
+          53455009872,
+          676961
+        ],
+        "cpus": "18"
+      },
+      "3009576": {
+        "pid": "3009266",
+        "comm": "WORKER1",
+        "schedstat": [
+          6605755856,
+          142695728,
+          30516
+        ],
+        "cpus": "18"
+      },
+      "3009593": {
+        "pid": "3009266",
+        "comm": "WORKER2",
+        "schedstat": [
+          19344,
+          6096,
+          5
+        ],
+        "cpus": "18"
+      },
+      "3009596": {
+        "pid": "3009266",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          42590608,
+          421664128,
+          1423
+        ],
+        "cpus": "18"
+      },
+      "3009704": {
+        "pid": "3009266",
+        "comm": "GW",
+        "schedstat": [
+          52486528,
+          901043280,
+          4640
+        ],
+        "cpus": "18"
+      },
+      "3009269": {
+        "pid": "3009269",
+        "comm": "srsue",
+        "schedstat": [
+          190269600,
+          592211024,
+          599
+        ],
+        "cpus": "19"
+      },
+      "3009303": {
+        "pid": "3009269",
+        "comm": "srsue",
+        "schedstat": [
+          1275845472,
+          67702952032,
+          405992
+        ],
+        "cpus": "19"
+      },
+      "3009403": {
+        "pid": "3009269",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          15808,
+          2885872,
+          2
+        ],
+        "cpus": "19"
+      },
+      "3009406": {
+        "pid": "3009269",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          5376,
+          16768,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009445": {
+        "pid": "3009269",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          417264,
+          5323968,
+          36
+        ],
+        "cpus": "19"
+      },
+      "3009450": {
+        "pid": "3009269",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2504768,
+          3140656,
+          66
+        ],
+        "cpus": "19"
+      },
+      "3009458": {
+        "pid": "3009269",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          13360,
+          853040,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009466": {
+        "pid": "3009269",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5651512384,
+          46530909104,
+          279919
+        ],
+        "cpus": "19"
+      },
+      "3009529": {
+        "pid": "3009269",
+        "comm": "srsue",
+        "schedstat": [
+          1914352336,
+          39262794864,
+          231426
+        ],
+        "cpus": "19"
+      },
+      "3009547": {
+        "pid": "3009269",
+        "comm": "SYNC",
+        "schedstat": [
+          2939953824,
+          4365936,
+          128222
+        ],
+        "cpus": "19"
+      },
+      "3009569": {
+        "pid": "3009269",
+        "comm": "STACK",
+        "schedstat": [
+          3028497424,
+          55781779568,
+          652125
+        ],
+        "cpus": "19"
+      },
+      "3009573": {
+        "pid": "3009269",
+        "comm": "WORKER0",
+        "schedstat": [
+          6843708080,
+          152495072,
+          30816
+        ],
+        "cpus": "19"
+      },
+      "3009588": {
+        "pid": "3009269",
+        "comm": "WORKER1",
+        "schedstat": [
+          7311030432,
+          145356448,
+          30752
+        ],
+        "cpus": "19"
+      },
+      "3009607": {
+        "pid": "3009269",
+        "comm": "WORKER2",
+        "schedstat": [
+          19872,
+          75888,
+          5
+        ],
+        "cpus": "19"
+      },
+      "3009609": {
+        "pid": "3009269",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          42416432,
+          514955664,
+          1423
+        ],
+        "cpus": "19"
+      },
+      "3009703": {
+        "pid": "3009269",
+        "comm": "GW",
+        "schedstat": [
+          110667728,
+          2062038288,
+          9781
+        ],
+        "cpus": "19"
+      },
+      "3009272": {
+        "pid": "3009272",
+        "comm": "srsue",
+        "schedstat": [
+          185865568,
+          582005776,
+          679
+        ],
+        "cpus": "17"
+      },
+      "3009325": {
+        "pid": "3009272",
+        "comm": "srsue",
+        "schedstat": [
+          1128557072,
+          67452763808,
+          405727
+        ],
+        "cpus": "17"
+      },
+      "3009404": {
+        "pid": "3009272",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          16608,
+          1515152,
+          2
+        ],
+        "cpus": "17"
+      },
+      "3009407": {
+        "pid": "3009272",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          6720,
+          807984,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009444": {
+        "pid": "3009272",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          429968,
+          3146608,
+          38
+        ],
+        "cpus": "17"
+      },
+      "3009451": {
+        "pid": "3009272",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          1815104,
+          10372960,
+          51
+        ],
+        "cpus": "17"
+      },
+      "3009456": {
+        "pid": "3009272",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          14928,
+          572944,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009465": {
+        "pid": "3009272",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5538538912,
+          46798769040,
+          277133
+        ],
+        "cpus": "17"
+      },
+      "3009528": {
+        "pid": "3009272",
+        "comm": "srsue",
+        "schedstat": [
+          1826960000,
+          37808074688,
+          227449
+        ],
+        "cpus": "17"
+      },
+      "3009549": {
+        "pid": "3009272",
+        "comm": "SYNC",
+        "schedstat": [
+          2997281232,
+          4717056,
+          127751
+        ],
+        "cpus": "17"
+      },
+      "3009562": {
+        "pid": "3009272",
+        "comm": "STACK",
+        "schedstat": [
+          2851544784,
+          55856592448,
+          653431
+        ],
+        "cpus": "17"
+      },
+      "3009575": {
+        "pid": "3009272",
+        "comm": "WORKER0",
+        "schedstat": [
+          6474407616,
+          157485248,
+          30798
+        ],
+        "cpus": "17"
+      },
+      "3009591": {
+        "pid": "3009272",
+        "comm": "WORKER1",
+        "schedstat": [
+          6534584464,
+          162946672,
+          30567
+        ],
+        "cpus": "17"
+      },
+      "3009614": {
+        "pid": "3009272",
+        "comm": "WORKER2",
+        "schedstat": [
+          19504,
+          5120,
+          5
+        ],
+        "cpus": "17"
+      },
+      "3009616": {
+        "pid": "3009272",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          43499424,
+          471745952,
+          1508
+        ],
+        "cpus": "17"
+      },
+      "3009693": {
+        "pid": "3009272",
+        "comm": "GW",
+        "schedstat": [
+          53547296,
+          982665632,
+          4720
+        ],
+        "cpus": "17"
+      },
+      "3009275": {
+        "pid": "3009275",
+        "comm": "srsue",
+        "schedstat": [
+          185749440,
+          560295344,
+          575
+        ],
+        "cpus": "18"
+      },
+      "3009330": {
+        "pid": "3009275",
+        "comm": "srsue",
+        "schedstat": [
+          1236892848,
+          64085804976,
+          429376
+        ],
+        "cpus": "18"
+      },
+      "3009397": {
+        "pid": "3009275",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          15088,
+          1819600,
+          2
+        ],
+        "cpus": "18"
+      },
+      "3009400": {
+        "pid": "3009275",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          11536,
+          354688,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009435": {
+        "pid": "3009275",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          583472,
+          5237264,
+          42
+        ],
+        "cpus": "18"
+      },
+      "3009440": {
+        "pid": "3009275",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2240960,
+          2504992,
+          41
+        ],
+        "cpus": "18"
+      },
+      "3009447": {
+        "pid": "3009275",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          11664,
+          528720,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009454": {
+        "pid": "3009275",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          6041796528,
+          43425807104,
+          286038
+        ],
+        "cpus": "18"
+      },
+      "3009527": {
+        "pid": "3009275",
+        "comm": "srsue",
+        "schedstat": [
+          2048209280,
+          38017870016,
+          231709
+        ],
+        "cpus": "18"
+      },
+      "3009542": {
+        "pid": "3009275",
+        "comm": "SYNC",
+        "schedstat": [
+          3021768816,
+          4376576,
+          126889
+        ],
+        "cpus": "18"
+      },
+      "3009558": {
+        "pid": "3009275",
+        "comm": "STACK",
+        "schedstat": [
+          2970580384,
+          53371454192,
+          676886
+        ],
+        "cpus": "18"
+      },
+      "3009559": {
+        "pid": "3009275",
+        "comm": "WORKER0",
+        "schedstat": [
+          6483634912,
+          146570832,
+          30444
+        ],
+        "cpus": "18"
+      },
+      "3009581": {
+        "pid": "3009275",
+        "comm": "WORKER1",
+        "schedstat": [
+          7060083072,
+          143467248,
+          30385
+        ],
+        "cpus": "18"
+      },
+      "3009598": {
+        "pid": "3009275",
+        "comm": "WORKER2",
+        "schedstat": [
+          17856,
+          3952,
+          5
+        ],
+        "cpus": "18"
+      },
+      "3009601": {
+        "pid": "3009275",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          42213296,
+          453781136,
+          1422
+        ],
+        "cpus": "18"
+      },
+      "3009695": {
+        "pid": "3009275",
+        "comm": "GW",
+        "schedstat": [
+          111248560,
+          1793385472,
+          9651
+        ],
+        "cpus": "18"
+      },
+      "3009278": {
+        "pid": "3009278",
+        "comm": "srsue",
+        "schedstat": [
+          190595520,
+          598427856,
+          582
+        ],
+        "cpus": "19"
+      },
+      "3009328": {
+        "pid": "3009278",
+        "comm": "srsue",
+        "schedstat": [
+          1140501888,
+          67266572336,
+          407459
+        ],
+        "cpus": "19"
+      },
+      "3009408": {
+        "pid": "3009278",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          16144,
+          2319808,
+          2
+        ],
+        "cpus": "19"
+      },
+      "3009410": {
+        "pid": "3009278",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          12912,
+          696304,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009453": {
+        "pid": "3009278",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          441648,
+          6348816,
+          38
+        ],
+        "cpus": "19"
+      },
+      "3009457": {
+        "pid": "3009278",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2080160,
+          242672,
+          38
+        ],
+        "cpus": "19"
+      },
+      "3009469": {
+        "pid": "3009278",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          13408,
+          1730336,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009473": {
+        "pid": "3009278",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5698279440,
+          47421707744,
+          279868
+        ],
+        "cpus": "19"
+      },
+      "3009531": {
+        "pid": "3009278",
+        "comm": "srsue",
+        "schedstat": [
+          1927859616,
+          38596516768,
+          229329
+        ],
+        "cpus": "19"
+      },
+      "3009552": {
+        "pid": "3009278",
+        "comm": "SYNC",
+        "schedstat": [
+          2904956576,
+          4582976,
+          127122
+        ],
+        "cpus": "19"
+      },
+      "3009570": {
+        "pid": "3009278",
+        "comm": "STACK",
+        "schedstat": [
+          2856685120,
+          55941813440,
+          652059
+        ],
+        "cpus": "19"
+      },
+      "3009572": {
+        "pid": "3009278",
+        "comm": "WORKER0",
+        "schedstat": [
+          6453506816,
+          144088144,
+          30798
+        ],
+        "cpus": "19"
+      },
+      "3009586": {
+        "pid": "3009278",
+        "comm": "WORKER1",
+        "schedstat": [
+          6588581824,
+          146824560,
+          30814
+        ],
+        "cpus": "19"
+      },
+      "3009605": {
+        "pid": "3009278",
+        "comm": "WORKER2",
+        "schedstat": [
+          298960,
+          12000,
+          6
+        ],
+        "cpus": "19"
+      },
+      "3009606": {
+        "pid": "3009278",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          42689712,
+          452846368,
+          1471
+        ],
+        "cpus": "19"
+      },
+      "3009696": {
+        "pid": "3009278",
+        "comm": "GW",
+        "schedstat": [
+          52957504,
+          946768864,
+          4719
+        ],
+        "cpus": "19"
+      },
+      "3009281": {
+        "pid": "3009281",
+        "comm": "srsue",
+        "schedstat": [
+          212263696,
+          239598272,
+          516
+        ],
+        "cpus": "13"
+      },
+      "3009317": {
+        "pid": "3009281",
+        "comm": "srsue",
+        "schedstat": [
+          2565511296,
+          73064576672,
+          361320
+        ],
+        "cpus": "13"
+      },
+      "3009358": {
+        "pid": "3009281",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          28432,
+          933344,
+          2
+        ],
+        "cpus": "13"
+      },
+      "3009360": {
+        "pid": "3009281",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          10880,
+          29664,
+          1
+        ],
+        "cpus": "13"
+      },
+      "3009363": {
+        "pid": "3009281",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          857808,
+          2790352,
+          38
+        ],
+        "cpus": "13"
+      },
+      "3009367": {
+        "pid": "3009281",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          3547808,
+          19190848,
+          64
+        ],
+        "cpus": "13"
+      },
+      "3009370": {
+        "pid": "3009281",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          24656,
+          1396656,
+          1
+        ],
+        "cpus": "13"
+      },
+      "3009372": {
+        "pid": "3009281",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          14099660880,
+          53804926768,
+          364135
+        ],
+        "cpus": "13"
+      },
+      "3009383": {
+        "pid": "3009281",
+        "comm": "srsue",
+        "schedstat": [
+          4176159376,
+          55903791040,
+          282724
+        ],
+        "cpus": "13"
+      },
+      "3009389": {
+        "pid": "3009281",
+        "comm": "SYNC",
+        "schedstat": [
+          5233272384,
+          21324080,
+          146417
+        ],
+        "cpus": "13"
+      },
+      "3009390": {
+        "pid": "3009281",
+        "comm": "STACK",
+        "schedstat": [
+          5308579104,
+          62201829376,
+          562240
+        ],
+        "cpus": "13"
+      },
+      "3009398": {
+        "pid": "3009281",
+        "comm": "WORKER0",
+        "schedstat": [
+          14156412912,
+          244107888,
+          30306
+        ],
+        "cpus": "13"
+      },
+      "3009425": {
+        "pid": "3009281",
+        "comm": "WORKER1",
+        "schedstat": [
+          14405997936,
+          241346256,
+          30328
+        ],
+        "cpus": "13"
+      },
+      "3009443": {
+        "pid": "3009281",
+        "comm": "WORKER2",
+        "schedstat": [
+          35680,
+          10176,
+          5
+        ],
+        "cpus": "13"
+      },
+      "3009448": {
+        "pid": "3009281",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          65392688,
+          432957904,
+          1474
+        ],
+        "cpus": "13"
+      },
+      "3009698": {
+        "pid": "3009281",
+        "comm": "GW",
+        "schedstat": [
+          170124624,
+          2685916896,
+          9726
+        ],
+        "cpus": "13"
+      },
+      "3009284": {
+        "pid": "3009284",
+        "comm": "srsue",
+        "schedstat": [
+          213194096,
+          236070304,
+          530
+        ],
+        "cpus": "14"
+      },
+      "3009315": {
+        "pid": "3009284",
+        "comm": "srsue",
+        "schedstat": [
+          2317372112,
+          70381041744,
+          376430
+        ],
+        "cpus": "14"
+      },
+      "3009359": {
+        "pid": "3009284",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          29264,
+          1413328,
+          2
+        ],
+        "cpus": "14"
+      },
+      "3009361": {
+        "pid": "3009284",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          10640,
+          28976,
+          1
+        ],
+        "cpus": "14"
+      },
+      "3009364": {
+        "pid": "3009284",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          890080,
+          4912352,
+          44
+        ],
+        "cpus": "14"
+      },
+      "3009368": {
+        "pid": "3009284",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          3235616,
+          23195936,
+          56
+        ],
+        "cpus": "14"
+      },
+      "3009371": {
+        "pid": "3009284",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          24704,
+          627824,
+          1
+        ],
+        "cpus": "14"
+      },
+      "3009373": {
+        "pid": "3009284",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          13604214096,
+          48946876624,
+          358804
+        ],
+        "cpus": "14"
+      },
+      "3009382": {
+        "pid": "3009284",
+        "comm": "srsue",
+        "schedstat": [
+          4027155680,
+          52040112624,
+          271019
+        ],
+        "cpus": "14"
+      },
+      "3009388": {
+        "pid": "3009284",
+        "comm": "SYNC",
+        "schedstat": [
+          5155326128,
+          19373616,
+          139569
+        ],
+        "cpus": "14"
+      },
+      "3009393": {
+        "pid": "3009284",
+        "comm": "STACK",
+        "schedstat": [
+          5093234528,
+          60369184080,
+          582662
+        ],
+        "cpus": "14"
+      },
+      "3009396": {
+        "pid": "3009284",
+        "comm": "WORKER0",
+        "schedstat": [
+          13504933696,
+          243373056,
+          30357
+        ],
+        "cpus": "14"
+      },
+      "3009418": {
+        "pid": "3009284",
+        "comm": "WORKER1",
+        "schedstat": [
+          14067471568,
+          241978896,
+          30359
+        ],
+        "cpus": "14"
+      },
+      "3009439": {
+        "pid": "3009284",
+        "comm": "WORKER2",
+        "schedstat": [
+          41152,
+          9872,
+          5
+        ],
+        "cpus": "14"
+      },
+      "3009441": {
+        "pid": "3009284",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          66285632,
+          402945008,
+          1484
+        ],
+        "cpus": "14"
+      },
+      "3009697": {
+        "pid": "3009284",
+        "comm": "GW",
+        "schedstat": [
+          80967424,
+          1225644192,
+          4639
+        ],
+        "cpus": "14"
+      },
+      "3009287": {
+        "pid": "3009287",
+        "comm": "srsue",
+        "schedstat": [
+          190279456,
+          617533376,
+          807
+        ],
+        "cpus": "17"
+      },
+      "3009352": {
+        "pid": "3009287",
+        "comm": "srsue",
+        "schedstat": [
+          1260614448,
+          67891655264,
+          404000
+        ],
+        "cpus": "17"
+      },
+      "3009419": {
+        "pid": "3009287",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          13136,
+          2499872,
+          2
+        ],
+        "cpus": "17"
+      },
+      "3009427": {
+        "pid": "3009287",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          12704,
+          1056464,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009479": {
+        "pid": "3009287",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          459232,
+          3063408,
+          40
+        ],
+        "cpus": "17"
+      },
+      "3009482": {
+        "pid": "3009287",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          1948624,
+          13392464,
+          65
+        ],
+        "cpus": "17"
+      },
+      "3009486": {
+        "pid": "3009287",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          13168,
+          962800,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009489": {
+        "pid": "3009287",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5518486832,
+          46818652800,
+          277302
+        ],
+        "cpus": "17"
+      },
+      "3009535": {
+        "pid": "3009287",
+        "comm": "srsue",
+        "schedstat": [
+          1833623536,
+          38283318768,
+          228097
+        ],
+        "cpus": "17"
+      },
+      "3009561": {
+        "pid": "3009287",
+        "comm": "SYNC",
+        "schedstat": [
+          2978722176,
+          4668224,
+          127961
+        ],
+        "cpus": "17"
+      },
+      "3009579": {
+        "pid": "3009287",
+        "comm": "WORKER0",
+        "schedstat": [
+          6779572624,
+          166294832,
+          30841
+        ],
+        "cpus": "17"
+      },
+      "3009585": {
+        "pid": "3009287",
+        "comm": "STACK",
+        "schedstat": [
+          3008577600,
+          55699745248,
+          652778
+        ],
+        "cpus": "17"
+      },
+      "3009597": {
+        "pid": "3009287",
+        "comm": "WORKER1",
+        "schedstat": [
+          6759834720,
+          166789520,
+          30756
+        ],
+        "cpus": "17"
+      },
+      "3009620": {
+        "pid": "3009287",
+        "comm": "WORKER2",
+        "schedstat": [
+          19472,
+          5152,
+          5
+        ],
+        "cpus": "17"
+      },
+      "3009623": {
+        "pid": "3009287",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          40220992,
+          468493040,
+          1378
+        ],
+        "cpus": "17"
+      },
+      "3009701": {
+        "pid": "3009287",
+        "comm": "GW",
+        "schedstat": [
+          115436144,
+          2090180112,
+          9800
+        ],
+        "cpus": "17"
+      },
+      "3009290": {
+        "pid": "3009290",
+        "comm": "srsue",
+        "schedstat": [
+          189522720,
+          637491440,
+          763
+        ],
+        "cpus": "18"
+      },
+      "3009351": {
+        "pid": "3009290",
+        "comm": "srsue",
+        "schedstat": [
+          1104041296,
+          63740899024,
+          430614
+        ],
+        "cpus": "18"
+      },
+      "3009416": {
+        "pid": "3009290",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          12128,
+          1708176,
+          2
+        ],
+        "cpus": "18"
+      },
+      "3009423": {
+        "pid": "3009290",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          11584,
+          592208,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009474": {
+        "pid": "3009290",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          397776,
+          6090640,
+          36
+        ],
+        "cpus": "18"
+      },
+      "3009480": {
+        "pid": "3009290",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2120192,
+          262240,
+          53
+        ],
+        "cpus": "18"
+      },
+      "3009485": {
+        "pid": "3009290",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          13184,
+          1602336,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009488": {
+        "pid": "3009290",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          6059926208,
+          43282250880,
+          286942
+        ],
+        "cpus": "18"
+      },
+      "3009534": {
+        "pid": "3009290",
+        "comm": "srsue",
+        "schedstat": [
+          2069083728,
+          37839289568,
+          232396
+        ],
+        "cpus": "18"
+      },
+      "3009564": {
+        "pid": "3009290",
+        "comm": "SYNC",
+        "schedstat": [
+          3079151824,
+          4683232,
+          127067
+        ],
+        "cpus": "18"
+      },
+      "3009583": {
+        "pid": "3009290",
+        "comm": "WORKER0",
+        "schedstat": [
+          6672429232,
+          149912448,
+          30465
+        ],
+        "cpus": "18"
+      },
+      "3009587": {
+        "pid": "3009290",
+        "comm": "STACK",
+        "schedstat": [
+          2839598000,
+          53511838720,
+          676025
+        ],
+        "cpus": "18"
+      },
+      "3009600": {
+        "pid": "3009290",
+        "comm": "WORKER1",
+        "schedstat": [
+          6561005472,
+          145196640,
+          30387
+        ],
+        "cpus": "18"
+      },
+      "3009626": {
+        "pid": "3009290",
+        "comm": "WORKER2",
+        "schedstat": [
+          16704,
+          5504,
+          5
+        ],
+        "cpus": "18"
+      },
+      "3009627": {
+        "pid": "3009290",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          44127536,
+          447573424,
+          1463
+        ],
+        "cpus": "18"
+      },
+      "3009700": {
+        "pid": "3009290",
+        "comm": "GW",
+        "schedstat": [
+          54147072,
+          850449216,
+          4691
+        ],
+        "cpus": "18"
+      },
+      "3009293": {
+        "pid": "3009293",
+        "comm": "srsue",
+        "schedstat": [
+          188045664,
+          594914912,
+          578
+        ],
+        "cpus": "19"
+      },
+      "3009347": {
+        "pid": "3009293",
+        "comm": "srsue",
+        "schedstat": [
+          1270568352,
+          67670490480,
+          405420
+        ],
+        "cpus": "19"
+      },
+      "3009409": {
+        "pid": "3009293",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          18096,
+          1249952,
+          2
+        ],
+        "cpus": "19"
+      },
+      "3009413": {
+        "pid": "3009293",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          8624,
+          1908512,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009455": {
+        "pid": "3009293",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          460672,
+          7921168,
+          39
+        ],
+        "cpus": "19"
+      },
+      "3009462": {
+        "pid": "3009293",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2586736,
+          2886256,
+          66
+        ],
+        "cpus": "19"
+      },
+      "3009472": {
+        "pid": "3009293",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          12480,
+          1413744,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009476": {
+        "pid": "3009293",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5559410000,
+          46104501200,
+          277798
+        ],
+        "cpus": "19"
+      },
+      "3009530": {
+        "pid": "3009293",
+        "comm": "srsue",
+        "schedstat": [
+          1902546320,
+          39162975024,
+          231121
+        ],
+        "cpus": "19"
+      },
+      "3009548": {
+        "pid": "3009293",
+        "comm": "SYNC",
+        "schedstat": [
+          2934747552,
+          4486128,
+          128514
+        ],
+        "cpus": "19"
+      },
+      "3009567": {
+        "pid": "3009293",
+        "comm": "STACK",
+        "schedstat": [
+          3021160880,
+          55797137568,
+          652280
+        ],
+        "cpus": "19"
+      },
+      "3009574": {
+        "pid": "3009293",
+        "comm": "WORKER0",
+        "schedstat": [
+          6978777536,
+          150367584,
+          30640
+        ],
+        "cpus": "19"
+      },
+      "3009590": {
+        "pid": "3009293",
+        "comm": "WORKER1",
+        "schedstat": [
+          7129801200,
+          148693168,
+          30586
+        ],
+        "cpus": "19"
+      },
+      "3009608": {
+        "pid": "3009293",
+        "comm": "WORKER2",
+        "schedstat": [
+          18016,
+          4208,
+          5
+        ],
+        "cpus": "19"
+      },
+      "3009611": {
+        "pid": "3009293",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          41474224,
+          532911488,
+          1407
+        ],
+        "cpus": "19"
+      },
+      "3009666": {
+        "pid": "3009293",
+        "comm": "GW",
+        "schedstat": [
+          111919504,
+          2088774544,
+          9783
+        ],
+        "cpus": "19"
+      },
+      "3009296": {
+        "pid": "3009296",
+        "comm": "srsue",
+        "schedstat": [
+          188730096,
+          605757248,
+          756
+        ],
+        "cpus": "17"
+      },
+      "3009355": {
+        "pid": "3009296",
+        "comm": "srsue",
+        "schedstat": [
+          1113904112,
+          67429509024,
+          405880
+        ],
+        "cpus": "17"
+      },
+      "3009412": {
+        "pid": "3009296",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          17360,
+          1460336,
+          2
+        ],
+        "cpus": "17"
+      },
+      "3009414": {
+        "pid": "3009296",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          5904,
+          163424,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009459": {
+        "pid": "3009296",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          424944,
+          2418656,
+          39
+        ],
+        "cpus": "17"
+      },
+      "3009470": {
+        "pid": "3009296",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          1972144,
+          11291840,
+          49
+        ],
+        "cpus": "17"
+      },
+      "3009477": {
+        "pid": "3009296",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          14944,
+          969984,
+          1
+        ],
+        "cpus": "17"
+      },
+      "3009478": {
+        "pid": "3009296",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5554526896,
+          47066876784,
+          278257
+        ],
+        "cpus": "17"
+      },
+      "3009532": {
+        "pid": "3009296",
+        "comm": "srsue",
+        "schedstat": [
+          1791368688,
+          37694960480,
+          227629
+        ],
+        "cpus": "17"
+      },
+      "3009565": {
+        "pid": "3009296",
+        "comm": "SYNC",
+        "schedstat": [
+          2948017664,
+          4472384,
+          128202
+        ],
+        "cpus": "17"
+      },
+      "3009577": {
+        "pid": "3009296",
+        "comm": "STACK",
+        "schedstat": [
+          2908000768,
+          55806424992,
+          653013
+        ],
+        "cpus": "17"
+      },
+      "3009582": {
+        "pid": "3009296",
+        "comm": "WORKER0",
+        "schedstat": [
+          6766040464,
+          158134624,
+          30763
+        ],
+        "cpus": "17"
+      },
+      "3009595": {
+        "pid": "3009296",
+        "comm": "WORKER1",
+        "schedstat": [
+          6647808720,
+          163981152,
+          30652
+        ],
+        "cpus": "17"
+      },
+      "3009618": {
+        "pid": "3009296",
+        "comm": "WORKER2",
+        "schedstat": [
+          25040,
+          151520,
+          5
+        ],
+        "cpus": "17"
+      },
+      "3009622": {
+        "pid": "3009296",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          39707616,
+          450244640,
+          1364
+        ],
+        "cpus": "17"
+      },
+      "3009702": {
+        "pid": "3009296",
+        "comm": "GW",
+        "schedstat": [
+          52824864,
+          1045734576,
+          4646
+        ],
+        "cpus": "17"
+      },
+      "3009299": {
+        "pid": "3009299",
+        "comm": "srsue",
+        "schedstat": [
+          188691424,
+          627916976,
+          784
+        ],
+        "cpus": "18"
+      },
+      "3009356": {
+        "pid": "3009299",
+        "comm": "srsue",
+        "schedstat": [
+          948337232,
+          63303958864,
+          432479
+        ],
+        "cpus": "18"
+      },
+      "3009426": {
+        "pid": "3009299",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          19488,
+          2103200,
+          3
+        ],
+        "cpus": "18"
+      },
+      "3009431": {
+        "pid": "3009299",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          10416,
+          8416,
+          3
+        ],
+        "cpus": "18"
+      },
+      "3009483": {
+        "pid": "3009299",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          426720,
+          8724656,
+          35
+        ],
+        "cpus": "18"
+      },
+      "3009484": {
+        "pid": "3009299",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          1737968,
+          10049792,
+          54
+        ],
+        "cpus": "18"
+      },
+      "3009490": {
+        "pid": "3009299",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          14144,
+          760144,
+          1
+        ],
+        "cpus": "18"
+      },
+      "3009491": {
+        "pid": "3009299",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          6065182912,
+          44229138976,
+          285980
+        ],
+        "cpus": "18"
+      },
+      "3009536": {
+        "pid": "3009299",
+        "comm": "srsue",
+        "schedstat": [
+          2068848736,
+          36368111808,
+          233020
+        ],
+        "cpus": "18"
+      },
+      "3009568": {
+        "pid": "3009299",
+        "comm": "SYNC",
+        "schedstat": [
+          3119976640,
+          4673568,
+          127329
+        ],
+        "cpus": "18"
+      },
+      "3009584": {
+        "pid": "3009299",
+        "comm": "STACK",
+        "schedstat": [
+          2676699008,
+          53656242976,
+          676223
+        ],
+        "cpus": "18"
+      },
+      "3009589": {
+        "pid": "3009299",
+        "comm": "WORKER0",
+        "schedstat": [
+          5648930960,
+          150398496,
+          30484
+        ],
+        "cpus": "18"
+      },
+      "3009617": {
+        "pid": "3009299",
+        "comm": "WORKER1",
+        "schedstat": [
+          5659721808,
+          144779952,
+          30259
+        ],
+        "cpus": "18"
+      },
+      "3009630": {
+        "pid": "3009299",
+        "comm": "WORKER2",
+        "schedstat": [
+          22128,
+          5312,
+          5
+        ],
+        "cpus": "18"
+      },
+      "3009631": {
+        "pid": "3009299",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          23678144,
+          218791808,
+          797
+        ],
+        "cpus": "18"
+      },
+      "3009667": {
+        "pid": "3009299",
+        "comm": "GW",
+        "schedstat": [
+          37692960,
+          652016512,
+          3696
+        ],
+        "cpus": "18"
+      },
+      "3009304": {
+        "pid": "3009304",
+        "comm": "srsue",
+        "schedstat": [
+          189188032,
+          596752384,
+          594
+        ],
+        "cpus": "19"
+      },
+      "3009357": {
+        "pid": "3009304",
+        "comm": "srsue",
+        "schedstat": [
+          1130759808,
+          67295891776,
+          407022
+        ],
+        "cpus": "19"
+      },
+      "3009415": {
+        "pid": "3009304",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          12064,
+          1138768,
+          2
+        ],
+        "cpus": "19"
+      },
+      "3009420": {
+        "pid": "3009304",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          11504,
+          567744,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009471": {
+        "pid": "3009304",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          429664,
+          5741104,
+          36
+        ],
+        "cpus": "19"
+      },
+      "3009475": {
+        "pid": "3009304",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          2045024,
+          2288624,
+          46
+        ],
+        "cpus": "19"
+      },
+      "3009481": {
+        "pid": "3009304",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          17216,
+          4027424,
+          1
+        ],
+        "cpus": "19"
+      },
+      "3009487": {
+        "pid": "3009304",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          5637197728,
+          46900224848,
+          278982
+        ],
+        "cpus": "19"
+      },
+      "3009533": {
+        "pid": "3009304",
+        "comm": "srsue",
+        "schedstat": [
+          1887837328,
+          38087921568,
+          227723
+        ],
+        "cpus": "19"
+      },
+      "3009555": {
+        "pid": "3009304",
+        "comm": "SYNC",
+        "schedstat": [
+          2954505424,
+          4472928,
+          126790
+        ],
+        "cpus": "19"
+      },
+      "3009571": {
+        "pid": "3009304",
+        "comm": "STACK",
+        "schedstat": [
+          2744443792,
+          56063249472,
+          652131
+        ],
+        "cpus": "19"
+      },
+      "3009578": {
+        "pid": "3009304",
+        "comm": "WORKER0",
+        "schedstat": [
+          6470097696,
+          151440320,
+          30765
+        ],
+        "cpus": "19"
+      },
+      "3009592": {
+        "pid": "3009304",
+        "comm": "WORKER1",
+        "schedstat": [
+          6291064128,
+          145717152,
+          30689
+        ],
+        "cpus": "19"
+      },
+      "3009612": {
+        "pid": "3009304",
+        "comm": "WORKER2",
+        "schedstat": [
+          20752,
+          6480,
+          5
+        ],
+        "cpus": "19"
+      },
+      "3009619": {
+        "pid": "3009304",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          41729184,
+          507703888,
+          1409
+        ],
+        "cpus": "19"
+      },
+      "3009694": {
+        "pid": "3009304",
+        "comm": "GW",
+        "schedstat": [
+          53662464,
+          958180032,
+          4696
+        ],
+        "cpus": "19"
+      },
+      "3009308": {
+        "pid": "3009308",
+        "comm": "srsue",
+        "schedstat": [
+          213026832,
+          264960256,
+          838
+        ],
+        "cpus": "13"
+      },
+      "3009353": {
+        "pid": "3009308",
+        "comm": "srsue",
+        "schedstat": [
+          2526817408,
+          72864809408,
+          361083
+        ],
+        "cpus": "13"
+      },
+      "3009362": {
+        "pid": "3009308",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          26928,
+          716432,
+          2
+        ],
+        "cpus": "13"
+      },
+      "3009365": {
+        "pid": "3009308",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          22560,
+          89376,
+          2
+        ],
+        "cpus": "13"
+      },
+      "3009374": {
+        "pid": "3009308",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          897168,
+          4587008,
+          47
+        ],
+        "cpus": "13"
+      },
+      "3009376": {
+        "pid": "3009308",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          3400896,
+          23822144,
+          63
+        ],
+        "cpus": "13"
+      },
+      "3009378": {
+        "pid": "3009308",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          18640,
+          1952416,
+          1
+        ],
+        "cpus": "13"
+      },
+      "3009380": {
+        "pid": "3009308",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          14168287136,
+          53847957184,
+          360843
+        ],
+        "cpus": "13"
+      },
+      "3009384": {
+        "pid": "3009308",
+        "comm": "srsue",
+        "schedstat": [
+          4195455344,
+          55799138640,
+          278404
+        ],
+        "cpus": "13"
+      },
+      "3009402": {
+        "pid": "3009308",
+        "comm": "SYNC",
+        "schedstat": [
+          5218197296,
+          21160896,
+          142928
+        ],
+        "cpus": "13"
+      },
+      "3009421": {
+        "pid": "3009308",
+        "comm": "STACK",
+        "schedstat": [
+          5275206944,
+          62246402832,
+          561796
+        ],
+        "cpus": "13"
+      },
+      "3009422": {
+        "pid": "3009308",
+        "comm": "WORKER0",
+        "schedstat": [
+          14130466112,
+          242079952,
+          30415
+        ],
+        "cpus": "13"
+      },
+      "3009442": {
+        "pid": "3009308",
+        "comm": "WORKER1",
+        "schedstat": [
+          14522871568,
+          242303456,
+          30427
+        ],
+        "cpus": "13"
+      },
+      "3009461": {
+        "pid": "3009308",
+        "comm": "WORKER2",
+        "schedstat": [
+          36352,
+          9216,
+          5
+        ],
+        "cpus": "13"
+      },
+      "3009464": {
+        "pid": "3009308",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          59612448,
+          404335776,
+          1315
+        ],
+        "cpus": "13"
+      },
+      "3009705": {
+        "pid": "3009308",
+        "comm": "GW",
+        "schedstat": [
+          174001200,
+          2681150224,
+          9779
+        ],
+        "cpus": "13"
+      },
+      "3009311": {
+        "pid": "3009311",
+        "comm": "srsue",
+        "schedstat": [
+          213060096,
+          257061120,
+          717
+        ],
+        "cpus": "14"
+      },
+      "3009354": {
+        "pid": "3009311",
+        "comm": "srsue",
+        "schedstat": [
+          2278566544,
+          70530827216,
+          376879
+        ],
+        "cpus": "14"
+      },
+      "3009366": {
+        "pid": "3009311",
+        "comm": "TASKWORKER0",
+        "schedstat": [
+          22144,
+          950288,
+          2
+        ],
+        "cpus": "14"
+      },
+      "3009369": {
+        "pid": "3009311",
+        "comm": "TASKWORKER1",
+        "schedstat": [
+          9184,
+          26736,
+          1
+        ],
+        "cpus": "14"
+      },
+      "3009375": {
+        "pid": "3009311",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          867408,
+          2757248,
+          40
+        ],
+        "cpus": "14"
+      },
+      "3009377": {
+        "pid": "3009311",
+        "comm": "PHY_CMD",
+        "schedstat": [
+          3182784,
+          19020224,
+          56
+        ],
+        "cpus": "14"
+      },
+      "3009379": {
+        "pid": "3009311",
+        "comm": "ZMQbg/Reaper",
+        "schedstat": [
+          22128,
+          312768,
+          1
+        ],
+        "cpus": "14"
+      },
+      "3009381": {
+        "pid": "3009311",
+        "comm": "ZMQbg/IO/0",
+        "schedstat": [
+          13766491200,
+          49314327728,
+          364378
+        ],
+        "cpus": "14"
+      },
+      "3009387": {
+        "pid": "3009311",
+        "comm": "srsue",
+        "schedstat": [
+          4095244320,
+          52234769952,
+          277324
+        ],
+        "cpus": "14"
+      },
+      "3009405": {
+        "pid": "3009311",
+        "comm": "SYNC",
+        "schedstat": [
+          5154244832,
+          19965664,
+          142816
+        ],
+        "cpus": "14"
+      },
+      "3009417": {
+        "pid": "3009311",
+        "comm": "STACK",
+        "schedstat": [
+          5037551584,
+          60416961520,
+          582322
+        ],
+        "cpus": "14"
+      },
+      "3009430": {
+        "pid": "3009311",
+        "comm": "WORKER0",
+        "schedstat": [
+          13987540608,
+          244400304,
+          30368
+        ],
+        "cpus": "14"
+      },
+      "3009449": {
+        "pid": "3009311",
+        "comm": "WORKER1",
+        "schedstat": [
+          13873003072,
+          242710656,
+          30289
+        ],
+        "cpus": "14"
+      },
+      "3009460": {
+        "pid": "3009311",
+        "comm": "WORKER2",
+        "schedstat": [
+          34800,
+          7840,
+          5
+        ],
+        "cpus": "14"
+      },
+      "3009463": {
+        "pid": "3009311",
+        "comm": "METRICS_HUB",
+        "schedstat": [
+          59367168,
+          360385856,
+          1330
+        ],
+        "cpus": "14"
+      },
+      "3009699": {
+        "pid": "3009311",
+        "comm": "GW",
+        "schedstat": [
+          80864656,
+          1205790928,
+          4643
+        ],
+        "cpus": "14"
+      }
+    },
+    "cores": {
+      "cpu0": [
+        2350829,
+        6491,
+        4282459,
+        300614202,
+        70033,
+        0,
+        86442,
+        0,
+        0,
+        0
+      ],
+      "cpu1": [
+        2481091,
+        6581,
+        5000045,
+        300418621,
+        55135,
+        0,
+        72448,
+        0,
+        0,
+        0
+      ],
+      "cpu2": [
+        2472690,
+        5338,
+        5070982,
+        300385667,
+        63996,
+        0,
+        64361,
+        0,
+        0,
+        0
+      ],
+      "cpu3": [
+        2486296,
+        7104,
+        5017691,
+        300455695,
+        48325,
+        0,
+        65826,
+        0,
+        0,
+        0
+      ],
+      "cpu4": [
+        2495612,
+        5969,
+        4765299,
+        300624469,
+        48654,
+        0,
+        76316,
+        0,
+        0,
+        0
+      ],
+      "cpu5": [
+        5402626,
+        33558,
+        6787527,
+        295419199,
+        53513,
+        0,
+        90988,
+        0,
+        0,
+        0
+      ],
+      "cpu6": [
+        5898620,
+        30267,
+        7243763,
+        294546090,
+        49988,
+        0,
+        87932,
+        0,
+        0,
+        0
+      ],
+      "cpu7": [
+        5070518,
+        29992,
+        6313027,
+        296207311,
+        51113,
+        0,
+        97398,
+        0,
+        0,
+        0
+      ],
+      "cpu8": [
+        5221759,
+        32125,
+        5673980,
+        296742377,
+        48215,
+        0,
+        91822,
+        0,
+        0,
+        0
+      ],
+      "cpu9": [
+        5494996,
+        31807,
+        5244602,
+        297018476,
+        42573,
+        0,
+        97787,
+        0,
+        0,
+        0
+      ],
+      "cpu10": [
+        2379458,
+        16308,
+        4339977,
+        300950836,
+        63944,
+        0,
+        94396,
+        0,
+        0,
+        0
+      ],
+      "cpu11": [
+        2609294,
+        16117,
+        4923649,
+        300175303,
+        50312,
+        0,
+        80144,
+        0,
+        0,
+        0
+      ],
+      "cpu12": [
+        2663173,
+        15716,
+        4979652,
+        300097083,
+        61306,
+        0,
+        72253,
+        0,
+        0,
+        0
+      ],
+      "cpu13": [
+        3657496,
+        15760,
+        5860586,
+        298236731,
+        42157,
+        0,
+        236156,
+        0,
+        0,
+        0
+      ],
+      "cpu14": [
+        4230760,
+        15539,
+        5096277,
+        298525778,
+        44716,
+        0,
+        145046,
+        0,
+        0,
+        0
+      ],
+      "cpu15": [
+        6091689,
+        32421,
+        10694082,
+        291254711,
+        45666,
+        0,
+        232088,
+        0,
+        0,
+        0
+      ],
+      "cpu16": [
+        5993143,
+        30294,
+        10365170,
+        291629842,
+        45495,
+        0,
+        254311,
+        0,
+        0,
+        0
+      ],
+      "cpu17": [
+        6422404,
+        30658,
+        8743372,
+        292758780,
+        44251,
+        0,
+        230034,
+        0,
+        0,
+        0
+      ],
+      "cpu18": [
+        5900061,
+        28881,
+        4913307,
+        297023927,
+        47624,
+        0,
+        183703,
+        0,
+        0,
+        0
+      ],
+      "cpu19": [
+        5715353,
+        30933,
+        4695977,
+        296860266,
+        40260,
+        0,
+        187494,
+        0,
+        0,
+        0
+      ]
+    }
+  }
+}

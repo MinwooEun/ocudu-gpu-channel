@@ -1,0 +1,14 @@
+{
+  "ue": "ue12",
+  "source": "/workspace/gpuch/gpu-ue-live-20261030/u16/cpu-r1/runtime/logs/srsue-ue12-internal.log",
+  "matches": [
+    {
+      "line": 62300,
+      "text": "2026-10-30T04:56:22.410215 [RRC-NR ] [I] Received RRC Release"
+    }
+  ],
+  "measurement_events": [
+    "event=measure_release unix_ms=1793336154203",
+    "event=measure_end status=completed unix_ms=1793336244090"
+  ]
+}

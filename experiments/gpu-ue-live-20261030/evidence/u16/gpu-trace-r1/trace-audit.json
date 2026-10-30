@@ -1,0 +1,421 @@
+{
+  "incomplete_eof_records": [
+    {
+      "file": "3032349-worker.csv",
+      "tail": "3089581333803262,WE,2293,"
+    },
+    {
+      "file": "3032361-sync.csv",
+      "tail": "3089581335557573,W"
+    },
+    {
+      "file": "3032352-worker.csv",
+      "tail": "308958137045"
+    },
+    {
+      "file": "3032377-uedl.csv",
+      "tail": "3089"
+    },
+    {
+      "file": "3032343-uedl.csv",
+      "tail": "3089581346110453,GFFT,249"
+    },
+    {
+      "file": "3032364-zmqtx.csv",
+      "tail": "308958132"
+    },
+    {
+      "file": "3032352-sync.csv",
+      "tail": "3089581365337735,S"
+    },
+    {
+      "file": "3032367-uedl.csv",
+      "tail": "3089581383645757,GFFT"
+    },
+    {
+      "file": "3032377-worker.csv",
+      "tail": "3089581377342421,WE,2"
+    },
+    {
+      "file": "3032384-pdsch.csv",
+      "tail": "308955"
+    },
+    {
+      "file": "3032370-worker.csv",
+      "tail": "308958134111"
+    },
+    {
+      "file": "3032355-zmqtx.csv",
+      "tail": "3089581318978727"
+    },
+    {
+      "file": "3032349-pdsch.csv",
+      "tail": "3089480192732"
+    },
+    {
+      "file": "3032346-uedl.csv",
+      "tail": "30"
+    },
+    {
+      "file": "3032367-gldpc.csv",
+      "tail": "3089491587774418,GW"
+    },
+    {
+      "file": "3032387-gldpc.csv",
+      "tail": "3089500373592072,GLNCH,0,3"
+    },
+    {
+      "file": "3032358-zmqtx.csv",
+      "tail": "3089581321165116,ZREQ,0,1,1470"
+    },
+    {
+      "file": "3032384-gldpc.csv",
+      "tail": "3089499962196497,GLNCH"
+    },
+    {
+      "file": "3032355-ccw.csv",
+      "tail": "308958135001123"
+    },
+    {
+      "file": "3032352-uedl.csv",
+      "tail": "308958128880"
+    },
+    {
+      "file": "3032349-schnr.csv",
+      "tail": "3089490393431833,"
+    },
+    {
+      "file": "3032346-pdsch.csv",
+      "tail": "308955849155"
+    },
+    {
+      "file": "3032361-ccw.csv",
+      "tail": "3089581354064225,FFT,25"
+    },
+    {
+      "file": "3032361-uedl.csv",
+      "tail": "30895813395809"
+    },
+    {
+      "file": "3032377-gldpc.csv",
+      "tail": "308950722689"
+    },
+    {
+      "file": "3032361-gldpc.csv",
+      "tail": "3089499413634082"
+    },
+    {
+      "file": "3032349-gldpc.csv",
+      "tail": "3089481009536039,GLNCH,0,21,"
+    },
+    {
+      "file": "3032384-worker.csv",
+      "tail": "3089581372814101,DU,251"
+    },
+    {
+      "file": "3032370-gldpc.csv",
+      "tail": "3089500876402687,GLNCH,0,2"
+    },
+    {
+      "file": "3032370-sync.csv",
+      "tail": "3089581336223195,W"
+    },
+    {
+      "file": "3032355-uedl.csv",
+      "tail": "3089581281799786,GFFT,2466,"
+    },
+    {
+      "file": "3032387-pdsch.csv",
+      "tail": "3089525"
+    },
+    {
+      "file": "3032381-schnr.csv",
+      "tail": "3089557699149973,"
+    },
+    {
+      "file": "3032384-zmqtx.csv",
+      "tail": "30895813185227"
+    },
+    {
+      "file": "3032343-sync.csv",
+      "tail": "3089581346270106,"
+    },
+    {
+      "file": "3032384-uedl.csv",
+      "tail": "3089581287484127,GFF"
+    },
+    {
+      "file": "3032373-sync.csv",
+      "tail": "308958137"
+    },
+    {
+      "file": "3032343-pdsch.csv",
+      "tail": "308949196915"
+    },
+    {
+      "file": "3032373-pdsch.csv",
+      "tail": "3089566877803477,SCH,0,216,23040"
+    },
+    {
+      "file": "3032340-gldpc.csv",
+      "tail": "30"
+    },
+    {
+      "file": "3032343-schnr.csv",
+      "tail": "308"
+    },
+    {
+      "file": "3032367-pdsch.csv",
+      "tail": "3089538039329602,DEMOD,0,2"
+    },
+    {
+      "file": "3032355-worker.csv",
+      "tail": "3089581343074740,UL,2498,"
+    },
+    {
+      "file": "3032377-ccw.csv",
+      "tail": "3089581358857514,"
+    },
+    {
+      "file": "3032361-pdsch.csv",
+      "tail": "30"
+    },
+    {
+      "file": "3032377-schnr.csv",
+      "tail": "3089507186133190,GDEC"
+    },
+    {
+      "file": "3032346-gldpc.csv",
+      "tail": "3089500841514353,G"
+    },
+    {
+      "file": "3032373-zmqtx.csv",
+      "tail": "30895813"
+    },
+    {
+      "file": "3032361-zmqtx.csv",
+      "tail": "3089581320945429,ZSN"
+    },
+    {
+      "file": "3032340-worker.csv",
+      "tail": "3089581351147893,"
+    },
+    {
+      "file": "3032384-ccw.csv",
+      "tail": "3089581331867760,FFT,"
+    },
+    {
+      "file": "3032346-schnr.csv",
+      "tail": "3089501340671009,GDEC,0,8408,"
+    },
+    {
+      "file": "3032377-sync.csv",
+      "tail": "3089581339169528,TX,"
+    },
+    {
+      "file": "3032358-sync.csv",
+      "tail": "30895"
+    },
+    {
+      "file": "3032364-ccw.csv",
+      "tail": "30895813270"
+    },
+    {
+      "file": "3032381-zmqtx.csv",
+      "tail": "3089581320523448,ZREQ,0,2,1470"
+    },
+    {
+      "file": "3032358-worker.csv",
+      "tail": "30895813493"
+    },
+    {
+      "file": "3032364-gldpc.csv",
+      "tail": "3089504927158119,GGPU,0"
+    },
+    {
+      "file": "3032367-ccw.csv",
+      "tail": "3089581365968251,CSI,250"
+    },
+    {
+      "file": "3032349-zmqtx.csv",
+      "tail": "3089581"
+    },
+    {
+      "file": "3032355-sync.csv",
+      "tail": "3089581383997272,SEM,2518,0"
+    },
+    {
+      "file": "3032340-sync.csv",
+      "tail": "3089581345707688,SEM,2"
+    },
+    {
+      "file": "3032352-pdsch.csv",
+      "tail": "3089"
+    },
+    {
+      "file": "3032361-schnr.csv",
+      "tail": "30894994199"
+    },
+    {
+      "file": "3032361-worker.csv",
+      "tail": "30895813413864"
+    },
+    {
+      "file": "3032349-sync.csv",
+      "tail": "3089581360432700,WW"
+    },
+    {
+      "file": "3032346-worker.csv",
+      "tail": "3089581383028921,WS,2518,0"
+    },
+    {
+      "file": "3032370-uedl.csv",
+      "tail": "3089581279710424,GFFT,2465,"
+    },
+    {
+      "file": "3032343-worker.csv",
+      "tail": "30895"
+    },
+    {
+      "file": "3032346-sync.csv",
+      "tail": "30895813"
+    },
+    {
+      "file": "3032387-worker.csv",
+      "tail": "3089581333246284,DU,249"
+    },
+    {
+      "file": "3032346-ccw.csv",
+      "tail": "30895813493957"
+    },
+    {
+      "file": "3032343-zmqtx.csv",
+      "tail": "3089581327517622,ZRE"
+    },
+    {
+      "file": "3032384-sync.csv",
+      "tail": "30895813"
+    },
+    {
+      "file": "3032358-schnr.csv",
+      "tail": "308"
+    },
+    {
+      "file": "3032364-pdsch.csv",
+      "tail": "308950"
+    },
+    {
+      "file": "3032352-gldpc.csv",
+      "tail": "3089500380333218,GLNCH,0,22,2"
+    },
+    {
+      "file": "3032367-worker.csv",
+      "tail": "3089581382924246,UL,2518,4"
+    },
+    {
+      "file": "3032352-zmqtx.csv",
+      "tail": "3089581325410899,ZSND,0,"
+    },
+    {
+      "file": "3032340-schnr.csv",
+      "tail": "308"
+    },
+    {
+      "file": "3032377-zmqtx.csv",
+      "tail": "3089581322684781,ZSND,0,"
+    },
+    {
+      "file": "3032340-ccw.csv",
+      "tail": "308958132"
+    },
+    {
+      "file": "3032349-uedl.csv",
+      "tail": "3089"
+    },
+    {
+      "file": "3032352-ccw.csv",
+      "tail": "3089581337013476,CSI,2494,"
+    },
+    {
+      "file": "3032373-gldpc.csv",
+      "tail": "308950"
+    },
+    {
+      "file": "3032358-ccw.csv",
+      "tail": "3089581"
+    },
+    {
+      "file": "3032387-ccw.csv",
+      "tail": "3089581329"
+    },
+    {
+      "file": "3032381-pdsch.csv",
+      "tail": "3089557"
+    },
+    {
+      "file": "3032370-ccw.csv",
+      "tail": "3089581310536875,PDCCH,2481"
+    },
+    {
+      "file": "3032384-schnr.csv",
+      "tail": "3089500382188487,RM,0,"
+    },
+    {
+      "file": "3032387-uedl.csv",
+      "tail": "3089581363482876,"
+    },
+    {
+      "file": "3032349-ccw.csv",
+      "tail": "3"
+    },
+    {
+      "file": "3032373-uedl.csv",
+      "tail": "3089581342432000,GFFT,2498"
+    },
+    {
+      "file": "3032387-zmqtx.csv",
+      "tail": "3089581375016475,ZR"
+    },
+    {
+      "file": "3032352-schnr.csv",
+      "tail": "3"
+    },
+    {
+      "file": "3032387-schnr.csv",
+      "tail": "308"
+    },
+    {
+      "file": "3032358-uedl.csv",
+      "tail": "3089581365891081,GFFT,2510,120"
+    },
+    {
+      "file": "3032370-schnr.csv",
+      "tail": "3089500876780973,TB,0"
+    },
+    {
+      "file": "3032343-ccw.csv",
+      "tail": "30"
+    },
+    {
+      "file": "3032367-schnr.csv",
+      "tail": "3089502774576490,R"
+    },
+    {
+      "file": "3032355-schnr.csv",
+      "tail": "30"
+    },
+    {
+      "file": "3032381-gldpc.csv",
+      "tail": "3089557"
+    },
+    {
+      "file": "3032358-gldpc.csv",
+      "tail": "3089500372771977,GLNCH,0"
+    },
+    {
+      "file": "3032373-ccw.csv",
+      "tail": "308958131248720"
+    }
+  ],
+  "note": "Incomplete final buffered records are preserved in raw traces and excluded from duration statistics; high-volume main-stage statistics cover approximately 29.9 radio seconds. Rare fallback-stage traces may stop earlier because their stdio buffers were not drained before process termination."
+}

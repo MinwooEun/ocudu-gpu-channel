@@ -1,0 +1,3466 @@
+{
+  "runtime/logs/srsue-ue0.log": {
+    "sha256": "a724debc6ed91aced10449226f075f967ae91689b0ef7374234ab485588011d3",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 45,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 65,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.2"
+      },
+      {
+        "line": 236,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 296,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 311,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue3-internal.log": {
+    "sha256": "af24acedd831be3085d903883b1a223c93abd58a9329cd3bf44b145f8b8d1963",
+    "matches": [
+      {
+        "line": 500,
+        "text": "2026-10-30T04:59:21.925911 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 624,
+        "text": "2026-10-30T04:59:22.017539 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.5"
+      },
+      {
+        "line": 2512,
+        "text": "2026-10-30T05:00:00.508391 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2513,
+        "text": "2026-10-30T05:00:00.510793 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2514,
+        "text": "2026-10-30T05:00:00.511989 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2515,
+        "text": "2026-10-30T05:00:00.513863 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2516,
+        "text": "2026-10-30T05:00:00.516982 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2517,
+        "text": "2026-10-30T05:00:00.520055 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2530,
+        "text": "2026-10-30T05:00:00.522449 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2531,
+        "text": "2026-10-30T05:00:00.527754 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2532,
+        "text": "2026-10-30T05:00:00.530763 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2533,
+        "text": "2026-10-30T05:00:00.534023 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2534,
+        "text": "2026-10-30T05:00:00.540926 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2535,
+        "text": "2026-10-30T05:00:00.544977 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2536,
+        "text": "2026-10-30T05:00:00.547805 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2537,
+        "text": "2026-10-30T05:00:00.551065 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2538,
+        "text": "2026-10-30T05:00:00.553619 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2539,
+        "text": "2026-10-30T05:00:00.558954 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2552,
+        "text": "2026-10-30T05:00:00.566264 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2553,
+        "text": "2026-10-30T05:00:00.570318 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2554,
+        "text": "2026-10-30T05:00:00.573204 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2555,
+        "text": "2026-10-30T05:00:00.576649 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2556,
+        "text": "2026-10-30T05:00:00.579767 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2557,
+        "text": "2026-10-30T05:00:00.591209 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2558,
+        "text": "2026-10-30T05:00:00.654543 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2559,
+        "text": "2026-10-30T05:00:00.675060 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2560,
+        "text": "2026-10-30T05:00:00.684294 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2561,
+        "text": "2026-10-30T05:00:00.688912 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2574,
+        "text": "2026-10-30T05:00:00.841737 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2575,
+        "text": "2026-10-30T05:00:01.531369 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2576,
+        "text": "2026-10-30T05:00:01.534671 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2577,
+        "text": "2026-10-30T05:00:01.578724 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2578,
+        "text": "2026-10-30T05:00:01.830401 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2579,
+        "text": "2026-10-30T05:00:02.136124 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2580,
+        "text": "2026-10-30T05:00:02.169399 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2581,
+        "text": "2026-10-30T05:00:02.173733 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2582,
+        "text": "2026-10-30T05:00:02.177464 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2583,
+        "text": "2026-10-30T05:00:02.472937 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2596,
+        "text": "2026-10-30T05:00:02.630097 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2597,
+        "text": "2026-10-30T05:00:02.635774 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2598,
+        "text": "2026-10-30T05:00:02.639213 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2599,
+        "text": "2026-10-30T05:00:02.840122 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2600,
+        "text": "2026-10-30T05:00:02.969943 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2601,
+        "text": "2026-10-30T05:00:02.974670 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2602,
+        "text": "2026-10-30T05:00:02.978834 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2603,
+        "text": "2026-10-30T05:00:03.085274 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2604,
+        "text": "2026-10-30T05:00:03.162253 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2605,
+        "text": "2026-10-30T05:00:03.165833 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2606,
+        "text": "2026-10-30T05:00:03.170573 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2619,
+        "text": "2026-10-30T05:00:03.372137 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2620,
+        "text": "2026-10-30T05:00:03.513814 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2621,
+        "text": "2026-10-30T05:00:03.541920 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2622,
+        "text": "2026-10-30T05:00:03.546075 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2623,
+        "text": "2026-10-30T05:00:03.550397 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2624,
+        "text": "2026-10-30T05:00:03.744899 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2625,
+        "text": "2026-10-30T05:00:03.825369 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2626,
+        "text": "2026-10-30T05:00:03.866234 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2627,
+        "text": "2026-10-30T05:00:03.869959 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2628,
+        "text": "2026-10-30T05:00:03.888597 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2641,
+        "text": "2026-10-30T05:00:04.779936 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2642,
+        "text": "2026-10-30T05:00:04.783725 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2643,
+        "text": "2026-10-30T05:00:04.788920 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2644,
+        "text": "2026-10-30T05:00:04.792710 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2645,
+        "text": "2026-10-30T05:00:04.907238 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2646,
+        "text": "2026-10-30T05:00:04.913099 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2647,
+        "text": "2026-10-30T05:00:04.918818 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2648,
+        "text": "2026-10-30T05:00:04.923342 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2649,
+        "text": "2026-10-30T05:00:05.106000 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2650,
+        "text": "2026-10-30T05:00:05.585071 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2663,
+        "text": "2026-10-30T05:00:05.913832 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2664,
+        "text": "2026-10-30T05:00:05.917947 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2665,
+        "text": "2026-10-30T05:00:05.969108 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2666,
+        "text": "2026-10-30T05:00:05.974254 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2667,
+        "text": "2026-10-30T05:00:05.978177 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2668,
+        "text": "2026-10-30T05:00:05.981722 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2669,
+        "text": "2026-10-30T05:00:05.985878 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2670,
+        "text": "2026-10-30T05:00:06.965705 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2671,
+        "text": "2026-10-30T05:00:06.969904 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2684,
+        "text": "2026-10-30T05:00:06.972410 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2685,
+        "text": "2026-10-30T05:00:07.016812 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2686,
+        "text": "2026-10-30T05:00:07.112587 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2687,
+        "text": "2026-10-30T05:00:07.117267 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2688,
+        "text": "2026-10-30T05:00:07.121317 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2689,
+        "text": "2026-10-30T05:00:07.125071 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2690,
+        "text": "2026-10-30T05:00:07.411916 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2691,
+        "text": "2026-10-30T05:00:07.416719 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2692,
+        "text": "2026-10-30T05:00:07.421023 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2693,
+        "text": "2026-10-30T05:00:07.425390 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2706,
+        "text": "2026-10-30T05:00:07.429625 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2707,
+        "text": "2026-10-30T05:00:07.434462 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2708,
+        "text": "2026-10-30T05:00:07.440053 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2709,
+        "text": "2026-10-30T05:00:07.445022 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2710,
+        "text": "2026-10-30T05:00:07.449257 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2711,
+        "text": "2026-10-30T05:00:07.452443 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2712,
+        "text": "2026-10-30T05:00:07.456997 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2713,
+        "text": "2026-10-30T05:00:07.461226 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2714,
+        "text": "2026-10-30T05:00:07.545706 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2715,
+        "text": "2026-10-30T05:00:07.551440 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2728,
+        "text": "2026-10-30T05:00:07.556565 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2729,
+        "text": "2026-10-30T05:00:07.559582 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2730,
+        "text": "2026-10-30T05:00:07.563181 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 2731,
+        "text": "2026-10-30T05:00:07.568059 [PHY-SA ] [E] [ 1220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15612,
+        "text": "2026-10-30T05:00:20.659746 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15613,
+        "text": "2026-10-30T05:00:20.664584 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15614,
+        "text": "2026-10-30T05:00:20.665963 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15615,
+        "text": "2026-10-30T05:00:20.679768 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15616,
+        "text": "2026-10-30T05:00:20.689802 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15617,
+        "text": "2026-10-30T05:00:20.694840 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15630,
+        "text": "2026-10-30T05:00:20.697465 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15631,
+        "text": "2026-10-30T05:00:20.705151 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15632,
+        "text": "2026-10-30T05:00:20.711405 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15633,
+        "text": "2026-10-30T05:00:20.715565 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15634,
+        "text": "2026-10-30T05:00:20.720000 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15635,
+        "text": "2026-10-30T05:00:20.724700 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15636,
+        "text": "2026-10-30T05:00:20.733958 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15637,
+        "text": "2026-10-30T05:00:20.738536 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15638,
+        "text": "2026-10-30T05:00:20.742181 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15639,
+        "text": "2026-10-30T05:00:20.746277 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15652,
+        "text": "2026-10-30T05:00:20.748831 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15653,
+        "text": "2026-10-30T05:00:20.754526 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15654,
+        "text": "2026-10-30T05:00:20.757737 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15655,
+        "text": "2026-10-30T05:00:20.762102 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15656,
+        "text": "2026-10-30T05:00:20.766342 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15657,
+        "text": "2026-10-30T05:00:20.769096 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15658,
+        "text": "2026-10-30T05:00:20.778795 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15659,
+        "text": "2026-10-30T05:00:20.782664 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15660,
+        "text": "2026-10-30T05:00:20.787192 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15661,
+        "text": "2026-10-30T05:00:20.789886 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15674,
+        "text": "2026-10-30T05:00:20.799231 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15675,
+        "text": "2026-10-30T05:00:20.803960 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15676,
+        "text": "2026-10-30T05:00:20.806285 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15677,
+        "text": "2026-10-30T05:00:20.810766 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15678,
+        "text": "2026-10-30T05:00:20.814366 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15679,
+        "text": "2026-10-30T05:00:20.817279 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15680,
+        "text": "2026-10-30T05:00:20.819564 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15681,
+        "text": "2026-10-30T05:00:20.823576 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15682,
+        "text": "2026-10-30T05:00:20.839973 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15683,
+        "text": "2026-10-30T05:00:20.843019 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15696,
+        "text": "2026-10-30T05:00:20.846472 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15697,
+        "text": "2026-10-30T05:00:20.853173 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15698,
+        "text": "2026-10-30T05:00:20.856006 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15699,
+        "text": "2026-10-30T05:00:20.859167 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15700,
+        "text": "2026-10-30T05:00:20.862049 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15701,
+        "text": "2026-10-30T05:00:20.866780 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15702,
+        "text": "2026-10-30T05:00:20.870585 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15703,
+        "text": "2026-10-30T05:00:20.876814 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15704,
+        "text": "2026-10-30T05:00:20.880600 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15705,
+        "text": "2026-10-30T05:00:20.884575 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15718,
+        "text": "2026-10-30T05:00:20.888129 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15719,
+        "text": "2026-10-30T05:00:20.894084 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15720,
+        "text": "2026-10-30T05:00:20.896942 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15721,
+        "text": "2026-10-30T05:00:20.899566 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15722,
+        "text": "2026-10-30T05:00:20.905481 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15723,
+        "text": "2026-10-30T05:00:20.908706 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15724,
+        "text": "2026-10-30T05:00:20.913991 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15725,
+        "text": "2026-10-30T05:00:20.916798 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15726,
+        "text": "2026-10-30T05:00:20.921023 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15727,
+        "text": "2026-10-30T05:00:20.924050 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15728,
+        "text": "2026-10-30T05:00:20.928539 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15741,
+        "text": "2026-10-30T05:00:20.938988 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15742,
+        "text": "2026-10-30T05:00:20.943279 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15743,
+        "text": "2026-10-30T05:00:20.946611 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15744,
+        "text": "2026-10-30T05:00:20.951635 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15745,
+        "text": "2026-10-30T05:00:20.954341 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15746,
+        "text": "2026-10-30T05:00:20.958421 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15747,
+        "text": "2026-10-30T05:00:20.966641 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15748,
+        "text": "2026-10-30T05:00:20.971285 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15749,
+        "text": "2026-10-30T05:00:20.974930 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15762,
+        "text": "2026-10-30T05:00:20.977682 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15763,
+        "text": "2026-10-30T05:00:20.981185 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15764,
+        "text": "2026-10-30T05:00:20.987371 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15765,
+        "text": "2026-10-30T05:00:20.995538 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15766,
+        "text": "2026-10-30T05:00:21.000230 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15767,
+        "text": "2026-10-30T05:00:21.003511 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15768,
+        "text": "2026-10-30T05:00:21.006750 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15769,
+        "text": "2026-10-30T05:00:21.010773 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15770,
+        "text": "2026-10-30T05:00:21.017713 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15771,
+        "text": "2026-10-30T05:00:21.021131 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15772,
+        "text": "2026-10-30T05:00:21.025268 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15785,
+        "text": "2026-10-30T05:00:21.045487 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15786,
+        "text": "2026-10-30T05:00:21.048530 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15787,
+        "text": "2026-10-30T05:00:21.053805 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15788,
+        "text": "2026-10-30T05:00:21.056265 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15789,
+        "text": "2026-10-30T05:00:21.059131 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15790,
+        "text": "2026-10-30T05:00:21.084143 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15791,
+        "text": "2026-10-30T05:00:21.088333 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15792,
+        "text": "2026-10-30T05:00:21.092474 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15793,
+        "text": "2026-10-30T05:00:21.096792 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15806,
+        "text": "2026-10-30T05:00:21.100368 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15807,
+        "text": "2026-10-30T05:00:21.103599 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15808,
+        "text": "2026-10-30T05:00:21.108574 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15809,
+        "text": "2026-10-30T05:00:21.111073 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15810,
+        "text": "2026-10-30T05:00:21.115070 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15811,
+        "text": "2026-10-30T05:00:21.118462 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15812,
+        "text": "2026-10-30T05:00:21.123118 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15813,
+        "text": "2026-10-30T05:00:21.127600 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15814,
+        "text": "2026-10-30T05:00:21.159904 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15815,
+        "text": "2026-10-30T05:00:21.162392 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15828,
+        "text": "2026-10-30T05:00:21.170508 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15829,
+        "text": "2026-10-30T05:00:21.174293 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15830,
+        "text": "2026-10-30T05:00:21.178097 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 15831,
+        "text": "2026-10-30T05:00:21.183117 [PHY-SA ] [E] [ 4320] SYNC: detected out-of-sync... skipping slot ..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue15.log": {
+    "sha256": "de2b5ac8af8146299a76206a267a49cec9b8d5b8e99e58a736822066458f28d8",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 45,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 65,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.17"
+      },
+      {
+        "line": 229,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 266,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 280,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue11-internal.log": {
+    "sha256": "ea186c8a8449d98853fd34fe81809557fafe33798b1675c5a92ce35a87501ad1",
+    "matches": [
+      {
+        "line": 495,
+        "text": "2026-10-30T04:59:21.720303 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 623,
+        "text": "2026-10-30T04:59:21.807960 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.13"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue1-internal.log": {
+    "sha256": "4e39239f06bd5969d3906856ed046de45ca6cbad00ca50702ee0241ea83b9cab",
+    "matches": [
+      {
+        "line": 495,
+        "text": "2026-10-30T04:59:21.875881 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 625,
+        "text": "2026-10-30T04:59:21.995971 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.3"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue2-internal.log": {
+    "sha256": "daedf8bec793206e561836409ea637a1e9700afd67af697b3d80189981b5630c",
+    "matches": [
+      {
+        "line": 503,
+        "text": "2026-10-30T04:59:21.653225 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 645,
+        "text": "2026-10-30T04:59:21.754564 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.4"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue9.log": {
+    "sha256": "03413cc7bf10dd023bde602b8f2642e5514e0898846cd5e6970c056f2430a1eb",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 46,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 68,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.11"
+      },
+      {
+        "line": 218,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 244,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 310,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue0-internal.log": {
+    "sha256": "93d58ed1c7ee4c867573447173a881ac9b5de6308d0e13628681a09b2ad8f74a",
+    "matches": [
+      {
+        "line": 509,
+        "text": "2026-10-30T04:59:21.693213 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 635,
+        "text": "2026-10-30T04:59:21.785985 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.2"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue1.log": {
+    "sha256": "f370b3c1680d89e3ac974a2d95d69c56807963aa3d95f8a06752a7e23d6c516c",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 46,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 65,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.3"
+      },
+      {
+        "line": 198,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 262,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue12.log": {
+    "sha256": "ac1e87e900944b1f466b5181eefee1c7027613cc7f4c1298f8864ff20b15f3bf",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 43,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 63,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.14"
+      },
+      {
+        "line": 260,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 300,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue10-internal.log": {
+    "sha256": "5ce471f251155fdfc8e92f8c653a65e1e56c5cd373768495e0ffedd15e3fa9e2",
+    "matches": [
+      {
+        "line": 508,
+        "text": "2026-10-30T04:59:21.709598 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 632,
+        "text": "2026-10-30T04:59:21.801937 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.12"
+      },
+      {
+        "line": 135980,
+        "text": "2026-10-30T05:00:52.238774 [RRC-NR ] [I] Received RRC Release"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue4.log": {
+    "sha256": "194fd2be21c20853d691f4eeadd684e140cec9bc05e8379d1972dea93980d771",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 45,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 63,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.6"
+      },
+      {
+        "line": 268,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 306,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue7-internal.log": {
+    "sha256": "948dec49d99d2f08709dd9cb110007e377a87d23d435b4c25d9891155bb4c3db",
+    "matches": [
+      {
+        "line": 490,
+        "text": "2026-10-30T04:59:20.679059 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 629,
+        "text": "2026-10-30T04:59:20.812791 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.9"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue14-internal.log": {
+    "sha256": "b58bcd0fde310a2bfb013d0f4d1f49cb863371944780c912a9e59382be9c5889",
+    "matches": [
+      {
+        "line": 492,
+        "text": "2026-10-30T04:59:21.297520 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 622,
+        "text": "2026-10-30T04:59:21.445663 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.16"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue8.log": {
+    "sha256": "bda0ad59f400dcd9edd5ccd46dad00ff1f41d2395aec4ccc53ef73f20b9036d2",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 43,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 65,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.10"
+      },
+      {
+        "line": 288,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 328,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue3.log": {
+    "sha256": "0959896001f5221625a7a71d3fe132d53bfc2476ff346694b7b6a72f01eb8781",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 46,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 63,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.5"
+      },
+      {
+        "line": 196,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 254,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue15-internal.log": {
+    "sha256": "f6866697f30abae6a48b819a095182454645dc97368696962fbea9d5db19c178",
+    "matches": [
+      {
+        "line": 506,
+        "text": "2026-10-30T04:59:21.405246 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 631,
+        "text": "2026-10-30T04:59:21.472116 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.17"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue14.log": {
+    "sha256": "f2d62c71698df70b306fbc6ec8e57f12f355eeef882239a8a6baa28343cbe8ec",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 45,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 63,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.16"
+      },
+      {
+        "line": 278,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 312,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 344,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 366,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue11.log": {
+    "sha256": "d4137a4c4301596421fcc142c6bb4fa02e34cb44d6ff27b2dc922bd3f4066559",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 45,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 61,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.13"
+      },
+      {
+        "line": 274,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 302,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 340,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue12-internal.log": {
+    "sha256": "c079504cee2d3bc81d1f22c9e5b6ced2173c2a2510c5b8d52db7586d429855ca",
+    "matches": [
+      {
+        "line": 487,
+        "text": "2026-10-30T04:59:21.625124 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 618,
+        "text": "2026-10-30T04:59:21.756400 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.14"
+      },
+      {
+        "line": 20751,
+        "text": "2026-10-30T05:00:13.358634 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20752,
+        "text": "2026-10-30T05:00:13.360584 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20753,
+        "text": "2026-10-30T05:00:13.362250 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20754,
+        "text": "2026-10-30T05:00:13.363541 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20755,
+        "text": "2026-10-30T05:00:13.367172 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20756,
+        "text": "2026-10-30T05:00:13.369923 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20769,
+        "text": "2026-10-30T05:00:13.373598 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20770,
+        "text": "2026-10-30T05:00:13.377882 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20771,
+        "text": "2026-10-30T05:00:13.380620 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20772,
+        "text": "2026-10-30T05:00:13.386373 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20773,
+        "text": "2026-10-30T05:00:13.389906 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20786,
+        "text": "2026-10-30T05:00:13.394013 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20787,
+        "text": "2026-10-30T05:00:13.399408 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20788,
+        "text": "2026-10-30T05:00:13.402957 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20789,
+        "text": "2026-10-30T05:00:13.405941 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20790,
+        "text": "2026-10-30T05:00:13.409694 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20803,
+        "text": "2026-10-30T05:00:13.413314 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20804,
+        "text": "2026-10-30T05:00:13.418550 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20805,
+        "text": "2026-10-30T05:00:13.422537 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 20806,
+        "text": "2026-10-30T05:00:13.427197 [PHY-SA ] [E] [ 2100] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93116,
+        "text": "2026-10-30T05:00:36.681912 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93117,
+        "text": "2026-10-30T05:00:36.683302 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93118,
+        "text": "2026-10-30T05:00:36.685162 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93119,
+        "text": "2026-10-30T05:00:36.687564 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93120,
+        "text": "2026-10-30T05:00:36.692652 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93130,
+        "text": "2026-10-30T05:00:36.696528 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93131,
+        "text": "2026-10-30T05:00:36.699737 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93132,
+        "text": "2026-10-30T05:00:36.702954 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93133,
+        "text": "2026-10-30T05:00:36.706719 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93134,
+        "text": "2026-10-30T05:00:36.710619 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93144,
+        "text": "2026-10-30T05:00:36.714740 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93145,
+        "text": "2026-10-30T05:00:36.718258 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93146,
+        "text": "2026-10-30T05:00:36.722487 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93147,
+        "text": "2026-10-30T05:00:36.726601 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93148,
+        "text": "2026-10-30T05:00:36.730342 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93149,
+        "text": "2026-10-30T05:00:36.734155 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93159,
+        "text": "2026-10-30T05:00:36.738617 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93160,
+        "text": "2026-10-30T05:00:36.743353 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93161,
+        "text": "2026-10-30T05:00:36.746650 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93162,
+        "text": "2026-10-30T05:00:36.749225 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93172,
+        "text": "2026-10-30T05:00:36.752908 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93173,
+        "text": "2026-10-30T05:00:36.756543 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93174,
+        "text": "2026-10-30T05:00:36.760889 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93175,
+        "text": "2026-10-30T05:00:36.766532 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93176,
+        "text": "2026-10-30T05:00:36.771176 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93301,
+        "text": "2026-10-30T05:00:36.773962 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93302,
+        "text": "2026-10-30T05:00:36.776853 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93303,
+        "text": "2026-10-30T05:00:36.781762 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93304,
+        "text": "2026-10-30T05:00:36.784254 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93305,
+        "text": "2026-10-30T05:00:36.788596 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93315,
+        "text": "2026-10-30T05:00:36.792305 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93316,
+        "text": "2026-10-30T05:00:36.800882 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93317,
+        "text": "2026-10-30T05:00:36.803864 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93318,
+        "text": "2026-10-30T05:00:36.809695 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93319,
+        "text": "2026-10-30T05:00:36.813302 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93329,
+        "text": "2026-10-30T05:00:36.817286 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93330,
+        "text": "2026-10-30T05:00:36.821821 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93331,
+        "text": "2026-10-30T05:00:36.826187 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93332,
+        "text": "2026-10-30T05:00:36.828887 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93333,
+        "text": "2026-10-30T05:00:36.832325 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93343,
+        "text": "2026-10-30T05:00:36.835920 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93344,
+        "text": "2026-10-30T05:00:36.838506 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93345,
+        "text": "2026-10-30T05:00:36.842778 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93346,
+        "text": "2026-10-30T05:00:36.847407 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93356,
+        "text": "2026-10-30T05:00:36.850339 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93357,
+        "text": "2026-10-30T05:00:36.853436 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93358,
+        "text": "2026-10-30T05:00:36.856840 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93359,
+        "text": "2026-10-30T05:00:36.860512 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93360,
+        "text": "2026-10-30T05:00:36.864045 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93370,
+        "text": "2026-10-30T05:00:36.867595 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93371,
+        "text": "2026-10-30T05:00:36.872172 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93372,
+        "text": "2026-10-30T05:00:36.876193 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93373,
+        "text": "2026-10-30T05:00:36.881294 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93374,
+        "text": "2026-10-30T05:00:36.885278 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93384,
+        "text": "2026-10-30T05:00:36.887866 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93385,
+        "text": "2026-10-30T05:00:36.891372 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93386,
+        "text": "2026-10-30T05:00:36.896745 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93387,
+        "text": "2026-10-30T05:00:36.900116 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93388,
+        "text": "2026-10-30T05:00:36.903713 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93398,
+        "text": "2026-10-30T05:00:36.907419 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93399,
+        "text": "2026-10-30T05:00:36.910654 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93400,
+        "text": "2026-10-30T05:00:36.914057 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93401,
+        "text": "2026-10-30T05:00:36.917754 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93411,
+        "text": "2026-10-30T05:00:36.922915 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93412,
+        "text": "2026-10-30T05:00:36.925715 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93413,
+        "text": "2026-10-30T05:00:36.930425 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93414,
+        "text": "2026-10-30T05:00:36.934722 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93424,
+        "text": "2026-10-30T05:00:36.940662 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93425,
+        "text": "2026-10-30T05:00:36.943824 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93426,
+        "text": "2026-10-30T05:00:36.948928 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93427,
+        "text": "2026-10-30T05:00:36.956056 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93428,
+        "text": "2026-10-30T05:00:36.959159 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93438,
+        "text": "2026-10-30T05:00:36.962694 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93439,
+        "text": "2026-10-30T05:00:36.966893 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93440,
+        "text": "2026-10-30T05:00:36.973483 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93441,
+        "text": "2026-10-30T05:00:36.977149 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93442,
+        "text": "2026-10-30T05:00:36.981244 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93452,
+        "text": "2026-10-30T05:00:36.985424 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93453,
+        "text": "2026-10-30T05:00:36.989851 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93454,
+        "text": "2026-10-30T05:00:36.992290 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93455,
+        "text": "2026-10-30T05:00:36.995781 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93456,
+        "text": "2026-10-30T05:00:37.000355 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93466,
+        "text": "2026-10-30T05:00:37.004592 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93467,
+        "text": "2026-10-30T05:00:37.008836 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93468,
+        "text": "2026-10-30T05:00:37.012070 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93469,
+        "text": "2026-10-30T05:00:37.016351 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93470,
+        "text": "2026-10-30T05:00:37.021359 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93480,
+        "text": "2026-10-30T05:00:37.025204 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93481,
+        "text": "2026-10-30T05:00:37.029710 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93482,
+        "text": "2026-10-30T05:00:37.032373 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93483,
+        "text": "2026-10-30T05:00:37.037138 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93493,
+        "text": "2026-10-30T05:00:37.042086 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93494,
+        "text": "2026-10-30T05:00:37.045828 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93495,
+        "text": "2026-10-30T05:00:37.049791 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93496,
+        "text": "2026-10-30T05:00:37.053805 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93497,
+        "text": "2026-10-30T05:00:37.058835 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93507,
+        "text": "2026-10-30T05:00:37.063181 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93508,
+        "text": "2026-10-30T05:00:37.067755 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93509,
+        "text": "2026-10-30T05:00:37.071928 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 93510,
+        "text": "2026-10-30T05:00:37.075801 [PHY-SA ] [E] [ 9900] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148299,
+        "text": "2026-10-30T05:00:56.305591 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148300,
+        "text": "2026-10-30T05:00:56.307697 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148313,
+        "text": "2026-10-30T05:00:56.309769 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148314,
+        "text": "2026-10-30T05:00:56.311808 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148315,
+        "text": "2026-10-30T05:00:56.314779 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148316,
+        "text": "2026-10-30T05:00:56.318129 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148317,
+        "text": "2026-10-30T05:00:56.320501 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148330,
+        "text": "2026-10-30T05:00:56.323408 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148331,
+        "text": "2026-10-30T05:00:56.326146 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148332,
+        "text": "2026-10-30T05:00:56.328570 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148333,
+        "text": "2026-10-30T05:00:56.331423 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148334,
+        "text": "2026-10-30T05:00:56.334275 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148347,
+        "text": "2026-10-30T05:00:56.338213 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148348,
+        "text": "2026-10-30T05:00:56.341733 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148349,
+        "text": "2026-10-30T05:00:56.344304 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148350,
+        "text": "2026-10-30T05:00:56.347538 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148351,
+        "text": "2026-10-30T05:00:56.349881 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148352,
+        "text": "2026-10-30T05:00:56.352667 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148365,
+        "text": "2026-10-30T05:00:56.363381 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148366,
+        "text": "2026-10-30T05:00:56.367950 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148367,
+        "text": "2026-10-30T05:00:56.372390 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148368,
+        "text": "2026-10-30T05:00:56.375991 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148381,
+        "text": "2026-10-30T05:00:56.378771 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148382,
+        "text": "2026-10-30T05:00:56.381819 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148383,
+        "text": "2026-10-30T05:00:56.385805 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148384,
+        "text": "2026-10-30T05:00:56.389806 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148385,
+        "text": "2026-10-30T05:00:56.393830 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148398,
+        "text": "2026-10-30T05:00:56.397361 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148399,
+        "text": "2026-10-30T05:00:56.400406 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148400,
+        "text": "2026-10-30T05:00:56.404478 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148401,
+        "text": "2026-10-30T05:00:56.407184 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148414,
+        "text": "2026-10-30T05:00:56.411392 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148415,
+        "text": "2026-10-30T05:00:56.415115 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148416,
+        "text": "2026-10-30T05:00:56.420117 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148417,
+        "text": "2026-10-30T05:00:56.424512 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148418,
+        "text": "2026-10-30T05:00:56.426678 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148431,
+        "text": "2026-10-30T05:00:56.441330 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148432,
+        "text": "2026-10-30T05:00:56.445490 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148433,
+        "text": "2026-10-30T05:00:56.458120 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148434,
+        "text": "2026-10-30T05:00:56.462586 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148435,
+        "text": "2026-10-30T05:00:56.465204 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148448,
+        "text": "2026-10-30T05:00:56.470553 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148449,
+        "text": "2026-10-30T05:00:56.475290 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148450,
+        "text": "2026-10-30T05:00:56.478210 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148451,
+        "text": "2026-10-30T05:00:56.481070 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148452,
+        "text": "2026-10-30T05:00:56.488016 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148465,
+        "text": "2026-10-30T05:00:56.492647 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148466,
+        "text": "2026-10-30T05:00:56.497204 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148467,
+        "text": "2026-10-30T05:00:56.500327 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148468,
+        "text": "2026-10-30T05:00:56.503013 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148469,
+        "text": "2026-10-30T05:00:56.506417 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148482,
+        "text": "2026-10-30T05:00:56.508992 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148483,
+        "text": "2026-10-30T05:00:56.511419 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148484,
+        "text": "2026-10-30T05:00:56.514889 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148485,
+        "text": "2026-10-30T05:00:56.517863 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148498,
+        "text": "2026-10-30T05:00:56.523760 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148499,
+        "text": "2026-10-30T05:00:56.527070 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148500,
+        "text": "2026-10-30T05:00:56.530733 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148501,
+        "text": "2026-10-30T05:00:56.533386 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148502,
+        "text": "2026-10-30T05:00:56.537152 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148515,
+        "text": "2026-10-30T05:00:56.540382 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148516,
+        "text": "2026-10-30T05:00:56.542969 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148517,
+        "text": "2026-10-30T05:00:56.545150 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148518,
+        "text": "2026-10-30T05:00:56.547712 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148519,
+        "text": "2026-10-30T05:00:56.550160 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148532,
+        "text": "2026-10-30T05:00:56.555591 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148533,
+        "text": "2026-10-30T05:00:56.558645 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148534,
+        "text": "2026-10-30T05:00:56.561642 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148535,
+        "text": "2026-10-30T05:00:56.565018 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148536,
+        "text": "2026-10-30T05:00:56.567951 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148537,
+        "text": "2026-10-30T05:00:56.572541 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148550,
+        "text": "2026-10-30T05:00:56.575452 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148551,
+        "text": "2026-10-30T05:00:56.578461 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148552,
+        "text": "2026-10-30T05:00:56.580890 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148553,
+        "text": "2026-10-30T05:00:56.583637 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148554,
+        "text": "2026-10-30T05:00:56.587720 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148567,
+        "text": "2026-10-30T05:00:56.596278 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148568,
+        "text": "2026-10-30T05:00:56.599247 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148569,
+        "text": "2026-10-30T05:00:56.602940 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148582,
+        "text": "2026-10-30T05:00:56.605870 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148584,
+        "text": "2026-10-30T05:00:56.617308 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148585,
+        "text": "2026-10-30T05:00:56.620086 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148586,
+        "text": "2026-10-30T05:00:56.623460 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148587,
+        "text": "2026-10-30T05:00:56.626253 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148600,
+        "text": "2026-10-30T05:00:56.629563 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148601,
+        "text": "2026-10-30T05:00:56.633243 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148602,
+        "text": "2026-10-30T05:00:56.636760 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148603,
+        "text": "2026-10-30T05:00:56.640155 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148604,
+        "text": "2026-10-30T05:00:56.643187 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148617,
+        "text": "2026-10-30T05:00:56.646660 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148618,
+        "text": "2026-10-30T05:00:56.648943 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148619,
+        "text": "2026-10-30T05:00:56.652742 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148620,
+        "text": "2026-10-30T05:00:56.655294 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148621,
+        "text": "2026-10-30T05:00:56.657940 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148634,
+        "text": "2026-10-30T05:00:56.660563 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148635,
+        "text": "2026-10-30T05:00:56.664520 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148636,
+        "text": "2026-10-30T05:00:56.674055 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148637,
+        "text": "2026-10-30T05:00:56.679027 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148638,
+        "text": "2026-10-30T05:00:56.682118 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 148651,
+        "text": "2026-10-30T05:00:56.685259 [PHY-SA ] [E] [ 6460] SYNC: detected out-of-sync... skipping slot ..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue6.log": {
+    "sha256": "edd84036a1c6b4109695a58f75f7e8686e8faf478f191adfe2a7fa05f600abb3",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 46,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 65,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.8"
+      },
+      {
+        "line": 242,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 278,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 303,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue9-internal.log": {
+    "sha256": "de399616aa7da3c01e188e32dc5abb9545178e1f64f309f415d9051c1de0548e",
+    "matches": [
+      {
+        "line": 512,
+        "text": "2026-10-30T04:59:21.930348 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 658,
+        "text": "2026-10-30T04:59:22.003407 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.11"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue8-internal.log": {
+    "sha256": "0312a4a2c3127b1ca091296d46a9b9b14a86e7f80230f0f494fd11165a262462",
+    "matches": [
+      {
+        "line": 482,
+        "text": "2026-10-30T04:59:21.661933 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 609,
+        "text": "2026-10-30T04:59:21.754785 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.10"
+      },
+      {
+        "line": 37907,
+        "text": "2026-10-30T05:00:23.453565 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37929,
+        "text": "2026-10-30T05:00:23.455653 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37942,
+        "text": "2026-10-30T05:00:23.458582 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37943,
+        "text": "2026-10-30T05:00:23.461186 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37944,
+        "text": "2026-10-30T05:00:23.464243 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37945,
+        "text": "2026-10-30T05:00:23.468530 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37959,
+        "text": "2026-10-30T05:00:23.473033 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37960,
+        "text": "2026-10-30T05:00:23.477827 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37961,
+        "text": "2026-10-30T05:00:23.481790 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37962,
+        "text": "2026-10-30T05:00:23.485445 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37963,
+        "text": "2026-10-30T05:00:23.489562 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37976,
+        "text": "2026-10-30T05:00:23.494181 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37977,
+        "text": "2026-10-30T05:00:23.502311 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37978,
+        "text": "2026-10-30T05:00:23.507298 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37979,
+        "text": "2026-10-30T05:00:23.511116 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37980,
+        "text": "2026-10-30T05:00:23.513698 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37981,
+        "text": "2026-10-30T05:00:23.518344 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37994,
+        "text": "2026-10-30T05:00:23.525984 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37995,
+        "text": "2026-10-30T05:00:23.530944 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37996,
+        "text": "2026-10-30T05:00:23.534601 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37997,
+        "text": "2026-10-30T05:00:23.538402 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 37998,
+        "text": "2026-10-30T05:00:23.552900 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38011,
+        "text": "2026-10-30T05:00:23.556838 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38012,
+        "text": "2026-10-30T05:00:23.560269 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38013,
+        "text": "2026-10-30T05:00:23.565215 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38014,
+        "text": "2026-10-30T05:00:23.569222 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38027,
+        "text": "2026-10-30T05:00:23.575457 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38028,
+        "text": "2026-10-30T05:00:23.578868 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38029,
+        "text": "2026-10-30T05:00:23.584414 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38030,
+        "text": "2026-10-30T05:00:23.587834 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38031,
+        "text": "2026-10-30T05:00:23.591646 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38044,
+        "text": "2026-10-30T05:00:23.598538 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38045,
+        "text": "2026-10-30T05:00:23.601982 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38046,
+        "text": "2026-10-30T05:00:23.605133 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38047,
+        "text": "2026-10-30T05:00:23.609265 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38048,
+        "text": "2026-10-30T05:00:23.613336 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38061,
+        "text": "2026-10-30T05:00:23.616806 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38062,
+        "text": "2026-10-30T05:00:23.620741 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38063,
+        "text": "2026-10-30T05:00:23.624235 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38064,
+        "text": "2026-10-30T05:00:23.628507 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38065,
+        "text": "2026-10-30T05:00:23.632651 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38078,
+        "text": "2026-10-30T05:00:23.640646 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38079,
+        "text": "2026-10-30T05:00:23.649325 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38080,
+        "text": "2026-10-30T05:00:23.653013 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38081,
+        "text": "2026-10-30T05:00:23.657268 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38094,
+        "text": "2026-10-30T05:00:23.667634 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38095,
+        "text": "2026-10-30T05:00:23.671662 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38096,
+        "text": "2026-10-30T05:00:23.675537 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38097,
+        "text": "2026-10-30T05:00:23.678294 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38110,
+        "text": "2026-10-30T05:00:23.683069 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38111,
+        "text": "2026-10-30T05:00:23.687397 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38112,
+        "text": "2026-10-30T05:00:23.700076 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38113,
+        "text": "2026-10-30T05:00:23.703581 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38114,
+        "text": "2026-10-30T05:00:23.707235 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38127,
+        "text": "2026-10-30T05:00:23.711595 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38128,
+        "text": "2026-10-30T05:00:23.714696 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38129,
+        "text": "2026-10-30T05:00:23.719925 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38130,
+        "text": "2026-10-30T05:00:23.723585 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38131,
+        "text": "2026-10-30T05:00:23.727899 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38144,
+        "text": "2026-10-30T05:00:23.731135 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38145,
+        "text": "2026-10-30T05:00:23.735611 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38146,
+        "text": "2026-10-30T05:00:23.738896 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38147,
+        "text": "2026-10-30T05:00:23.743306 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38148,
+        "text": "2026-10-30T05:00:23.747635 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38149,
+        "text": "2026-10-30T05:00:23.753747 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38163,
+        "text": "2026-10-30T05:00:23.760232 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38164,
+        "text": "2026-10-30T05:00:23.763352 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38165,
+        "text": "2026-10-30T05:00:23.768291 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38166,
+        "text": "2026-10-30T05:00:23.771091 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38179,
+        "text": "2026-10-30T05:00:23.774163 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38180,
+        "text": "2026-10-30T05:00:23.780036 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38181,
+        "text": "2026-10-30T05:00:23.783733 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38182,
+        "text": "2026-10-30T05:00:23.786825 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38195,
+        "text": "2026-10-30T05:00:23.791338 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38196,
+        "text": "2026-10-30T05:00:23.795119 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38197,
+        "text": "2026-10-30T05:00:23.801039 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38198,
+        "text": "2026-10-30T05:00:23.803965 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38199,
+        "text": "2026-10-30T05:00:23.807992 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38212,
+        "text": "2026-10-30T05:00:23.811943 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38213,
+        "text": "2026-10-30T05:00:23.815737 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38214,
+        "text": "2026-10-30T05:00:23.819208 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38215,
+        "text": "2026-10-30T05:00:23.823379 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38216,
+        "text": "2026-10-30T05:00:23.826962 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38229,
+        "text": "2026-10-30T05:00:23.831069 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38230,
+        "text": "2026-10-30T05:00:23.834535 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38231,
+        "text": "2026-10-30T05:00:23.839580 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38232,
+        "text": "2026-10-30T05:00:23.844326 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38233,
+        "text": "2026-10-30T05:00:23.847888 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38246,
+        "text": "2026-10-30T05:00:23.856122 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38247,
+        "text": "2026-10-30T05:00:23.858876 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38248,
+        "text": "2026-10-30T05:00:23.863162 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38249,
+        "text": "2026-10-30T05:00:23.867276 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38250,
+        "text": "2026-10-30T05:00:23.869795 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38263,
+        "text": "2026-10-30T05:00:23.873781 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38264,
+        "text": "2026-10-30T05:00:23.876700 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38265,
+        "text": "2026-10-30T05:00:23.878904 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38266,
+        "text": "2026-10-30T05:00:23.895326 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38279,
+        "text": "2026-10-30T05:00:23.901987 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38280,
+        "text": "2026-10-30T05:00:23.905855 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 38281,
+        "text": "2026-10-30T05:00:23.908326 [PHY-SA ] [E] [ 5220] SYNC: detected out-of-sync... skipping slot ..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue2.log": {
+    "sha256": "4db26593a7f9b14a2eaf36d3e2c28941bcdc07a88daefed2ee3a95b4f99a31d8",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 45,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 65,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.4"
+      },
+      {
+        "line": 262,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 286,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 308,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue10.log": {
+    "sha256": "e45732d0113489b361244be1897f60f816c500d9c8e7f833a3f8f95d0239b58d",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 46,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 63,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.12"
+      },
+      {
+        "line": 236,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 271,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 325,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 349,
+        "text": "Received RRC Release"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue7.log": {
+    "sha256": "988d4e6fca0528096d2a72630f7d87181b3fc74bce95f89e8093c94c3d2d94e0",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 46,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 70,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.9"
+      },
+      {
+        "line": 236,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 274,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 296,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue13-internal.log": {
+    "sha256": "c50ce75abe6625777a84252dde7123b3c155d305eb7d4f0235e98bda5a6eec47",
+    "matches": [
+      {
+        "line": 497,
+        "text": "2026-10-30T04:59:21.893314 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 628,
+        "text": "2026-10-30T04:59:21.993605 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.15"
+      },
+      {
+        "line": 208718,
+        "text": "2026-10-30T05:01:41.820764 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208719,
+        "text": "2026-10-30T05:01:41.823311 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208720,
+        "text": "2026-10-30T05:01:41.825610 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208721,
+        "text": "2026-10-30T05:01:41.826098 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208722,
+        "text": "2026-10-30T05:01:41.829926 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208735,
+        "text": "2026-10-30T05:01:41.833131 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208736,
+        "text": "2026-10-30T05:01:41.838235 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208737,
+        "text": "2026-10-30T05:01:41.842276 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208738,
+        "text": "2026-10-30T05:01:41.845915 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208739,
+        "text": "2026-10-30T05:01:41.849990 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208740,
+        "text": "2026-10-30T05:01:41.853277 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208741,
+        "text": "2026-10-30T05:01:41.856263 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208742,
+        "text": "2026-10-30T05:01:41.859788 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208743,
+        "text": "2026-10-30T05:01:41.863908 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208744,
+        "text": "2026-10-30T05:01:41.866939 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208757,
+        "text": "2026-10-30T05:01:41.872372 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208758,
+        "text": "2026-10-30T05:01:41.875885 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208759,
+        "text": "2026-10-30T05:01:41.879077 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208803,
+        "text": "2026-10-30T05:01:41.881512 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208804,
+        "text": "2026-10-30T05:01:41.883845 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208805,
+        "text": "2026-10-30T05:01:41.886601 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208806,
+        "text": "2026-10-30T05:01:41.889820 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208807,
+        "text": "2026-10-30T05:01:41.893612 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208808,
+        "text": "2026-10-30T05:01:41.896867 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208809,
+        "text": "2026-10-30T05:01:41.900554 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208822,
+        "text": "2026-10-30T05:01:41.904530 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208823,
+        "text": "2026-10-30T05:01:41.906498 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208824,
+        "text": "2026-10-30T05:01:41.910643 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208825,
+        "text": "2026-10-30T05:01:41.913853 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208826,
+        "text": "2026-10-30T05:01:41.917153 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208827,
+        "text": "2026-10-30T05:01:41.920708 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208828,
+        "text": "2026-10-30T05:01:41.924976 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208829,
+        "text": "2026-10-30T05:01:41.927711 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208830,
+        "text": "2026-10-30T05:01:41.930250 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208831,
+        "text": "2026-10-30T05:01:41.934596 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208832,
+        "text": "2026-10-30T05:01:41.937448 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208845,
+        "text": "2026-10-30T05:01:41.940413 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208846,
+        "text": "2026-10-30T05:01:41.943342 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208847,
+        "text": "2026-10-30T05:01:41.946173 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208848,
+        "text": "2026-10-30T05:01:41.949944 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208849,
+        "text": "2026-10-30T05:01:41.953054 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208850,
+        "text": "2026-10-30T05:01:41.955567 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208851,
+        "text": "2026-10-30T05:01:41.958043 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208852,
+        "text": "2026-10-30T05:01:41.960737 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208853,
+        "text": "2026-10-30T05:01:41.963572 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208854,
+        "text": "2026-10-30T05:01:41.967295 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208867,
+        "text": "2026-10-30T05:01:41.969882 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208868,
+        "text": "2026-10-30T05:01:41.972215 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208869,
+        "text": "2026-10-30T05:01:41.975646 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208870,
+        "text": "2026-10-30T05:01:41.978180 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208871,
+        "text": "2026-10-30T05:01:41.980274 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208872,
+        "text": "2026-10-30T05:01:41.983712 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208873,
+        "text": "2026-10-30T05:01:41.986457 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208874,
+        "text": "2026-10-30T05:01:41.989570 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208875,
+        "text": "2026-10-30T05:01:41.992949 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208876,
+        "text": "2026-10-30T05:01:41.995292 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208889,
+        "text": "2026-10-30T05:01:41.998939 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208890,
+        "text": "2026-10-30T05:01:42.001822 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208891,
+        "text": "2026-10-30T05:01:42.012043 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208892,
+        "text": "2026-10-30T05:01:42.015689 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208893,
+        "text": "2026-10-30T05:01:42.019163 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208894,
+        "text": "2026-10-30T05:01:42.023278 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208895,
+        "text": "2026-10-30T05:01:42.026395 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208896,
+        "text": "2026-10-30T05:01:42.030298 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208897,
+        "text": "2026-10-30T05:01:42.034091 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208898,
+        "text": "2026-10-30T05:01:42.037800 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208911,
+        "text": "2026-10-30T05:01:42.040576 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208931,
+        "text": "2026-10-30T05:01:42.044119 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208932,
+        "text": "2026-10-30T05:01:42.046118 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208933,
+        "text": "2026-10-30T05:01:42.049359 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208934,
+        "text": "2026-10-30T05:01:42.052417 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208935,
+        "text": "2026-10-30T05:01:42.055620 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208936,
+        "text": "2026-10-30T05:01:42.058249 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208937,
+        "text": "2026-10-30T05:01:42.061389 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208938,
+        "text": "2026-10-30T05:01:42.064640 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208951,
+        "text": "2026-10-30T05:01:42.067777 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208952,
+        "text": "2026-10-30T05:01:42.071119 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208953,
+        "text": "2026-10-30T05:01:42.074371 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208954,
+        "text": "2026-10-30T05:01:42.076829 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208955,
+        "text": "2026-10-30T05:01:42.079395 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208956,
+        "text": "2026-10-30T05:01:42.082988 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208957,
+        "text": "2026-10-30T05:01:42.085904 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208958,
+        "text": "2026-10-30T05:01:42.092080 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208959,
+        "text": "2026-10-30T05:01:42.096283 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208960,
+        "text": "2026-10-30T05:01:42.099377 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208973,
+        "text": "2026-10-30T05:01:42.102992 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208974,
+        "text": "2026-10-30T05:01:42.105704 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208975,
+        "text": "2026-10-30T05:01:42.111323 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208976,
+        "text": "2026-10-30T05:01:42.114426 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208977,
+        "text": "2026-10-30T05:01:42.117936 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208978,
+        "text": "2026-10-30T05:01:42.121888 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208979,
+        "text": "2026-10-30T05:01:42.126308 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208980,
+        "text": "2026-10-30T05:01:42.128614 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208981,
+        "text": "2026-10-30T05:01:42.130723 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208982,
+        "text": "2026-10-30T05:01:42.135159 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208995,
+        "text": "2026-10-30T05:01:42.138344 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208996,
+        "text": "2026-10-30T05:01:42.141532 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208997,
+        "text": "2026-10-30T05:01:42.144875 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208998,
+        "text": "2026-10-30T05:01:42.148028 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      },
+      {
+        "line": 208999,
+        "text": "2026-10-30T05:01:42.151392 [PHY-SA ] [E] [ 3500] SYNC: detected out-of-sync... skipping slot ..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue5-internal.log": {
+    "sha256": "d5d206a71afc2c5f450b667cffa19266c62b500ef1c837796a25ce693f5e1e94",
+    "matches": [
+      {
+        "line": 499,
+        "text": "2026-10-30T04:59:21.928649 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 624,
+        "text": "2026-10-30T04:59:22.027322 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.7"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue6-internal.log": {
+    "sha256": "c12db8a5fe0f0db8cd4da8e072d7bc9b712fe5eca8be623928d3ba48f493f08c",
+    "matches": [
+      {
+        "line": 497,
+        "text": "2026-10-30T04:59:21.402764 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 634,
+        "text": "2026-10-30T04:59:21.529388 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.8"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue4-internal.log": {
+    "sha256": "64e7a60453fe3503081e25f8c6433ce8222e42d3b62881e2a4e23bdc01f16fc5",
+    "matches": [
+      {
+        "line": 497,
+        "text": "2026-10-30T04:59:21.703528 [NAS5G  ] [I] Sending PDU Session Establishment Request in UL NAS transport."
+      },
+      {
+        "line": 637,
+        "text": "2026-10-30T04:59:21.855880 [NAS5G  ] [I] PDU Session Establishment successful. IP: 10.45.1.6"
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue13.log": {
+    "sha256": "c970618019941fb211d254d37ecae6faf152e52034fc2f3aaa1eeb7dbecd0b40",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 45,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 63,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.15"
+      },
+      {
+        "line": 240,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 258,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 280,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  },
+  "runtime/logs/srsue-ue5.log": {
+    "sha256": "8062ae513fbd170e39f54ed0571c404a34362e78ceebbe09c0692bcec2ddd742",
+    "matches": [
+      {
+        "line": 18,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 19,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 22,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 23,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 26,
+        "text": "[ldpc_cuda] backend=cuda device=NVIDIA GB10 sm_121 max_cb=152 handle_cache=64 max_iter=10 scale=0.80 sync=block"
+      },
+      {
+        "line": 27,
+        "text": "[ue_dl_cuda] mode=fft pdsch device=NVIDIA GB10 max_prb=106 sync=block"
+      },
+      {
+        "line": 45,
+        "text": "RRC Connected"
+      },
+      {
+        "line": 67,
+        "text": "PDU Session Establishment successful. IP: 10.45.1.7"
+      },
+      {
+        "line": 244,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 272,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      },
+      {
+        "line": 302,
+        "text": "Scheduling request failed: releasing RRC connection..."
+      }
+    ]
+  }
+}

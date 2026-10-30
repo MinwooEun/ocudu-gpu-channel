@@ -8,10 +8,6 @@
 
 > **Entry rules:** One bullet per meaningful change; at most two sentences and 40 words. Record outcomes, decisive checks and blockers; link details and omit repeated context. Apply the [harness rules](AGENT_HARNESS.md#progress-entries) before finishing.
 
-## Current Objective
-
-- Relay patch implementation and the current validation batch are complete; scaling improvement remains unresolved. Every candidate remains experimental, with no performance fix promoted into PR10.
-
 ## Repository State
 
 - Active worktree: `/home/minwoo/ocudu-work/checkpoint-20261029`, branch `checkpoint/spark-scaling-ue-gpu-20261029`; final C++ source commit `aba7513`. Original PR10 worktree and gNB/CPU-srsUE binaries remain unchanged.
@@ -346,3 +342,20 @@ The candidate batch and diagnostics have finished; no runtime is left running. N
 
 - Saved a standalone implementation/results HTML and machine-readable evidence, including failed/incomplete trials and per-case hashes. Three browser widths and twelve links pass; no external load requests or browser errors occur.
 - Source and compact evidence were pushed to the checkpoint branch and its remote head verified; original PR10 worktree remains clean at `9a33e0c`. All new execution and receiver-fusion modes remain opt-in after failed performance comparisons.
+
+## Existing GPU UE comparison — 2026-10-30
+
+- Located the existing FFT/PDSCH/LDPC GPU UE binary, SHA-256 `b1d962ef…fafa21`, on idle Spark. Comparing its CPU/GPU modes isolates the offload; original CPU UE remains a separate reference, with CUDA gNB and PR10 frozen inputs fixed.
+- First paired result is prioritized for immediate reporting; initial estimate is 20–30 minutes for the first batch, 40–60 minutes with repeat validation. Actual GPU activation and CPU fallback are part of the check.
+
+- First 16-UE CPU-mode run completed at 0.448057 radio/wall, with 4/30 valid segments because UE12 metrics were missing. GPU mode initialized CUDA in all 16 UE logs; its full measurement remains in progress.
+
+- First 16-UE matched GPU mode completed at 0.330237 versus CPU 0.448057, a 26.3% slowdown; only 3/30 versus 4/30 segments were valid owing to missing UE metrics. Saved compact evidence; 8-UE comparisons are running.
+
+- Clean 8-UE CPU/GPU runs measured 0.928783/0.871560, both 30/30 valid; GPU delivered more DL data per radio-second, so slowdown alone does not isolate offload cost. Diagnostic 16-UE GPU tracing finished; CPU tracing is active.
+
+- UE logs identify actual scheduling-request failure and RRC release for CPU UE12 and GPU UE10 in the first 16-UE pair. Those rates include connection loss; the 8-UE pair is the complete-valid comparison.
+
+- Diagnostic 16-UE traces confirm approximately 99% GPU PDSCH use and zero FFT fallback; matched 32-PRB/MCS18/10,504-bit PDSCH median rises 173→423 µs. GPU completion-wait median is 284 µs; queuing/execution/wakeup components remain unsplit.
+
+- Saved the completed first comparison batch under `experiments/gpu-ue-live-20261030/`, including raw-report extracts, lifecycle evidence, trace-tail audits and compact `comparison.json`. All four primary runs passed binary/input identity checks; no UE/gNB source changed and no benchmark remains running.
