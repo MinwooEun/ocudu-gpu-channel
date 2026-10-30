@@ -1,0 +1,10 @@
+{
+  "schema": "ocudu-wire-capture/v1",
+  "samples_per_port": 250000000,
+  "skip_samples": 650000000,
+  "sample_format": "cf32_interleaved_le",
+  "ports": [
+    {"id": "gnb0_p0", "node": "gnb0", "tx_port": 0, "rx_port": 0, "tx_in_samples": 250000000, "rx_out_samples": 250000000},
+    {"id": "ue0_p0", "node": "ue0", "tx_port": 0, "rx_port": 0, "tx_in_samples": 250000000, "rx_out_samples": 250000000}
+  ]
+}

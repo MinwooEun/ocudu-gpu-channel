@@ -1,0 +1,2405 @@
+{
+  "method": "Original pilot residual formula applied to exact frozen FIR frequency response, 95 PRBs starting PRB0, DMRS type1, FFT1536. No injected noise. Omits UE preprocessing and real pilot extraction.",
+  "rows": [
+    {
+      "k": 0,
+      "noise_free_snr_db": 13.229297997286737,
+      "estimated_delay_samples": 2.662368835688113,
+      "noise_fraction": 0.04538361482352078
+    },
+    {
+      "k": 1,
+      "noise_free_snr_db": 14.836456813125398,
+      "estimated_delay_samples": 2.7139203119214046,
+      "noise_fraction": 0.03179236400105697
+    },
+    {
+      "k": 2,
+      "noise_free_snr_db": 14.46129285178496,
+      "estimated_delay_samples": 2.6895095298966947,
+      "noise_fraction": 0.03456171094373763
+    },
+    {
+      "k": 3,
+      "noise_free_snr_db": 14.462661358108004,
+      "estimated_delay_samples": 2.6587683921284264,
+      "noise_fraction": 0.03455119814003805
+    },
+    {
+      "k": 4,
+      "noise_free_snr_db": 15.140890286396099,
+      "estimated_delay_samples": 2.623122352155424,
+      "noise_fraction": 0.029704018327713223
+    },
+    {
+      "k": 5,
+      "noise_free_snr_db": 16.953049125112962,
+      "estimated_delay_samples": 2.5881630948618173,
+      "noise_fraction": 0.019770732180624872
+    },
+    {
+      "k": 6,
+      "noise_free_snr_db": 20.43410427708431,
+      "estimated_delay_samples": 2.563990382208662,
+      "noise_fraction": 0.008967624498365256
+    },
+    {
+      "k": 7,
+      "noise_free_snr_db": 23.98152698147428,
+      "estimated_delay_samples": 2.5606223293172525,
+      "noise_fraction": 0.0039821208525672855
+    },
+    {
+      "k": 8,
+      "noise_free_snr_db": 1.669621562520689,
+      "estimated_delay_samples": 2.8252532327283713,
+      "noise_fraction": 0.40505536915668766
+    },
+    {
+      "k": 9,
+      "noise_free_snr_db": 18.75911864285679,
+      "estimated_delay_samples": 2.870635850990782,
+      "noise_fraction": 0.013132487259168251
+    },
+    {
+      "k": 10,
+      "noise_free_snr_db": 2.441613932926891,
+      "estimated_delay_samples": 2.6688411090393656,
+      "noise_fraction": 0.3630380237484307
+    },
+    {
+      "k": 11,
+      "noise_free_snr_db": 7.329268294164998,
+      "estimated_delay_samples": 2.871670649412105,
+      "noise_fraction": 0.15608824781612257
+    },
+    {
+      "k": 12,
+      "noise_free_snr_db": 20.157232424013873,
+      "estimated_delay_samples": 2.8603952854474155,
+      "noise_fraction": 0.009552307667069765
+    },
+    {
+      "k": 13,
+      "noise_free_snr_db": 8.545267741316216,
+      "estimated_delay_samples": 2.615803017937462,
+      "noise_fraction": 0.12264468626985901
+    },
+    {
+      "k": 14,
+      "noise_free_snr_db": 11.941590128077337,
+      "estimated_delay_samples": 2.9275752437634255,
+      "noise_fraction": 0.06010626502310841
+    },
+    {
+      "k": 15,
+      "noise_free_snr_db": 20.025684976430842,
+      "estimated_delay_samples": 2.910405859739247,
+      "noise_fraction": 0.009843181312479996
+    },
+    {
+      "k": 16,
+      "noise_free_snr_db": 11.04738092723835,
+      "estimated_delay_samples": 2.6614995747766574,
+      "noise_fraction": 0.07284725565648245
+    },
+    {
+      "k": 17,
+      "noise_free_snr_db": 15.118001947978017,
+      "estimated_delay_samples": 2.9318498559752952,
+      "noise_fraction": 0.029856292465713447
+    },
+    {
+      "k": 18,
+      "noise_free_snr_db": 17.80952168603559,
+      "estimated_delay_samples": 2.9073814896960815,
+      "noise_fraction": 0.016289772464425152
+    },
+    {
+      "k": 19,
+      "noise_free_snr_db": 11.8512625583618,
+      "estimated_delay_samples": 2.7105690450406383,
+      "noise_fraction": 0.06129206231138782
+    },
+    {
+      "k": 20,
+      "noise_free_snr_db": 17.94379955273854,
+      "estimated_delay_samples": 2.9352638783185845,
+      "noise_fraction": 0.01580165856603405
+    },
+    {
+      "k": 21,
+      "noise_free_snr_db": 15.816585291626923,
+      "estimated_delay_samples": 2.9058850393790654,
+      "noise_fraction": 0.025533387406896375
+    },
+    {
+      "k": 22,
+      "noise_free_snr_db": 12.256755546290536,
+      "estimated_delay_samples": 2.740069852761954,
+      "noise_fraction": 0.05613507325539589
+    },
+    {
+      "k": 23,
+      "noise_free_snr_db": 20.530534974180533,
+      "estimated_delay_samples": 2.939279450177954,
+      "noise_fraction": 0.008772429282292285
+    },
+    {
+      "k": 24,
+      "noise_free_snr_db": 15.619123510206748,
+      "estimated_delay_samples": 2.9522150671797607,
+      "noise_fraction": 0.026689417438404948
+    },
+    {
+      "k": 25,
+      "noise_free_snr_db": 13.231300605135448,
+      "estimated_delay_samples": 2.8210132945930004,
+      "noise_fraction": 0.0453636415830081
+    },
+    {
+      "k": 26,
+      "noise_free_snr_db": 24.586245320337756,
+      "estimated_delay_samples": 2.9829574357591873,
+      "noise_fraction": 0.003466310425255593
+    },
+    {
+      "k": 27,
+      "noise_free_snr_db": 13.515987011403137,
+      "estimated_delay_samples": 2.957661786643283,
+      "noise_fraction": 0.042607994734988476
+    },
+    {
+      "k": 28,
+      "noise_free_snr_db": 12.460760501963271,
+      "estimated_delay_samples": 2.8289890652638148,
+      "noise_fraction": 0.05369748485556626
+    },
+    {
+      "k": 29,
+      "noise_free_snr_db": 26.067153703413627,
+      "estimated_delay_samples": 2.9882474241892565,
+      "noise_fraction": 0.0024672422641072358
+    },
+    {
+      "k": 30,
+      "noise_free_snr_db": 10.414670319663859,
+      "estimated_delay_samples": 2.974261401647993,
+      "noise_fraction": 0.08332025726347231
+    },
+    {
+      "k": 31,
+      "noise_free_snr_db": 9.46794135271255,
+      "estimated_delay_samples": 2.8545529218233177,
+      "noise_fraction": 0.10155417021225945
+    },
+    {
+      "k": 32,
+      "noise_free_snr_db": 24.011597398594446,
+      "estimated_delay_samples": 3.008963844825236,
+      "noise_fraction": 0.003954752667901559
+    },
+    {
+      "k": 33,
+      "noise_free_snr_db": 7.989584055923529,
+      "estimated_delay_samples": 2.999201818818327,
+      "noise_fraction": 0.13709035952523976
+    },
+    {
+      "k": 34,
+      "noise_free_snr_db": 7.119367564955895,
+      "estimated_delay_samples": 2.894050408644144,
+      "noise_fraction": 0.1625610199598844
+    },
+    {
+      "k": 35,
+      "noise_free_snr_db": 22.731873454302175,
+      "estimated_delay_samples": 3.0444874950038945,
+      "noise_fraction": 0.005302779381960431
+    },
+    {
+      "k": 36,
+      "noise_free_snr_db": 6.19982655687645,
+      "estimated_delay_samples": 3.0851340632178292,
+      "noise_fraction": 0.1934787090254967
+    },
+    {
+      "k": 37,
+      "noise_free_snr_db": 7.1905289852801175,
+      "estimated_delay_samples": 3.0100165325741655,
+      "noise_fraction": 0.16034269293008935
+    },
+    {
+      "k": 38,
+      "noise_free_snr_db": 19.622945446666918,
+      "estimated_delay_samples": 3.0479660964016992,
+      "noise_fraction": 0.01078932437174402
+    },
+    {
+      "k": 39,
+      "noise_free_snr_db": 2.8541351083009765,
+      "estimated_delay_samples": 3.178961951460031,
+      "noise_fraction": 0.34137136962908643
+    },
+    {
+      "k": 40,
+      "noise_free_snr_db": 19.506766567311637,
+      "estimated_delay_samples": 2.81272278239224,
+      "noise_fraction": 0.01107860595629146
+    },
+    {
+      "k": 41,
+      "noise_free_snr_db": 21.975929109485435,
+      "estimated_delay_samples": 2.800779714601852,
+      "noise_fraction": 0.006304640835388613
+    },
+    {
+      "k": 42,
+      "noise_free_snr_db": 22.142780208202744,
+      "estimated_delay_samples": 2.803368189957674,
+      "noise_fraction": 0.006068459411507214
+    },
+    {
+      "k": 43,
+      "noise_free_snr_db": 20.11051414583069,
+      "estimated_delay_samples": 2.8189058466143893,
+      "noise_fraction": 0.009654621771262029
+    },
+    {
+      "k": 44,
+      "noise_free_snr_db": 18.69485433678168,
+      "estimated_delay_samples": 2.8407885617835476,
+      "noise_fraction": 0.013325650069356059
+    },
+    {
+      "k": 45,
+      "noise_free_snr_db": 21.482990028360266,
+      "estimated_delay_samples": 2.929365879408733,
+      "noise_fraction": 0.0070570838720534195
+    },
+    {
+      "k": 46,
+      "noise_free_snr_db": 18.207677762459042,
+      "estimated_delay_samples": 2.9422638684127453,
+      "noise_fraction": 0.014883997813291335
+    },
+    {
+      "k": 47,
+      "noise_free_snr_db": 18.851007712236633,
+      "estimated_delay_samples": 2.9558084203917367,
+      "noise_fraction": 0.012861081879517884
+    },
+    {
+      "k": 48,
+      "noise_free_snr_db": 19.731670385992096,
+      "estimated_delay_samples": 2.966248986886297,
+      "noise_fraction": 0.010525376072659865
+    },
+    {
+      "k": 49,
+      "noise_free_snr_db": 20.776943726836905,
+      "estimated_delay_samples": 2.9741859449955195,
+      "noise_fraction": 0.008292570911558893
+    },
+    {
+      "k": 50,
+      "noise_free_snr_db": 21.96091823834857,
+      "estimated_delay_samples": 2.980221168426655,
+      "noise_fraction": 0.006326331680700958
+    },
+    {
+      "k": 51,
+      "noise_free_snr_db": 23.27756064957406,
+      "estimated_delay_samples": 2.9847898059386795,
+      "noise_fraction": 0.004679579710565851
+    },
+    {
+      "k": 52,
+      "noise_free_snr_db": 24.74744788555842,
+      "estimated_delay_samples": 2.988241692167997,
+      "noise_fraction": 0.0033404275262841794
+    },
+    {
+      "k": 53,
+      "noise_free_snr_db": 26.40463376227492,
+      "estimated_delay_samples": 2.9908165754471745,
+      "noise_fraction": 0.002283199754132736
+    },
+    {
+      "k": 54,
+      "noise_free_snr_db": 28.309793943942744,
+      "estimated_delay_samples": 2.9926973228509572,
+      "noise_fraction": 0.0014736018444976475
+    },
+    {
+      "k": 55,
+      "noise_free_snr_db": 33.34075778306598,
+      "estimated_delay_samples": 3.0270172626450336,
+      "noise_fraction": 0.0004631514531270931
+    },
+    {
+      "k": 56,
+      "noise_free_snr_db": 31.89884690689952,
+      "estimated_delay_samples": 3.0416399547286423,
+      "noise_fraction": 0.000645408857511237
+    },
+    {
+      "k": 57,
+      "noise_free_snr_db": 33.54373998557553,
+      "estimated_delay_samples": 3.0415884823210426,
+      "noise_fraction": 0.00044201193452821243
+    },
+    {
+      "k": 58,
+      "noise_free_snr_db": 33.95168709979617,
+      "estimated_delay_samples": 3.0411683292071237,
+      "noise_fraction": 0.0004023986317473808
+    },
+    {
+      "k": 59,
+      "noise_free_snr_db": 32.846725144816766,
+      "estimated_delay_samples": 3.0403889107363162,
+      "noise_fraction": 0.0005189219746953794
+    },
+    {
+      "k": 60,
+      "noise_free_snr_db": 31.017785798840375,
+      "estimated_delay_samples": 3.0392368522344126,
+      "noise_fraction": 0.0007904565334945295
+    },
+    {
+      "k": 61,
+      "noise_free_snr_db": 29.135412650187213,
+      "estimated_delay_samples": 3.0376889963738183,
+      "noise_fraction": 0.0012187906058456729
+    },
+    {
+      "k": 62,
+      "noise_free_snr_db": 27.408299437970754,
+      "estimated_delay_samples": 3.035691194119366,
+      "noise_fraction": 0.001812934002262303
+    },
+    {
+      "k": 63,
+      "noise_free_snr_db": 25.87029860467656,
+      "estimated_delay_samples": 3.033179231705808,
+      "noise_fraction": 0.0025813543301461636
+    },
+    {
+      "k": 64,
+      "noise_free_snr_db": 25.612885990587454,
+      "estimated_delay_samples": 3.067083178349044,
+      "noise_fraction": 0.002738548476074796
+    },
+    {
+      "k": 65,
+      "noise_free_snr_db": 24.800345690111488,
+      "estimated_delay_samples": 3.0642896197551295,
+      "noise_fraction": 0.003300120794064269
+    },
+    {
+      "k": 66,
+      "noise_free_snr_db": 20.991488986099746,
+      "estimated_delay_samples": 3.0692896900983713,
+      "noise_fraction": 0.007896020966439855
+    },
+    {
+      "k": 67,
+      "noise_free_snr_db": 20.182183106491753,
+      "estimated_delay_samples": 3.0627651267499036,
+      "noise_fraction": 0.00949810573173412
+    },
+    {
+      "k": 68,
+      "noise_free_snr_db": 19.466858341435223,
+      "estimated_delay_samples": 3.0546173807906833,
+      "noise_fraction": 0.011179735377915544
+    },
+    {
+      "k": 69,
+      "noise_free_snr_db": 18.884345667521117,
+      "estimated_delay_samples": 3.0444634198623954,
+      "noise_fraction": 0.012763989016233511
+    },
+    {
+      "k": 70,
+      "noise_free_snr_db": 18.504341561754362,
+      "estimated_delay_samples": 3.031969439839851,
+      "noise_fraction": 0.013914904763417224
+    },
+    {
+      "k": 71,
+      "noise_free_snr_db": 18.443929954358843,
+      "estimated_delay_samples": 3.016950231966973,
+      "noise_fraction": 0.014107067932896183
+    },
+    {
+      "k": 72,
+      "noise_free_snr_db": 18.90481212214838,
+      "estimated_delay_samples": 2.9998368980788745,
+      "noise_fraction": 0.012704741676086265
+    },
+    {
+      "k": 73,
+      "noise_free_snr_db": 22.352885464519467,
+      "estimated_delay_samples": 3.0457022044819047,
+      "noise_fraction": 0.005783522243697022
+    },
+    {
+      "k": 74,
+      "noise_free_snr_db": 25.242773208192805,
+      "estimated_delay_samples": 3.03350223942326,
+      "noise_fraction": 0.002981438962148147
+    },
+    {
+      "k": 75,
+      "noise_free_snr_db": 31.403076532530232,
+      "estimated_delay_samples": 3.0270210021723716,
+      "noise_fraction": 0.0007233992676328243
+    },
+    {
+      "k": 76,
+      "noise_free_snr_db": 28.327312140402036,
+      "estimated_delay_samples": 3.0047715009444476,
+      "noise_fraction": 0.0014676784351089515
+    },
+    {
+      "k": 77,
+      "noise_free_snr_db": 23.103961200491568,
+      "estimated_delay_samples": 3.0192343265165538,
+      "noise_fraction": 0.004869494945757241
+    },
+    {
+      "k": 78,
+      "noise_free_snr_db": 20.47490582544632,
+      "estimated_delay_samples": 3.039623801304736,
+      "noise_fraction": 0.00888451406833921
+    },
+    {
+      "k": 79,
+      "noise_free_snr_db": 19.390018145645488,
+      "estimated_delay_samples": 3.060812733663327,
+      "noise_fraction": 0.011377029454746985
+    },
+    {
+      "k": 80,
+      "noise_free_snr_db": 19.168635801770936,
+      "estimated_delay_samples": 3.079761422720967,
+      "noise_fraction": 0.011964892372593919
+    },
+    {
+      "k": 81,
+      "noise_free_snr_db": 19.450391482091558,
+      "estimated_delay_samples": 3.095411727368986,
+      "noise_fraction": 0.011221728726380114
+    },
+    {
+      "k": 82,
+      "noise_free_snr_db": 22.815172221365493,
+      "estimated_delay_samples": 3.1566055600261715,
+      "noise_fraction": 0.005202564043653534
+    },
+    {
+      "k": 83,
+      "noise_free_snr_db": 23.284070378660896,
+      "estimated_delay_samples": 3.1640726451707053,
+      "noise_fraction": 0.004672603397435753
+    },
+    {
+      "k": 84,
+      "noise_free_snr_db": 23.77617322309131,
+      "estimated_delay_samples": 3.1698045295115653,
+      "noise_fraction": 0.004174131065925185
+    },
+    {
+      "k": 85,
+      "noise_free_snr_db": 22.185036025507003,
+      "estimated_delay_samples": 3.187410533996138,
+      "noise_fraction": 0.006010054205495859
+    },
+    {
+      "k": 86,
+      "noise_free_snr_db": 22.931293041759815,
+      "estimated_delay_samples": 3.192283698985985,
+      "noise_fraction": 0.005065997477904126
+    },
+    {
+      "k": 87,
+      "noise_free_snr_db": 23.588677483278943,
+      "estimated_delay_samples": 3.195937826457777,
+      "noise_fraction": 0.004357482842747208
+    },
+    {
+      "k": 88,
+      "noise_free_snr_db": 24.11290021958702,
+      "estimated_delay_samples": 3.198642882440083,
+      "noise_fraction": 0.003863924630755438
+    },
+    {
+      "k": 89,
+      "noise_free_snr_db": 24.45932403688505,
+      "estimated_delay_samples": 3.2005600547842334,
+      "noise_fraction": 0.003568740257161588
+    },
+    {
+      "k": 90,
+      "noise_free_snr_db": 24.602183464790386,
+      "estimated_delay_samples": 3.2018133956063446,
+      "noise_fraction": 0.003453656602785342
+    },
+    {
+      "k": 91,
+      "noise_free_snr_db": 23.759043772112527,
+      "estimated_delay_samples": 3.2479929836568067,
+      "noise_fraction": 0.004190558064052866
+    },
+    {
+      "k": 92,
+      "noise_free_snr_db": 23.517454781617168,
+      "estimated_delay_samples": 3.248207086815957,
+      "noise_fraction": 0.004429214020916507
+    },
+    {
+      "k": 93,
+      "noise_free_snr_db": 23.22876312788159,
+      "estimated_delay_samples": 3.248062003799233,
+      "noise_fraction": 0.004732205959459009
+    },
+    {
+      "k": 94,
+      "noise_free_snr_db": 22.3438411066852,
+      "estimated_delay_samples": 3.266978171053794,
+      "noise_fraction": 0.005795509336078934
+    },
+    {
+      "k": 95,
+      "noise_free_snr_db": 21.799120808469713,
+      "estimated_delay_samples": 3.265703224444496,
+      "noise_fraction": 0.006564889555381388
+    },
+    {
+      "k": 96,
+      "noise_free_snr_db": 21.221919133121308,
+      "estimated_delay_samples": 3.263846159229039,
+      "noise_fraction": 0.007491046962593246
+    },
+    {
+      "k": 97,
+      "noise_free_snr_db": 20.62824797398291,
+      "estimated_delay_samples": 3.2613449146785918,
+      "noise_fraction": 0.008578934363987665
+    },
+    {
+      "k": 98,
+      "noise_free_snr_db": 20.031061601655313,
+      "estimated_delay_samples": 3.2581149182253473,
+      "noise_fraction": 0.009831122587041441
+    },
+    {
+      "k": 99,
+      "noise_free_snr_db": 20.237985176372288,
+      "estimated_delay_samples": 3.308021373770457,
+      "noise_fraction": 0.009377983371447228
+    },
+    {
+      "k": 100,
+      "noise_free_snr_db": 19.8311952473245,
+      "estimated_delay_samples": 3.3044382587601664,
+      "noise_fraction": 0.0102893682557419
+    },
+    {
+      "k": 101,
+      "noise_free_snr_db": 19.42934357377663,
+      "estimated_delay_samples": 3.2999447147599157,
+      "noise_fraction": 0.01127563166675162
+    },
+    {
+      "k": 102,
+      "noise_free_snr_db": 19.043677954389718,
+      "estimated_delay_samples": 3.294341231978986,
+      "noise_fraction": 0.012309854655883048
+    },
+    {
+      "k": 103,
+      "noise_free_snr_db": 16.7575333568594,
+      "estimated_delay_samples": 3.2931929854680937,
+      "noise_fraction": 0.020662322114363363
+    },
+    {
+      "k": 104,
+      "noise_free_snr_db": 16.391613191750068,
+      "estimated_delay_samples": 3.2802394402679034,
+      "noise_fraction": 0.02243794183605537
+    },
+    {
+      "k": 105,
+      "noise_free_snr_db": 16.16828996549131,
+      "estimated_delay_samples": 3.26444668264807,
+      "noise_fraction": 0.023593992990394497
+    },
+    {
+      "k": 106,
+      "noise_free_snr_db": 16.168769901914928,
+      "estimated_delay_samples": 3.24559571126719,
+      "noise_fraction": 0.02359144728335218
+    },
+    {
+      "k": 107,
+      "noise_free_snr_db": 17.833722211940916,
+      "estimated_delay_samples": 3.3102804265380703,
+      "noise_fraction": 0.01620071864570329
+    },
+    {
+      "k": 108,
+      "noise_free_snr_db": 18.402812596481187,
+      "estimated_delay_samples": 3.29302274261119,
+      "noise_fraction": 0.014239351718066038
+    },
+    {
+      "k": 109,
+      "noise_free_snr_db": 19.53719926280212,
+      "estimated_delay_samples": 3.2761173904008887,
+      "noise_fraction": 0.01100209637069943
+    },
+    {
+      "k": 110,
+      "noise_free_snr_db": 21.1862492078326,
+      "estimated_delay_samples": 3.2645492827093117,
+      "noise_fraction": 0.0075523599854771676
+    },
+    {
+      "k": 111,
+      "noise_free_snr_db": 24.213793574997222,
+      "estimated_delay_samples": 3.2217653677589273,
+      "noise_fraction": 0.003775529324545141
+    },
+    {
+      "k": 112,
+      "noise_free_snr_db": 25.098551658691743,
+      "estimated_delay_samples": 3.2285806814676876,
+      "noise_fraction": 0.0030817993489403945
+    },
+    {
+      "k": 113,
+      "noise_free_snr_db": 23.168315453384913,
+      "estimated_delay_samples": 3.2456263168011494,
+      "noise_fraction": 0.004798213866210374
+    },
+    {
+      "k": 114,
+      "noise_free_snr_db": 21.281750938054902,
+      "estimated_delay_samples": 3.26870701392616,
+      "noise_fraction": 0.0073893094523216725
+    },
+    {
+      "k": 115,
+      "noise_free_snr_db": 22.469080954916922,
+      "estimated_delay_samples": 3.3801850778946534,
+      "noise_fraction": 0.005631695658727783
+    },
+    {
+      "k": 116,
+      "noise_free_snr_db": 22.26686187635591,
+      "estimated_delay_samples": 3.397046180487898,
+      "noise_fraction": 0.005898539934295693
+    },
+    {
+      "k": 117,
+      "noise_free_snr_db": 22.25938495552867,
+      "estimated_delay_samples": 3.411178681471113,
+      "noise_fraction": 0.0059086436982576035
+    },
+    {
+      "k": 118,
+      "noise_free_snr_db": 22.427629680063404,
+      "estimated_delay_samples": 3.4224688182073963,
+      "noise_fraction": 0.005685397699195285
+    },
+    {
+      "k": 119,
+      "noise_free_snr_db": 22.63454841761284,
+      "estimated_delay_samples": 3.4327791071260956,
+      "noise_fraction": 0.005422304141577627
+    },
+    {
+      "k": 120,
+      "noise_free_snr_db": 21.33692251862751,
+      "estimated_delay_samples": 3.4479126199158836,
+      "noise_fraction": 0.007296712056955929
+    },
+    {
+      "k": 121,
+      "noise_free_snr_db": 21.854277779479084,
+      "estimated_delay_samples": 3.4579239139465674,
+      "noise_fraction": 0.0064825773801021926
+    },
+    {
+      "k": 122,
+      "noise_free_snr_db": 22.262516473506345,
+      "estimated_delay_samples": 3.464323365421122,
+      "noise_fraction": 0.005904409901745921
+    },
+    {
+      "k": 123,
+      "noise_free_snr_db": 23.14767783376905,
+      "estimated_delay_samples": 3.531288695432897,
+      "noise_fraction": 0.004820958995204804
+    },
+    {
+      "k": 124,
+      "noise_free_snr_db": 23.070017643953207,
+      "estimated_delay_samples": 3.534430339317435,
+      "noise_fraction": 0.004907515520916806
+    },
+    {
+      "k": 125,
+      "noise_free_snr_db": 23.017150873768646,
+      "estimated_delay_samples": 3.536526376723593,
+      "noise_fraction": 0.0049673213496910324
+    },
+    {
+      "k": 126,
+      "noise_free_snr_db": 22.83695558875692,
+      "estimated_delay_samples": 3.539182663602502,
+      "noise_fraction": 0.005176669075048254
+    },
+    {
+      "k": 127,
+      "noise_free_snr_db": 22.654717115919325,
+      "estimated_delay_samples": 3.539672945811483,
+      "noise_fraction": 0.0053973168598150595
+    },
+    {
+      "k": 128,
+      "noise_free_snr_db": 22.492509892838243,
+      "estimated_delay_samples": 3.5615075023195635,
+      "noise_fraction": 0.005601565808072258
+    },
+    {
+      "k": 129,
+      "noise_free_snr_db": 22.123352676061955,
+      "estimated_delay_samples": 3.5615127992765183,
+      "noise_fraction": 0.0060955007491998135
+    },
+    {
+      "k": 130,
+      "noise_free_snr_db": 21.73972870213236,
+      "estimated_delay_samples": 3.562410726805783,
+      "noise_fraction": 0.006654683092359557
+    },
+    {
+      "k": 131,
+      "noise_free_snr_db": 21.741250918451303,
+      "estimated_delay_samples": 3.617770634815175,
+      "noise_fraction": 0.006652366526810056
+    },
+    {
+      "k": 132,
+      "noise_free_snr_db": 21.45319821648474,
+      "estimated_delay_samples": 3.617185696953432,
+      "noise_fraction": 0.007105315454647006
+    },
+    {
+      "k": 133,
+      "noise_free_snr_db": 21.076102828084473,
+      "estimated_delay_samples": 3.616806743721171,
+      "noise_fraction": 0.007744851202610581
+    },
+    {
+      "k": 134,
+      "noise_free_snr_db": 20.750761904397578,
+      "estimated_delay_samples": 3.6147341074014063,
+      "noise_fraction": 0.008342296083647794
+    },
+    {
+      "k": 135,
+      "noise_free_snr_db": 20.369621462571487,
+      "estimated_delay_samples": 3.6139290258965833,
+      "noise_fraction": 0.009100545868005096
+    },
+    {
+      "k": 136,
+      "noise_free_snr_db": 18.939021873800442,
+      "estimated_delay_samples": 3.626700192967408,
+      "noise_fraction": 0.012606315088254738
+    },
+    {
+      "k": 137,
+      "noise_free_snr_db": 18.404239143757785,
+      "estimated_delay_samples": 3.6238168650621687,
+      "noise_fraction": 0.01423474178884199
+    },
+    {
+      "k": 138,
+      "noise_free_snr_db": 17.869243330325975,
+      "estimated_delay_samples": 3.616549037682767,
+      "noise_fraction": 0.016070873543951144
+    },
+    {
+      "k": 139,
+      "noise_free_snr_db": 19.275688350716518,
+      "estimated_delay_samples": 3.6749941113193945,
+      "noise_fraction": 0.01167696776641057
+    },
+    {
+      "k": 140,
+      "noise_free_snr_db": 18.87382740243439,
+      "estimated_delay_samples": 3.668906996160422,
+      "noise_fraction": 0.012794543840398421
+    },
+    {
+      "k": 141,
+      "noise_free_snr_db": 18.560902327510384,
+      "estimated_delay_samples": 3.6623002707195127,
+      "noise_fraction": 0.013737330985900091
+    },
+    {
+      "k": 142,
+      "noise_free_snr_db": 18.223050715590595,
+      "estimated_delay_samples": 3.654906869724547,
+      "noise_fraction": 0.014832185332905397
+    },
+    {
+      "k": 143,
+      "noise_free_snr_db": 18.044297933655645,
+      "estimated_delay_samples": 3.6437709920333567,
+      "noise_fraction": 0.0154457799965079
+    },
+    {
+      "k": 144,
+      "noise_free_snr_db": 16.092962371320365,
+      "estimated_delay_samples": 3.6237990454106574,
+      "noise_fraction": 0.023996890197528844
+    },
+    {
+      "k": 145,
+      "noise_free_snr_db": 16.27132262190608,
+      "estimated_delay_samples": 3.603348365556714,
+      "noise_fraction": 0.023053585540932786
+    },
+    {
+      "k": 146,
+      "noise_free_snr_db": 16.778116233212522,
+      "estimated_delay_samples": 3.5845054083333667,
+      "noise_fraction": 0.020566636414448707
+    },
+    {
+      "k": 147,
+      "noise_free_snr_db": 19.431827397164856,
+      "estimated_delay_samples": 3.666682036872543,
+      "noise_fraction": 0.011269257386787674
+    },
+    {
+      "k": 148,
+      "noise_free_snr_db": 20.453621952260775,
+      "estimated_delay_samples": 3.657219971821214,
+      "noise_fraction": 0.008927772419841523
+    },
+    {
+      "k": 149,
+      "noise_free_snr_db": 21.833827743227964,
+      "estimated_delay_samples": 3.6484782972022805,
+      "noise_fraction": 0.006512975210174354
+    },
+    {
+      "k": 150,
+      "noise_free_snr_db": 22.668986859916576,
+      "estimated_delay_samples": 3.651925434791387,
+      "noise_fraction": 0.005379707084720675
+    },
+    {
+      "k": 151,
+      "noise_free_snr_db": 23.116276683448636,
+      "estimated_delay_samples": 3.657540802785295,
+      "noise_fraction": 0.0048557728181071146
+    },
+    {
+      "k": 152,
+      "noise_free_snr_db": 22.343906634832408,
+      "estimated_delay_samples": 3.6386214625449855,
+      "noise_fraction": 0.005795422398474502
+    },
+    {
+      "k": 153,
+      "noise_free_snr_db": 21.327371916172787,
+      "estimated_delay_samples": 3.6532845926077018,
+      "noise_fraction": 0.0073126584978158195
+    },
+    {
+      "k": 154,
+      "noise_free_snr_db": 22.453608977112516,
+      "estimated_delay_samples": 3.757765492279249,
+      "noise_fraction": 0.0056516810691761565
+    },
+    {
+      "k": 155,
+      "noise_free_snr_db": 22.484456205539956,
+      "estimated_delay_samples": 3.76552316059547,
+      "noise_fraction": 0.0056119048085946
+    },
+    {
+      "k": 156,
+      "noise_free_snr_db": 22.4602438288763,
+      "estimated_delay_samples": 3.7774812600167325,
+      "noise_fraction": 0.005643102099167695
+    },
+    {
+      "k": 157,
+      "noise_free_snr_db": 22.786380069970498,
+      "estimated_delay_samples": 3.7832835883845624,
+      "noise_fraction": 0.005236988514430866
+    },
+    {
+      "k": 158,
+      "noise_free_snr_db": 22.98524074436986,
+      "estimated_delay_samples": 3.7921355593664856,
+      "noise_fraction": 0.005003770249938565
+    },
+    {
+      "k": 159,
+      "noise_free_snr_db": 23.37431182805205,
+      "estimated_delay_samples": 3.796874080107014,
+      "noise_fraction": 0.004576953589328495
+    },
+    {
+      "k": 160,
+      "noise_free_snr_db": 22.090317470398947,
+      "estimated_delay_samples": 3.8072551239673897,
+      "noise_fraction": 0.006141757949481531
+    },
+    {
+      "k": 161,
+      "noise_free_snr_db": 22.65970947454288,
+      "estimated_delay_samples": 3.813341019411034,
+      "noise_fraction": 0.005391149459989063
+    },
+    {
+      "k": 162,
+      "noise_free_snr_db": 25.442813265200265,
+      "estimated_delay_samples": 3.8680991839911263,
+      "noise_fraction": 0.002847608029468135
+    },
+    {
+      "k": 163,
+      "noise_free_snr_db": 25.78226805545252,
+      "estimated_delay_samples": 3.87130968814236,
+      "noise_fraction": 0.0026340724862951243
+    },
+    {
+      "k": 164,
+      "noise_free_snr_db": 26.22069155896114,
+      "estimated_delay_samples": 3.8728326783888924,
+      "noise_fraction": 0.002381744832829349
+    },
+    {
+      "k": 165,
+      "noise_free_snr_db": 26.415564001094115,
+      "estimated_delay_samples": 3.875318745481863,
+      "noise_fraction": 0.0022774737371836686
+    },
+    {
+      "k": 166,
+      "noise_free_snr_db": 26.672930157984318,
+      "estimated_delay_samples": 3.8762628822840144,
+      "noise_fraction": 0.0021467114718232948
+    },
+    {
+      "k": 167,
+      "noise_free_snr_db": 27.01906715895253,
+      "estimated_delay_samples": 3.88992782953026,
+      "noise_fraction": 0.0019825831214916228
+    },
+    {
+      "k": 168,
+      "noise_free_snr_db": 27.267117508773172,
+      "estimated_delay_samples": 3.8910381605018634,
+      "noise_fraction": 0.0018727257072641812
+    },
+    {
+      "k": 169,
+      "noise_free_snr_db": 30.118338993280894,
+      "estimated_delay_samples": 3.9316077764150945,
+      "noise_fraction": 0.0009721732921145778
+    },
+    {
+      "k": 170,
+      "noise_free_snr_db": 30.01891209782258,
+      "estimated_delay_samples": 3.931780045573546,
+      "noise_fraction": 0.0009946644539469277
+    },
+    {
+      "k": 171,
+      "noise_free_snr_db": 29.637668644198186,
+      "estimated_delay_samples": 3.932368330428294,
+      "noise_fraction": 0.0010858286836831993
+    },
+    {
+      "k": 172,
+      "noise_free_snr_db": 29.275176761300887,
+      "estimated_delay_samples": 3.932019051457762,
+      "noise_fraction": 0.0011802376114102048
+    },
+    {
+      "k": 173,
+      "noise_free_snr_db": 28.594372595761573,
+      "estimated_delay_samples": 3.9324085147811427,
+      "noise_fraction": 0.0013802662991981634
+    },
+    {
+      "k": 174,
+      "noise_free_snr_db": 28.131758054813645,
+      "estimated_delay_samples": 3.931415398232021,
+      "noise_fraction": 0.001535171734587304
+    },
+    {
+      "k": 175,
+      "noise_free_snr_db": 26.283482411996133,
+      "estimated_delay_samples": 3.9409096996013417,
+      "noise_fraction": 0.0023476372628420416
+    },
+    {
+      "k": 176,
+      "noise_free_snr_db": 29.99175234580466,
+      "estimated_delay_samples": 3.9758615718376262,
+      "noise_fraction": 0.0010008980962781392
+    },
+    {
+      "k": 177,
+      "noise_free_snr_db": 28.798106775632796,
+      "estimated_delay_samples": 3.975013433537443,
+      "noise_fraction": 0.0013170945070703826
+    },
+    {
+      "k": 178,
+      "noise_free_snr_db": 27.95784696817674,
+      "estimated_delay_samples": 3.973515995496342,
+      "noise_fraction": 0.0015977941804844993
+    },
+    {
+      "k": 179,
+      "noise_free_snr_db": 27.031822184239402,
+      "estimated_delay_samples": 3.9713063048481567,
+      "noise_fraction": 0.0019767804034615862
+    },
+    {
+      "k": 180,
+      "noise_free_snr_db": 26.252032619205885,
+      "estimated_delay_samples": 3.9697793108863575,
+      "noise_fraction": 0.002364659229493688
+    },
+    {
+      "k": 181,
+      "noise_free_snr_db": 25.540851414041775,
+      "estimated_delay_samples": 3.9664397082681884,
+      "noise_fraction": 0.002784222889357719
+    },
+    {
+      "k": 182,
+      "noise_free_snr_db": 24.87319968103513,
+      "estimated_delay_samples": 3.9640870196078772,
+      "noise_fraction": 0.003245400362514424
+    },
+    {
+      "k": 183,
+      "noise_free_snr_db": 21.375500998078486,
+      "estimated_delay_samples": 3.959661531635655,
+      "noise_fraction": 0.007232648950590919
+    },
+    {
+      "k": 184,
+      "noise_free_snr_db": 24.95056389546775,
+      "estimated_delay_samples": 3.9979926189568245,
+      "noise_fraction": 0.0031882821306318705
+    },
+    {
+      "k": 185,
+      "noise_free_snr_db": 24.690082539033025,
+      "estimated_delay_samples": 3.993938571162439,
+      "noise_fraction": 0.0033846931248830573
+    },
+    {
+      "k": 186,
+      "noise_free_snr_db": 24.724870129643488,
+      "estimated_delay_samples": 3.9879470470221543,
+      "noise_fraction": 0.0033577802308857587
+    },
+    {
+      "k": 187,
+      "noise_free_snr_db": 24.80085973931597,
+      "estimated_delay_samples": 3.9837800404235075,
+      "noise_fraction": 0.0032997314898636962
+    },
+    {
+      "k": 188,
+      "noise_free_snr_db": 25.46690633168328,
+      "estimated_delay_samples": 3.977176448402523,
+      "noise_fraction": 0.002831898894994365
+    },
+    {
+      "k": 189,
+      "noise_free_snr_db": 26.100061077289176,
+      "estimated_delay_samples": 3.973251937776654,
+      "noise_fraction": 0.0024486637218306033
+    },
+    {
+      "k": 190,
+      "noise_free_snr_db": 24.32597550237788,
+      "estimated_delay_samples": 3.9526062415290872,
+      "noise_fraction": 0.003679607279151002
+    },
+    {
+      "k": 191,
+      "noise_free_snr_db": 31.0510806834859,
+      "estimated_delay_samples": 4.00747465139966,
+      "noise_fraction": 0.0007844244587941494
+    },
+    {
+      "k": 192,
+      "noise_free_snr_db": 34.389152429403225,
+      "estimated_delay_samples": 4.007301727563842,
+      "noise_fraction": 0.0003638536271909963
+    },
+    {
+      "k": 193,
+      "noise_free_snr_db": 34.103237195422864,
+      "estimated_delay_samples": 4.008060507417784,
+      "noise_fraction": 0.0003886041900642477
+    },
+    {
+      "k": 194,
+      "noise_free_snr_db": 30.964168637393744,
+      "estimated_delay_samples": 4.011579054098503,
+      "noise_fraction": 0.0008002679887006895
+    },
+    {
+      "k": 195,
+      "noise_free_snr_db": 28.452837127619745,
+      "estimated_delay_samples": 4.017406522646542,
+      "noise_fraction": 0.0014259246413225698
+    },
+    {
+      "k": 196,
+      "noise_free_snr_db": 26.82049556078813,
+      "estimated_delay_samples": 4.022111226911337,
+      "noise_fraction": 0.002075144214381444
+    },
+    {
+      "k": 197,
+      "noise_free_snr_db": 22.25276655364217,
+      "estimated_delay_samples": 4.022176464621021,
+      "noise_fraction": 0.005917601675855294
+    },
+    {
+      "k": 198,
+      "noise_free_snr_db": 25.264978030047903,
+      "estimated_delay_samples": 4.081993862510552,
+      "noise_fraction": 0.0029662793188227907
+    },
+    {
+      "k": 199,
+      "noise_free_snr_db": 25.10513962149794,
+      "estimated_delay_samples": 4.0892467140802005,
+      "noise_fraction": 0.0030771423795480334
+    },
+    {
+      "k": 200,
+      "noise_free_snr_db": 25.020762643535637,
+      "estimated_delay_samples": 4.095523546212224,
+      "noise_fraction": 0.0031373218362899793
+    },
+    {
+      "k": 201,
+      "noise_free_snr_db": 25.03289386520523,
+      "estimated_delay_samples": 4.098640016650999,
+      "noise_fraction": 0.0031285979094097154
+    },
+    {
+      "k": 202,
+      "noise_free_snr_db": 25.429437478663345,
+      "estimated_delay_samples": 4.10564817623919,
+      "noise_fraction": 0.0028563667749895707
+    },
+    {
+      "k": 203,
+      "noise_free_snr_db": 25.444513339944827,
+      "estimated_delay_samples": 4.106461290115217,
+      "noise_fraction": 0.002846496704858267
+    },
+    {
+      "k": 204,
+      "noise_free_snr_db": 9.617835593606465,
+      "estimated_delay_samples": 4.318666604923029,
+      "noise_fraction": 0.0984480662255553
+    },
+    {
+      "k": 205,
+      "noise_free_snr_db": 12.0843689368344,
+      "estimated_delay_samples": 4.295749452159169,
+      "noise_fraction": 0.05827562220805548
+    },
+    {
+      "k": 206,
+      "noise_free_snr_db": 12.881780826527283,
+      "estimated_delay_samples": 4.270958375622728,
+      "noise_fraction": 0.04897922634527502
+    },
+    {
+      "k": 207,
+      "noise_free_snr_db": 12.243595935712236,
+      "estimated_delay_samples": 4.305648145047574,
+      "noise_fraction": 0.05629583660185171
+    },
+    {
+      "k": 208,
+      "noise_free_snr_db": 11.413230329315091,
+      "estimated_delay_samples": 4.3459338077500265,
+      "noise_fraction": 0.06735839819415362
+    },
+    {
+      "k": 209,
+      "noise_free_snr_db": 11.178495956262445,
+      "estimated_delay_samples": 4.358672927805723,
+      "noise_fraction": 0.0708342950624567
+    },
+    {
+      "k": 210,
+      "noise_free_snr_db": 12.135241529681748,
+      "estimated_delay_samples": 4.330456740176451,
+      "noise_fraction": 0.057636087703452916
+    },
+    {
+      "k": 211,
+      "noise_free_snr_db": 13.79240694092331,
+      "estimated_delay_samples": 4.273512620516402,
+      "noise_fraction": 0.04008590338200597
+    },
+    {
+      "k": 212,
+      "noise_free_snr_db": 13.940008111028586,
+      "estimated_delay_samples": 4.320470641536322,
+      "noise_fraction": 0.03879838778704857
+    },
+    {
+      "k": 213,
+      "noise_free_snr_db": 13.576697629117492,
+      "estimated_delay_samples": 4.349808157931329,
+      "noise_fraction": 0.04204138218461828
+    },
+    {
+      "k": 214,
+      "noise_free_snr_db": 12.359491918352848,
+      "estimated_delay_samples": 4.392896920900829,
+      "noise_fraction": 0.05489477057654094
+    },
+    {
+      "k": 215,
+      "noise_free_snr_db": 11.899788850513913,
+      "estimated_delay_samples": 4.40578139126997,
+      "noise_fraction": 0.060652328448888196
+    },
+    {
+      "k": 216,
+      "noise_free_snr_db": 12.801870661584875,
+      "estimated_delay_samples": 4.375786634898194,
+      "noise_fraction": 0.0498434505739605
+    },
+    {
+      "k": 217,
+      "noise_free_snr_db": 13.702483104194146,
+      "estimated_delay_samples": 4.332145791781811,
+      "noise_fraction": 0.04089027074129454
+    },
+    {
+      "k": 218,
+      "noise_free_snr_db": 13.851416139628359,
+      "estimated_delay_samples": 4.321497485269848,
+      "noise_fraction": 0.03956632946721257
+    },
+    {
+      "k": 219,
+      "noise_free_snr_db": 12.952729906257138,
+      "estimated_delay_samples": 4.4266116380862774,
+      "noise_fraction": 0.04822384444907625
+    },
+    {
+      "k": 220,
+      "noise_free_snr_db": 11.570344542564332,
+      "estimated_delay_samples": 4.467988063061901,
+      "noise_fraction": 0.06512098446679766
+    },
+    {
+      "k": 221,
+      "noise_free_snr_db": 11.03418640414511,
+      "estimated_delay_samples": 4.4783278130521165,
+      "noise_fraction": 0.07305272049400634
+    },
+    {
+      "k": 222,
+      "noise_free_snr_db": 11.698573003240874,
+      "estimated_delay_samples": 4.449318224379202,
+      "noise_fraction": 0.06334636824027176
+    },
+    {
+      "k": 223,
+      "noise_free_snr_db": 12.34407981415698,
+      "estimated_delay_samples": 4.412388623566368,
+      "noise_fraction": 0.0550791764936804
+    },
+    {
+      "k": 224,
+      "noise_free_snr_db": 12.290805444438753,
+      "estimated_delay_samples": 4.412398729966028,
+      "noise_fraction": 0.05572110723043818
+    },
+    {
+      "k": 225,
+      "noise_free_snr_db": 11.127581175050146,
+      "estimated_delay_samples": 4.456927978849473,
+      "noise_fraction": 0.07160979527750015
+    },
+    {
+      "k": 226,
+      "noise_free_snr_db": 9.361640823805201,
+      "estimated_delay_samples": 4.570381624943682,
+      "noise_fraction": 0.10380931882710528
+    },
+    {
+      "k": 227,
+      "noise_free_snr_db": 8.838279523588884,
+      "estimated_delay_samples": 4.5791372685740015,
+      "noise_fraction": 0.11556774057280889
+    },
+    {
+      "k": 228,
+      "noise_free_snr_db": 9.421770242309499,
+      "estimated_delay_samples": 4.550650652402399,
+      "noise_fraction": 0.10252829621304071
+    },
+    {
+      "k": 229,
+      "noise_free_snr_db": 9.950081669101747,
+      "estimated_delay_samples": 4.521011707783768,
+      "noise_fraction": 0.09186349545619937
+    },
+    {
+      "k": 230,
+      "noise_free_snr_db": 9.507142486153398,
+      "estimated_delay_samples": 4.534484926757648,
+      "noise_fraction": 0.1007335506168927
+    },
+    {
+      "k": 231,
+      "noise_free_snr_db": 7.7669593033611495,
+      "estimated_delay_samples": 4.591553468878368,
+      "noise_fraction": 0.14326796044903795
+    },
+    {
+      "k": 232,
+      "noise_free_snr_db": 6.017559088383198,
+      "estimated_delay_samples": 4.644847750901764,
+      "noise_fraction": 0.20011205166141166
+    },
+    {
+      "k": 233,
+      "noise_free_snr_db": 5.59206166752248,
+      "estimated_delay_samples": 4.718674916159438,
+      "noise_fraction": 0.21625595963603805
+    },
+    {
+      "k": 234,
+      "noise_free_snr_db": 6.2275952242041726,
+      "estimated_delay_samples": 4.691428267959929,
+      "noise_fraction": 0.1924829186340442
+    },
+    {
+      "k": 235,
+      "noise_free_snr_db": 6.661888390054993,
+      "estimated_delay_samples": 4.6692933935351855,
+      "noise_fraction": 0.17741554142999122
+    },
+    {
+      "k": 236,
+      "noise_free_snr_db": 5.780329511418962,
+      "estimated_delay_samples": 4.696841845610061,
+      "noise_fraction": 0.20899895175451902
+    },
+    {
+      "k": 237,
+      "noise_free_snr_db": 3.782294816242666,
+      "estimated_delay_samples": 4.764461331302416,
+      "noise_fraction": 0.295065907472358
+    },
+    {
+      "k": 238,
+      "noise_free_snr_db": 2.2971817699015187,
+      "estimated_delay_samples": 4.816015279537474,
+      "noise_fraction": 0.3707628320015193
+    },
+    {
+      "k": 239,
+      "noise_free_snr_db": 2.4133271199615622,
+      "estimated_delay_samples": 4.812415075929639,
+      "noise_fraction": 0.3645455031537193
+    },
+    {
+      "k": 240,
+      "noise_free_snr_db": 4.019144796098775,
+      "estimated_delay_samples": 4.820468803242367,
+      "noise_fraction": 0.28385028930721273
+    },
+    {
+      "k": 241,
+      "noise_free_snr_db": 4.004683194858281,
+      "estimated_delay_samples": 4.826588903625813,
+      "noise_fraction": 0.28452767735749346
+    },
+    {
+      "k": 242,
+      "noise_free_snr_db": 3.253592451022376,
+      "estimated_delay_samples": 4.851104412860596,
+      "noise_fraction": 0.32100275866720845
+    },
+    {
+      "k": 243,
+      "noise_free_snr_db": 2.643278348330469,
+      "estimated_delay_samples": 4.863427880415039,
+      "noise_fraction": 0.35237010350660397
+    },
+    {
+      "k": 244,
+      "noise_free_snr_db": 1.2965709368105611,
+      "estimated_delay_samples": 4.919177187577425,
+      "noise_fraction": 0.4259128439058721
+    },
+    {
+      "k": 245,
+      "noise_free_snr_db": 2.8432342540756217,
+      "estimated_delay_samples": 4.867991730025097,
+      "noise_fraction": 0.3419359381325543
+    },
+    {
+      "k": 246,
+      "noise_free_snr_db": 5.037871251116144,
+      "estimated_delay_samples": 4.7965877659185985,
+      "noise_fraction": 0.23866497308872608
+    },
+    {
+      "k": 247,
+      "noise_free_snr_db": 4.994914812549833,
+      "estimated_delay_samples": 4.880416963106418,
+      "noise_fraction": 0.24046686592586095
+    },
+    {
+      "k": 248,
+      "noise_free_snr_db": 4.967519180057353,
+      "estimated_delay_samples": 4.874076511581947,
+      "noise_fraction": 0.24162087476531013
+    },
+    {
+      "k": 249,
+      "noise_free_snr_db": 4.610161388327455,
+      "estimated_delay_samples": 4.879299179862722,
+      "noise_fraction": 0.2570173904674361
+    },
+    {
+      "k": 250,
+      "noise_free_snr_db": 4.29433898300292,
+      "estimated_delay_samples": 4.896256502387938,
+      "noise_fraction": 0.27114756594145584
+    },
+    {
+      "k": 251,
+      "noise_free_snr_db": 6.437445429381524,
+      "estimated_delay_samples": 4.836434360941563,
+      "noise_fraction": 0.185083800318662
+    },
+    {
+      "k": 252,
+      "noise_free_snr_db": 7.735947075070124,
+      "estimated_delay_samples": 4.807657271565646,
+      "noise_fraction": 0.1441466766121815
+    },
+    {
+      "k": 253,
+      "noise_free_snr_db": 7.309823632009685,
+      "estimated_delay_samples": 4.895510321795953,
+      "noise_fraction": 0.15667892724234833
+    },
+    {
+      "k": 254,
+      "noise_free_snr_db": 7.671193868863071,
+      "estimated_delay_samples": 4.869886427097316,
+      "noise_fraction": 0.1459958739167697
+    },
+    {
+      "k": 255,
+      "noise_free_snr_db": 7.428555582606414,
+      "estimated_delay_samples": 4.871247300336218,
+      "noise_fraction": 0.15310041317174236
+    },
+    {
+      "k": 256,
+      "noise_free_snr_db": 7.96982376678401,
+      "estimated_delay_samples": 4.867079881287035,
+      "noise_fraction": 0.1376294953391935
+    },
+    {
+      "k": 257,
+      "noise_free_snr_db": 8.894378557559172,
+      "estimated_delay_samples": 4.8603360498692645,
+      "noise_fraction": 0.11425398379564264
+    },
+    {
+      "k": 258,
+      "noise_free_snr_db": 9.449384119615136,
+      "estimated_delay_samples": 4.852278994655403,
+      "noise_fraction": 0.10194470339808985
+    },
+    {
+      "k": 259,
+      "noise_free_snr_db": 9.317461242954085,
+      "estimated_delay_samples": 4.845381105567267,
+      "noise_fraction": 0.10475953884475306
+    },
+    {
+      "k": 260,
+      "noise_free_snr_db": 9.118180076910706,
+      "estimated_delay_samples": 4.893663797555207,
+      "noise_fraction": 0.10914167958537403
+    },
+    {
+      "k": 261,
+      "noise_free_snr_db": 9.26659219845813,
+      "estimated_delay_samples": 4.9027087425686915,
+      "noise_fraction": 0.10586314160870802
+    },
+    {
+      "k": 262,
+      "noise_free_snr_db": 9.712080468310656,
+      "estimated_delay_samples": 4.9100198753400175,
+      "noise_fraction": 0.0965387122664296
+    },
+    {
+      "k": 263,
+      "noise_free_snr_db": 10.199306375594144,
+      "estimated_delay_samples": 4.911058757059328,
+      "noise_fraction": 0.08718689822422723
+    },
+    {
+      "k": 264,
+      "noise_free_snr_db": 10.24839458943208,
+      "estimated_delay_samples": 4.901322041984558,
+      "noise_fraction": 0.08629153408557115
+    },
+    {
+      "k": 265,
+      "noise_free_snr_db": 9.989498534558722,
+      "estimated_delay_samples": 4.891183500950438,
+      "noise_fraction": 0.09110912767851057
+    },
+    {
+      "k": 266,
+      "noise_free_snr_db": 9.796807594503006,
+      "estimated_delay_samples": 4.892982634337383,
+      "noise_fraction": 0.09485048651882984
+    },
+    {
+      "k": 267,
+      "noise_free_snr_db": 10.032328921212027,
+      "estimated_delay_samples": 4.952184258321813,
+      "noise_fraction": 0.09029575414899733
+    },
+    {
+      "k": 268,
+      "noise_free_snr_db": 10.361999431350046,
+      "estimated_delay_samples": 4.975309032099572,
+      "noise_fraction": 0.08425125681376759
+    },
+    {
+      "k": 269,
+      "noise_free_snr_db": 10.491142308508898,
+      "estimated_delay_samples": 4.966498406292657,
+      "noise_fraction": 0.08198519853388156
+    },
+    {
+      "k": 270,
+      "noise_free_snr_db": 10.317757132116636,
+      "estimated_delay_samples": 4.949396165676811,
+      "noise_fraction": 0.08504056316846738
+    },
+    {
+      "k": 271,
+      "noise_free_snr_db": 9.982070030647463,
+      "estimated_delay_samples": 4.948797067394708,
+      "noise_fraction": 0.09125086832869606
+    },
+    {
+      "k": 272,
+      "noise_free_snr_db": 9.772044537525424,
+      "estimated_delay_samples": 4.96788145974838,
+      "noise_fraction": 0.09534114926606183
+    },
+    {
+      "k": 273,
+      "noise_free_snr_db": 25.68980116722127,
+      "estimated_delay_samples": 4.862447240810116,
+      "noise_fraction": 0.0026906040647050413
+    },
+    {
+      "k": 274,
+      "noise_free_snr_db": 25.58022995221268,
+      "estimated_delay_samples": 4.862266841331943,
+      "noise_fraction": 0.0027591611104465304
+    },
+    {
+      "k": 275,
+      "noise_free_snr_db": 25.21907402087912,
+      "estimated_delay_samples": 4.873050592295293,
+      "noise_fraction": 0.0029977040615413995
+    },
+    {
+      "k": 276,
+      "noise_free_snr_db": 24.94208289549546,
+      "estimated_delay_samples": 4.87240456718494,
+      "noise_fraction": 0.0031944944538390735
+    },
+    {
+      "k": 277,
+      "noise_free_snr_db": 24.656675031126998,
+      "estimated_delay_samples": 4.871601691818478,
+      "noise_fraction": 0.003410740665040178
+    },
+    {
+      "k": 278,
+      "noise_free_snr_db": 14.551489305038059,
+      "estimated_delay_samples": 4.930276117096449,
+      "noise_fraction": 0.03387538326590122
+    },
+    {
+      "k": 279,
+      "noise_free_snr_db": 12.129512276381341,
+      "estimated_delay_samples": 4.986257006836075,
+      "noise_fraction": 0.05770778128964245
+    },
+    {
+      "k": 280,
+      "noise_free_snr_db": 12.910205574275855,
+      "estimated_delay_samples": 5.024804151683426,
+      "noise_fraction": 0.04867525505984324
+    },
+    {
+      "k": 281,
+      "noise_free_snr_db": 13.762317592042141,
+      "estimated_delay_samples": 4.986332644673585,
+      "noise_fraction": 0.04035334983454662
+    },
+    {
+      "k": 282,
+      "noise_free_snr_db": 10.845089712001602,
+      "estimated_delay_samples": 5.077861752953592,
+      "noise_fraction": 0.07605651736726568
+    },
+    {
+      "k": 283,
+      "noise_free_snr_db": 13.935213789088753,
+      "estimated_delay_samples": 4.979828193377192,
+      "noise_fraction": 0.038839577823801694
+    },
+    {
+      "k": 284,
+      "noise_free_snr_db": 10.422595632744347,
+      "estimated_delay_samples": 5.076154707634102,
+      "noise_fraction": 0.08318098323874622
+    },
+    {
+      "k": 285,
+      "noise_free_snr_db": 11.993826548181659,
+      "estimated_delay_samples": 5.029139839817812,
+      "noise_fraction": 0.05943035234378493
+    },
+    {
+      "k": 286,
+      "noise_free_snr_db": 11.388544945956788,
+      "estimated_delay_samples": 5.0299745990479,
+      "noise_fraction": 0.06771635467944877
+    },
+    {
+      "k": 287,
+      "noise_free_snr_db": 9.718837094384602,
+      "estimated_delay_samples": 5.1457738131888195,
+      "noise_fraction": 0.0964031046702779
+    },
+    {
+      "k": 288,
+      "noise_free_snr_db": 12.786162000640747,
+      "estimated_delay_samples": 5.042236349788889,
+      "noise_fraction": 0.050015030058515375
+    },
+    {
+      "k": 289,
+      "noise_free_snr_db": 8.569589423466473,
+      "estimated_delay_samples": 5.161809118614363,
+      "noise_fraction": 0.12204335250690039
+    },
+    {
+      "k": 290,
+      "noise_free_snr_db": 10.880256488897373,
+      "estimated_delay_samples": 5.084449138464391,
+      "noise_fraction": 0.07548944378969627
+    },
+    {
+      "k": 291,
+      "noise_free_snr_db": 9.491310285443967,
+      "estimated_delay_samples": 5.116230854668462,
+      "noise_fraction": 0.10106426388104729
+    },
+    {
+      "k": 292,
+      "noise_free_snr_db": 7.868918479411981,
+      "estimated_delay_samples": 5.1715997810795695,
+      "noise_fraction": 0.140410407755188
+    },
+    {
+      "k": 293,
+      "noise_free_snr_db": 0.0754455819781105,
+      "estimated_delay_samples": 5.52227186522626,
+      "noise_fraction": 0.49565711240810895
+    },
+    {
+      "k": 294,
+      "noise_free_snr_db": 4.979611156871828,
+      "estimated_delay_samples": 5.318465242212171,
+      "noise_fraction": 0.24111104965997046
+    },
+    {
+      "k": 295,
+      "noise_free_snr_db": 12.706563906782655,
+      "estimated_delay_samples": 5.109978007518065,
+      "noise_fraction": 0.050893081606993955
+    },
+    {
+      "k": 296,
+      "noise_free_snr_db": -1.9788652870282721,
+      "estimated_delay_samples": 5.594487532258684,
+      "noise_fraction": 0.6119818649042704
+    },
+    {
+      "k": 297,
+      "noise_free_snr_db": 7.096201399099844,
+      "estimated_delay_samples": 5.230306402396806,
+      "noise_fraction": 0.1632884995727624
+    },
+    {
+      "k": 298,
+      "noise_free_snr_db": 9.58296952481078,
+      "estimated_delay_samples": 5.136826707217735,
+      "noise_fraction": 0.09916291896491555
+    },
+    {
+      "k": 299,
+      "noise_free_snr_db": 5.290860189593483,
+      "estimated_delay_samples": 5.283787642664456,
+      "noise_fraction": 0.22824182026602285
+    },
+    {
+      "k": 300,
+      "noise_free_snr_db": 8.942966701962936,
+      "estimated_delay_samples": 5.238946354300276,
+      "noise_fraction": 0.11312665184506883
+    },
+    {
+      "k": 301,
+      "noise_free_snr_db": 8.192791301557394,
+      "estimated_delay_samples": 5.253551209898295,
+      "noise_fraction": 0.1316486351775858
+    },
+    {
+      "k": 302,
+      "noise_free_snr_db": 7.537006224670524,
+      "estimated_delay_samples": 5.26891064330143,
+      "noise_fraction": 0.14989054068974933
+    },
+    {
+      "k": 303,
+      "noise_free_snr_db": 9.985554845080344,
+      "estimated_delay_samples": 5.186864451978154,
+      "noise_fraction": 0.09118435113494738
+    },
+    {
+      "k": 304,
+      "noise_free_snr_db": 6.2675811520788915,
+      "estimated_delay_samples": 5.3061761586003335,
+      "noise_fraction": 0.19105587969859628
+    },
+    {
+      "k": 305,
+      "noise_free_snr_db": 8.425892220225979,
+      "estimated_delay_samples": 5.2199927500125645,
+      "noise_fraction": 0.12563320382132387
+    },
+    {
+      "k": 306,
+      "noise_free_snr_db": 6.250509389792532,
+      "estimated_delay_samples": 5.271861674604234,
+      "noise_fraction": 0.19166415496344144
+    },
+    {
+      "k": 307,
+      "noise_free_snr_db": 5.966590812831669,
+      "estimated_delay_samples": 5.3635161173769275,
+      "noise_fraction": 0.2019971942186757
+    },
+    {
+      "k": 308,
+      "noise_free_snr_db": 7.415726293657308,
+      "estimated_delay_samples": 5.309624775939975,
+      "noise_fraction": 0.15348383030759294
+    },
+    {
+      "k": 309,
+      "noise_free_snr_db": 3.467640857615239,
+      "estimated_delay_samples": 5.408833328011731,
+      "noise_fraction": 0.3103563600231542
+    },
+    {
+      "k": 310,
+      "noise_free_snr_db": 6.947741091799374,
+      "estimated_delay_samples": 5.309100354879106,
+      "noise_fraction": 0.16801285344163863
+    },
+    {
+      "k": 311,
+      "noise_free_snr_db": 6.502184841176194,
+      "estimated_delay_samples": 5.314759079234381,
+      "noise_fraction": 0.1828459872056152
+    },
+    {
+      "k": 312,
+      "noise_free_snr_db": 7.333725332807525,
+      "estimated_delay_samples": 5.311662414029288,
+      "noise_fraction": 0.15595311026814254
+    },
+    {
+      "k": 313,
+      "noise_free_snr_db": 9.595614440939706,
+      "estimated_delay_samples": 5.333520772710674,
+      "noise_fraction": 0.09890313021947857
+    },
+    {
+      "k": 314,
+      "noise_free_snr_db": 8.120346796074253,
+      "estimated_delay_samples": 5.363897866814034,
+      "noise_fraction": 0.13356730213329027
+    },
+    {
+      "k": 315,
+      "noise_free_snr_db": 10.805709751078554,
+      "estimated_delay_samples": 5.330411022455715,
+      "noise_fraction": 0.07669616755078275
+    },
+    {
+      "k": 316,
+      "noise_free_snr_db": 11.42865567382483,
+      "estimated_delay_samples": 5.29872277818213,
+      "noise_fraction": 0.06713561122378563
+    },
+    {
+      "k": 317,
+      "noise_free_snr_db": 12.187401475492843,
+      "estimated_delay_samples": 5.305893355659556,
+      "noise_fraction": 0.05698721499597794
+    },
+    {
+      "k": 318,
+      "noise_free_snr_db": 13.0924620745657,
+      "estimated_delay_samples": 5.2976023501479315,
+      "noise_fraction": 0.04676837033695316
+    },
+    {
+      "k": 319,
+      "noise_free_snr_db": 12.751491340295694,
+      "estimated_delay_samples": 5.294621297284254,
+      "noise_fraction": 0.050395706229393225
+    },
+    {
+      "k": 320,
+      "noise_free_snr_db": 14.122806236065063,
+      "estimated_delay_samples": 5.34651254055688,
+      "noise_fraction": 0.03725880583233912
+    },
+    {
+      "k": 321,
+      "noise_free_snr_db": 15.63500696742209,
+      "estimated_delay_samples": 5.307993102525149,
+      "noise_fraction": 0.02659457566811706
+    },
+    {
+      "k": 322,
+      "noise_free_snr_db": 15.00826404160488,
+      "estimated_delay_samples": 5.33245041961154,
+      "noise_fraction": 0.03059693912940315
+    },
+    {
+      "k": 323,
+      "noise_free_snr_db": 15.250118082505143,
+      "estimated_delay_samples": 5.349150416323872,
+      "noise_fraction": 0.028987645877169944
+    },
+    {
+      "k": 324,
+      "noise_free_snr_db": 15.41372575063972,
+      "estimated_delay_samples": 5.322858106159869,
+      "noise_fraction": 0.027945885030320493
+    },
+    {
+      "k": 325,
+      "noise_free_snr_db": 17.37965093299241,
+      "estimated_delay_samples": 5.289930047790532,
+      "noise_fraction": 0.017954223978478536
+    },
+    {
+      "k": 326,
+      "noise_free_snr_db": 14.151984988424873,
+      "estimated_delay_samples": 5.36097738917005,
+      "noise_fraction": 0.03701855154957971
+    },
+    {
+      "k": 327,
+      "noise_free_snr_db": 8.872618253965928,
+      "estimated_delay_samples": 5.5445927831249415,
+      "noise_fraction": 0.11476202682325541
+    },
+    {
+      "k": 328,
+      "noise_free_snr_db": 7.516688351951792,
+      "estimated_delay_samples": 5.566081466581583,
+      "noise_fraction": 0.15048765040398118
+    },
+    {
+      "k": 329,
+      "noise_free_snr_db": 5.333201517510268,
+      "estimated_delay_samples": 5.610601575625788,
+      "noise_fraction": 0.22652903050957007
+    },
+    {
+      "k": 330,
+      "noise_free_snr_db": 3.377874015440442,
+      "estimated_delay_samples": 5.767462285356194,
+      "noise_fraction": 0.31479763042412645
+    },
+    {
+      "k": 331,
+      "noise_free_snr_db": 4.994987747188556,
+      "estimated_delay_samples": 5.658200512366881,
+      "noise_fraction": 0.24046379867286474
+    },
+    {
+      "k": 332,
+      "noise_free_snr_db": 5.410164776201877,
+      "estimated_delay_samples": 5.608069958009125,
+      "noise_fraction": 0.2234390476380588
+    },
+    {
+      "k": 333,
+      "noise_free_snr_db": 6.649595346868996,
+      "estimated_delay_samples": 5.682874989112884,
+      "noise_fraction": 0.17782901114267807
+    },
+    {
+      "k": 334,
+      "noise_free_snr_db": 12.065890097622407,
+      "estimated_delay_samples": 5.48900219045056,
+      "noise_fraction": 0.05850956920475351
+    },
+    {
+      "k": 335,
+      "noise_free_snr_db": 14.241626038729224,
+      "estimated_delay_samples": 5.41370653074389,
+      "noise_fraction": 0.03628974178007161
+    },
+    {
+      "k": 336,
+      "noise_free_snr_db": 16.928341875277567,
+      "estimated_delay_samples": 5.435864218342212,
+      "noise_fraction": 0.019881286948691283
+    },
+    {
+      "k": 337,
+      "noise_free_snr_db": 15.59074947815034,
+      "estimated_delay_samples": 5.462322211907194,
+      "noise_fraction": 0.0268596610357417
+    },
+    {
+      "k": 338,
+      "noise_free_snr_db": 12.196941547185709,
+      "estimated_delay_samples": 5.447590172018071,
+      "noise_fraction": 0.05686928080428828
+    },
+    {
+      "k": 339,
+      "noise_free_snr_db": 6.181747188410198,
+      "estimated_delay_samples": 5.68991601238956,
+      "noise_fraction": 0.19412914096509204
+    },
+    {
+      "k": 340,
+      "noise_free_snr_db": 1.9815758573444082,
+      "estimated_delay_samples": 5.912188708503234,
+      "noise_fraction": 0.3878699390632155
+    },
+    {
+      "k": 341,
+      "noise_free_snr_db": 1.060772634709438,
+      "estimated_delay_samples": 5.8855292448139895,
+      "noise_fraction": 0.43923879806476007
+    },
+    {
+      "k": 342,
+      "noise_free_snr_db": -3.2887120559335994,
+      "estimated_delay_samples": 6.132181522700101,
+      "noise_fraction": 0.6807572367817879
+    },
+    {
+      "k": 343,
+      "noise_free_snr_db": -4.886623393372892,
+      "estimated_delay_samples": 6.204524336305225,
+      "noise_fraction": 0.7549495129915463
+    },
+    {
+      "k": 344,
+      "noise_free_snr_db": -1.7496105710699552,
+      "estimated_delay_samples": 6.00271804447923,
+      "noise_fraction": 0.5993752650942451
+    },
+    {
+      "k": 345,
+      "noise_free_snr_db": -2.9327694284131196,
+      "estimated_delay_samples": 6.095651172771211,
+      "noise_fraction": 0.6626878085641554
+    },
+    {
+      "k": 346,
+      "noise_free_snr_db": -0.8866340610515868,
+      "estimated_delay_samples": 6.07328026661342,
+      "noise_fraction": 0.550862223491699
+    },
+    {
+      "k": 347,
+      "noise_free_snr_db": 5.920411479961267,
+      "estimated_delay_samples": 5.71380291443312,
+      "noise_fraction": 0.20371663544638338
+    },
+    {
+      "k": 348,
+      "noise_free_snr_db": 8.216182438300182,
+      "estimated_delay_samples": 5.695031879849658,
+      "noise_fraction": 0.13103414200940153
+    },
+    {
+      "k": 349,
+      "noise_free_snr_db": 12.762922708263915,
+      "estimated_delay_samples": 5.615686143425279,
+      "noise_fraction": 0.050269890136952176
+    },
+    {
+      "k": 350,
+      "noise_free_snr_db": 19.201449588161335,
+      "estimated_delay_samples": 5.487626706854517,
+      "noise_fraction": 0.011875900024258021
+    },
+    {
+      "k": 351,
+      "noise_free_snr_db": 14.67731758993053,
+      "estimated_delay_samples": 5.494328590418418,
+      "noise_fraction": 0.032939858168567135
+    },
+    {
+      "k": 352,
+      "noise_free_snr_db": 7.47296959699897,
+      "estimated_delay_samples": 5.801461867943054,
+      "noise_fraction": 0.15177911073503686
+    },
+    {
+      "k": 353,
+      "noise_free_snr_db": 4.706880552764736,
+      "estimated_delay_samples": 5.910981064806238,
+      "noise_fraction": 0.2527877080615761
+    },
+    {
+      "k": 354,
+      "noise_free_snr_db": -14.162535052131254,
+      "estimated_delay_samples": 6.717893039476845,
+      "noise_fraction": 0.9630679491711488
+    },
+    {
+      "k": 355,
+      "noise_free_snr_db": -12.210375117506135,
+      "estimated_delay_samples": 7.301310302999644,
+      "noise_fraction": 0.9432963959384145
+    },
+    {
+      "k": 356,
+      "noise_free_snr_db": -15.844170251974381,
+      "estimated_delay_samples": 7.700989258371106,
+      "noise_fraction": 0.9746241759226061
+    },
+    {
+      "k": 357,
+      "noise_free_snr_db": -10.225613856695803,
+      "estimated_delay_samples": 8.079993517806292,
+      "noise_fraction": 0.9132939877072501
+    },
+    {
+      "k": 358,
+      "noise_free_snr_db": -2.702500488277791,
+      "estimated_delay_samples": 8.368542163266223,
+      "noise_fraction": 0.650735497040939
+    },
+    {
+      "k": 359,
+      "noise_free_snr_db": 6.126763350176315,
+      "estimated_delay_samples": 8.748111392819997,
+      "noise_fraction": 0.1961174604244247
+    },
+    {
+      "k": 360,
+      "noise_free_snr_db": 6.91481631661278,
+      "estimated_delay_samples": 8.750762410491976,
+      "noise_fraction": 0.16907525814402083
+    },
+    {
+      "k": 361,
+      "noise_free_snr_db": 6.253028033627478,
+      "estimated_delay_samples": 8.666919589735361,
+      "noise_fraction": 0.1915743216293076
+    },
+    {
+      "k": 362,
+      "noise_free_snr_db": 2.521913437851006,
+      "estimated_delay_samples": 8.586314676975334,
+      "noise_fraction": 0.35877337340146515
+    },
+    {
+      "k": 363,
+      "noise_free_snr_db": -3.7330255585354255,
+      "estimated_delay_samples": 8.26700836969906,
+      "noise_fraction": 0.7025689056669395
+    },
+    {
+      "k": 364,
+      "noise_free_snr_db": -13.60289446263376,
+      "estimated_delay_samples": 7.44717358531312,
+      "noise_fraction": 0.958200881800874
+    },
+    {
+      "k": 365,
+      "noise_free_snr_db": -14.802685196769792,
+      "estimated_delay_samples": 6.852311324647232,
+      "noise_fraction": 0.9679673985191032
+    },
+    {
+      "k": 366,
+      "noise_free_snr_db": 11.747619446917849,
+      "estimated_delay_samples": 5.800650613651927,
+      "noise_fraction": 0.06267958758289903
+    },
+    {
+      "k": 367,
+      "noise_free_snr_db": 13.855180951058845,
+      "estimated_delay_samples": 5.8114020588409,
+      "noise_fraction": 0.03953340045372887
+    },
+    {
+      "k": 368,
+      "noise_free_snr_db": 12.858666614623056,
+      "estimated_delay_samples": 5.790911269161967,
+      "noise_fraction": 0.049227733803992535
+    },
+    {
+      "k": 369,
+      "noise_free_snr_db": 11.1922058462667,
+      "estimated_delay_samples": 5.764241482832427,
+      "noise_fraction": 0.07062680463580438
+    },
+    {
+      "k": 370,
+      "noise_free_snr_db": 5.07163231495854,
+      "estimated_delay_samples": 5.997345467530498,
+      "noise_fraction": 0.23725531844561992
+    },
+    {
+      "k": 371,
+      "noise_free_snr_db": 0.6894602532300881,
+      "estimated_delay_samples": 6.230757218505845,
+      "noise_fraction": 0.46039462328271785
+    },
+    {
+      "k": 372,
+      "noise_free_snr_db": 1.5595165599037326,
+      "estimated_delay_samples": 6.224957627774851,
+      "noise_fraction": 0.4111793949870334
+    },
+    {
+      "k": 373,
+      "noise_free_snr_db": -5.30542534545563,
+      "estimated_delay_samples": 6.496006890403747,
+      "noise_fraction": 0.7723483960921717
+    },
+    {
+      "k": 374,
+      "noise_free_snr_db": -6.018460507625481,
+      "estimated_delay_samples": 6.521605333799787,
+      "noise_fraction": 0.7999211697345971
+    },
+    {
+      "k": 375,
+      "noise_free_snr_db": -4.401663025808299,
+      "estimated_delay_samples": 6.546383080112012,
+      "noise_fraction": 0.7337085252848617
+    },
+    {
+      "k": 376,
+      "noise_free_snr_db": -14.404308719298864,
+      "estimated_delay_samples": 6.737538425675249,
+      "noise_fraction": 0.9649977914985656
+    },
+    {
+      "k": 377,
+      "noise_free_snr_db": 9.401959425188126,
+      "estimated_delay_samples": 5.889660760936106,
+      "noise_fraction": 0.10294880005385543
+    },
+    {
+      "k": 378,
+      "noise_free_snr_db": 12.589275956466624,
+      "estimated_delay_samples": 5.86819862798974,
+      "noise_fraction": 0.05221351330634313
+    },
+    {
+      "k": 379,
+      "noise_free_snr_db": 10.362973479884662,
+      "estimated_delay_samples": 5.913806252847364,
+      "noise_fraction": 0.08423395432764486
+    },
+    {
+      "k": 380,
+      "noise_free_snr_db": 8.630301785061569,
+      "estimated_delay_samples": 5.944237276536874,
+      "noise_fraction": 0.1205533590647064
+    },
+    {
+      "k": 381,
+      "noise_free_snr_db": -0.20512203414099084,
+      "estimated_delay_samples": 6.292314078568369,
+      "noise_fraction": 0.5118055788993081
+    },
+    {
+      "k": 382,
+      "noise_free_snr_db": 0.6984045290761416,
+      "estimated_delay_samples": 6.291015308323618,
+      "noise_fraction": 0.4598830217833537
+    },
+    {
+      "k": 383,
+      "noise_free_snr_db": -6.363735342783801,
+      "estimated_delay_samples": 6.564196752353061,
+      "noise_fraction": 0.8123426001779245
+    },
+    {
+      "k": 384,
+      "noise_free_snr_db": -5.7505564587042945,
+      "estimated_delay_samples": 6.571025981905306,
+      "noise_fraction": 0.789865447204408
+    },
+    {
+      "k": 385,
+      "noise_free_snr_db": 2.556070891624262,
+      "estimated_delay_samples": 6.154213406301109,
+      "noise_fraction": 0.35696599716748784
+    },
+    {
+      "k": 386,
+      "noise_free_snr_db": -2.4543777380797187,
+      "estimated_delay_samples": 6.343775654756399,
+      "noise_fraction": 0.6376413149951742
+    },
+    {
+      "k": 387,
+      "noise_free_snr_db": -0.07735115552753795,
+      "estimated_delay_samples": 6.252604945874991,
+      "noise_fraction": 0.5044525727367511
+    },
+    {
+      "k": 388,
+      "noise_free_snr_db": -1.1964104048802318,
+      "estimated_delay_samples": 6.3102923124570856,
+      "noise_fraction": 0.5684386410220119
+    },
+    {
+      "k": 389,
+      "noise_free_snr_db": 3.1924761449785475,
+      "estimated_delay_samples": 6.138449001030516,
+      "noise_fraction": 0.32407770627264926
+    },
+    {
+      "k": 390,
+      "noise_free_snr_db": 0.5437860981971703,
+      "estimated_delay_samples": 6.241979395922708,
+      "noise_fraction": 0.46873798877237766
+    },
+    {
+      "k": 391,
+      "noise_free_snr_db": 14.697429508238468,
+      "estimated_delay_samples": 5.828883432123642,
+      "noise_fraction": 0.03279265902401021
+    },
+    {
+      "k": 392,
+      "noise_free_snr_db": -4.8172530904149635,
+      "estimated_delay_samples": 6.604684891335834,
+      "noise_fraction": 0.7519824573474622
+    },
+    {
+      "k": 393,
+      "noise_free_snr_db": -12.634011210341122,
+      "estimated_delay_samples": 6.713555246607491,
+      "noise_fraction": 0.948293893890959
+    },
+    {
+      "k": 394,
+      "noise_free_snr_db": 12.049963125808947,
+      "estimated_delay_samples": 5.867639876500377,
+      "noise_fraction": 0.058711915358590036
+    },
+    {
+      "k": 395,
+      "noise_free_snr_db": -16.69676959582513,
+      "estimated_delay_samples": 6.931871565119644,
+      "noise_fraction": 0.9790526500721858
+    },
+    {
+      "k": 396,
+      "noise_free_snr_db": 3.0445296634184613,
+      "estimated_delay_samples": 6.150107893348844,
+      "noise_fraction": 0.33158415540848635
+    },
+    {
+      "k": 397,
+      "noise_free_snr_db": 2.0776783529048735,
+      "estimated_delay_samples": 6.2099558879016215,
+      "noise_fraction": 0.3826292759430434
+    },
+    {
+      "k": 398,
+      "noise_free_snr_db": -26.757143030852614,
+      "estimated_delay_samples": 6.924004659407803,
+      "noise_fraction": 0.9978944270427932
+    },
+    {
+      "k": 399,
+      "noise_free_snr_db": 15.796926536900386,
+      "estimated_delay_samples": 5.817507534109591,
+      "noise_fraction": 0.025646257814541763
+    }
+  ]
+}

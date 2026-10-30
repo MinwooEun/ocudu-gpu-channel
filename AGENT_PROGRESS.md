@@ -297,7 +297,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-One-UE initiating-delay evidence is saved in `experiments/initiating-delay-20261030/conclusions.json`: CSV/ext4 blocking and UE PDSCH/LDPC delay are identified examples. Additional broker-ready and transport stalls remain unresolved; no live run remains, and HTML changes remain prohibited.
+Receiver-quality cause is identified in `experiments/receiver-quality-20261030/conclusions.json`: CPU UE pilot-residual noise bias distorts MMSE equalization and increases LDPC work. Four diagnostic interventions passed; production estimator repair is not implemented, other broker/transport stalls remain, and both HTML reports remain unchanged.
 
 ## Active relay patch — 2026-10-29
 
@@ -395,3 +395,15 @@ One-UE initiating-delay evidence is saved in `experiments/initiating-delay-20261
 - Holding 95 PRBs, symbols, modulation, 2,754-byte TBS, coding rate and RV fixed, native PDSCH median was 261 µs for ≤2 iterations versus 941.5 µs for ≥8. Counts were 4,881/12; original UE binary was unchanged.
 
 - Audited the decoder event at scenario 29.702 s: fixed AWGN reference is 40 dB, trace gain −13.64 dB, but UE reports −2.5 dB. Pilot-residual SNR includes channel/estimation distortion; poor physical SNR is not established.
+
+## Receiver-quality attribution — 2026-10-30
+
+- Captured 250 million IQ samples per boundary on unchanged CUDA gNB/original CPU UE. Independent FIR reconstruction across 432 windows left residual noise within 0.991–1.012× configured AWGN; the 29.3-second channel window had 30.6–31.5 dB waveform SNR.
+
+- Linked the original UE library to a noiseless pilot-response probe: its residual estimator reports −1.98/−26.76 dB on selected multipath channels without AWGN. Predicted versus live 95-PRB SNR correlation is 0.99957; estimator bias is identified.
+
+- Isolated equalizer noise through one diagnostic wrapper, preserving SNR reporting. In the 29.3-second window EVM fell 0.26→0.03, LDPC averages 2.8/5.1→1, and CRC failures 21/36→0 across reversed-order repeat pairs.
+
+- Control/intervention radio-wall ratios were 0.997854/0.999302 and 0.995982/0.999829; all four runs passed live gates and 30/30 segments. Zero noise is diagnostic only; adaptive MCS and residual errors prevent treating it as a production fix.
+
+- Corrected the prior downlink-event association based solely on uplink sample progress; current analysis uses replay channel windows with boundary exclusions. Raw 7.5 GiB IQ remains on Spark; original binaries, ZMQ framing and both HTML documents remain unchanged.

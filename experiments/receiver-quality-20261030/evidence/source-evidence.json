@@ -1,0 +1,799 @@
+{
+  "lib/src/phy/ch_estimation/dmrs_sch.c": {
+    "sha256": "80018675e632f7ee6f04bf2061fb6cf269ecc06d61aac86921d523364c00c8e1",
+    "lines": [
+      {
+        "line": 815,
+        "text": "  // Estimate average synchronization error"
+      },
+      {
+        "line": 816,
+        "text": "  float dmrs_stride = (dmrs_cfg->type == srsran_dmrs_sch_type_1) ? 2 : 3;"
+      },
+      {
+        "line": 817,
+        "text": "  float sync_err    = 0.0f;"
+      },
+      {
+        "line": 818,
+        "text": "  for (uint32_t i = 0; i < nof_symbols; i++) {"
+      },
+      {
+        "line": 819,
+        "text": "    sync_err += srsran_vec_estimate_frequency(&q->pilot_estimates[nof_pilots_x_symbol * i], nof_pilots_x_symbol);"
+      },
+      {
+        "line": 820,
+        "text": "  }"
+      },
+      {
+        "line": 821,
+        "text": "  sync_err /= (float)nof_symbols;"
+      },
+      {
+        "line": 822,
+        "text": "  float delay_us = sync_err / (dmrs_stride * SRSRAN_SUBC_SPACING_NR(q->carrier.scs));"
+      },
+      {
+        "line": 823,
+        "text": ""
+      },
+      {
+        "line": 824,
+        "text": "#if DMRS_SCH_SYNC_PRECOMPENSATE"
+      },
+      {
+        "line": 825,
+        "text": "  // Pre-compensate synchronization error"
+      },
+      {
+        "line": 826,
+        "text": "  if (isnormal(sync_err)) {"
+      },
+      {
+        "line": 827,
+        "text": "    for (uint32_t i = 0; i < nof_symbols; i++) {"
+      },
+      {
+        "line": 828,
+        "text": "      srsran_vec_apply_cfo(&q->pilot_estimates[nof_pilots_x_symbol * i],"
+      },
+      {
+        "line": 829,
+        "text": "                           sync_err,"
+      },
+      {
+        "line": 830,
+        "text": "                           &q->pilot_estimates[nof_pilots_x_symbol * i],"
+      },
+      {
+        "line": 831,
+        "text": "                           nof_pilots_x_symbol);"
+      },
+      {
+        "line": 832,
+        "text": "    }"
+      },
+      {
+        "line": 833,
+        "text": "  }"
+      },
+      {
+        "line": 834,
+        "text": "#endif // DMRS_SCH_SYNC_ERROR_PRECOMPENSATE"
+      },
+      {
+        "line": 835,
+        "text": ""
+      },
+      {
+        "line": 836,
+        "text": "  // Perform Power measurements"
+      },
+      {
+        "line": 837,
+        "text": "  float rsrp                              = 0.0f;"
+      },
+      {
+        "line": 838,
+        "text": "  float epre                              = 0.0f;"
+      },
+      {
+        "line": 839,
+        "text": "  cf_t  corr[SRSRAN_DMRS_SCH_MAX_SYMBOLS] = {};"
+      },
+      {
+        "line": 840,
+        "text": "  for (uint32_t i = 0; i < nof_symbols; i++) {"
+      },
+      {
+        "line": 841,
+        "text": "    corr[i] ="
+      },
+      {
+        "line": 842,
+        "text": "        srsran_vec_acc_cc(&q->pilot_estimates[nof_pilots_x_symbol * i], nof_pilots_x_symbol) / nof_pilots_x_symbol;"
+      },
+      {
+        "line": 843,
+        "text": "    rsrp += __real__ corr[i] * __real__ corr[i] + __imag__ corr[i] * __imag__ corr[i];"
+      },
+      {
+        "line": 844,
+        "text": "    epre += srsran_vec_avg_power_cf(&q->pilot_estimates[nof_pilots_x_symbol * i], nof_pilots_x_symbol);"
+      },
+      {
+        "line": 845,
+        "text": "  }"
+      },
+      {
+        "line": 846,
+        "text": "  rsrp /= nof_symbols;"
+      },
+      {
+        "line": 847,
+        "text": "  epre /= nof_symbols;"
+      },
+      {
+        "line": 848,
+        "text": "  rsrp = SRSRAN_MIN(rsrp, epre - epre * 1e-7);"
+      },
+      {
+        "line": 849,
+        "text": ""
+      },
+      {
+        "line": 850,
+        "text": "  // Measure CFO if more than one symbol is used"
+      },
+      {
+        "line": 851,
+        "text": "  float cfo_avg_hz = 0.0;"
+      },
+      {
+        "line": 852,
+        "text": "  float cfo_hz_max = INFINITY;"
+      },
+      {
+        "line": 853,
+        "text": "  for (uint32_t i = 0; i < nof_symbols - 1; i++) {"
+      },
+      {
+        "line": 854,
+        "text": "    float time_diff  = srsran_symbol_distance_s(symbols[i], symbols[i + 1], q->carrier.scs);"
+      },
+      {
+        "line": 855,
+        "text": "    float phase_diff = cargf(corr[i + 1] * conjf(corr[i]));"
+      },
+      {
+        "line": 856,
+        "text": ""
+      },
+      {
+        "line": 857,
+        "text": "    if (isnormal(time_diff)) {"
+      },
+      {
+        "line": 858,
+        "text": "      cfo_avg_hz += phase_diff / (2.0f * M_PI * time_diff * (nof_symbols - 1));"
+      },
+      {
+        "line": 859,
+        "text": ""
+      },
+      {
+        "line": 860,
+        "text": "      // The maximum measured CFO depends on the symbol time difference"
+      },
+      {
+        "line": 861,
+        "text": "      cfo_hz_max = SRSRAN_MIN(cfo_hz_max, 1 / time_diff);"
+      },
+      {
+        "line": 862,
+        "text": "    }"
+      },
+      {
+        "line": 863,
+        "text": "  }"
+      },
+      {
+        "line": 864,
+        "text": ""
+      },
+      {
+        "line": 865,
+        "text": "  // Store internal CSI"
+      },
+      {
+        "line": 866,
+        "text": "  q->csi.rsrp       = rsrp;"
+      },
+      {
+        "line": 867,
+        "text": "  q->csi.rsrp_dB    = srsran_convert_power_to_dB(rsrp);"
+      },
+      {
+        "line": 868,
+        "text": "  q->csi.epre       = epre;"
+      },
+      {
+        "line": 869,
+        "text": "  q->csi.epre_dB    = srsran_convert_power_to_dB(epre);"
+      },
+      {
+        "line": 870,
+        "text": "  q->csi.n0         = epre - rsrp;"
+      },
+      {
+        "line": 871,
+        "text": "  q->csi.n0_dB      = srsran_convert_power_to_dB(q->csi.n0);"
+      },
+      {
+        "line": 872,
+        "text": "  q->csi.snr_dB     = q->csi.rsrp_dB - q->csi.n0_dB;"
+      },
+      {
+        "line": 873,
+        "text": "  q->csi.cfo_hz     = cfo_avg_hz;"
+      },
+      {
+        "line": 874,
+        "text": "  q->csi.cfo_hz_max = cfo_hz_max;"
+      },
+      {
+        "line": 875,
+        "text": "  q->csi.delay_us   = delay_us;"
+      },
+      {
+        "line": 876,
+        "text": ""
+      },
+      {
+        "line": 877,
+        "text": "  // Write CSI in estimated channel result"
+      },
+      {
+        "line": 878,
+        "text": "  chest_res->rsrp               = q->csi.rsrp;"
+      },
+      {
+        "line": 879,
+        "text": "  chest_res->rsrp_dbm           = q->csi.rsrp_dB;"
+      },
+      {
+        "line": 880,
+        "text": "  chest_res->noise_estimate     = q->csi.n0;"
+      },
+      {
+        "line": 881,
+        "text": "  chest_res->noise_estimate_dbm = q->csi.n0_dB;"
+      },
+      {
+        "line": 882,
+        "text": "  chest_res->snr_db             = q->csi.snr_dB;"
+      }
+    ]
+  },
+  "lib/src/phy/phch/pdsch_nr.c": {
+    "sha256": "7219f91525ef387288f377e81f35c1dc0de58d93634182831d5f024977d24209",
+    "lines": [
+      {
+        "line": 530,
+        "text": "    srsran_vec_fprint_c(stdout, channel->ce[0][0], nof_re);"
+      },
+      {
+        "line": 531,
+        "text": "    DEBUG(\"x=\");"
+      },
+      {
+        "line": 532,
+        "text": "    srsran_vec_fprint_c(stdout, q->x[0], nof_re);"
+      },
+      {
+        "line": 533,
+        "text": "  }"
+      },
+      {
+        "line": 534,
+        "text": ""
+      },
+      {
+        "line": 535,
+        "text": "  // Demapping to virtual resource blocks"
+      },
+      {
+        "line": 536,
+        "text": "  // ... Not implemented"
+      },
+      {
+        "line": 537,
+        "text": ""
+      },
+      {
+        "line": 538,
+        "text": "  // Antenna port demapping"
+      },
+      {
+        "line": 539,
+        "text": "  // ... Not implemented"
+      },
+      {
+        "line": 540,
+        "text": "  srsran_predecoding_single(q->x[0], channel->ce[0][0], q->d[0], NULL, nof_re, 1.0f, channel->noise_estimate);"
+      },
+      {
+        "line": 541,
+        "text": ""
+      },
+      {
+        "line": 542,
+        "text": "  // Layer demapping"
+      },
+      {
+        "line": 543,
+        "text": "  if (grant->nof_layers > 1) {"
+      },
+      {
+        "line": 544,
+        "text": "    srsran_layerdemap_nr(q->d, nof_cw, q->x, grant->nof_layers, nof_re);"
+      },
+      {
+        "line": 545,
+        "text": "  }"
+      },
+      {
+        "line": 546,
+        "text": ""
+      }
+    ]
+  },
+  "lib/src/phy/mimo/precoding.c": {
+    "sha256": "9f7699fd45b1bdf904348e0006d17608b84063ea0113aa4860b818a7492ed578",
+    "lines": [
+      {
+        "line": 284,
+        "text": ""
+      },
+      {
+        "line": 285,
+        "text": "#endif"
+      },
+      {
+        "line": 286,
+        "text": ""
+      },
+      {
+        "line": 287,
+        "text": "int srsran_predecoding_single_gen(cf_t* y[SRSRAN_MAX_PORTS],"
+      },
+      {
+        "line": 288,
+        "text": "                                  cf_t* h[SRSRAN_MAX_PORTS],"
+      },
+      {
+        "line": 289,
+        "text": "                                  cf_t* x,"
+      },
+      {
+        "line": 290,
+        "text": "                                  int   nof_rxant,"
+      },
+      {
+        "line": 291,
+        "text": "                                  int   nof_symbols,"
+      },
+      {
+        "line": 292,
+        "text": "                                  float scaling,"
+      },
+      {
+        "line": 293,
+        "text": "                                  float noise_estimate)"
+      },
+      {
+        "line": 294,
+        "text": "{"
+      },
+      {
+        "line": 295,
+        "text": "  for (int i = 0; i < nof_symbols; i++) {"
+      },
+      {
+        "line": 296,
+        "text": "    cf_t r  = 0;"
+      },
+      {
+        "line": 297,
+        "text": "    cf_t hh = 0;"
+      },
+      {
+        "line": 298,
+        "text": "    for (int p = 0; p < nof_rxant; p++) {"
+      },
+      {
+        "line": 299,
+        "text": "      r += y[p][i] * conjf(h[p][i]);"
+      },
+      {
+        "line": 300,
+        "text": "      hh += conjf(h[p][i]) * h[p][i];"
+      },
+      {
+        "line": 301,
+        "text": "    }"
+      },
+      {
+        "line": 302,
+        "text": "    x[i] = r / ((hh + noise_estimate) * scaling);"
+      },
+      {
+        "line": 303,
+        "text": "  }"
+      },
+      {
+        "line": 304,
+        "text": "  return nof_symbols;"
+      },
+      {
+        "line": 305,
+        "text": "}"
+      }
+    ]
+  },
+  "srsue/src/phy/nr/sf_worker.cc": {
+    "sha256": "9eafae0ef49a1ee573853e6766d52adf9076c6a4389ce9d24747ece94e637a61",
+    "lines": [
+      {
+        "line": 85,
+        "text": "{"
+      },
+      {
+        "line": 86,
+        "text": "  srsran::rf_buffer_t tx_buffer = {};"
+      },
+      {
+        "line": 87,
+        "text": ""
+      },
+      {
+        "line": 88,
+        "text": "  // Perform DL processing"
+      },
+      {
+        "line": 89,
+        "text": "  for (auto& w : cc_workers) {"
+      },
+      {
+        "line": 90,
+        "text": "    w->work_dl();"
+      },
+      {
+        "line": 91,
+        "text": "  }"
+      },
+      {
+        "line": 92,
+        "text": ""
+      },
+      {
+        "line": 93,
+        "text": "  // Align workers, wait for previous workers to finish DL processing before starting UL processing"
+      },
+      {
+        "line": 94,
+        "text": "  phy_state.dl_ul_semaphore.wait(this);"
+      },
+      {
+        "line": 95,
+        "text": "  phy_state.dl_ul_semaphore.release();"
+      },
+      {
+        "line": 96,
+        "text": ""
+      },
+      {
+        "line": 97,
+        "text": "  // Check if PRACH is available"
+      },
+      {
+        "line": 98,
+        "text": "  if (prach_ptr != nullptr) {"
+      },
+      {
+        "line": 99,
+        "text": "    // PRACH is available, set buffer, transmit and return"
+      },
+      {
+        "line": 100,
+        "text": "    tx_buffer.set(phy_state.args.rf_channel_offset, prach_ptr);"
+      },
+      {
+        "line": 101,
+        "text": "    tx_buffer.set_nof_samples(sf_len);"
+      },
+      {
+        "line": 102,
+        "text": ""
+      },
+      {
+        "line": 103,
+        "text": "    // Transmit NR PRACH"
+      },
+      {
+        "line": 104,
+        "text": "    common.worker_end(context, true, tx_buffer);"
+      },
+      {
+        "line": 105,
+        "text": ""
+      },
+      {
+        "line": 106,
+        "text": "    // Reset PRACH pointer"
+      },
+      {
+        "line": 107,
+        "text": "    prach_ptr = nullptr;"
+      },
+      {
+        "line": 108,
+        "text": ""
+      },
+      {
+        "line": 109,
+        "text": "    return;"
+      },
+      {
+        "line": 110,
+        "text": "  }"
+      },
+      {
+        "line": 111,
+        "text": ""
+      },
+      {
+        "line": 112,
+        "text": "  // Perform UL processing"
+      },
+      {
+        "line": 113,
+        "text": "  for (auto& w : cc_workers) {"
+      },
+      {
+        "line": 114,
+        "text": "    w.get()->work_ul();"
+      },
+      {
+        "line": 115,
+        "text": "  }"
+      },
+      {
+        "line": 116,
+        "text": ""
+      },
+      {
+        "line": 117,
+        "text": "  // Set Tx buffers"
+      },
+      {
+        "line": 118,
+        "text": "  for (uint32_t i = 0; i < (uint32_t)cc_workers.size(); i++) {"
+      },
+      {
+        "line": 119,
+        "text": "    tx_buffer.set(i + phy_state.args.rf_channel_offset, cc_workers[i]->get_tx_buffer(0));"
+      },
+      {
+        "line": 120,
+        "text": "  }"
+      },
+      {
+        "line": 121,
+        "text": "  tx_buffer.set_nof_samples(sf_len);"
+      },
+      {
+        "line": 122,
+        "text": ""
+      },
+      {
+        "line": 123,
+        "text": "  // Always call worker_end before returning"
+      },
+      {
+        "line": 124,
+        "text": "  common.worker_end(context, true, tx_buffer);"
+      },
+      {
+        "line": 125,
+        "text": ""
+      },
+      {
+        "line": 126,
+        "text": "  // Tell the plotting thread to draw the plots"
+      },
+      {
+        "line": 127,
+        "text": "#ifdef ENABLE_GUI"
+      },
+      {
+        "line": 128,
+        "text": "  if ((int)get_id() == plot_worker_id) {"
+      },
+      {
+        "line": 129,
+        "text": "    sem_post(&plot_sem);"
+      },
+      {
+        "line": 130,
+        "text": "  }"
+      }
+    ]
+  },
+  "lib/src/phy/fec/ldpc/ldpc_decoder.c": {
+    "sha256": "a4cebd689c6dfa3a01ada76a27447465a2ace341d661ad72f90964cda76bb699",
+    "lines": [
+      {
+        "line": 65,
+        "text": "    }                                                                                                                  \\"
+      },
+      {
+        "line": 66,
+        "text": "    init_ldpc_dec_##SUFFIX(q->ptr, llrs, q->ls);                                                                       \\"
+      },
+      {
+        "line": 67,
+        "text": "                                                                                                                       \\"
+      },
+      {
+        "line": 68,
+        "text": "    uint16_t* this_pcm                   = NULL;                                                                       \\"
+      },
+      {
+        "line": 69,
+        "text": "    int8_t(*these_var_indices)[MAX_CNCT] = NULL;                                                                       \\"
+      },
+      {
+        "line": 70,
+        "text": "                                                                                                                       \\"
+      },
+      {
+        "line": 71,
+        "text": "    /* When computing the number of layers, we need to recall that the standard always removes */                      \\"
+      },
+      {
+        "line": 72,
+        "text": "    /* the first two variable nodes from the final codeword.*/                                                         \\"
+      },
+      {
+        "line": 73,
+        "text": "    uint8_t n_layers = cdwd_rm_length / q->ls - q->bgK + 2;                                                            \\"
+      },
+      {
+        "line": 74,
+        "text": "                                                                                                                       \\"
+      },
+      {
+        "line": 75,
+        "text": "    for (int i_iteration = 0; i_iteration < q->max_nof_iter; i_iteration++) {                                          \\"
+      },
+      {
+        "line": 76,
+        "text": "      for (int i_layer = 0; i_layer < n_layers; i_layer++) {                                                           \\"
+      },
+      {
+        "line": 77,
+        "text": "        update_ldpc_var_to_check_##SUFFIX(q->ptr, i_layer);                                                            \\"
+      },
+      {
+        "line": 78,
+        "text": "                                                                                                                       \\"
+      },
+      {
+        "line": 79,
+        "text": "        this_pcm          = q->pcm + i_layer * q->bgN;                                                                 \\"
+      },
+      {
+        "line": 80,
+        "text": "        these_var_indices = q->var_indices + i_layer;                                                                  \\"
+      },
+      {
+        "line": 81,
+        "text": "                                                                                                                       \\"
+      },
+      {
+        "line": 82,
+        "text": "        update_ldpc_check_to_var_##SUFFIX(q->ptr, i_layer, this_pcm, these_var_indices);                               \\"
+      },
+      {
+        "line": 83,
+        "text": "                                                                                                                       \\"
+      },
+      {
+        "line": 84,
+        "text": "        update_ldpc_soft_bits_##SUFFIX(q->ptr, i_layer, these_var_indices);                                            \\"
+      },
+      {
+        "line": 85,
+        "text": "      }                                                                                                                \\"
+      },
+      {
+        "line": 86,
+        "text": "                                                                                                                       \\"
+      },
+      {
+        "line": 87,
+        "text": "      if (crc != NULL) {                                                                                               \\"
+      },
+      {
+        "line": 88,
+        "text": "        extract_ldpc_message_##SUFFIX(q->ptr, message, q->liftK);                                                      \\"
+      },
+      {
+        "line": 89,
+        "text": "                                                                                                                       \\"
+      },
+      {
+        "line": 90,
+        "text": "        if (srsran_crc_match(crc, message, q->liftK - crc->order)) {                                                   \\"
+      },
+      {
+        "line": 91,
+        "text": "          return i_iteration + 1;                                                                                      \\"
+      },
+      {
+        "line": 92,
+        "text": "        }                                                                                                              \\"
+      },
+      {
+        "line": 93,
+        "text": "      }                                                                                                                \\"
+      },
+      {
+        "line": 94,
+        "text": "    }                                                                                                                  \\"
+      },
+      {
+        "line": 95,
+        "text": "                                                                                                                       \\"
+      },
+      {
+        "line": 96,
+        "text": "    /* If reached here, and CRC is being checked, it has failed */                                                     \\"
+      },
+      {
+        "line": 97,
+        "text": "    if (crc != NULL) {                                                                                                 \\"
+      },
+      {
+        "line": 98,
+        "text": "      return 0;                                                                                                        \\"
+      },
+      {
+        "line": 99,
+        "text": "    }                                                                                                                  \\"
+      },
+      {
+        "line": 100,
+        "text": "                                                                                                                       \\"
+      },
+      {
+        "line": 101,
+        "text": "    /* Without CRC, extract message and return the maximum number of iterations */                                     \\"
+      },
+      {
+        "line": 102,
+        "text": "    extract_ldpc_message_##SUFFIX(q->ptr, message, q->liftK);                                                          \\"
+      },
+      {
+        "line": 103,
+        "text": "    return q->max_nof_iter;                                                                                            \\"
+      },
+      {
+        "line": 104,
+        "text": "  }"
+      }
+    ]
+  }
+}

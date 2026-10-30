@@ -1,0 +1,12 @@
+{
+  "linked_original_archive": "/workspace/ocudu-spark-ranb/builds/srsran4g-zmq-local/lib/src/phy/libsrsran_phy.a",
+  "rows": 400,
+  "maximum_difference_from_float64_db": 0.005104693100477675,
+  "input_noise_power": 0,
+  "artifacts": {
+    "/workspace/gpuch/receiver-quality-20261030/vector-probe": "3c9a9e26eeec24175ddffb8eb68336ab94102057bc7a6e951e8b31090629ab33",
+    "/workspace/gpuch/receiver-quality-20261030/vector_probe.c": "bcd68a3dedce8e7b47c32be47db5b7a01ae717e816024663dc618231e8957b45",
+    "/workspace/gpuch/receiver-quality-20261030/noiseless-responses.cf32": "8cd8b696feb23095589e9ed045e5a72806ea3695583b0818e02ae271ee7c3206",
+    "/workspace/ocudu-spark-ranb/builds/srsran4g-zmq-local/lib/src/phy/libsrsran_phy.a": "2d5b5fa8085e6e0b09a1c709f1db5765cf853730f9edbb93623cb69cc6a5b2be"
+  }
+}
