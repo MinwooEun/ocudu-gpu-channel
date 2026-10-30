@@ -1,0 +1,8 @@
+{
+  "reservation_pid": 3156912,
+  "wait_s": 73.13114610593766,
+  "reserved_monotonic_ns": 3112916689198362,
+  "external_sweep": "/workspace/gpuch/bound1030/run-all.sh",
+  "method": "Waited for no compute process and no synthetic sources/sinks; idle CUDA context causes sweep to wait at its existing busy check. Released after this benchmark broker starts, before attach/measurement.",
+  "released_monotonic_ns": 3112920615047785
+}

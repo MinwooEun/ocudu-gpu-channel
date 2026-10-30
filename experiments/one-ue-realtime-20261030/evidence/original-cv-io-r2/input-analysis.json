@@ -1,0 +1,54 @@
+{
+  "matched_messages": 53453,
+  "events": [
+    {
+      "rebase": {
+        "kind": "rebase",
+        "now_ns": "3112946787585870",
+        "node": "gnb0",
+        "sample": "384007695",
+        "count": "23025",
+        "expected_due_ns": "3112946786291400",
+        "due_ns": "3112946786585870",
+        "shift_ns": "294470",
+        "room_us": "0.320",
+        "data_us": "1225.111",
+        "read_us": "0.288",
+        "process_us": "65.457",
+        "previous_loop_end_ns": "3112946786294070"
+      },
+      "message": 16668,
+      "ue_send_start_ns": 3112946787451932,
+      "ue_send_end_ns": 3112946787459100,
+      "broker_recv_end_ns": 3112946787502477,
+      "input_pushed_ns": 3112946787508909,
+      "send_to_push_us": 49.809,
+      "push_to_pacer_charge_us": 76.961
+    },
+    {
+      "rebase": {
+        "kind": "rebase",
+        "now_ns": "3112963159846295",
+        "node": "gnb0",
+        "sample": "761218565",
+        "count": "23040",
+        "expected_due_ns": "3112963158576099",
+        "due_ns": "3112963158846295",
+        "shift_ns": "270196",
+        "room_us": "142.883",
+        "data_us": "2030.582",
+        "read_us": "0.784",
+        "process_us": "37.152",
+        "previous_loop_end_ns": "3112963157633405"
+      },
+      "message": 33044,
+      "ue_send_start_ns": 3112963159751045,
+      "ue_send_end_ns": 3112963159758101,
+      "broker_recv_end_ns": 3112963159797558,
+      "input_pushed_ns": 3112963159803590,
+      "send_to_push_us": 45.489,
+      "push_to_pacer_charge_us": 42.705
+    }
+  ],
+  "limitation": "First needed input sample identifies earliest possible progress. UE send lateness does not identify which UE PHY, synchronization, or scheduling operation caused it."
+}

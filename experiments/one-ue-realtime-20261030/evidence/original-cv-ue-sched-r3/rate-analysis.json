@@ -1,0 +1,352 @@
+{
+  "including_warmup": {
+    "radio_s": 39.9,
+    "wall_s": 39.944136434,
+    "ratio": 0.9988950459832089,
+    "loss_us": 44136.43400000211,
+    "rebase_count": 27,
+    "rebase_sum_us": 44176.191,
+    "largest_rebases": [
+      {
+        "kind": "rebase",
+        "now_ns": "3113291399702972",
+        "node": "gnb0",
+        "sample": "279544335",
+        "count": "23040",
+        "expected_due_ns": "3113291393163422",
+        "due_ns": "3113291398702972",
+        "shift_ns": "5539550",
+        "room_us": "0.256",
+        "data_us": "6468.158",
+        "read_us": "0.256",
+        "process_us": "40.048",
+        "previous_loop_end_ns": "3113291393193566"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113291363951592",
+        "node": "gnb0",
+        "sample": "279267855",
+        "count": "23040",
+        "expected_due_ns": "3113291357495035",
+        "due_ns": "3113291362951592",
+        "shift_ns": "5456557",
+        "room_us": "14.816",
+        "data_us": "6316.219",
+        "read_us": "0.352",
+        "process_us": "121.586",
+        "previous_loop_end_ns": "3113291357497883"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113291386044455",
+        "node": "gnb0",
+        "sample": "279452175",
+        "count": "23040",
+        "expected_due_ns": "3113291381297427",
+        "due_ns": "3113291385044455",
+        "shift_ns": "3747028",
+        "room_us": "0.272",
+        "data_us": "4673.139",
+        "read_us": "0.304",
+        "process_us": "40.769",
+        "previous_loop_end_ns": "3113291381329299"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113291381297427",
+        "node": "gnb0",
+        "sample": "279429135",
+        "count": "23040",
+        "expected_due_ns": "3113291377809536",
+        "due_ns": "3113291380297427",
+        "shift_ns": "2487891",
+        "room_us": "26.545",
+        "data_us": "3408.529",
+        "read_us": "0.272",
+        "process_us": "41.425",
+        "previous_loop_end_ns": "3113291377820000"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113291405813316",
+        "node": "gnb0",
+        "sample": "279590415",
+        "count": "23040",
+        "expected_due_ns": "3113291402368515",
+        "due_ns": "3113291404813316",
+        "shift_ns": "2444801",
+        "room_us": "28.704",
+        "data_us": "3330.144",
+        "read_us": "0.640",
+        "process_us": "81.153",
+        "previous_loop_end_ns": "3113291402371459"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113291353718324",
+        "node": "gnb0",
+        "sample": "279198735",
+        "count": "23040",
+        "expected_due_ns": "3113291350472405",
+        "due_ns": "3113291352718324",
+        "shift_ns": "2245919",
+        "room_us": "12.945",
+        "data_us": "3152.877",
+        "read_us": "0.336",
+        "process_us": "69.057",
+        "previous_loop_end_ns": "3113291350482485"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113291377809536",
+        "node": "gnb0",
+        "sample": "279406095",
+        "count": "23040",
+        "expected_due_ns": "3113291374577745",
+        "due_ns": "3113291376809536",
+        "shift_ns": "2231791",
+        "room_us": "0.272",
+        "data_us": "3152.925",
+        "read_us": "0.273",
+        "process_us": "40.480",
+        "previous_loop_end_ns": "3113291374614930"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113291370239555",
+        "node": "gnb0",
+        "sample": "279313935",
+        "count": "23040",
+        "expected_due_ns": "3113291367050485",
+        "due_ns": "3113291369239555",
+        "shift_ns": "2189070",
+        "room_us": "14.560",
+        "data_us": "3128.717",
+        "read_us": "0.320",
+        "process_us": "41.921",
+        "previous_loop_end_ns": "3113291367053301"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113291389165908",
+        "node": "gnb0",
+        "sample": "279475215",
+        "count": "23040",
+        "expected_due_ns": "3113291386044455",
+        "due_ns": "3113291388165908",
+        "shift_ns": "2121453",
+        "room_us": "26.881",
+        "data_us": "3035.947",
+        "read_us": "0.288",
+        "process_us": "47.281",
+        "previous_loop_end_ns": "3113291386054903"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113291367050485",
+        "node": "gnb0",
+        "sample": "279290895",
+        "count": "23040",
+        "expected_due_ns": "3113291363951592",
+        "due_ns": "3113291366050485",
+        "shift_ns": "2098893",
+        "room_us": "13.312",
+        "data_us": "3015.964",
+        "read_us": "0.320",
+        "process_us": "58.081",
+        "previous_loop_end_ns": "3113291363962136"
+      }
+    ]
+  },
+  "post_warmup": {
+    "radio_s": 29.9,
+    "wall_s": 29.901578498,
+    "ratio": 0.999947210211658,
+    "loss_us": 1578.4980000006499,
+    "rebase_count": 7,
+    "rebase_sum_us": 1592.043,
+    "largest_rebases": [
+      {
+        "kind": "rebase",
+        "now_ns": "3113309150352243",
+        "node": "gnb0",
+        "sample": "688389120",
+        "count": "5",
+        "expected_due_ns": "3113309148801541",
+        "due_ns": "3113309149352243",
+        "shift_ns": "550702",
+        "room_us": "0.368",
+        "data_us": "0.224",
+        "read_us": "0.240",
+        "process_us": "2544.852",
+        "previous_loop_end_ns": "3113309147805487"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113314150863361",
+        "node": "gnb0",
+        "sample": "803589120",
+        "count": "6",
+        "expected_due_ns": "3113314149411587",
+        "due_ns": "3113314149863361",
+        "shift_ns": "451774",
+        "room_us": "0.256",
+        "data_us": "0.096",
+        "read_us": "0.256",
+        "process_us": "2365.698",
+        "previous_loop_end_ns": "3113314148496095"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113307823802329",
+        "node": "gnb0",
+        "sample": "657838085",
+        "count": "23040",
+        "expected_due_ns": "3113307822523369",
+        "due_ns": "3113307822802329",
+        "shift_ns": "278960",
+        "room_us": "13.920",
+        "data_us": "2209.824",
+        "read_us": "0.336",
+        "process_us": "39.744",
+        "previous_loop_end_ns": "3113307821537577"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113295953477447",
+        "node": "gnb0",
+        "sample": "384353295",
+        "count": "23025",
+        "expected_due_ns": "3113295952331855",
+        "due_ns": "3113295952477447",
+        "shift_ns": "145592",
+        "room_us": "0.256",
+        "data_us": "1098.128",
+        "read_us": "0.912",
+        "process_us": "42.560",
+        "previous_loop_end_ns": "3113295952334791"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113309150413732",
+        "node": "gnb0",
+        "sample": "688389125",
+        "count": "23035",
+        "expected_due_ns": "3113309149352460",
+        "due_ns": "3113309149413732",
+        "shift_ns": "61272",
+        "room_us": "0.304",
+        "data_us": "0.112",
+        "read_us": "0.272",
+        "process_us": "51.920",
+        "previous_loop_end_ns": "3113309150360355"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113303327526037",
+        "node": "gnb0",
+        "sample": "554250244",
+        "count": "23036",
+        "expected_due_ns": "3113303326472531",
+        "due_ns": "3113303326526037",
+        "shift_ns": "53506",
+        "room_us": "0.640",
+        "data_us": "980.590",
+        "read_us": "0.320",
+        "process_us": "67.313",
+        "previous_loop_end_ns": "3113303326476390"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3113314150913858",
+        "node": "gnb0",
+        "sample": "803589126",
+        "count": "23034",
+        "expected_due_ns": "3113314149863621",
+        "due_ns": "3113314149913858",
+        "shift_ns": "50237",
+        "room_us": "0.336",
+        "data_us": "0.096",
+        "read_us": "0.272",
+        "process_us": "40.449",
+        "previous_loop_end_ns": "3113314150871937"
+      }
+    ]
+  },
+  "qualification": {
+    "case": "original",
+    "ue_count": 1,
+    "tag": "cv-ue-sched-r3",
+    "returncode": 0,
+    "wall_s": 76.99195790523663,
+    "metrics": {
+      "broker": {
+        "rx_starvations": 9,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "real_time_ratio": 0.998895045983209,
+      "slots_per_wall_second": 998.895045983209
+    },
+    "valid_segments": 30,
+    "gate": {
+      "all_ues_attached": true,
+      "broker": {
+        "control_batches_committed": 802,
+        "rx_requests": 138139,
+        "rx_starvations": 9,
+        "tx_pulls": 106873,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "broker_clean": true,
+      "gnb_alive_at_stop": 1,
+      "measure_status": "completed",
+      "per_ue": {
+        "ue0": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        }
+      },
+      "policy": "rr",
+      "policy_check": {
+        "gnbs": {
+          "gnb0": {
+            "found_in_config_dump": [
+              "rr"
+            ],
+            "link_adaptation": {
+              "found_in_config_dump": {
+                "link_adaptation": "harq_olla"
+              },
+              "ok": true,
+              "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+              "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+              "requested": {
+                "link_adaptation": "harq_olla"
+              }
+            },
+            "ok": true,
+            "policy_block": "      rr_sched: ~\n",
+            "requested": "rr"
+          }
+        },
+        "ok": true
+      },
+      "replay_status": "measure_end",
+      "srsue_alive_at_stop": 1,
+      "status": "passed"
+    },
+    "report_exists": true,
+    "diagnostic_trace": false
+  }
+}

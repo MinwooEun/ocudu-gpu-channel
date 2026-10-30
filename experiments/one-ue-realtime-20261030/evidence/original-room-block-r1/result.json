@@ -1,0 +1,75 @@
+{
+  "case": "original",
+  "ue_count": 1,
+  "tag": "room-block-r1",
+  "returncode": 1,
+  "wall_s": 48.946345093194395,
+  "metrics": {
+    "broker": {
+      "rx_starvations": 5,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 1
+    },
+    "real_time_ratio": 0.9994624088999003,
+    "slots_per_wall_second": 999.4624088999003
+  },
+  "valid_segments": 5,
+  "gate": {
+    "all_ues_attached": true,
+    "broker": {
+      "control_batches_committed": 314,
+      "rx_requests": 48649,
+      "rx_starvations": 5,
+      "tx_pulls": 41537,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 1
+    },
+    "broker_clean": false,
+    "gnb_alive_at_stop": 1,
+    "measure_status": "process_exited",
+    "per_ue": {
+      "ue0": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 0
+      }
+    },
+    "policy": "rr",
+    "policy_check": {
+      "gnbs": {
+        "gnb0": {
+          "found_in_config_dump": [
+            "rr"
+          ],
+          "link_adaptation": {
+            "found_in_config_dump": {
+              "link_adaptation": "harq_olla"
+            },
+            "ok": true,
+            "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+            "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+            "requested": {
+              "link_adaptation": "harq_olla"
+            }
+          },
+          "ok": true,
+          "policy_block": "      rr_sched: ~\n",
+          "requested": "rr"
+        }
+      },
+      "ok": true
+    },
+    "replay_status": "interrupted",
+    "srsue_alive_at_stop": 1,
+    "status": "failed"
+  },
+  "report_exists": true,
+  "diagnostic_trace": false
+}

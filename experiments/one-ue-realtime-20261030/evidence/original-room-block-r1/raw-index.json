@@ -1,0 +1,29 @@
+{
+  "remote_case": "/workspace/gpuch/one-ue-realtime-20261030/u1/original-room-block-r1",
+  "files": [
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 3121
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 3328
+    },
+    {
+      "file": "raw/wire/gnb-3146789.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3146604.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3146960.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3146749.wire",
+      "size": 96000064
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "remote_case": "/workspace/gpuch/one-ue-realtime-20261030/u1/original-cv-rx-logger-r4",
+  "files": [
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 3668
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 4266
+    },
+    {
+      "file": "raw/wire/gnb-3165071.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3165459.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3165257.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3165226.wire",
+      "size": 96000064
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "request_later_than_iq_published_max_us": 1932.299,
+  "delayed_over_1ms": 24,
+  "broker_long_stdout_writes": 5,
+  "long_stdout_max_us": 2483.028
+}

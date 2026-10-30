@@ -1,0 +1,43 @@
+{
+  "events": [
+    {
+      "sample": 384007695,
+      "shift_us": 294.47,
+      "ue_rf_rx_start_ns": 3112946784249247,
+      "ue_rf_rx_end_ns": 3112946786961427,
+      "ue_rx_to_tx_us": 489.801,
+      "last_dl_message": 16816,
+      "last_dl_receive_end_ns": 3112946786949490,
+      "last_dl_send_end_ns": 3112946786913794,
+      "last_dl_request_received_ns": 3112946786902321,
+      "dl_output_published_ns": 3112946785160593,
+      "dl_input_ready_ns": 3112946784200926,
+      "gnb_source_send_end_ns": 3112946782170312,
+      "gnb_source_pushed_ns": 3112946782281642,
+      "gnb_send_to_push_us": 111.33,
+      "source_push_to_dl_ready_us": 1919.284,
+      "publish_to_send_us": 1741.968,
+      "send_to_ue_recv_us": 35.696
+    },
+    {
+      "sample": 761218565,
+      "shift_us": 270.196,
+      "ue_rf_rx_start_ns": 3112963156362518,
+      "ue_rf_rx_end_ns": 3112963159257276,
+      "ue_rx_to_tx_us": 493.049,
+      "last_dl_message": 37712,
+      "last_dl_receive_end_ns": 3112963159244891,
+      "last_dl_send_end_ns": 3112963159191450,
+      "last_dl_request_received_ns": 3112963159179002,
+      "dl_output_published_ns": 3112963157165157,
+      "dl_input_ready_ns": 3112963156338565,
+      "gnb_source_send_end_ns": 3112963154663222,
+      "gnb_source_pushed_ns": 3112963154825913,
+      "gnb_send_to_push_us": 162.691,
+      "source_push_to_dl_ready_us": 1512.652,
+      "publish_to_send_us": 2014.149,
+      "send_to_ue_recv_us": 53.441
+    }
+  ],
+  "limitation": "The last RF RX completion before TX is a temporal boundary, not a decoded slot or HARQ association. Input matching identifies the first needed source sample, not full-block availability."
+}

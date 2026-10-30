@@ -1,0 +1,29 @@
+{
+  "remote_case": "/workspace/gpuch/one-ue-realtime-20261030/u1/original-room-spin-r1",
+  "files": [
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 3204
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 5531
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3133232.wire",
+      "size": 96000064
+    },
+    {
+      "file": "raw/wire/gnb-3133268.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3133083.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3133474.wire",
+      "size": 64000064
+    }
+  ]
+}

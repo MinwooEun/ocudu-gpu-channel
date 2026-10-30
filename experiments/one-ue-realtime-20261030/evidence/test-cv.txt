@@ -1,0 +1,72 @@
+event=socket_ready device=gnb0_p0 tx_connect=tcp://127.0.0.1:25700 rx_bind=tcp://127.0.0.1:25701
+event=socket_ready device=gnb0_p1 tx_connect=tcp://127.0.0.1:25702 rx_bind=tcp://127.0.0.1:25703
+event=socket_ready device=ue0_p0 tx_connect=tcp://127.0.0.1:25704 rx_bind=tcp://127.0.0.1:25705
+event=socket_ready device=ue0_p1 tx_connect=tcp://127.0.0.1:25706 rx_bind=tcp://127.0.0.1:25707
+event=radio_node_resolved id=gnb0 tx[0]=gnb0_p0 tx[1]=gnb0_p1 rx[0]=gnb0_p0 rx[1]=gnb0_p1 implicit=false
+event=radio_node_resolved id=ue0 tx[0]=ue0_p0 tx[1]=ue0_p1 rx[0]=ue0_p0 rx[1]=ue0_p1 implicit=false
+event=worker_summary dev=gnb0_p0 puller[pulls=577 idle=2 room_stall=0 acquired=3462000] producer[slots=515 stall=19778] rep[replies=514 idle=1 row_spin=1]
+event=worker_summary dev=gnb0_p1 puller[pulls=577 idle=2 room_stall=0 acquired=3462000] producer[slots=515 stall=19778] rep[replies=514 idle=1 row_spin=1]
+event=worker_summary dev=ue0_p0 puller[pulls=576 idle=1 room_stall=0 acquired=3456000] producer[slots=509 stall=19620] rep[replies=508 idle=1 row_spin=1]
+event=worker_summary dev=ue0_p1 puller[pulls=576 idle=1 room_stall=0 acquired=3456000] producer[slots=509 stall=19620] rep[replies=508 idle=1 row_spin=1]
+event=process_latency_summary node=gnb0 n=515 p50_us=885 p95_us=1765 p99_us=2500 p999_us=2560 max_us=2558.9
+event=process_latency_summary node=ue0 n=509 p50_us=885 p95_us=1765 p99_us=2495 p999_us=2605 max_us=2603.65
+event=socket_ready device=gnb0_p0 tx_connect=tcp://127.0.0.1:25700 rx_bind=tcp://127.0.0.1:25701
+event=socket_ready device=gnb0_p1 tx_connect=tcp://127.0.0.1:25702 rx_bind=tcp://127.0.0.1:25703
+event=socket_ready device=ue0_p0 tx_connect=tcp://127.0.0.1:25704 rx_bind=tcp://127.0.0.1:25705
+event=socket_ready device=ue0_p1 tx_connect=tcp://127.0.0.1:25706 rx_bind=tcp://127.0.0.1:25707
+event=radio_node_resolved id=gnb0 tx[0]=gnb0_p0 tx[1]=gnb0_p1 rx[0]=gnb0_p0 rx[1]=gnb0_p1 implicit=false
+event=radio_node_resolved id=ue0 tx[0]=ue0_p0 tx[1]=ue0_p1 rx[0]=ue0_p0 rx[1]=ue0_p1 implicit=false
+event=worker_summary dev=gnb0_p0 puller[pulls=400 idle=2 room_stall=0 acquired=2400000] producer[slots=372 stall=126863] rep[replies=371 idle=2 row_spin=0]
+event=worker_summary dev=gnb0_p1 puller[pulls=401 idle=1 room_stall=0 acquired=2406000] producer[slots=372 stall=126863] rep[replies=370 idle=2 row_spin=0]
+event=worker_summary dev=ue0_p0 puller[pulls=401 idle=2 room_stall=0 acquired=2406000] producer[slots=387 stall=163799] rep[replies=386 idle=1 row_spin=1]
+event=worker_summary dev=ue0_p1 puller[pulls=401 idle=2 room_stall=0 acquired=2406000] producer[slots=387 stall=163799] rep[replies=386 idle=1 row_spin=1]
+event=process_latency_summary node=gnb0 n=372 p50_us=880 p95_us=1890 p99_us=2775 p999_us=3440 max_us=3436.49
+event=process_latency_summary node=ue0 n=387 p50_us=880 p95_us=2480 p99_us=2870 p999_us=3390 max_us=3389.85
+relay knobs parity: 9582000 samples bit-identical across 4 ports
+pacer_debt free_slots=2 stall_ms=1000 max_debt_ms=1
+event=socket_ready device=gnb0 tx_connect=tcp://127.0.0.1:25500 rx_bind=tcp://127.0.0.1:25501
+event=socket_ready device=ue0 tx_connect=tcp://127.0.0.1:25502 rx_bind=tcp://127.0.0.1:25503
+event=radio_node_resolved id=gnb0 tx[0]=gnb0 rx[0]=gnb0 implicit=true
+event=radio_node_resolved id=ue0 tx[0]=ue0 rx[0]=ue0 implicit=true
+event=worker_summary dev=gnb0 puller[pulls=614 idle=0 room_stall=50655 acquired=14146560] producer[slots=690 stall=10097] rep[replies=689 idle=1 row_spin=1]
+event=worker_summary dev=ue0 puller[pulls=695 idle=0 room_stall=49754 acquired=16012800] producer[slots=609 stall=15934] rep[replies=609 idle=1 row_spin=0]
+event=process_latency_summary node=gnb0 n=690 p50_us=375 p95_us=390 p99_us=400 p999_us=430 max_us=426.441
+event=process_latency_summary node=ue0 n=609 p50_us=385 p95_us=395 p99_us=410 p999_us=420 max_us=419.513
+loopback: cpu_threads=1 tx_pulls=1309 rx_requests=1298 tx_queue_overflows=0 tx_sequence_gaps=0 rx_starvations=0 zmq_errors=0 gnb_received=15874560 ue_received=14008320
+event=socket_ready device=gnb0 tx_connect=tcp://127.0.0.1:25500 rx_bind=tcp://127.0.0.1:25501
+event=socket_ready device=ue0 tx_connect=tcp://127.0.0.1:25502 rx_bind=tcp://127.0.0.1:25503
+event=radio_node_resolved id=gnb0 tx[0]=gnb0 rx[0]=gnb0 implicit=true
+event=radio_node_resolved id=ue0 tx[0]=ue0 rx[0]=ue0 implicit=true
+event=worker_summary dev=gnb0 puller[pulls=644 idle=0 room_stall=40930 acquired=14837760] producer[slots=647 stall=12973] rep[replies=646 idle=1 row_spin=1]
+event=worker_summary dev=ue0 puller[pulls=652 idle=0 room_stall=40462 acquired=15022080] producer[slots=639 stall=13525] rep[replies=638 idle=1 row_spin=1]
+event=process_latency_summary node=gnb0 n=647 p50_us=190 p95_us=250 p99_us=1040 p999_us=2645 max_us=2643.08
+event=process_latency_summary node=ue0 n=639 p50_us=175 p95_us=225 p99_us=565 p999_us=2565 max_us=2562.31
+loopback: cpu_threads=24 tx_pulls=1296 rx_requests=1284 tx_queue_overflows=0 tx_sequence_gaps=0 rx_starvations=0 zmq_errors=0 gnb_received=14883840 ue_received=14699520
+event=socket_ready device=gnb0 tx_connect=tcp://127.0.0.1:25600 rx_bind=tcp://127.0.0.1:25601
+event=socket_ready device=ue0 tx_connect=tcp://127.0.0.1:25602 rx_bind=tcp://127.0.0.1:25603
+event=socket_ready device=ue1 tx_connect=tcp://127.0.0.1:25604 rx_bind=tcp://127.0.0.1:25605
+event=radio_node_resolved id=gnb0 tx[0]=gnb0 rx[0]=gnb0 implicit=true
+event=radio_node_resolved id=ue0 tx[0]=ue0 rx[0]=ue0 implicit=true
+event=radio_node_resolved id=ue1 tx[0]=ue1 rx[0]=ue1 implicit=true
+event=worker_summary dev=gnb0 puller[pulls=2015 idle=2 room_stall=0 acquired=12090000] producer[slots=1933 stall=22841] rep[replies=1932 idle=1 row_spin=1]
+event=worker_summary dev=ue0 puller[pulls=2015 idle=1 room_stall=0 acquired=12090000] producer[slots=1969 stall=33186] rep[replies=1969 idle=1 row_spin=0]
+event=worker_summary dev=ue1 puller[pulls=2014 idle=1 room_stall=0 acquired=12084000] producer[slots=1957 stall=32398] rep[replies=1956 idle=1 row_spin=0]
+event=process_latency_summary node=gnb0 n=1933 p50_us=200 p95_us=390 p99_us=400 p999_us=420 max_us=635.038
+event=process_latency_summary node=ue0 n=1969 p50_us=105 p95_us=125 p99_us=225 p999_us=330 max_us=342.103
+event=process_latency_summary node=ue1 n=1957 p50_us=105 p95_us=185 p99_us=280 p999_us=425 max_us=726.447
+multi-ue lockstep: tx_pulls=6044 rx_requests=5857 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0 gnb_received=12078000 ue0_received=12090000 ue1_received=12089040
+event=socket_ready device=gnb0 tx_connect=tcp://127.0.0.1:25610 rx_bind=tcp://127.0.0.1:25611
+event=socket_ready device=ue0 tx_connect=tcp://127.0.0.1:25612 rx_bind=tcp://127.0.0.1:25613
+event=socket_ready device=ue1 tx_connect=tcp://127.0.0.1:25614 rx_bind=tcp://127.0.0.1:25615
+event=radio_node_resolved id=gnb0 tx[0]=gnb0 rx[0]=gnb0 implicit=true
+event=radio_node_resolved id=ue0 tx[0]=ue0 rx[0]=ue0 implicit=true
+event=radio_node_resolved id=ue1 tx[0]=ue1 rx[0]=ue1 implicit=true
+event=relay_wedged waited_ms=300 ports=[gnb0:puller=recv_reply/20/120000,producer=wait_data/25,rep=wait_row/25 ue0:puller=recv_reply/22/132000,producer=wait_data/21,rep=wait_row/21 ue1:puller=recv_reply/22/132000,producer=wait_data/19,rep=wait_row/19]
+event=worker_summary dev=gnb0 puller[pulls=20 idle=5 room_stall=0 acquired=120000] producer[slots=25 stall=37053] rep[replies=25 idle=1 row_spin=1]
+event=worker_summary dev=ue0 puller[pulls=22 idle=5 room_stall=0 acquired=132000] producer[slots=21 stall=37046] rep[replies=21 idle=1 row_spin=1]
+event=worker_summary dev=ue1 puller[pulls=22 idle=5 room_stall=0 acquired=132000] producer[slots=19 stall=36997] rep[replies=19 idle=1 row_spin=1]
+event=process_latency_summary node=gnb0 n=25 p50_us=195 p95_us=240 p99_us=395 p999_us=395 max_us=392.696
+event=process_latency_summary node=ue0 n=21 p50_us=105 p95_us=110 p99_us=115 p999_us=115 max_us=111.81
+event=process_latency_summary node=ue1 n=19 p50_us=105 p95_us=725 p99_us=725 p999_us=725 max_us=723.455
+multi-ue lockstep wedge: elapsed_ms=598 tx_pulls=64 rx_requests=65 relay_wedged=1 zmq_errors=1 gnb_tx_sent=120000 ue0_received=120000
+test_broker OK

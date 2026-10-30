@@ -1,0 +1,29 @@
+{
+  "remote_case": "/workspace/gpuch/one-ue-realtime-20261030/u1/original-room-yield-r2",
+  "files": [
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 2978
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 2810
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3138578.wire",
+      "size": 96000064
+    },
+    {
+      "file": "raw/wire/srsue-3138797.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3138614.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3138427.wire",
+      "size": 64000064
+    }
+  ]
+}

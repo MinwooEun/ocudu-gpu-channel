@@ -1,0 +1,29 @@
+{
+  "remote_case": "/workspace/gpuch/one-ue-realtime-20261030/u1/original-cv-io-r2",
+  "files": [
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 4009
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 3490
+    },
+    {
+      "file": "raw/wire/srsue-3157355.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3156979.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3157166.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3157126.wire",
+      "size": 96000064
+    }
+  ]
+}

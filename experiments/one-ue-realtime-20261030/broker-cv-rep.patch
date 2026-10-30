@@ -1,0 +1,63 @@
+--- a/src/broker.cpp
++++ b/src/broker.cpp
+@@ -8,6 +8,7 @@
+ #include <array>
+ #include <atomic>
+ #include <chrono>
++#include <condition_variable>
+ #include <cmath>
+ #include <csignal>
+ #include <cstring>
+@@ -187,6 +188,7 @@
+   std::string trace_dir;
+   int io_threads = 0;
+   bool spin = false;         // in-process waits spin
++  bool cv_rep = false;
+   bool spin_sockets = false; // socket receives spin too (OCG_BROKER_SPIN=1)
+   std::chrono::microseconds spin_budget{0};
+   bool fewer_copies = false;
+@@ -204,6 +206,7 @@
+ BrokerDiagKnobs read_diag_knobs()
+ {
+   BrokerDiagKnobs knobs;
++  knobs.cv_rep = std::getenv("OCG_BROKER_CV_REP") && std::strcmp(std::getenv("OCG_BROKER_CV_REP"), "1") == 0;
+   if (const char* poll = std::getenv("OCG_BROKER_POLL_US"); poll != nullptr && *poll != '\0') {
+     knobs.poll = std::chrono::microseconds(std::strtol(poll, nullptr, 10));
+     knobs.tight_slack = true;
+@@ -453,6 +456,7 @@
+   // through the previous one.
+   IqRing rx_ring;
+   std::mutex rx_mutex;
++  std::condition_variable rx_ready_cv;
+   std::uint64_t rx_cursor = 0;   // PortRepWorker read cursor
+   std::size_t rx_high_water = 0; // producer run-ahead bound, in samples
+   // Serve boundaries, in ring order. The producer records the length of every
+@@ -1472,6 +1476,7 @@
+         const double push_us =
+             std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t_push_start).count();
+         trace.add(HopEvent::ProducePushed, count);
++        if (knobs.cv_rep) for (auto r : node.rx_ports) ports[r]->rx_ready_cv.notify_one();
+ 
+         if (ocg_profile::enabled()) {
+           thread_local ocg_profile::Writer w("broker","end_ns,node,samples,rate_hz,room_us,align_us,data_us,read_us,process_us,commit_pace_us,push_us");
+@@ -1548,7 +1553,8 @@
+         std::span<const IqSample> in_ring;
+         while (!stop_requested.load()) {
+           {
+-            std::lock_guard<std::mutex> lk(port.rx_mutex);
++            std::unique_lock<std::mutex> lk(port.rx_mutex);
++            if (knobs.cv_rep) port.rx_ready_cv.wait(lk, [&] { return stop_requested.load() || !port.rx_slots.empty(); });
+             if (!port.rx_slots.empty()) {
+               // One producer window, whole. Never two, and never part of one:
+               // both would size this reply off this thread's arrival time
+@@ -1824,6 +1830,10 @@
+     std::this_thread::sleep_for(std::chrono::milliseconds(20));
+   }
+   stop_requested.store(true);
++  for (auto& port : ports) {
++    std::lock_guard<std::mutex> lk(port->rx_mutex);
++    port->rx_ready_cv.notify_all();
++  }
+   for (auto& worker : workers) {
+     worker.join();
+   }

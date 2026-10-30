@@ -1,0 +1,132 @@
+[
+  {
+    "actor": "srsue-3165459.wire",
+    "tid": 3165469,
+    "before": {
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        17
+      ]
+    },
+    "after": {
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        17
+      ]
+    }
+  },
+  {
+    "actor": "gnb-3165257.wire",
+    "tid": 3165434,
+    "before": {
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "after": {
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    }
+  },
+  {
+    "actor": "ocudu-gpu-channel-3165226.wire",
+    "tid": 3165234,
+    "before": {
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "after": {
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        15,
+        16
+      ]
+    }
+  },
+  {
+    "actor": "ocudu-gpu-channel-3165226.wire",
+    "tid": 3165236,
+    "before": {
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "after": {
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        15,
+        16
+      ]
+    }
+  },
+  {
+    "actor": "ocudu-gpu-channel-3165226.wire",
+    "tid": 3165238,
+    "before": {
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "after": {
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        15,
+        16
+      ]
+    }
+  },
+  {
+    "actor": "ocudu-gpu-channel-3165226.wire",
+    "tid": 3165239,
+    "before": {
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "after": {
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        15,
+        16
+      ]
+    }
+  }
+]

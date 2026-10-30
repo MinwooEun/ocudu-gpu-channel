@@ -1,0 +1,105 @@
+{
+  "files": [
+    {
+      "file": "srsue-3157355.wire",
+      "records": 441322,
+      "dropped": 0
+    },
+    {
+      "file": "gnb-3156979.wire",
+      "records": 0,
+      "dropped": 0
+    },
+    {
+      "file": "gnb-3157166.wire",
+      "records": 255129,
+      "dropped": 0
+    },
+    {
+      "file": "ocudu-gpu-channel-3157126.wire",
+      "records": 480013,
+      "dropped": 0
+    }
+  ],
+  "port": 2101,
+  "matched_messages": 53454,
+  "terminal_pending_request": 0,
+  "terminal_unpushed_packet": 1,
+  "rebase_events": 2,
+  "by_first_late_stage": {
+    "UE IQ preparation / pre-send entry": 2
+  },
+  "events": [
+    {
+      "sample": 384007695,
+      "shift_us": 294.47,
+      "expected_due_ns": 3112946786291400,
+      "data_us": 1225.111,
+      "times": {
+        "request_start": 3112946784755177,
+        "ue_rf_tx_enter": 3112946787451228,
+        "ue_request_poll_start": 3112946787451308,
+        "ue_request_recv_end": 3112946787451836,
+        "ue_iq_send_start": 3112946787451932,
+        "ue_iq_send_end": 3112946787459100,
+        "broker_iq_recv_end": 3112946787502477,
+        "broker_ring_pushed": 3112946787508909,
+        "producer_data_ready": 3112946787519725,
+        "pace_call": 3112946787585870
+      },
+      "relative_to_due_us": {
+        "request_start": -1536.223,
+        "ue_rf_tx_enter": 1159.828,
+        "ue_request_poll_start": 1159.908,
+        "ue_request_recv_end": 1160.436,
+        "ue_iq_send_start": 1160.532,
+        "ue_iq_send_end": 1167.7,
+        "broker_iq_recv_end": 1211.077,
+        "broker_ring_pushed": 1217.509,
+        "producer_data_ready": 1228.325,
+        "pace_call": 1294.47
+      },
+      "rf_op": 30,
+      "matched_bytes": 184320,
+      "latest_rx_end_ns": 3112946786961427,
+      "rx_to_txready_us": 489.801,
+      "first_late_stage": "UE IQ preparation / pre-send entry"
+    },
+    {
+      "sample": 761218565,
+      "shift_us": 270.196,
+      "expected_due_ns": 3112963158576099,
+      "data_us": 2030.582,
+      "times": {
+        "request_start": 3112963156886879,
+        "ue_rf_tx_enter": 3112963159750325,
+        "ue_request_poll_start": 3112963159750389,
+        "ue_request_recv_end": 3112963159750933,
+        "ue_iq_send_start": 3112963159751045,
+        "ue_iq_send_end": 3112963159758101,
+        "broker_iq_recv_end": 3112963159797558,
+        "broker_ring_pushed": 3112963159803590,
+        "producer_data_ready": 3112963159807782,
+        "pace_call": 3112963159846295
+      },
+      "relative_to_due_us": {
+        "request_start": -1689.22,
+        "ue_rf_tx_enter": 1174.226,
+        "ue_request_poll_start": 1174.29,
+        "ue_request_recv_end": 1174.834,
+        "ue_iq_send_start": 1174.946,
+        "ue_iq_send_end": 1182.002,
+        "broker_iq_recv_end": 1221.459,
+        "broker_ring_pushed": 1227.491,
+        "producer_data_ready": 1231.683,
+        "pace_call": 1270.196
+      },
+      "rf_op": 30,
+      "matched_bytes": 184320,
+      "latest_rx_end_ns": 3112963159257276,
+      "rx_to_txready_us": 493.049,
+      "first_late_stage": "UE IQ preparation / pre-send entry"
+    }
+  ],
+  "note": "Classification uses the expected producer pacing deadline, not a reconstructed RF deadline. A late upstream API entry can be propagated backpressure rather than expensive PHY computation; upstream RX timing is retained for further attribution."
+}

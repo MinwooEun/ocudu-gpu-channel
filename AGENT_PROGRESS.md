@@ -10,7 +10,7 @@
 
 ## Current Objective
 
-- Identify initiating operations behind sub-1.000 progress: distinguish filesystem blocking from CPU preemption inside long CSV writes and trace upstream IQ readiness, rather than stopping at pacer rebasing. Both HTML reports remain unchanged.
+- Identify and repair initiating operations behind one-UE sub-1.000 progress on Spark, preserving CUDA gNB, CPU srsUE, frozen inputs and ZMQ framing. Both HTML reports remain unchanged.
 
 ## Repository State
 
@@ -297,7 +297,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-Receiver noise-estimation candidate and one-run UE IO priority changes are validated on one-UE Spark inputs; original binaries remain unchanged. Remaining sparse-repeat lag is 2.591 ms: output-room wait dominates, but late gNB request versus delayed broker REP service remains unresolved. Evidence is in `experiments/residual-rate-20261030/conclusions.json`; both HTML reports remain unchanged.
+One-UE attribution and candidate results are in `experiments/one-ue-realtime-20261030/conclusions.json`. Combined notification, RF RX priority and log drain removed the measured request/log delay categories but regressed overall rate; the next required attribution is before late gNB source-IQ sends. No owned runtime remains; both HTML reports are unchanged.
 
 ## Active relay patch — 2026-10-29
 
@@ -419,3 +419,17 @@ Receiver noise-estimation candidate and one-run UE IO priority changes are valid
 - Sparse-only priority repeat still lost 2.591 ms; eleven pacing rebases summed to 2.609 ms. A 3.173 ms output-room wait and following rebase contributed 2.004 ms; gNB request delay versus broker REP delay is unresolved.
 
 - Preserved failed profiler attempts and complete raw traces on Spark; full scheduler capture increased transport disturbance. Saved compact evidence and a separate receiver patch; no runtime remains and both HTML files are unchanged.
+
+## One-UE residual initiating operations — 2026-10-30
+
+- Corrected the 3.173 ms output-room interpretation: it includes scheduling and rechecking, not proven continuous buffer fullness. Direct interception captured a separate REP yield lasting 3.878 ms, including 3.488 ms after IQ publication.
+
+- CPU17 scheduler capture identified the separate srsUE RF RX request thread, still OTHER0 behind FIFO94 STACK. After its R+ preemption, ready IQ waited 1.732 ms for a request while STACK consumed 1.729 ms.
+
+- A five-sample channel call measured 2.545 ms wall time and 81.5 µs CPU; its synchronous native stdout write occupied 2.483 ms. Native-write filesystem blocking versus descheduling remains unsplit; earlier CSV JBD2 evidence is separate.
+
+- CV notification plus all ZMQ IO priorities completed twice at post-warmup 0.999920 and 0.999982, both 30/30 valid. Broker integration, multi-port loopback, lockstep, wedge and shutdown checks pass; only broker.cpp.o changed.
+
+- Adding RF RX priority and auxiliary log draining removed >1 ms ready-IQ request delays and long broker stdout calls, but rate regressed to 0.998561 with 43.099 ms loss. Largest remaining misses precede gNB source IQ sends; cause remains unresolved.
+
+- Saved scripts, minimal notification patch, exact rates, causal joins and raw-location indices under `experiments/one-ue-realtime-20261030/`. Full originals remain on Spark, owned processes are stopped, unrelated GPU sweep is untouched, and both HTML reports remain unchanged.

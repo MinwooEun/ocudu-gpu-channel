@@ -1,0 +1,41 @@
+{
+  "remote_case": "/workspace/gpuch/one-ue-realtime-20261030/u1/original-output-root-r2",
+  "files": [
+    {
+      "file": "raw/sched.data",
+      "size": 1699521325
+    },
+    {
+      "file": "raw/mapping.data",
+      "size": 6273383
+    },
+    {
+      "file": "raw/cpu.data",
+      "size": 2609388
+    },
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 4417
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 6259
+    },
+    {
+      "file": "raw/wire/gnb-3127835.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3127980.wire",
+      "size": 96000064
+    },
+    {
+      "file": "raw/wire/srsue-3128198.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3128016.wire",
+      "size": 64000064
+    }
+  ]
+}

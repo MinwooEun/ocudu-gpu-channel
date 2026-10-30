@@ -1,0 +1,167 @@
+--- a/src/broker.cpp
++++ b/src/broker.cpp
+@@ -26,6 +26,8 @@
+ #include <cstdlib>
+ #include <sys/prctl.h>
+ #include <sched.h>
++#include <ctime>
++#include <condition_variable>
+ 
+ // Concurrent per-direction relay broker, modelled on srsRAN's GNU Radio
+ // Companion ZMQ broker (ZMQ REQ source -> Throttle -> channel -> ZMQ REP sink).
+@@ -187,6 +189,7 @@
+   std::string trace_dir;
+   int io_threads = 0;
+   bool spin = false;         // in-process waits spin
++  bool cv_rep = false;
+   bool spin_sockets = false; // socket receives spin too (OCG_BROKER_SPIN=1)
+   std::chrono::microseconds spin_budget{0};
+   bool fewer_copies = false;
+@@ -204,6 +207,7 @@
+ BrokerDiagKnobs read_diag_knobs()
+ {
+   BrokerDiagKnobs knobs;
++  knobs.cv_rep = std::getenv("OCG_BROKER_CV_REP") && std::strcmp(std::getenv("OCG_BROKER_CV_REP"), "1") == 0;
+   if (const char* poll = std::getenv("OCG_BROKER_POLL_US"); poll != nullptr && *poll != '\0') {
+     knobs.poll = std::chrono::microseconds(std::strtol(poll, nullptr, 10));
+     knobs.tight_slack = true;
+@@ -453,6 +457,7 @@
+   // through the previous one.
+   IqRing rx_ring;
+   std::mutex rx_mutex;
++  std::condition_variable rx_ready_cv;
+   std::uint64_t rx_cursor = 0;   // PortRepWorker read cursor
+   std::size_t rx_high_water = 0; // producer run-ahead bound, in samples
+   // Serve boundaries, in ring order. The producer records the length of every
+@@ -1151,6 +1156,17 @@
+         if (!rate_trace) throw std::runtime_error("cannot open sparse rate trace");
+         std::fprintf(rate_trace.get(), "kind,now_ns,node,sample,count,expected_due_ns,due_ns,shift_ns,room_us,data_us,read_us,process_us,previous_loop_end_ns\n");
+       }
++      const char* room_diag_directory = std::getenv("OCG_ROOM_DIAG_DIR");
++      const bool room_diag_on = room_diag_directory != nullptr && node.id == "gnb0";
++      std::vector<std::array<long long, 8>> room_records;
++      std::vector<std::array<long long, 5>> process_records;
++      if (room_diag_on) process_records.reserve(16384);
++      if (room_diag_on) room_records.reserve(262144);
++      const auto thread_cpu_ns = []() -> long long {
++        timespec t{};
++        if (clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t) != 0) throw std::runtime_error("thread CPU clock failed");
++        return static_cast<long long>(t.tv_sec) * 1000000000LL + t.tv_nsec;
++      };
+       bool have_pace_due = false;
+       std::chrono::steady_clock::time_point expected_pace_due{};
+       long long previous_loop_end_ns = 0;
+@@ -1168,6 +1184,8 @@
+         // place.
+         diag.state.store("wait_room");
+         const auto t_room_start = std::chrono::steady_clock::now();
++        const auto room_cpu_start = room_diag_on ? thread_cpu_ns() : 0;
++        std::size_t first_room = 0, room_checks = 0, empty_checks = 0;
+         std::size_t room = 0;
+         bool room_stall_reported = false;
+         auto next_room_report = t_room_start + kStallReportInterval;
+@@ -1176,6 +1194,11 @@
+           for (const std::size_t r : node.rx_ports) {
+             room = std::min(room, rx_headroom(*ports[r]));
+           }
++          if (room_diag_on) {
++            if (room_checks == 0) first_room = room;
++            ++room_checks;
++            if (room == 0) ++empty_checks;
++          }
+           if (room > 0) {
+             break;
+           }
+@@ -1200,6 +1223,18 @@
+         const auto t_align_start = std::chrono::steady_clock::now();
+         const double room_us =
+             std::chrono::duration<double, std::micro>(t_align_start - t_room_start).count();
++        if (room_diag_on) {
++          const auto room_cpu_end = thread_cpu_ns();
++          if (room_us > 100.0) {
++            if (room_records.size() == room_records.capacity()) throw std::runtime_error("room probe capacity exhausted");
++            room_records.push_back({static_cast<long long>(node_sample),
++              std::chrono::duration_cast<std::chrono::nanoseconds>(t_room_start.time_since_epoch()).count(),
++              std::chrono::duration_cast<std::chrono::nanoseconds>(t_align_start.time_since_epoch()).count(),
++              room_cpu_end-room_cpu_start, static_cast<long long>(first_room),
++              static_cast<long long>(empty_checks), static_cast<long long>(room_checks),
++              static_cast<long long>(room)});
++          }
++        }
+ 
+         // (B) First slot: co-initialise every incoming lane's cursor to its
+         // source's earliest buffered sample in one pass. No ring discards
+@@ -1370,6 +1405,7 @@
+           }
+         }
+         diag.state.store("process");
++        const auto process_cpu_start = room_diag_on ? thread_cpu_ns() : 0;
+         const auto t_process_start = std::chrono::steady_clock::now();
+         const double read_us =
+             std::chrono::duration<double, std::micro>(t_process_start - t_read_start).count();
+@@ -1378,6 +1414,16 @@
+         const auto t_commit_start = std::chrono::steady_clock::now();
+         const double process_us =
+             std::chrono::duration<double, std::micro>(t_commit_start - t_process_start).count();
++        if (room_diag_on) {
++          const auto process_cpu_end=thread_cpu_ns();
++          if(process_us>200.0) {
++            if(process_records.size()==process_records.capacity())throw std::runtime_error("process probe capacity exhausted");
++            process_records.push_back({static_cast<long long>(node_sample),
++              std::chrono::duration_cast<std::chrono::nanoseconds>(t_process_start.time_since_epoch()).count(),
++              std::chrono::duration_cast<std::chrono::nanoseconds>(t_commit_start.time_since_epoch()).count(),
++              process_cpu_end-process_cpu_start,static_cast<long long>(count)});
++          }
++        }
+ 
+         // The backend shapes and sums every incoming lane in one call, so the
+         // truthful execution measurement is receiver-scoped. Publish the same
+@@ -1472,6 +1518,7 @@
+         const double push_us =
+             std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - t_push_start).count();
+         trace.add(HopEvent::ProducePushed, count);
++        if (knobs.cv_rep) for (auto r : node.rx_ports) ports[r]->rx_ready_cv.notify_one();
+ 
+         if (ocg_profile::enabled()) {
+           thread_local ocg_profile::Writer w("broker","end_ns,node,samples,rate_hz,room_us,align_us,data_us,read_us,process_us,commit_pace_us,push_us");
+@@ -1488,6 +1535,19 @@
+         diag.last_samples.store(count);
+         diag.progress.fetch_add(1);
+         if (rate_trace) previous_loop_end_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
++      }
++      if (room_diag_on) {
++        std::ofstream po(std::string(room_diag_directory)+"/"+node.id+"-process.csv");
++        if(!po)throw std::runtime_error("process probe output failed");
++        po<<"sample,start_ns,end_ns,cpu_ns,count\n";
++        for(const auto& row:process_records){for(std::size_t i=0;i<row.size();++i){if(i)po<<',';po<<row[i];}po<<'\n';}
++        std::ofstream out(std::string(room_diag_directory)+"/"+node.id+"-room.csv");
++        if (!out) throw std::runtime_error("room probe output failed");
++        out << "sample,start_ns,end_ns,cpu_ns,first_room,empty_checks,checks,final_room\n";
++        for (const auto& row : room_records) {
++          for (std::size_t i=0;i<row.size();++i) { if(i)out<<',';out<<row[i]; }
++          out << '\n';
++        }
+       }
+     } catch (const std::exception& e) {
+       report_thread_error("producer", e);
+@@ -1548,7 +1608,8 @@
+         std::span<const IqSample> in_ring;
+         while (!stop_requested.load()) {
+           {
+-            std::lock_guard<std::mutex> lk(port.rx_mutex);
++            std::unique_lock<std::mutex> lk(port.rx_mutex);
++            if (knobs.cv_rep) port.rx_ready_cv.wait(lk, [&] { return stop_requested.load() || !port.rx_slots.empty(); });
+             if (!port.rx_slots.empty()) {
+               // One producer window, whole. Never two, and never part of one:
+               // both would size this reply off this thread's arrival time
+@@ -1824,6 +1885,10 @@
+     std::this_thread::sleep_for(std::chrono::milliseconds(20));
+   }
+   stop_requested.store(true);
++  for (auto& port : ports) {
++    std::lock_guard<std::mutex> lk(port->rx_mutex);
++    port->rx_ready_cv.notify_all();
++  }
+   for (auto& worker : workers) {
+     worker.join();
+   }

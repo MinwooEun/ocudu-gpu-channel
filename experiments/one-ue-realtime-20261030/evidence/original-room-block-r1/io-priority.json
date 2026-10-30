@@ -1,0 +1,19 @@
+{
+  "pid": 3146960,
+  "tid": 3146970,
+  "before": {
+    "policy": 0,
+    "priority": 0,
+    "cpus": [
+      17
+    ]
+  },
+  "after": {
+    "policy": 1,
+    "priority": 95,
+    "cpus": [
+      17
+    ]
+  },
+  "monotonic_ns": 3112023657500235
+}

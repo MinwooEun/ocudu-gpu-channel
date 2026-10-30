@@ -1,0 +1,18 @@
+{
+  "tid": 3165470,
+  "before": {
+    "policy": 0,
+    "priority": 0,
+    "cpus": [
+      17
+    ]
+  },
+  "after": {
+    "policy": 1,
+    "priority": 95,
+    "cpus": [
+      17
+    ]
+  },
+  "identified_by": "UE ZMQ request send on port 2100"
+}

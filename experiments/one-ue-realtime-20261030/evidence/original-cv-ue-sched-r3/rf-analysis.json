@@ -1,0 +1,281 @@
+{
+  "files": [
+    {
+      "file": "gnb-3161654.wire",
+      "records": 0,
+      "dropped": 0
+    },
+    {
+      "file": "ocudu-gpu-channel-3161816.wire",
+      "records": 490381,
+      "dropped": 0
+    },
+    {
+      "file": "srsue-3162037.wire",
+      "records": 451662,
+      "dropped": 0
+    },
+    {
+      "file": "gnb-3161852.wire",
+      "records": 254760,
+      "dropped": 0
+    }
+  ],
+  "port": 2101,
+  "matched_messages": 53441,
+  "terminal_pending_request": 1,
+  "terminal_unpushed_packet": 0,
+  "rebase_events": 7,
+  "by_first_late_stage": {
+    "UE IQ preparation / pre-send entry": 3,
+    "broker producer readiness dispatch": 4
+  },
+  "events": [
+    {
+      "sample": 384353295,
+      "shift_us": 145.592,
+      "expected_due_ns": 3113295952331855,
+      "data_us": 1098.128,
+      "times": {
+        "request_start": 3113295950879746,
+        "ue_rf_tx_enter": 3113295953376502,
+        "ue_request_poll_start": 3113295953376534,
+        "ue_request_recv_end": 3113295953377030,
+        "ue_iq_send_start": 3113295953377062,
+        "ue_iq_send_end": 3113295953383974,
+        "broker_iq_recv_end": 3113295953423974,
+        "broker_ring_pushed": 3113295953428614,
+        "producer_data_ready": 3113295953433399,
+        "pace_call": 3113295953477447
+      },
+      "relative_to_due_us": {
+        "request_start": -1452.109,
+        "ue_rf_tx_enter": 1044.647,
+        "ue_request_poll_start": 1044.679,
+        "ue_request_recv_end": 1045.175,
+        "ue_iq_send_start": 1045.207,
+        "ue_iq_send_end": 1052.119,
+        "broker_iq_recv_end": 1092.119,
+        "broker_ring_pushed": 1096.759,
+        "producer_data_ready": 1101.544,
+        "pace_call": 1145.592
+      },
+      "rf_op": 30,
+      "matched_bytes": 184320,
+      "latest_rx_end_ns": 3113295952893663,
+      "rx_to_txready_us": 482.839,
+      "first_late_stage": "UE IQ preparation / pre-send entry"
+    },
+    {
+      "sample": 554250244,
+      "shift_us": 53.506,
+      "expected_due_ns": 3113303326472531,
+      "data_us": 980.59,
+      "times": {
+        "request_start": 3113303324672877,
+        "ue_rf_tx_enter": 3113303327394691,
+        "ue_request_poll_start": 3113303327394771,
+        "ue_request_recv_end": 3113303327395715,
+        "ue_iq_send_start": 3113303327395795,
+        "ue_iq_send_end": 3113303327403044,
+        "broker_iq_recv_end": 3113303327444436,
+        "broker_ring_pushed": 3113303327454116,
+        "producer_data_ready": 3113303327457844,
+        "pace_call": 3113303327526037
+      },
+      "relative_to_due_us": {
+        "request_start": -1799.654,
+        "ue_rf_tx_enter": 922.16,
+        "ue_request_poll_start": 922.24,
+        "ue_request_recv_end": 923.184,
+        "ue_iq_send_start": 923.264,
+        "ue_iq_send_end": 930.513,
+        "broker_iq_recv_end": 971.905,
+        "broker_ring_pushed": 981.585,
+        "producer_data_ready": 985.313,
+        "pace_call": 1053.506
+      },
+      "rf_op": 30,
+      "matched_bytes": 184320,
+      "latest_rx_end_ns": 3113303326786251,
+      "rx_to_txready_us": 608.44,
+      "first_late_stage": "UE IQ preparation / pre-send entry"
+    },
+    {
+      "sample": 657838085,
+      "shift_us": 278.96,
+      "expected_due_ns": 3113307822523369,
+      "data_us": 2209.824,
+      "times": {
+        "request_start": 3113307820839167,
+        "ue_rf_tx_enter": 3113307823703672,
+        "ue_request_poll_start": 3113307823703752,
+        "ue_request_recv_end": 3113307823704248,
+        "ue_iq_send_start": 3113307823704392,
+        "ue_iq_send_end": 3113307823710456,
+        "broker_iq_recv_end": 3113307823750617,
+        "broker_ring_pushed": 3113307823758041,
+        "producer_data_ready": 3113307823761657,
+        "pace_call": 3113307823802329
+      },
+      "relative_to_due_us": {
+        "request_start": -1684.202,
+        "ue_rf_tx_enter": 1180.303,
+        "ue_request_poll_start": 1180.383,
+        "ue_request_recv_end": 1180.879,
+        "ue_iq_send_start": 1181.023,
+        "ue_iq_send_end": 1187.087,
+        "broker_iq_recv_end": 1227.248,
+        "broker_ring_pushed": 1234.672,
+        "producer_data_ready": 1238.288,
+        "pace_call": 1278.96
+      },
+      "rf_op": 30,
+      "matched_bytes": 184320,
+      "latest_rx_end_ns": 3113307823028110,
+      "rx_to_txready_us": 675.562,
+      "first_late_stage": "UE IQ preparation / pre-send entry"
+    },
+    {
+      "sample": 688389120,
+      "shift_us": 550.702,
+      "expected_due_ns": 3113309148801541,
+      "data_us": 0.224,
+      "times": {
+        "request_start": 3113309145876419,
+        "ue_rf_tx_enter": 3113309146612142,
+        "ue_request_poll_start": 3113309146612206,
+        "ue_request_recv_end": 3113309146612686,
+        "ue_iq_send_start": 3113309146612750,
+        "ue_iq_send_end": 3113309146618478,
+        "broker_iq_recv_end": 3113309146659535,
+        "broker_ring_pushed": 3113309146669039,
+        "producer_data_ready": 3113309147806303,
+        "pace_call": 3113309150352243
+      },
+      "relative_to_due_us": {
+        "request_start": -2925.122,
+        "ue_rf_tx_enter": -2189.399,
+        "ue_request_poll_start": -2189.335,
+        "ue_request_recv_end": -2188.855,
+        "ue_iq_send_start": -2188.791,
+        "ue_iq_send_end": -2183.063,
+        "broker_iq_recv_end": -2142.006,
+        "broker_ring_pushed": -2132.502,
+        "producer_data_ready": -995.238,
+        "pace_call": 1550.702
+      },
+      "rf_op": 30,
+      "matched_bytes": 184320,
+      "latest_rx_end_ns": 3113309146134407,
+      "rx_to_txready_us": 477.735,
+      "first_late_stage": "broker producer readiness dispatch"
+    },
+    {
+      "sample": 688389125,
+      "shift_us": 61.272,
+      "expected_due_ns": 3113309149352460,
+      "data_us": 0.112,
+      "times": {
+        "request_start": 3113309146669167,
+        "ue_rf_tx_enter": 3113309147631644,
+        "ue_request_poll_start": 3113309147631724,
+        "ue_request_recv_end": 3113309147632124,
+        "ue_iq_send_start": 3113309147632396,
+        "ue_iq_send_end": 3113309147639421,
+        "broker_iq_recv_end": 3113309147683965,
+        "broker_ring_pushed": 3113309147694157,
+        "producer_data_ready": 3113309150361028,
+        "pace_call": 3113309150413732
+      },
+      "relative_to_due_us": {
+        "request_start": -2683.293,
+        "ue_rf_tx_enter": -1720.816,
+        "ue_request_poll_start": -1720.736,
+        "ue_request_recv_end": -1720.336,
+        "ue_iq_send_start": -1720.064,
+        "ue_iq_send_end": -1713.039,
+        "broker_iq_recv_end": -1668.495,
+        "broker_ring_pushed": -1658.303,
+        "producer_data_ready": 1008.568,
+        "pace_call": 1061.272
+      },
+      "rf_op": 30,
+      "matched_bytes": 184320,
+      "latest_rx_end_ns": 3113309147152214,
+      "rx_to_txready_us": 479.43,
+      "first_late_stage": "broker producer readiness dispatch"
+    },
+    {
+      "sample": 803589120,
+      "shift_us": 451.774,
+      "expected_due_ns": 3113314149411587,
+      "data_us": 0.096,
+      "times": {
+        "request_start": 3113314145687559,
+        "ue_rf_tx_enter": 3113314146616469,
+        "ue_request_poll_start": 3113314146616533,
+        "ue_request_recv_end": 3113314146617269,
+        "ue_iq_send_start": 3113314146617333,
+        "ue_iq_send_end": 3113314146623173,
+        "broker_iq_recv_end": 3113314146662213,
+        "broker_ring_pushed": 3113314146666933,
+        "producer_data_ready": 3113314148496671,
+        "pace_call": 3113314150863361
+      },
+      "relative_to_due_us": {
+        "request_start": -3724.028,
+        "ue_rf_tx_enter": -2795.118,
+        "ue_request_poll_start": -2795.054,
+        "ue_request_recv_end": -2794.318,
+        "ue_iq_send_start": -2794.254,
+        "ue_iq_send_end": -2788.414,
+        "broker_iq_recv_end": -2749.374,
+        "broker_ring_pushed": -2744.654,
+        "producer_data_ready": -914.916,
+        "pace_call": 1451.774
+      },
+      "rf_op": 30,
+      "matched_bytes": 184320,
+      "latest_rx_end_ns": 3113314146141086,
+      "rx_to_txready_us": 475.383,
+      "first_late_stage": "broker producer readiness dispatch"
+    },
+    {
+      "sample": 803589126,
+      "shift_us": 50.237,
+      "expected_due_ns": 3113314149863621,
+      "data_us": 0.096,
+      "times": {
+        "request_start": 3113314146667125,
+        "ue_rf_tx_enter": 3113314147633795,
+        "ue_request_poll_start": 3113314147633843,
+        "ue_request_recv_end": 3113314147634531,
+        "ue_iq_send_start": 3113314147634563,
+        "ue_iq_send_end": 3113314147640723,
+        "broker_iq_recv_end": 3113314147681380,
+        "broker_ring_pushed": 3113314147686980,
+        "producer_data_ready": 3113314150872625,
+        "pace_call": 3113314150913858
+      },
+      "relative_to_due_us": {
+        "request_start": -3196.496,
+        "ue_rf_tx_enter": -2229.826,
+        "ue_request_poll_start": -2229.778,
+        "ue_request_recv_end": -2229.09,
+        "ue_iq_send_start": -2229.058,
+        "ue_iq_send_end": -2222.898,
+        "broker_iq_recv_end": -2182.241,
+        "broker_ring_pushed": -2176.641,
+        "producer_data_ready": 1009.004,
+        "pace_call": 1050.237
+      },
+      "rf_op": 30,
+      "matched_bytes": 184320,
+      "latest_rx_end_ns": 3113314147141372,
+      "rx_to_txready_us": 492.423,
+      "first_late_stage": "broker producer readiness dispatch"
+    }
+  ],
+  "note": "Classification uses the expected producer pacing deadline, not a reconstructed RF deadline. A late upstream API entry can be propagated backpressure rather than expensive PHY computation; upstream RX timing is retained for further attribution."
+}

@@ -1,0 +1,623 @@
+{
+  "actors": {
+    "srsue": 3162037,
+    "gnb": 3161852,
+    "ocudu": 3161816
+  },
+  "tasks": {
+    "3162037": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "srsue",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        17
+      ]
+    },
+    "3162041": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "srsue",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        17
+      ]
+    },
+    "3162042": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "TASKWORKER0",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        17
+      ]
+    },
+    "3162043": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "TASKWORKER1",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        17
+      ]
+    },
+    "3162044": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "PHY_CMD",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        17
+      ]
+    },
+    "3162045": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "PHY_CMD",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        17
+      ]
+    },
+    "3162046": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "ZMQbg/Reaper",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        17
+      ]
+    },
+    "3162047": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "ZMQbg/IO/0",
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        17
+      ]
+    },
+    "3162048": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "srsue",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        17
+      ]
+    },
+    "3162050": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "SYNC",
+      "policy": 1,
+      "priority": 98,
+      "cpus": [
+        17
+      ]
+    },
+    "3162051": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "STACK",
+      "policy": 1,
+      "priority": 94,
+      "cpus": [
+        17
+      ]
+    },
+    "3162052": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "WORKER0",
+      "policy": 1,
+      "priority": 96,
+      "cpus": [
+        17
+      ]
+    },
+    "3162053": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "WORKER1",
+      "policy": 1,
+      "priority": 96,
+      "cpus": [
+        17
+      ]
+    },
+    "3162054": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "WORKER2",
+      "policy": 1,
+      "priority": 96,
+      "cpus": [
+        17
+      ]
+    },
+    "3162055": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "METRICS_HUB",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        17
+      ]
+    },
+    "3162062": {
+      "pid": 3162037,
+      "actor": "srsue",
+      "comm": "GW",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        17
+      ]
+    },
+    "3161852": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "gnb",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161858": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "gnb",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161869": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "main_pool#0",
+      "policy": 1,
+      "priority": 96,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161870": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "main_pool#1",
+      "policy": 1,
+      "priority": 96,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161871": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "main_pool#2",
+      "policy": 1,
+      "priority": 96,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161872": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "main_pool#3",
+      "policy": 1,
+      "priority": 96,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161873": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "main_pool#4",
+      "policy": 1,
+      "priority": 96,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161874": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "phy_worker",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161875": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "radio",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161876": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "io_broker_epoll",
+      "policy": 1,
+      "priority": 6,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161877": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "cuda0000280000b",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161879": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "cuda-EvtHandlr",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3162011": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "ZMQbg/Reaper",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3162012": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "ZMQbg/IO/0",
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3162018": {
+      "pid": 3161852,
+      "actor": "gnb",
+      "comm": "ws_server",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3161816": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ocudu-gpu-chann",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161822": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "cuda00001400006",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161824": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "cuda-EvtHandlr",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161826": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ocudu-gpu-chann",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161827": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ocudu-gpu-chann",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161828": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ZMQbg/Reaper",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161829": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ZMQbg/IO/0",
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161830": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ZMQbg/Reaper",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161831": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ZMQbg/IO/0",
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161832": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ZMQbg/Reaper",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161833": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ZMQbg/IO/0",
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161834": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ZMQbg/IO/1",
+      "policy": 1,
+      "priority": 95,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161835": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ocudu-gpu-chann",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161836": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ocudu-gpu-chann",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161837": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ocudu-gpu-chann",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161838": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ocudu-gpu-chann",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161839": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ocudu-gpu-chann",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    },
+    "3161840": {
+      "pid": 3161816,
+      "actor": "ocudu",
+      "comm": "ocudu-gpu-chann",
+      "policy": 0,
+      "priority": 0,
+      "cpus": [
+        15,
+        16
+      ]
+    }
+  },
+  "start_mono_ns": 3113293759437819
+}

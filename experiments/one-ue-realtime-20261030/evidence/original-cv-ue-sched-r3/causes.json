@@ -1,0 +1,150 @@
+{
+  "cpu17_switches": 953852,
+  "ue_receive_request_delays": [
+    {
+      "sample": 384353295,
+      "rebase_us": 145.592,
+      "iq_published_ns": 3113295951073573,
+      "ue_request_start_ns": 3113295952805453,
+      "ready_to_request_us": 1731.88,
+      "rf_rx_tid": 3162048,
+      "host_tid": 3811557,
+      "last_switch_out_before_publish": {
+        "time_ns": 3113295950129367,
+        "state": "R+",
+        "priority": 120
+      },
+      "cpu_occupants": [
+        {
+          "host_tid": 3811560,
+          "comm": "STACK",
+          "cpu_us": 1729.432
+        },
+        {
+          "host_tid": 3811557,
+          "comm": "srsue",
+          "cpu_us": 2.448
+        }
+      ]
+    },
+    {
+      "sample": 554250244,
+      "rebase_us": 53.506,
+      "iq_published_ns": 3113303325072162,
+      "ue_request_start_ns": 3113303326681321,
+      "ready_to_request_us": 1609.159,
+      "rf_rx_tid": 3162048,
+      "host_tid": 3811557,
+      "last_switch_out_before_publish": {
+        "time_ns": 3113303324128725,
+        "state": "R+",
+        "priority": 120
+      },
+      "cpu_occupants": [
+        {
+          "host_tid": 3811560,
+          "comm": "STACK",
+          "cpu_us": 1606.167
+        },
+        {
+          "host_tid": 3811557,
+          "comm": "srsue",
+          "cpu_us": 2.992
+        }
+      ]
+    },
+    {
+      "sample": 657838085,
+      "rebase_us": 278.96,
+      "iq_published_ns": 3113307821072210,
+      "ue_request_start_ns": 3113307822916173,
+      "ready_to_request_us": 1843.963,
+      "rf_rx_tid": 3162048,
+      "host_tid": 3811557,
+      "last_switch_out_before_publish": {
+        "time_ns": 3113307820283815,
+        "state": "R+",
+        "priority": 120
+      },
+      "cpu_occupants": [
+        {
+          "host_tid": 3811560,
+          "comm": "STACK",
+          "cpu_us": 1742.809
+        },
+        {
+          "host_tid": 3811550,
+          "comm": "srsue",
+          "cpu_us": 99.442
+        },
+        {
+          "host_tid": 3811557,
+          "comm": "srsue",
+          "cpu_us": 1.712
+        }
+      ]
+    }
+  ],
+  "process_with_stdout_write": [
+    {
+      "sample": 573189120,
+      "wall_us": 1251.074,
+      "cpu_us": 80.816,
+      "count": 4,
+      "writes": [
+        {
+          "tid": 3161837,
+          "start_ns": 3113304147575836,
+          "end_ns": 3113304148763405,
+          "wall_us": 1187.569,
+          "bytes": 212
+        }
+      ]
+    },
+    {
+      "sample": 688389120,
+      "wall_us": 2544.852,
+      "cpu_us": 81.536,
+      "count": 5,
+      "writes": [
+        {
+          "tid": 3161837,
+          "start_ns": 3113309147809487,
+          "end_ns": 3113309150292515,
+          "wall_us": 2483.028,
+          "bytes": 212
+        },
+        {
+          "tid": 3161838,
+          "start_ns": 3113309149087697,
+          "end_ns": 3113309150300515,
+          "wall_us": 1212.818,
+          "bytes": 214
+        }
+      ]
+    },
+    {
+      "sample": 803589120,
+      "wall_us": 2365.698,
+      "cpu_us": 91.056,
+      "count": 6,
+      "writes": [
+        {
+          "tid": 3161837,
+          "start_ns": 3113314148499423,
+          "end_ns": 3113314150789136,
+          "wall_us": 2289.713,
+          "bytes": 212
+        },
+        {
+          "tid": 3161838,
+          "start_ns": 3113314149082632,
+          "end_ns": 3113314150799968,
+          "wall_us": 1717.336,
+          "bytes": 214
+        }
+      ]
+    }
+  ],
+  "limitations": "CPU17 scheduling capture is diagnostic and perturbs execution. Write duration includes all time between intercepted write entry/return; native-log kernel blocking versus descheduling inside the call is not separated."
+}

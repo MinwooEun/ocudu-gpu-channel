@@ -1,0 +1,18 @@
+{
+  "pid": 3165220,
+  "child_pid": 3165226,
+  "reader_cpus": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "pipe_bytes": 1048576,
+  "start_mono_ns": 3113546711628207,
+  "real_binary": "/workspace/gpuch/one-ue-realtime-20261030/room-build/ocudu-gpu-channel",
+  "read_bytes": 472242,
+  "written_bytes": 472242,
+  "child_exit_code": 0,
+  "end_mono_ns": 3113609965435592
+}
