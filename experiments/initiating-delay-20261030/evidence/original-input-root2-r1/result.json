@@ -1,0 +1,12 @@
+{
+  "case": "original",
+  "ue_count": 1,
+  "tag": "input-root2-r1",
+  "returncode": 2,
+  "wall_s": 2.925608060788363,
+  "metrics": null,
+  "valid_segments": null,
+  "gate": null,
+  "report_exists": false,
+  "diagnostic_trace": false
+}

@@ -1,0 +1,212 @@
+{
+  "paired_writes": 3595,
+  "long_writes": [
+    {
+      "tid": 3076373,
+      "start_ns": 3100807456581548,
+      "fd": 73,
+      "switches": [
+        {
+          "time_ns": 3100807456585100,
+          "event": "prev_comm=ocudu-gpu-chann prev_pid=3638933 prev_prio=120 prev_state=D ==> next_comm=ocudu-gpu-chann next_pid=3638935 next_prio=120",
+          "kernel_stack": [
+            {
+              "address": "ffffd70bf42d7aac",
+              "nearest_ftrace_function": "__trace_set_current_state",
+              "offset": 4536
+            },
+            {
+              "address": "ffffd70bf42d7aac",
+              "nearest_ftrace_function": "__trace_set_current_state",
+              "offset": 4536
+            },
+            {
+              "address": "ffffd70bf5bd6054",
+              "nearest_ftrace_function": "io_schedule_timeout",
+              "offset": 1272
+            },
+            {
+              "address": "ffffd70bf5bd6548",
+              "nearest_ftrace_function": "schedule",
+              "offset": 60
+            },
+            {
+              "address": "ffffd70bf5bd6778",
+              "nearest_ftrace_function": "io_schedule",
+              "offset": 68
+            },
+            {
+              "address": "ffffd70bf5bd72b4",
+              "nearest_ftrace_function": "bit_wait_io",
+              "offset": 32
+            },
+            {
+              "address": "ffffd70bf5bd7798",
+              "nearest_ftrace_function": "__wait_on_bit",
+              "offset": 124
+            },
+            {
+              "address": "ffffd70bf5bd78bc",
+              "nearest_ftrace_function": "out_of_line_wait_on_bit",
+              "offset": 144
+            },
+            {
+              "address": "ffffd70bf4980fdc",
+              "nearest_ftrace_function": "do_get_write_access",
+              "offset": 888
+            },
+            {
+              "address": "ffffd70bf49811ac",
+              "nearest_ftrace_function": "jbd2_journal_get_write_access",
+              "offset": 184
+            },
+            {
+              "address": "ffffd70bf48e0850",
+              "nearest_ftrace_function": "__ext4_journal_get_write_access",
+              "offset": 84
+            },
+            {
+              "address": "ffffd70bf490dcb0",
+              "nearest_ftrace_function": "ext4_reserve_inode_write",
+              "offset": 212
+            },
+            {
+              "address": "ffffd70bf490e04c",
+              "nearest_ftrace_function": "__ext4_mark_inode_dirty",
+              "offset": 112
+            },
+            {
+              "address": "ffffd70bf4913000",
+              "nearest_ftrace_function": "ext4_dirty_inode",
+              "offset": 108
+            },
+            {
+              "address": "ffffd70bf480fae8",
+              "nearest_ftrace_function": "__mark_inode_dirty",
+              "offset": 100
+            },
+            {
+              "address": "ffffd70bf47e3db0",
+              "nearest_ftrace_function": "file_update_time_flags",
+              "offset": 340
+            },
+            {
+              "address": "ffffd70bf47e3eb0",
+              "nearest_ftrace_function": "file_modified",
+              "offset": 52
+            },
+            {
+              "address": "ffffd70bf48f302c",
+              "nearest_ftrace_function": "ext4_buffered_write_iter",
+              "offset": 96
+            },
+            {
+              "address": "ffffd70bf48f3684",
+              "nearest_ftrace_function": "ext4_file_write_iter",
+              "offset": 144
+            },
+            {
+              "address": "ffffd70bf47af1b0",
+              "nearest_ftrace_function": "vfs_write",
+              "offset": 620
+            },
+            {
+              "address": "ffffd70bf47af5ec",
+              "nearest_ftrace_function": "ksys_write",
+              "offset": 120
+            },
+            {
+              "address": "ffffd70bf47af6d0",
+              "nearest_ftrace_function": "__arm64_sys_write",
+              "offset": 36
+            },
+            {
+              "address": "ffffd70bf41a7240",
+              "nearest_ftrace_function": "invoke_syscall",
+              "offset": 164
+            },
+            {
+              "address": "ffffd70bf41a73e4",
+              "nearest_ftrace_function": "el0_svc_common.constprop.0",
+              "offset": 272
+            },
+            {
+              "address": "ffffd70bf41a7438",
+              "nearest_ftrace_function": "do_el0_svc",
+              "offset": 36
+            },
+            {
+              "address": "ffffd70bf5bcdb80",
+              "nearest_ftrace_function": "__copy_user_flushcache",
+              "offset": 247204
+            },
+            {
+              "address": "ffffd70bf5bce320",
+              "nearest_ftrace_function": "__copy_user_flushcache",
+              "offset": 249156
+            },
+            {
+              "address": "ffffd70bf4181e98",
+              "nearest_ftrace_function": "__do_softirq",
+              "offset": 5060
+            }
+          ],
+          "raw_stack": [
+            "\tffffd70bf42d7aac [unknown] ([unknown])",
+            "\tffffd70bf42d7aac [unknown] ([unknown])",
+            "\tffffd70bf5bd6054 [unknown] ([unknown])",
+            "\tffffd70bf5bd6548 [unknown] ([unknown])",
+            "\tffffd70bf5bd6778 [unknown] ([unknown])",
+            "\tffffd70bf5bd72b4 [unknown] ([unknown])",
+            "\tffffd70bf5bd7798 [unknown] ([unknown])",
+            "\tffffd70bf5bd78bc [unknown] ([unknown])",
+            "\tffffd70bf4980fdc [unknown] ([unknown])",
+            "\tffffd70bf49811ac [unknown] ([unknown])",
+            "\tffffd70bf48e0850 [unknown] ([unknown])",
+            "\tffffd70bf490dcb0 [unknown] ([unknown])",
+            "\tffffd70bf490e04c [unknown] ([unknown])",
+            "\tffffd70bf4913000 [unknown] ([unknown])",
+            "\tffffd70bf480fae8 [unknown] ([unknown])",
+            "\tffffd70bf47e3db0 [unknown] ([unknown])",
+            "\tffffd70bf47e3eb0 [unknown] ([unknown])",
+            "\tffffd70bf48f302c [unknown] ([unknown])",
+            "\tffffd70bf48f3684 [unknown] ([unknown])",
+            "\tffffd70bf47af1b0 [unknown] ([unknown])",
+            "\tffffd70bf47af5ec [unknown] ([unknown])",
+            "\tffffd70bf47af6d0 [unknown] ([unknown])",
+            "\tffffd70bf41a7240 [unknown] ([unknown])",
+            "\tffffd70bf41a73e4 [unknown] ([unknown])",
+            "\tffffd70bf41a7438 [unknown] ([unknown])",
+            "\tffffd70bf5bcdb80 [unknown] ([unknown])",
+            "\tffffd70bf5bce320 [unknown] ([unknown])",
+            "\tffffd70bf4181e98 [unknown] ([unknown])",
+            "\t    ea59d7311e4c write+0x6c (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    ea59d72ad764 _IO_file_write+0x40 (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    ea59d72aba4c [unknown] (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    ea59d72ac890 _IO_do_write+0x20 (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    ea59d72ace34 _IO_file_overflow+0x150 (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    ea59d7280e90 [unknown] (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    ea59d7280ba4 [unknown] (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    ea59d7281024 [unknown] (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    ea59d7288894 [unknown] (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    ea59d7289b88 [unknown] (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    ea59d7328340 __fprintf_chk+0x90 (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    c2eb5c0ac634 store+0x1364 (inlined)",
+            "\t    c2eb5c0ac634 store_us+0x1364 (inlined)",
+            "\t    c2eb5c0ac634 operator()+0x1364 (inlined)",
+            "\t    ea59d75c1ae0 [unknown] (/usr/lib/aarch64-linux-gnu/libstdc++.so.6.0.33)",
+            "\t    ea59d72b582c [unknown] (/usr/lib/aarch64-linux-gnu/libc.so.6)",
+            "\t    ea59d731bb4c [unknown] (/usr/lib/aarch64-linux-gnu/libc.so.6)"
+          ]
+        }
+      ],
+      "end_ns": 3100807463854247,
+      "us": 7272.699
+    }
+  ],
+  "namespace_to_host_tid": {
+    "3076374": 3638934,
+    "3076373": 3638933
+  },
+  "note": "Function names are nearest entries from available_filter_functions_addrs; missing uninstrumented symbols are not guessed. Switch-out state distinguishes blocking from preemption. Raw addresses and user frames are preserved."
+}

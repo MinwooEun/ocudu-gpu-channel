@@ -40,6 +40,8 @@ Reusable workflow and preferences. File ownership and update rules are defined i
 
 ## Validation and Evidence
 
+- Distinguish how delay accumulates from what initiates it. A wait interval or pacer rebase is not an upstream root cause; identify the blocking operation or scheduling event before calling that cause resolved.
+
 - Audit speed windows independently from KPI warmup exclusion. For small progress deficits, account for pacing deadline rebases and instrumentation I/O on the critical thread before attributing the deficit to processing capacity.
 
 - Distinguish channel-function timing, dummy-IQ transport tests and live UE/gNB tests explicitly; ZMQ use alone does not identify a workload. Do not transfer bottleneck claims between these configurations without matched evidence.

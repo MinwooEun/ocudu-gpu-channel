@@ -1,0 +1,1572 @@
+{
+  "note": "Nearest preceding PDSCH log within 100 us of RF TX entry using launch wall/monotonic anchor; retain gap for audit. Probed diagnostic runs include observer overhead.",
+  "matched_events": 18,
+  "events": [
+    {
+      "event": {
+        "sample": 806837766,
+        "shift_us": 394.735,
+        "expected_due_ns": 3102352352030322,
+        "data_us": 1241.423,
+        "times": {
+          "request_start": 3102352351968611,
+          "ue_rf_tx_enter": 3102352353268754,
+          "ue_request_poll_start": 3102352353268818,
+          "ue_request_recv_end": 3102352353269186,
+          "ue_iq_send_start": 3102352353269346,
+          "ue_iq_send_end": 3102352353274482,
+          "broker_iq_recv_end": 3102352353331938,
+          "broker_ring_pushed": 3102352353335474,
+          "producer_data_ready": 3102352353380850,
+          "pace_call": 3102352353425057
+        },
+        "relative_to_due_us": {
+          "request_start": -61.711,
+          "ue_rf_tx_enter": 1238.432,
+          "ue_request_poll_start": 1238.496,
+          "ue_request_recv_end": 1238.864,
+          "ue_iq_send_start": 1239.024,
+          "ue_iq_send_end": 1244.16,
+          "broker_iq_recv_end": 1301.616,
+          "broker_ring_pushed": 1305.152,
+          "producer_data_ready": 1350.528,
+          "pace_call": 1394.735
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102352352125619,
+        "rx_to_txready_us": 1143.135,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082506,
+        "name": "work",
+        "start": 3102352352145811,
+        "end": 3102352353275522,
+        "host_tid": 3654353,
+        "wall_us": 1129.711,
+        "off_us": 0,
+        "on_us": 1129.711,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082506,
+          "name": "dl",
+          "start": 3102352352147203,
+          "end": 3102352353204802,
+          "host_tid": 3654353,
+          "wall_us": 1057.599,
+          "off_us": 0,
+          "on_us": 1057.599,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "ul",
+          "start": 3102352353205666,
+          "end": 3102352353263890,
+          "host_tid": 3654353,
+          "wall_us": 58.224,
+          "off_us": 0,
+          "on_us": 58.224,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "end",
+          "start": 3102352353264450,
+          "end": 3102352353275026,
+          "host_tid": 3654353,
+          "wall_us": 10.576,
+          "off_us": 0,
+          "on_us": 10.576,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.973660 [PHY1-NR] [I] [ 4395] PDSCH: cc=0 pid=4 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=2754 R=0.480 rv=0 CRC=KO iter=9.7 evm=0.27 t_us=921 epre=+45.1 snr=-2.5 cfo=-0.3 delay=-0.0  ack_tti_tx=4399",
+        "rf_entry_minus_log_us": 64.912
+      }
+    },
+    {
+      "event": {
+        "sample": 799073286,
+        "shift_us": 260.221,
+        "expected_due_ns": 3102352014515409,
+        "data_us": 1164.879,
+        "times": {
+          "request_start": 3102352014457167,
+          "ue_rf_tx_enter": 3102352015660302,
+          "ue_request_poll_start": 3102352015660366,
+          "ue_request_recv_end": 3102352015660766,
+          "ue_iq_send_start": 3102352015661070,
+          "ue_iq_send_end": 3102352015667054,
+          "broker_iq_recv_end": 3102352015714078,
+          "broker_ring_pushed": 3102352015723966,
+          "producer_data_ready": 3102352015733950,
+          "pace_call": 3102352015775630
+        },
+        "relative_to_due_us": {
+          "request_start": -58.242,
+          "ue_rf_tx_enter": 1144.893,
+          "ue_request_poll_start": 1144.957,
+          "ue_request_recv_end": 1145.357,
+          "ue_iq_send_start": 1145.661,
+          "ue_iq_send_end": 1151.645,
+          "broker_iq_recv_end": 1198.669,
+          "broker_ring_pushed": 1208.557,
+          "producer_data_ready": 1218.541,
+          "pace_call": 1260.221
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102352014582607,
+        "rx_to_txready_us": 1077.695,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082505,
+        "name": "work",
+        "start": 3102352014601775,
+        "end": 3102352015668062,
+        "host_tid": 3654352,
+        "wall_us": 1066.287,
+        "off_us": 0,
+        "on_us": 1066.287,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082505,
+          "name": "dl",
+          "start": 3102352014603119,
+          "end": 3102352015596094,
+          "host_tid": 3654352,
+          "wall_us": 992.975,
+          "off_us": 0,
+          "on_us": 992.975,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "ul",
+          "start": 3102352015596814,
+          "end": 3102352015655358,
+          "host_tid": 3654352,
+          "wall_us": 58.544,
+          "off_us": 0,
+          "on_us": 58.544,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "end",
+          "start": 3102352015655998,
+          "end": 3102352015667518,
+          "host_tid": 3654352,
+          "wall_us": 11.52,
+          "off_us": 0,
+          "on_us": 11.52,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.636052 [PHY0-NR] [I] [ 4058] PDSCH: cc=0 pid=4 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=KO iter=9.0 evm=0.26 t_us=855 epre=+45.4 snr=-0.3 cfo=-0.7 delay=-0.0  ack_tti_tx=4062",
+        "rf_entry_minus_log_us": 64.396
+      }
+    },
+    {
+      "event": {
+        "sample": 798612486,
+        "shift_us": 241.791,
+        "expected_due_ns": 3102351993571723,
+        "data_us": 1132.446,
+        "times": {
+          "request_start": 3102351993519516,
+          "ue_rf_tx_enter": 3102351994681466,
+          "ue_request_poll_start": 3102351994681498,
+          "ue_request_recv_end": 3102351994681978,
+          "ue_iq_send_start": 3102351994682138,
+          "ue_iq_send_end": 3102351994687578,
+          "broker_iq_recv_end": 3102351994761610,
+          "broker_ring_pushed": 3102351994765050,
+          "producer_data_ready": 3102351994774874,
+          "pace_call": 3102351994813514
+        },
+        "relative_to_due_us": {
+          "request_start": -52.207,
+          "ue_rf_tx_enter": 1109.743,
+          "ue_request_poll_start": 1109.775,
+          "ue_request_recv_end": 1110.255,
+          "ue_iq_send_start": 1110.415,
+          "ue_iq_send_end": 1115.855,
+          "broker_iq_recv_end": 1189.887,
+          "broker_ring_pushed": 1193.327,
+          "producer_data_ready": 1203.151,
+          "pace_call": 1241.791
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351993624076,
+        "rx_to_txready_us": 1057.39,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082505,
+        "name": "work",
+        "start": 3102351993644412,
+        "end": 3102351994688394,
+        "host_tid": 3654352,
+        "wall_us": 1043.982,
+        "off_us": 0,
+        "on_us": 1043.982,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082505,
+          "name": "dl",
+          "start": 3102351993645708,
+          "end": 3102351994617546,
+          "host_tid": 3654352,
+          "wall_us": 971.838,
+          "off_us": 0,
+          "on_us": 971.838,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "ul",
+          "start": 3102351994618346,
+          "end": 3102351994676490,
+          "host_tid": 3654352,
+          "wall_us": 58.144,
+          "off_us": 0,
+          "on_us": 58.144,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "end",
+          "start": 3102351994677130,
+          "end": 3102351994687962,
+          "host_tid": 3654352,
+          "wall_us": 10.832,
+          "off_us": 0,
+          "on_us": 10.832,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.615073 [PHY0-NR] [I] [ 4038] PDSCH: cc=0 pid=1 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=8.7 evm=0.26 t_us=836 epre=+45.4 snr=-0.3 cfo=-1.5 delay=-0.0  ack_tti_tx=4042",
+        "rf_entry_minus_log_us": 64.504
+      }
+    },
+    {
+      "event": {
+        "sample": 798359046,
+        "shift_us": 209.519,
+        "expected_due_ns": 3102351981891579,
+        "data_us": 1104.606,
+        "times": {
+          "request_start": 3102351981842028,
+          "ue_rf_tx_enter": 3102351982971434,
+          "ue_request_poll_start": 3102351982971498,
+          "ue_request_recv_end": 3102351982971914,
+          "ue_iq_send_start": 3102351982972074,
+          "ue_iq_send_end": 3102351982976714,
+          "broker_iq_recv_end": 3102351983048250,
+          "broker_ring_pushed": 3102351983051674,
+          "producer_data_ready": 3102351983062090,
+          "pace_call": 3102351983101098
+        },
+        "relative_to_due_us": {
+          "request_start": -49.551,
+          "ue_rf_tx_enter": 1079.855,
+          "ue_request_poll_start": 1079.919,
+          "ue_request_recv_end": 1080.335,
+          "ue_iq_send_start": 1080.495,
+          "ue_iq_send_end": 1085.135,
+          "broker_iq_recv_end": 1156.671,
+          "broker_ring_pushed": 1160.095,
+          "producer_data_ready": 1170.511,
+          "pace_call": 1209.519
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351981964156,
+        "rx_to_txready_us": 1007.278,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082506,
+        "name": "work",
+        "start": 3102351981982636,
+        "end": 3102351982977530,
+        "host_tid": 3654353,
+        "wall_us": 994.894,
+        "off_us": 0,
+        "on_us": 994.894,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082506,
+          "name": "dl",
+          "start": 3102351981983916,
+          "end": 3102351982907290,
+          "host_tid": 3654353,
+          "wall_us": 923.374,
+          "off_us": 0,
+          "on_us": 923.374,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "ul",
+          "start": 3102351982908314,
+          "end": 3102351982966490,
+          "host_tid": 3654353,
+          "wall_us": 58.176,
+          "off_us": 0,
+          "on_us": 58.176,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "end",
+          "start": 3102351982967082,
+          "end": 3102351982977130,
+          "host_tid": 3654353,
+          "wall_us": 10.048,
+          "off_us": 0,
+          "on_us": 10.048,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.603362 [PHY1-NR] [I] [ 4027] PDSCH: cc=0 pid=5 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=8.0 evm=0.26 t_us=785 epre=+45.4 snr=-0.3 cfo=-1.4 delay=-0.0  ack_tti_tx=4031",
+        "rf_entry_minus_log_us": 65.448
+      }
+    },
+    {
+      "event": {
+        "sample": 798865926,
+        "shift_us": 180.351,
+        "expected_due_ns": 3102352005335067,
+        "data_us": 1065.582,
+        "times": {
+          "request_start": 3102352005280620,
+          "ue_rf_tx_enter": 3102352006382298,
+          "ue_request_poll_start": 3102352006382362,
+          "ue_request_recv_end": 3102352006382890,
+          "ue_iq_send_start": 3102352006382922,
+          "ue_iq_send_end": 3102352006388090,
+          "broker_iq_recv_end": 3102352006458826,
+          "broker_ring_pushed": 3102352006463866,
+          "producer_data_ready": 3102352006474330,
+          "pace_call": 3102352006515418
+        },
+        "relative_to_due_us": {
+          "request_start": -54.447,
+          "ue_rf_tx_enter": 1047.231,
+          "ue_request_poll_start": 1047.295,
+          "ue_request_recv_end": 1047.823,
+          "ue_iq_send_start": 1047.855,
+          "ue_iq_send_end": 1053.023,
+          "broker_iq_recv_end": 1123.759,
+          "broker_ring_pushed": 1128.799,
+          "producer_data_ready": 1139.263,
+          "pace_call": 1180.351
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102352005366892,
+        "rx_to_txready_us": 1015.406,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082506,
+        "name": "work",
+        "start": 3102352005386220,
+        "end": 3102352006388826,
+        "host_tid": 3654353,
+        "wall_us": 1002.606,
+        "off_us": 0,
+        "on_us": 1002.606,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082506,
+          "name": "dl",
+          "start": 3102352005391836,
+          "end": 3102352006317722,
+          "host_tid": 3654353,
+          "wall_us": 925.886,
+          "off_us": 0,
+          "on_us": 925.886,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "ul",
+          "start": 3102352006318442,
+          "end": 3102352006376826,
+          "host_tid": 3654353,
+          "wall_us": 58.384,
+          "off_us": 0,
+          "on_us": 58.384,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "end",
+          "start": 3102352006377402,
+          "end": 3102352006388506,
+          "host_tid": 3654353,
+          "wall_us": 11.104,
+          "off_us": 0,
+          "on_us": 11.104,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.626773 [PHY1-NR] [I] [ 4049] PDSCH: cc=0 pid=8 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=8.0 evm=0.26 t_us=789 epre=+45.4 snr=-0.4 cfo=-0.8 delay=-0.0  ack_tti_tx=4053",
+        "rf_entry_minus_log_us": 65.368
+      }
+    },
+    {
+      "event": {
+        "sample": 798174726,
+        "shift_us": 172.288,
+        "expected_due_ns": 3102351973552102,
+        "data_us": 1062.703,
+        "times": {
+          "request_start": 3102351973503783,
+          "ue_rf_tx_enter": 3102351974619398,
+          "ue_request_poll_start": 3102351974619478,
+          "ue_request_recv_end": 3102351974619878,
+          "ue_iq_send_start": 3102351974619926,
+          "ue_iq_send_end": 3102351974624566,
+          "broker_iq_recv_end": 3102351974673062,
+          "broker_ring_pushed": 3102351974676518,
+          "producer_data_ready": 3102351974685574,
+          "pace_call": 3102351974724390
+        },
+        "relative_to_due_us": {
+          "request_start": -48.319,
+          "ue_rf_tx_enter": 1067.296,
+          "ue_request_poll_start": 1067.376,
+          "ue_request_recv_end": 1067.776,
+          "ue_iq_send_start": 1067.824,
+          "ue_iq_send_end": 1072.464,
+          "broker_iq_recv_end": 1120.96,
+          "broker_ring_pushed": 1124.416,
+          "producer_data_ready": 1133.472,
+          "pace_call": 1172.288
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351973581799,
+        "rx_to_txready_us": 1037.599,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082506,
+        "name": "work",
+        "start": 3102351973600999,
+        "end": 3102351974625334,
+        "host_tid": 3654353,
+        "wall_us": 1024.335,
+        "off_us": 0,
+        "on_us": 1024.335,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082506,
+          "name": "dl",
+          "start": 3102351973602311,
+          "end": 3102351974553750,
+          "host_tid": 3654353,
+          "wall_us": 951.439,
+          "off_us": 0,
+          "on_us": 951.439,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "ul",
+          "start": 3102351974554582,
+          "end": 3102351974614550,
+          "host_tid": 3654353,
+          "wall_us": 59.968,
+          "off_us": 0,
+          "on_us": 59.968,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "end",
+          "start": 3102351974615094,
+          "end": 3102351974624822,
+          "host_tid": 3654353,
+          "wall_us": 9.728,
+          "off_us": 0,
+          "on_us": 9.728,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.595009 [PHY1-NR] [I] [ 4019] PDSCH: cc=0 pid=5 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=8.3 evm=0.26 t_us=814 epre=+45.4 snr=-0.3 cfo=-1.3 delay=-0.0  ack_tti_tx=4023",
+        "rf_entry_minus_log_us": 66.436
+      }
+    },
+    {
+      "event": {
+        "sample": 806814726,
+        "shift_us": 160.167,
+        "expected_due_ns": 3102352350870156,
+        "data_us": 1060.286,
+        "times": {
+          "request_start": 3102352350539525,
+          "ue_rf_tx_enter": 3102352351874292,
+          "ue_request_poll_start": 3102352351874340,
+          "ue_request_recv_end": 3102352351874836,
+          "ue_iq_send_start": 3102352351874868,
+          "ue_iq_send_end": 3102352351880596,
+          "broker_iq_recv_end": 3102352351965332,
+          "broker_ring_pushed": 3102352351968515,
+          "producer_data_ready": 3102352351983139,
+          "pace_call": 3102352352030323
+        },
+        "relative_to_due_us": {
+          "request_start": -330.631,
+          "ue_rf_tx_enter": 1004.136,
+          "ue_request_poll_start": 1004.184,
+          "ue_request_recv_end": 1004.68,
+          "ue_iq_send_start": 1004.712,
+          "ue_iq_send_end": 1010.44,
+          "broker_iq_recv_end": 1095.176,
+          "broker_ring_pushed": 1098.359,
+          "producer_data_ready": 1112.983,
+          "pace_call": 1160.167
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102352350729941,
+        "rx_to_txready_us": 1144.351,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082505,
+        "name": "work",
+        "start": 3102352350748725,
+        "end": 3102352351881620,
+        "host_tid": 3654352,
+        "wall_us": 1132.895,
+        "off_us": 0,
+        "on_us": 1132.895,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082505,
+          "name": "dl",
+          "start": 3102352350750213,
+          "end": 3102352351809732,
+          "host_tid": 3654352,
+          "wall_us": 1059.519,
+          "off_us": 0,
+          "on_us": 1059.519,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "ul",
+          "start": 3102352351810468,
+          "end": 3102352351869220,
+          "host_tid": 3654352,
+          "wall_us": 58.752,
+          "off_us": 0,
+          "on_us": 58.752,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "end",
+          "start": 3102352351869924,
+          "end": 3102352351881172,
+          "host_tid": 3654352,
+          "wall_us": 11.248,
+          "off_us": 0,
+          "on_us": 11.248,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.972265 [PHY0-NR] [I] [ 4394] PDSCH: cc=0 pid=2 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=2754 R=0.480 rv=0 CRC=KO iter=9.7 evm=0.27 t_us=923 epre=+45.1 snr=-2.4 cfo=+0.2 delay=-0.0  ack_tti_tx=4398",
+        "rf_entry_minus_log_us": 65.394
+      }
+    },
+    {
+      "event": {
+        "sample": 798128646,
+        "shift_us": 153.405,
+        "expected_due_ns": 3102351971261372,
+        "data_us": 1069.663,
+        "times": {
+          "request_start": 3102351971189290,
+          "ue_rf_tx_enter": 3102351972311113,
+          "ue_request_poll_start": 3102351972311177,
+          "ue_request_recv_end": 3102351972311657,
+          "ue_iq_send_start": 3102351972311705,
+          "ue_iq_send_end": 3102351972317177,
+          "broker_iq_recv_end": 3102351972362089,
+          "broker_ring_pushed": 3102351972365385,
+          "producer_data_ready": 3102351972375081,
+          "pace_call": 3102351972414777
+        },
+        "relative_to_due_us": {
+          "request_start": -72.082,
+          "ue_rf_tx_enter": 1049.741,
+          "ue_request_poll_start": 1049.805,
+          "ue_request_recv_end": 1050.285,
+          "ue_iq_send_start": 1050.333,
+          "ue_iq_send_end": 1055.805,
+          "broker_iq_recv_end": 1100.717,
+          "broker_ring_pushed": 1104.013,
+          "producer_data_ready": 1113.709,
+          "pace_call": 1153.405
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351971299722,
+        "rx_to_txready_us": 1011.391,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082506,
+        "name": "work",
+        "start": 3102351971319002,
+        "end": 3102351972318009,
+        "host_tid": 3654353,
+        "wall_us": 999.007,
+        "off_us": 0,
+        "on_us": 999.007,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082506,
+          "name": "dl",
+          "start": 3102351971320186,
+          "end": 3102351972247449,
+          "host_tid": 3654353,
+          "wall_us": 927.263,
+          "off_us": 0,
+          "on_us": 927.263,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "ul",
+          "start": 3102351972248329,
+          "end": 3102351972306265,
+          "host_tid": 3654353,
+          "wall_us": 57.936,
+          "off_us": 0,
+          "on_us": 57.936,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "end",
+          "start": 3102351972306857,
+          "end": 3102351972317577,
+          "host_tid": 3654353,
+          "wall_us": 10.72,
+          "off_us": 0,
+          "on_us": 10.72,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.592703 [PHY1-NR] [I] [ 4017] PDSCH: cc=0 pid=8 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=8.0 evm=0.26 t_us=789 epre=+45.4 snr=-0.3 cfo=-0.9 delay=-0.0  ack_tti_tx=4021",
+        "rf_entry_minus_log_us": 63.943
+      }
+    },
+    {
+      "event": {
+        "sample": 798589446,
+        "shift_us": 153.232,
+        "expected_due_ns": 3102351992418492,
+        "data_us": 1043.583,
+        "times": {
+          "request_start": 3102351992369597,
+          "ue_rf_tx_enter": 3102351993450748,
+          "ue_request_poll_start": 3102351993450796,
+          "ue_request_recv_end": 3102351993451260,
+          "ue_iq_send_start": 3102351993451292,
+          "ue_iq_send_end": 3102351993456668,
+          "broker_iq_recv_end": 3102351993515980,
+          "broker_ring_pushed": 3102351993519308,
+          "producer_data_ready": 3102351993530492,
+          "pace_call": 3102351993571724
+        },
+        "relative_to_due_us": {
+          "request_start": -48.895,
+          "ue_rf_tx_enter": 1032.256,
+          "ue_request_poll_start": 1032.304,
+          "ue_request_recv_end": 1032.768,
+          "ue_iq_send_start": 1032.8,
+          "ue_iq_send_end": 1038.176,
+          "broker_iq_recv_end": 1097.488,
+          "broker_ring_pushed": 1100.816,
+          "producer_data_ready": 1112.0,
+          "pace_call": 1153.232
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351992494189,
+        "rx_to_txready_us": 956.559,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082506,
+        "name": "work",
+        "start": 3102351992512861,
+        "end": 3102351993457340,
+        "host_tid": 3654353,
+        "wall_us": 944.479,
+        "off_us": 0,
+        "on_us": 944.479,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082506,
+          "name": "dl",
+          "start": 3102351992513933,
+          "end": 3102351993386988,
+          "host_tid": 3654353,
+          "wall_us": 873.055,
+          "off_us": 0,
+          "on_us": 873.055,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "ul",
+          "start": 3102351993387948,
+          "end": 3102351993445852,
+          "host_tid": 3654353,
+          "wall_us": 57.904,
+          "off_us": 0,
+          "on_us": 57.904,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "end",
+          "start": 3102351993446364,
+          "end": 3102351993456988,
+          "host_tid": 3654353,
+          "wall_us": 10.624,
+          "off_us": 0,
+          "on_us": 10.624,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.613842 [PHY1-NR] [I] [ 4037] PDSCH: cc=0 pid=2 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=7.3 evm=0.26 t_us=737 epre=+45.4 snr=-0.3 cfo=-1.3 delay=-0.0  ack_tti_tx=4041",
+        "rf_entry_minus_log_us": 64.89
+      }
+    },
+    {
+      "event": {
+        "sample": 798405126,
+        "shift_us": 147.263,
+        "expected_due_ns": 3102351984197672,
+        "data_us": 1033.647,
+        "times": {
+          "request_start": 3102351984144793,
+          "ue_rf_tx_enter": 3102351985217079,
+          "ue_request_poll_start": 3102351985217127,
+          "ue_request_recv_end": 3102351985217655,
+          "ue_iq_send_start": 3102351985217687,
+          "ue_iq_send_end": 3102351985223591,
+          "broker_iq_recv_end": 3102351985290551,
+          "broker_ring_pushed": 3102351985293687,
+          "producer_data_ready": 3102351985302983,
+          "pace_call": 3102351985344935
+        },
+        "relative_to_due_us": {
+          "request_start": -52.879,
+          "ue_rf_tx_enter": 1019.407,
+          "ue_request_poll_start": 1019.455,
+          "ue_request_recv_end": 1019.983,
+          "ue_iq_send_start": 1020.015,
+          "ue_iq_send_end": 1025.919,
+          "broker_iq_recv_end": 1092.879,
+          "broker_ring_pushed": 1096.015,
+          "producer_data_ready": 1105.311,
+          "pace_call": 1147.263
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351984232633,
+        "rx_to_txready_us": 984.446,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082506,
+        "name": "work",
+        "start": 3102351984252265,
+        "end": 3102351985224535,
+        "host_tid": 3654353,
+        "wall_us": 972.27,
+        "off_us": 0,
+        "on_us": 972.27,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082506,
+          "name": "dl",
+          "start": 3102351984253433,
+          "end": 3102351985153143,
+          "host_tid": 3654353,
+          "wall_us": 899.71,
+          "off_us": 0,
+          "on_us": 899.71,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "ul",
+          "start": 3102351985153943,
+          "end": 3102351985212007,
+          "host_tid": 3654353,
+          "wall_us": 58.064,
+          "off_us": 0,
+          "on_us": 58.064,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "end",
+          "start": 3102351985212663,
+          "end": 3102351985224071,
+          "host_tid": 3654353,
+          "wall_us": 11.408,
+          "off_us": 0,
+          "on_us": 11.408,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.605608 [PHY1-NR] [I] [ 4029] PDSCH: cc=0 pid=2 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=7.7 evm=0.26 t_us=763 epre=+45.4 snr=-0.4 cfo=-1.5 delay=-0.0  ack_tti_tx=4033",
+        "rf_entry_minus_log_us": 65.205
+      }
+    },
+    {
+      "event": {
+        "sample": 798336006,
+        "shift_us": 142.432,
+        "expected_due_ns": 3102351980749148,
+        "data_us": 1037.647,
+        "times": {
+          "request_start": 3102351980699501,
+          "ue_rf_tx_enter": 3102351981785244,
+          "ue_request_poll_start": 3102351981785292,
+          "ue_request_recv_end": 3102351981785740,
+          "ue_iq_send_start": 3102351981786092,
+          "ue_iq_send_end": 3102351981793036,
+          "broker_iq_recv_end": 3102351981838796,
+          "broker_ring_pushed": 3102351981841916,
+          "producer_data_ready": 3102351981850972,
+          "pace_call": 3102351981891580
+        },
+        "relative_to_due_us": {
+          "request_start": -49.647,
+          "ue_rf_tx_enter": 1036.096,
+          "ue_request_poll_start": 1036.144,
+          "ue_request_recv_end": 1036.592,
+          "ue_iq_send_start": 1036.944,
+          "ue_iq_send_end": 1043.888,
+          "broker_iq_recv_end": 1089.648,
+          "broker_ring_pushed": 1092.768,
+          "producer_data_ready": 1101.824,
+          "pace_call": 1142.432
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351980825469,
+        "rx_to_txready_us": 959.775,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082505,
+        "name": "work",
+        "start": 3102351980844237,
+        "end": 3102351981794076,
+        "host_tid": 3654352,
+        "wall_us": 949.839,
+        "off_us": 0,
+        "on_us": 949.839,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082505,
+          "name": "dl",
+          "start": 3102351980845773,
+          "end": 3102351981720732,
+          "host_tid": 3654352,
+          "wall_us": 874.959,
+          "off_us": 0,
+          "on_us": 874.959,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "ul",
+          "start": 3102351981721564,
+          "end": 3102351981780012,
+          "host_tid": 3654352,
+          "wall_us": 58.448,
+          "off_us": 0,
+          "on_us": 58.448,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "end",
+          "start": 3102351981780972,
+          "end": 3102351981793644,
+          "host_tid": 3654352,
+          "wall_us": 12.672,
+          "off_us": 0,
+          "on_us": 12.672,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.602175 [PHY0-NR] [I] [ 4026] PDSCH: cc=0 pid=4 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=7.3 evm=0.26 t_us=737 epre=+45.4 snr=-0.3 cfo=-1.4 delay=-0.0  ack_tti_tx=4030",
+        "rf_entry_minus_log_us": 66.33
+      }
+    },
+    {
+      "event": {
+        "sample": 798151686,
+        "shift_us": 137.327,
+        "expected_due_ns": 3102351972414776,
+        "data_us": 1030.59,
+        "times": {
+          "request_start": 3102351972365529,
+          "ue_rf_tx_enter": 3102351973428679,
+          "ue_request_poll_start": 3102351973428743,
+          "ue_request_recv_end": 3102351973429127,
+          "ue_iq_send_start": 3102351973429159,
+          "ue_iq_send_end": 3102351973434567,
+          "broker_iq_recv_end": 3102351973500279,
+          "broker_ring_pushed": 3102351973503575,
+          "producer_data_ready": 3102351973512775,
+          "pace_call": 3102351973552103
+        },
+        "relative_to_due_us": {
+          "request_start": -49.247,
+          "ue_rf_tx_enter": 1013.903,
+          "ue_request_poll_start": 1013.967,
+          "ue_request_recv_end": 1014.351,
+          "ue_iq_send_start": 1014.383,
+          "ue_iq_send_end": 1019.791,
+          "broker_iq_recv_end": 1085.503,
+          "broker_ring_pushed": 1088.799,
+          "producer_data_ready": 1097.999,
+          "pace_call": 1137.327
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351972490617,
+        "rx_to_txready_us": 938.062,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082505,
+        "name": "work",
+        "start": 3102351972509913,
+        "end": 3102351973435639,
+        "host_tid": 3654352,
+        "wall_us": 925.726,
+        "off_us": 0,
+        "on_us": 925.726,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082505,
+          "name": "dl",
+          "start": 3102351972511273,
+          "end": 3102351973363783,
+          "host_tid": 3654352,
+          "wall_us": 852.51,
+          "off_us": 0,
+          "on_us": 852.51,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "ul",
+          "start": 3102351973364711,
+          "end": 3102351973423831,
+          "host_tid": 3654352,
+          "wall_us": 59.12,
+          "off_us": 0,
+          "on_us": 59.12,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "end",
+          "start": 3102351973424439,
+          "end": 3102351973435063,
+          "host_tid": 3654352,
+          "wall_us": 10.624,
+          "off_us": 0,
+          "on_us": 10.624,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.593819 [PHY0-NR] [I] [ 4018] PDSCH: cc=0 pid=4 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=7.0 evm=0.26 t_us=715 epre=+45.4 snr=-0.3 cfo=-1.0 delay=-0.0  ack_tti_tx=4022",
+        "rf_entry_minus_log_us": 65.861
+      }
+    },
+    {
+      "event": {
+        "sample": 798635526,
+        "shift_us": 113.312,
+        "expected_due_ns": 3102351994813513,
+        "data_us": 1002.207,
+        "times": {
+          "request_start": 3102351994765178,
+          "ue_rf_tx_enter": 3102351995814153,
+          "ue_request_poll_start": 3102351995814217,
+          "ue_request_recv_end": 3102351995814681,
+          "ue_iq_send_start": 3102351995814713,
+          "ue_iq_send_end": 3102351995821513,
+          "broker_iq_recv_end": 3102351995873241,
+          "broker_ring_pushed": 3102351995876457,
+          "producer_data_ready": 3102351995885801,
+          "pace_call": 3102351995926825
+        },
+        "relative_to_due_us": {
+          "request_start": -48.335,
+          "ue_rf_tx_enter": 1000.64,
+          "ue_request_poll_start": 1000.704,
+          "ue_request_recv_end": 1001.168,
+          "ue_iq_send_start": 1001.2,
+          "ue_iq_send_end": 1008.0,
+          "broker_iq_recv_end": 1059.728,
+          "broker_ring_pushed": 1062.944,
+          "producer_data_ready": 1072.288,
+          "pace_call": 1113.312
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351994845034,
+        "rx_to_txready_us": 969.119,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082506,
+        "name": "work",
+        "start": 3102351994865562,
+        "end": 3102351995822265,
+        "host_tid": 3654353,
+        "wall_us": 956.703,
+        "off_us": 0,
+        "on_us": 956.703,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082506,
+          "name": "dl",
+          "start": 3102351994866890,
+          "end": 3102351995749753,
+          "host_tid": 3654353,
+          "wall_us": 882.863,
+          "off_us": 0,
+          "on_us": 882.863,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "ul",
+          "start": 3102351995750729,
+          "end": 3102351995809193,
+          "host_tid": 3654353,
+          "wall_us": 58.464,
+          "off_us": 0,
+          "on_us": 58.464,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "end",
+          "start": 3102351995809689,
+          "end": 3102351995821833,
+          "host_tid": 3654353,
+          "wall_us": 12.144,
+          "off_us": 0,
+          "on_us": 12.144,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.616205 [PHY1-NR] [I] [ 4039] PDSCH: cc=0 pid=3 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=7.3 evm=0.26 t_us=735 epre=+45.4 snr=-0.3 cfo=-1.7 delay=-0.0  ack_tti_tx=4043",
+        "rf_entry_minus_log_us": 65.159
+      }
+    },
+    {
+      "event": {
+        "sample": 798382086,
+        "shift_us": 96.576,
+        "expected_due_ns": 3102351983101097,
+        "data_us": 994.879,
+        "times": {
+          "request_start": 3102351983051770,
+          "ue_rf_tx_enter": 3102351984068105,
+          "ue_request_poll_start": 3102351984068153,
+          "ue_request_recv_end": 3102351984068633,
+          "ue_iq_send_start": 3102351984068665,
+          "ue_iq_send_end": 3102351984072825,
+          "broker_iq_recv_end": 3102351984141401,
+          "broker_ring_pushed": 3102351984144665,
+          "producer_data_ready": 3102351984160537,
+          "pace_call": 3102351984197673
+        },
+        "relative_to_due_us": {
+          "request_start": -49.327,
+          "ue_rf_tx_enter": 967.008,
+          "ue_request_poll_start": 967.056,
+          "ue_request_recv_end": 967.536,
+          "ue_iq_send_start": 967.568,
+          "ue_iq_send_end": 971.728,
+          "broker_iq_recv_end": 1040.304,
+          "broker_ring_pushed": 1043.568,
+          "producer_data_ready": 1059.44,
+          "pace_call": 1096.576
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351983158218,
+        "rx_to_txready_us": 909.887,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082505,
+        "name": "work",
+        "start": 3102351983178826,
+        "end": 3102351984073689,
+        "host_tid": 3654352,
+        "wall_us": 894.863,
+        "off_us": 0,
+        "on_us": 894.863,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082505,
+          "name": "dl",
+          "start": 3102351983180138,
+          "end": 3102351984003817,
+          "host_tid": 3654352,
+          "wall_us": 823.679,
+          "off_us": 0,
+          "on_us": 823.679,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "ul",
+          "start": 3102351984004617,
+          "end": 3102351984063241,
+          "host_tid": 3654352,
+          "wall_us": 58.624,
+          "off_us": 0,
+          "on_us": 58.624,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "end",
+          "start": 3102351984063801,
+          "end": 3102351984073241,
+          "host_tid": 3654352,
+          "wall_us": 9.44,
+          "off_us": 0,
+          "on_us": 9.44,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.604456 [PHY0-NR] [I] [ 4028] PDSCH: cc=0 pid=6 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=6.7 evm=0.26 t_us=684 epre=+45.4 snr=-0.3 cfo=-1.3 delay=-0.0  ack_tti_tx=4032",
+        "rf_entry_minus_log_us": 68.231
+      }
+    },
+    {
+      "event": {
+        "sample": 799096326,
+        "shift_us": 94.703,
+        "expected_due_ns": 3102352015775629,
+        "data_us": 992.831,
+        "times": {
+          "request_start": 3102352015724078,
+          "ue_rf_tx_enter": 3102352016737916,
+          "ue_request_poll_start": 3102352016738012,
+          "ue_request_recv_end": 3102352016738364,
+          "ue_iq_send_start": 3102352016738412,
+          "ue_iq_send_end": 3102352016744652,
+          "broker_iq_recv_end": 3102352016819100,
+          "broker_ring_pushed": 3102352016822636,
+          "producer_data_ready": 3102352016831820,
+          "pace_call": 3102352016870332
+        },
+        "relative_to_due_us": {
+          "request_start": -51.551,
+          "ue_rf_tx_enter": 962.287,
+          "ue_request_poll_start": 962.383,
+          "ue_request_recv_end": 962.735,
+          "ue_iq_send_start": 962.783,
+          "ue_iq_send_end": 969.023,
+          "broker_iq_recv_end": 1043.471,
+          "broker_ring_pushed": 1047.007,
+          "producer_data_ready": 1056.191,
+          "pace_call": 1094.703
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102352015830829,
+        "rx_to_txready_us": 907.087,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082506,
+        "name": "work",
+        "start": 3102352015850541,
+        "end": 3102352016745388,
+        "host_tid": 3654353,
+        "wall_us": 894.847,
+        "off_us": 0,
+        "on_us": 894.847,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082506,
+          "name": "dl",
+          "start": 3102352015851773,
+          "end": 3102352016674060,
+          "host_tid": 3654353,
+          "wall_us": 822.287,
+          "off_us": 0,
+          "on_us": 822.287,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "ul",
+          "start": 3102352016674892,
+          "end": 3102352016732892,
+          "host_tid": 3654353,
+          "wall_us": 58.0,
+          "off_us": 0,
+          "on_us": 58.0,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "end",
+          "start": 3102352016733404,
+          "end": 3102352016744956,
+          "host_tid": 3654353,
+          "wall_us": 11.552,
+          "off_us": 0,
+          "on_us": 11.552,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.637130 [PHY1-NR] [I] [ 4059] PDSCH: cc=0 pid=5 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=6.7 evm=0.26 t_us=687 epre=+45.4 snr=-0.3 cfo=-0.6 delay=-0.0  ack_tti_tx=4063",
+        "rf_entry_minus_log_us": 63.994
+      }
+    },
+    {
+      "event": {
+        "sample": 798819846,
+        "shift_us": 90.493,
+        "expected_due_ns": 3102352002926817,
+        "data_us": 996.351,
+        "times": {
+          "request_start": 3102352002796975,
+          "ue_rf_tx_enter": 3102352003879518,
+          "ue_request_poll_start": 3102352003879566,
+          "ue_request_recv_end": 3102352003880030,
+          "ue_iq_send_start": 3102352003880078,
+          "ue_iq_send_end": 3102352003885726,
+          "broker_iq_recv_end": 3102352003953006,
+          "broker_ring_pushed": 3102352003966446,
+          "producer_data_ready": 3102352003977230,
+          "pace_call": 3102352004017310
+        },
+        "relative_to_due_us": {
+          "request_start": -129.842,
+          "ue_rf_tx_enter": 952.701,
+          "ue_request_poll_start": 952.749,
+          "ue_request_recv_end": 953.213,
+          "ue_iq_send_start": 953.261,
+          "ue_iq_send_end": 958.909,
+          "broker_iq_recv_end": 1026.189,
+          "broker_ring_pushed": 1039.629,
+          "producer_data_ready": 1050.413,
+          "pace_call": 1090.493
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102352002919423,
+        "rx_to_txready_us": 960.095,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082506,
+        "name": "work",
+        "start": 3102352002938719,
+        "end": 3102352003886542,
+        "host_tid": 3654353,
+        "wall_us": 947.823,
+        "off_us": 0,
+        "on_us": 947.823,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082506,
+          "name": "dl",
+          "start": 3102352002939903,
+          "end": 3102352003814862,
+          "host_tid": 3654353,
+          "wall_us": 874.959,
+          "off_us": 0,
+          "on_us": 874.959,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "ul",
+          "start": 3102352003815966,
+          "end": 3102352003874558,
+          "host_tid": 3654353,
+          "wall_us": 58.592,
+          "off_us": 0,
+          "on_us": 58.592,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "end",
+          "start": 3102352003875166,
+          "end": 3102352003886094,
+          "host_tid": 3654353,
+          "wall_us": 10.928,
+          "off_us": 0,
+          "on_us": 10.928,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.624270 [PHY1-NR] [I] [ 4047] PDSCH: cc=0 pid=3 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=7.3 evm=0.26 t_us=736 epre=+45.4 snr=-0.2 cfo=-1.2 delay=-0.0  ack_tti_tx=4051",
+        "rf_entry_minus_log_us": 65.5
+      }
+    },
+    {
+      "event": {
+        "sample": 798566406,
+        "shift_us": 73.565,
+        "expected_due_ns": 3102351991344928,
+        "data_us": 982.398,
+        "times": {
+          "request_start": 3102351991163455,
+          "ue_rf_tx_enter": 3102351992315870,
+          "ue_request_poll_start": 3102351992315902,
+          "ue_request_recv_end": 3102351992316350,
+          "ue_iq_send_start": 3102351992316382,
+          "ue_iq_send_end": 3102351992324078,
+          "broker_iq_recv_end": 3102351992365565,
+          "broker_ring_pushed": 3102351992369485,
+          "producer_data_ready": 3102351992379293,
+          "pace_call": 3102351992418493
+        },
+        "relative_to_due_us": {
+          "request_start": -181.473,
+          "ue_rf_tx_enter": 970.942,
+          "ue_request_poll_start": 970.974,
+          "ue_request_recv_end": 971.422,
+          "ue_iq_send_start": 971.454,
+          "ue_iq_send_end": 979.15,
+          "broker_iq_recv_end": 1020.637,
+          "broker_ring_pushed": 1024.557,
+          "producer_data_ready": 1034.365,
+          "pace_call": 1073.565
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351991240255,
+        "rx_to_txready_us": 1075.615,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082505,
+        "name": "work",
+        "start": 3102351991258655,
+        "end": 3102351992324926,
+        "host_tid": 3654352,
+        "wall_us": 1066.271,
+        "off_us": 0,
+        "on_us": 1066.271,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082505,
+          "name": "dl",
+          "start": 3102351991259855,
+          "end": 3102351992251006,
+          "host_tid": 3654352,
+          "wall_us": 991.151,
+          "off_us": 0,
+          "on_us": 991.151,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "ul",
+          "start": 3102351992251774,
+          "end": 3102351992310766,
+          "host_tid": 3654352,
+          "wall_us": 58.992,
+          "off_us": 0,
+          "on_us": 58.992,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082505,
+          "name": "end",
+          "start": 3102351992311582,
+          "end": 3102351992324478,
+          "host_tid": 3654352,
+          "wall_us": 12.896,
+          "off_us": 0,
+          "on_us": 12.896,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.612706 [PHY0-NR] [I] [ 4036] PDSCH: cc=0 pid=6 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=KO iter=9.0 evm=0.26 t_us=854 epre=+45.4 snr=-0.3 cfo=-1.4 delay=-0.0  ack_tti_tx=4040",
+        "rf_entry_minus_log_us": 65.884
+      }
+    },
+    {
+      "event": {
+        "sample": 798312966,
+        "shift_us": 24.765,
+        "expected_due_ns": 3102351979724384,
+        "data_us": 932.718,
+        "times": {
+          "request_start": 3102351979580815,
+          "ue_rf_tx_enter": 3102351980635645,
+          "ue_request_poll_start": 3102351980635725,
+          "ue_request_recv_end": 3102351980636157,
+          "ue_iq_send_start": 3102351980636205,
+          "ue_iq_send_end": 3102351980642237,
+          "broker_iq_recv_end": 3102351980690957,
+          "broker_ring_pushed": 3102351980699341,
+          "producer_data_ready": 3102351980709133,
+          "pace_call": 3102351980749149
+        },
+        "relative_to_due_us": {
+          "request_start": -143.569,
+          "ue_rf_tx_enter": 911.261,
+          "ue_request_poll_start": 911.341,
+          "ue_request_recv_end": 911.773,
+          "ue_iq_send_start": 911.821,
+          "ue_iq_send_end": 917.853,
+          "broker_iq_recv_end": 966.573,
+          "broker_ring_pushed": 974.957,
+          "producer_data_ready": 984.749,
+          "pace_call": 1024.765
+        },
+        "rf_op": 30,
+        "matched_bytes": 184320,
+        "latest_rx_end_ns": 3102351979701439,
+        "rx_to_txready_us": 934.206,
+        "first_late_stage": "UE IQ preparation / pre-send entry"
+      },
+      "work": {
+        "tid": 3082506,
+        "name": "work",
+        "start": 3102351979720463,
+        "end": 3102351980643293,
+        "host_tid": 3654353,
+        "wall_us": 922.83,
+        "off_us": 0,
+        "on_us": 922.83,
+        "off_intervals": []
+      },
+      "children": [
+        {
+          "tid": 3082506,
+          "name": "dl",
+          "start": 3102351979721759,
+          "end": 3102351980571710,
+          "host_tid": 3654353,
+          "wall_us": 849.951,
+          "off_us": 0,
+          "on_us": 849.951,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "ul",
+          "start": 3102351980572606,
+          "end": 3102351980630669,
+          "host_tid": 3654353,
+          "wall_us": 58.063,
+          "off_us": 0,
+          "on_us": 58.063,
+          "off_intervals": []
+        },
+        {
+          "tid": 3082506,
+          "name": "end",
+          "start": 3102351980631213,
+          "end": 3102351980642701,
+          "host_tid": 3654353,
+          "wall_us": 11.488,
+          "off_us": 0,
+          "on_us": 11.488,
+          "off_intervals": []
+        }
+      ],
+      "native_log": {
+        "line": "2026-10-30T08:44:00.601027 [PHY1-NR] [I] [ 4025] PDSCH: cc=0 pid=8 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=3138 R=0.547 rv=0 CRC=OK iter=7.0 evm=0.26 t_us=713 epre=+45.4 snr=-0.3 cfo=-1.6 delay=-0.0  ack_tti_tx=4029",
+        "rf_entry_minus_log_us": 64.635
+      }
+    }
+  ]
+}

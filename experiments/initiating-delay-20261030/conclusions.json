@@ -1,0 +1,109 @@
+{
+  "question": "Why can one-UE live radio/wall progress remain below 1.000?",
+  "configuration": {
+    "hardware": "Spark",
+    "gnb": "CUDA, unchanged frozen hash",
+    "ue": "original CPU srsUE, unchanged frozen hash",
+    "ue_count": 1,
+    "cells": 1,
+    "bandwidth_mhz": 20,
+    "sample_rate_msps": 23.04,
+    "antennas": "1x1",
+    "warmup_radio_s": 10,
+    "measure_radio_s": 30
+  },
+  "confirmed_mechanisms": [
+    {
+      "kind": "Profiling CSV stalls IQ producer",
+      "evidence": "evidence/kernel-analysis.json",
+      "write_us": 7272.699,
+      "state": "D",
+      "operation_chain": [
+        "fprintf CSV on IQ producer",
+        "write",
+        "file_modified / file_update_time_flags",
+        "ext4 inode dirty / inode write reservation",
+        "jbd2_journal_get_write_access / do_get_write_access",
+        "bit_wait_io / io_schedule"
+      ],
+      "scope": "One directly captured long write; not an accounting of every full-run lost microsecond."
+    },
+    {
+      "kind": "CPU UE downlink decoding delays uplink IQ availability",
+      "evidence": "evidence/original-input-root2-r2/native-log-matches.json",
+      "sample": 806837766,
+      "worker_us": 1129.711,
+      "dl_us": 1057.599,
+      "ul_us": 58.224,
+      "worker_end_us": 10.576,
+      "scheduler_off_cpu_us": 0,
+      "native_pdsch_us": 921,
+      "native_ldpc_avg_iterations": 9.7,
+      "native_crc": "KO",
+      "native_tbs_bytes": 2754,
+      "native_modulation": "16QAM",
+      "native_prbs": 95,
+      "native_snr_db": -2.5,
+      "mechanism": "Original NR sf_worker executes work_dl before work_ul and worker_end/radio TX. LDPC repeats decoding until CRC success or iteration limit; a difficult downlink block consumes the budget before the uplink IQ can be transmitted."
+    },
+    {
+      "kind": "Detailed function localization inside PDSCH",
+      "evidence": "evidence/original-input-root3-r1/native-log-matches.json",
+      "sample": 798750726,
+      "dl_us": 1839.1,
+      "pdsch_us": 1722.396,
+      "ldpc_codeblock_us": [
+        399.807,
+        236.591,
+        275.296,
+        278.207,
+        276.367
+      ],
+      "ul_us": 58.672,
+      "worker_end_us": 11.808,
+      "scheduler_off_cpu_us": 0,
+      "native_ldpc_avg_iterations": 7.4,
+      "native_tbs_bytes": 4737,
+      "native_crc": "KO"
+    }
+  ],
+  "limits": [
+    "The nested-probe run is diagnostic: added probe overhead changed the aggregate rate; do not substitute its timing for an uninstrumented speed result. The lighter run independently correlates long DL processing with native high-iteration PDSCH logs.",
+    "Scheduler off-CPU integration separates descheduling, not interrupt time within a scheduled interval.",
+    "Additional transport and broker-ready delays exist and are not reduced to UE LDPC or ext4 by these captures.",
+    "Neither the one-UE examples nor the profiling-CSV stall establishes the sole cause of the eight/sixteen-UE scaling boundary.",
+    "No HTML or application binary changed."
+  ],
+  "source_contract": {
+    "nr_worker": "Original srsRAN_4G-local/srsue/src/phy/nr/sf_worker.cc: work_dl -> dl_ul_semaphore -> work_ul -> worker_end",
+    "nr_tx": "Original srsRAN_4G-local/srsue/src/phy/sync_sa.cc: worker_end -> tti_semaphore -> radio->tx",
+    "ldpc": "Original lib/src/phy/fec/ldpc/ldpc_decoder.c: iterative decode loop and CRC early return"
+  },
+  "other_delays": [
+    {
+      "run": "original-input-root-r1",
+      "sample": 685877765,
+      "observation": "IQ ring push before expected due; producer data ready more than 3.6 ms after ring push; initiating scheduling/blocking operation not yet captured."
+    },
+    {
+      "run": "original-input-root3-r1",
+      "sample": 855959040,
+      "observation": "Producer input already ready before due, but pace call more than 5.2 ms after data-ready; initiating operation not captured by CPU17-only scheduler probes."
+    }
+  ],
+  "matched_native_workload": {
+    "evidence": "evidence/original-input-root2-r2/matched-workload-iterations.json",
+    "fixed": "95 PRBs, symbols 1..13, 16QAM, TBS 2754 bytes, R 0.480, RV0",
+    "low_iterations": {
+      "maximum_avg_iterations": 2,
+      "count": 4881,
+      "median_pdsch_us": 261
+    },
+    "high_iterations": {
+      "minimum_avg_iterations": 8,
+      "count": 12,
+      "median_pdsch_us": 941.5
+    },
+    "scope": "Within one diagnostic run; these groups do not include equal receiver conditions. Iteration work changes with decoder difficulty."
+  }
+}

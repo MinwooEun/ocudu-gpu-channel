@@ -8,6 +8,10 @@
 
 > **Entry rules:** One bullet per meaningful change; at most two sentences and 40 words. Record outcomes, decisive checks and blockers; link details and omit repeated context. Apply the [harness rules](AGENT_HARNESS.md#progress-entries) before finishing.
 
+## Current Objective
+
+- Identify initiating operations behind sub-1.000 progress: distinguish filesystem blocking from CPU preemption inside long CSV writes and trace upstream IQ readiness, rather than stopping at pacer rebasing. Both HTML reports remain unchanged.
+
 ## Repository State
 
 - Active worktree: `/home/minwoo/ocudu-work/checkpoint-20261029`, branch `checkpoint/spark-scaling-ue-gpu-20261029`; final C++ source commit `aba7513`. Original PR10 worktree and gNB/CPU-srsUE binaries remain unchanged.
@@ -293,7 +297,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-The candidate batch and diagnostics have finished; no runtime is left running. No candidate qualifies for default use; `experiments/relay-ready-20261029/report.html` and `evidence.json` contain 8/16-UE comparisons, incomplete controls, CPU demand and profiler provenance.
+One-UE initiating-delay evidence is saved in `experiments/initiating-delay-20261030/conclusions.json`: CSV/ext4 blocking and UE PDSCH/LDPC delay are identified examples. Additional broker-ready and transport stalls remain unresolved; no live run remains, and HTML changes remain prohibited.
 
 ## Active relay patch — 2026-10-29
 
@@ -381,3 +385,11 @@ The candidate batch and diagnostics have finished; no runtime is left running. N
 - Sparse in-memory pacing diagnostics reconciled 16.141 ms observed lag with 16.153 ms deadline rebasing across 51 events; input-wait time dominated each event. The one-batch catch-up bound preserves residual lag; upstream input-delay attribution remains separate.
 
 - Saved rate-window, syscall and pacer evidence under `experiments/realtime-rate-20261030/`; all twelve non-broker archive members remained byte-identical in the diagnostic build. Both requested HTML files were verified unchanged against the last saved versions.
+
+- Captured a 7.273 ms IQ-producer CSV write blocked in ext4 inode metadata/JBD2 journal access, with uninterruptible D state. Saved kernel stacks and exact syscall boundaries under `experiments/initiating-delay-20261030/`.
+
+- Original CPU UE probes linked late uplink IQ to 1.058 ms downlink work and native 9.7-iteration PDSCH decoding, with zero descheduling during that worker. Nested probes localized another event to PDSCH/LDPC; diagnostic overhead is recorded.
+
+- Additional broker-ready and transport delays remain unattributed below their boundary measurements; one-UE results do not resolve every scaling limit. Saved diagnostic failures and provenance, removed private probes, and left both HTML reports unchanged.
+
+- Holding 95 PRBs, symbols, modulation, 2,754-byte TBS, coding rate and RV fixed, native PDSCH median was 261 µs for ≤2 iterations versus 941.5 µs for ≥8. Counts were 4,881/12; original UE binary was unchanged.

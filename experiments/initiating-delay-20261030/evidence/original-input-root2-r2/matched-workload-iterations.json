@@ -1,0 +1,12 @@
+{
+  "low_iter": {
+    "count": 4881,
+    "median_native_pdsch_us": 261.0,
+    "example": "2026-10-30T08:43:37.367090 [PHY0-NR] [I] [ 1274] PDSCH: cc=0 pid=5 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=2754 R=0.480 rv=0 CRC=OK iter=1.0 evm=0.01 t_us=275 epre=+54.0 snr=+30.8 cfo=-0.3 delay=+0.0  ack_tti_tx=1278"
+  },
+  "high_iter": {
+    "count": 12,
+    "median_native_pdsch_us": 941.5,
+    "example": "2026-10-30T08:43:32.131157 [PHY0-NR] [I] [ 6278] PDSCH: cc=0 pid=0 c-rnti=0x4601 prb=(0,95) symb=(1,13) CW0: mod=16QAM tbs=2754 R=0.480 rv=0 CRC=KO iter=10.0 evm=0.27 t_us=951 epre=+48.1 snr=+1.5 cfo=-1.5 delay=-0.0  ack_tti_tx=6282"
+  }
+}
