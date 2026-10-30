@@ -1,0 +1,218 @@
+{
+  "pid": 3057599,
+  "threads": {
+    "3057599": {
+      "comm": "srsue",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057642": {
+      "comm": "[NSys]",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057643": {
+      "comm": "[NSys Comms]",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057644": {
+      "comm": "*2CommsProcesso",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057648": {
+      "comm": "srsue",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057675": {
+      "comm": "TASKWORKER0",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057678": {
+      "comm": "TASKWORKER1",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057694": {
+      "comm": "PHY_CMD",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057695": {
+      "comm": "PHY_CMD",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057696": {
+      "comm": "ZMQbg/Reaper",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057697": {
+      "comm": "ZMQbg/IO/0",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057700": {
+      "comm": "srsue",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057704": {
+      "comm": "SYNC",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057705": {
+      "comm": "STACK",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057706": {
+      "comm": "cuda00005800018",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057707": {
+      "comm": "CUPTI worker th",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057734": {
+      "comm": "srsue",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057736": {
+      "comm": "cuda-EvtHandlr",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057783": {
+      "comm": "WORKER0",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057784": {
+      "comm": "WORKER1",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057786": {
+      "comm": "WORKER2",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057787": {
+      "comm": "METRICS_HUB",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    },
+    "3057804": {
+      "comm": "GW",
+      "cpus": "17",
+      "policy": "",
+      "prio": ""
+    }
+  },
+  "start_monotonic_ns": 3091984525879300,
+  "end_monotonic_ns": 3092004526273281,
+  "clock_references": [
+    {
+      "unix_ns": 1793339473146006121,
+      "monotonic_ns": 3091984525548035,
+      "uncertainty_ns": 1480
+    },
+    {
+      "unix_ns": 1793339473146012441,
+      "monotonic_ns": 3091984525555195,
+      "uncertainty_ns": 192
+    },
+    {
+      "unix_ns": 1793339473146014345,
+      "monotonic_ns": 3091984525557115,
+      "uncertainty_ns": 144
+    },
+    {
+      "unix_ns": 1793339473146015481,
+      "monotonic_ns": 3091984525558211,
+      "uncertainty_ns": 120
+    },
+    {
+      "unix_ns": 1793339473146016553,
+      "monotonic_ns": 3091984525602236,
+      "uncertainty_ns": 43041
+    }
+  ],
+  "instances": {
+    "switch": {
+      "cpu19": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.705533\ndropped events: 0\nread events: 0\n",
+      "cpu18": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.705616\ndropped events: 0\nread events: 0\n",
+      "cpu17": "entries: 123381\noverrun: 1102020\ncommit overrun: 0\nbytes: 8389908\noldest event ts: 3092002.523264\nnow ts: 3092004.705665\ndropped events: 0\nread events: 0\n",
+      "cpu16": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.705706\ndropped events: 0\nread events: 0\n",
+      "cpu15": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.705745\ndropped events: 0\nread events: 0\n",
+      "cpu14": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.705782\ndropped events: 0\nread events: 0\n",
+      "cpu13": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.705817\ndropped events: 0\nread events: 0\n",
+      "cpu12": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.705851\ndropped events: 0\nread events: 0\n",
+      "cpu11": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.705884\ndropped events: 0\nread events: 0\n",
+      "cpu10": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.705918\ndropped events: 0\nread events: 0\n",
+      "cpu9": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.705951\ndropped events: 0\nread events: 0\n",
+      "cpu8": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.705985\ndropped events: 0\nread events: 0\n",
+      "cpu7": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.706031\ndropped events: 0\nread events: 0\n",
+      "cpu6": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.706066\ndropped events: 0\nread events: 0\n",
+      "cpu5": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.706099\ndropped events: 0\nread events: 0\n",
+      "cpu4": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.706133\ndropped events: 0\nread events: 0\n",
+      "cpu3": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.706164\ndropped events: 0\nread events: 0\n",
+      "cpu2": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.706196\ndropped events: 0\nread events: 0\n",
+      "cpu1": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.706229\ndropped events: 0\nread events: 0\n",
+      "cpu0": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.706262\ndropped events: 0\nread events: 0\n"
+    },
+    "wake": {
+      "cpu19": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708410\ndropped events: 0\nread events: 0\n",
+      "cpu18": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708455\ndropped events: 0\nread events: 0\n",
+      "cpu17": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708491\ndropped events: 0\nread events: 0\n",
+      "cpu16": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708525\ndropped events: 0\nread events: 0\n",
+      "cpu15": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708571\ndropped events: 0\nread events: 0\n",
+      "cpu14": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708605\ndropped events: 0\nread events: 0\n",
+      "cpu13": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708638\ndropped events: 0\nread events: 0\n",
+      "cpu12": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708671\ndropped events: 0\nread events: 0\n",
+      "cpu11": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708704\ndropped events: 0\nread events: 0\n",
+      "cpu10": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708736\ndropped events: 0\nread events: 0\n",
+      "cpu9": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708769\ndropped events: 0\nread events: 0\n",
+      "cpu8": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708804\ndropped events: 0\nread events: 0\n",
+      "cpu7": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708839\ndropped events: 0\nread events: 0\n",
+      "cpu6": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708875\ndropped events: 0\nread events: 0\n",
+      "cpu5": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708908\ndropped events: 0\nread events: 0\n",
+      "cpu4": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708940\ndropped events: 0\nread events: 0\n",
+      "cpu3": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.708976\ndropped events: 0\nread events: 0\n",
+      "cpu2": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.709022\ndropped events: 0\nread events: 0\n",
+      "cpu1": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.709061\ndropped events: 0\nread events: 0\n",
+      "cpu0": "entries: 0\noverrun: 0\ncommit overrun: 0\nbytes: 0\noldest event ts:     0.000000\nnow ts: 3092004.709100\ndropped events: 0\nread events: 0\n"
+    }
+  }
+}

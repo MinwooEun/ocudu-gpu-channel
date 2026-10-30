@@ -1,0 +1,192 @@
+[
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/timeline.analysis.json",
+    "bytes": 4210,
+    "sha256": "59fcfa34c0f635ffc1d216081e20404c1ff597b48c7f1dc35f734b913f67c68f"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/timeline.fences.json",
+    "bytes": 10189582,
+    "sha256": "dc38b666ef6e531e94d83917a6521e906c906d83068bb7cf06a404e725d6db0c"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/timeline.nsys-rep",
+    "bytes": 5893361,
+    "sha256": "bbc442db9165591c7b1686b04b256ff37ea70101e179d37f5bfd99737ffc1ecf"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/timeline.sqlite",
+    "bytes": 49664000,
+    "sha256": "62112e252849dfaf78efb897d0910b9d9f7cf5ef36882c7b03f4dd6878c00f55"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/trace/3048985-zmqtx.csv",
+    "bytes": 5557872,
+    "sha256": "aad91dbce319adffeb19ce264fea8701305af95faedae001eaf525898fd46761"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/trace/3048985-uedl.csv",
+    "bytes": 6004422,
+    "sha256": "223f2480e8608d15e2fa98ad78e6162b83e912a6559eb62952c6b6608c79be09"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/trace/3048985-pdsch.csv",
+    "bytes": 8192,
+    "sha256": "e40436d21e2120be157fcf9b6784fc93b427c4966701375b9ae2b6601bc538a5"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/trace/3048985-sync.csv",
+    "bytes": 11238930,
+    "sha256": "f578a620ff4cc84ae16dd5e110e8c1c156ba3dfa3babeecbe987574d0b270d5d"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/trace/3048985-ccw.csv",
+    "bytes": 7459653,
+    "sha256": "4df652bb071aa6de7388db0d5221a7d1ef19a684bc991e1e04c1fe6beb59f576"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/trace/3048985-worker.csv",
+    "bytes": 10694401,
+    "sha256": "c7e36e8708b86332cc262cb767d2a35a6118d3be3f08598598f73e69164378db"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/trace/3048985-gldpc.csv",
+    "bytes": 8192,
+    "sha256": "5cfcf511d0e2bcc90ac584f14970aa3282639d96e0ff861944324d733189ce30"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/trace/3048985-schnr.csv",
+    "bytes": 4096,
+    "sha256": "17ef50074d5364f41165b420e13695cf7dfe593952fb3ef3c9e4d9a70a8a623e"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/timeline.analysis.json",
+    "bytes": 5068,
+    "sha256": "4fc311bb0b7b5484d0562e1f7e0622b8d3a1d76582c67575f76b979a6aedc028"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/timeline.fences.json",
+    "bytes": 10123181,
+    "sha256": "22f271fba98c4528c5b832e9820c38b11dd246e051974859bb5681b72c35278d"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/timeline.nsys-rep",
+    "bytes": 8540553,
+    "sha256": "64fa3ce077d0020666601b740fdcb91e7f8563d70d1b18d95632e18a3e62229e"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/timeline.sqlite",
+    "bytes": 54771712,
+    "sha256": "d0c1fc086261926fd75db10a096201765782b91589ce3c7ec0fb45cafb191005"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/trace/3057599-pdsch.csv",
+    "bytes": 12288,
+    "sha256": "8ae387ecfaa4dd9cef2e2154638830635725ffc6e3514a9088ba04282c7e9c8e"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/trace/3057599-sync.csv",
+    "bytes": 11229010,
+    "sha256": "515fc61a6a08ce45fe0e9791a9e51a2fc242fdda2cbf197f98527506b0f16763"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/trace/3057599-gldpc.csv",
+    "bytes": 8192,
+    "sha256": "786e3441a18d1e844abdbfdccc940aa9a06b5a99f9f2a5502334effdf7440cd2"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/trace/3057599-schnr.csv",
+    "bytes": 8192,
+    "sha256": "e60fed93860669158db566155dce94eaa3a09e94e06a5c6a6087ef34e51945ca"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/trace/3057599-uedl.csv",
+    "bytes": 6007197,
+    "sha256": "c067342916f77d088ceb5d0deefcde412b8a4e5a792be08e0401b7087814b037"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/trace/3057599-ccw.csv",
+    "bytes": 7464831,
+    "sha256": "ded9746d9bb090a9befe8b4298c4c0ecdf617b46e6a34447992632ad6a2d5940"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/trace/3057599-zmqtx.csv",
+    "bytes": 5546044,
+    "sha256": "bb90673f5836c7bef20f4007e418d1ea48071d46f0acea3e099ad6de0e5a88ad"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/nsys/trace/3057599-worker.csv",
+    "bytes": 10684537,
+    "sha256": "c832b66be698af96c7b03fadb79126df3f97d4b6b769f64663013b5d5ef85bb8"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/sched/switch.txt",
+    "bytes": 22413880,
+    "sha256": "cbf9006984553066140b7942deb3d28b410d4313b3414e26a89c30b8ea98f407"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-cpu-nsys-r1/sched/wake.txt",
+    "bytes": 516,
+    "sha256": "af8d6c2599cfe1abf3746722ec0e61de951dd08d16181c8c8e521fcab6d6a10a"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/timeline.analysis.json",
+    "bytes": 3826,
+    "sha256": "73dee14a88302f26c997b6d984054eeaa8bf1755adb612288b0e39158778a7a5"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/timeline.fences.json",
+    "bytes": 9390715,
+    "sha256": "fcc581a1b4cf68cba3265763223a5f83ce840d6421a5b4391372ebaa4caea7a0"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/timeline.nsys-rep",
+    "bytes": 5105239,
+    "sha256": "8aaa971bfa049f4929a5e7c16ce4ec6c69d4cd659927ad15a1aec426c7f28ad8"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/timeline.sqlite",
+    "bytes": 34213888,
+    "sha256": "345dbf956da27f1b0867856039af5791ebaeaa08d80b81bd8300a59dd4c9498b"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/trace/3053202-gldpc.csv",
+    "bytes": 4096,
+    "sha256": "288e9707fb6dff8c41a03b999ba300fa7f4f6c392e6bd804152c176aada2752e"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/trace/3053202-worker.csv",
+    "bytes": 10713263,
+    "sha256": "9f4ce94b191b02c38320b4230dfd1610842ba2c357a1b43cd0b4bbcec1b6d0ef"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/trace/3053202-ccw.csv",
+    "bytes": 7450737,
+    "sha256": "3fecf8e6907b9462cd8813d1766cec10d0d37838e917c5d64658b2463758fe5f"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/trace/3053202-zmqtx.csv",
+    "bytes": 5540585,
+    "sha256": "59dee9879b702f4aac643fbde901e075980139984f465c92e793f6b6f4d630e2"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/trace/3053202-schnr.csv",
+    "bytes": 4096,
+    "sha256": "7696bdc655c5fdf94b3a5b657fcc47cef2b636046b7c8ee0c68fb1e870c47246"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/trace/3053202-uedl.csv",
+    "bytes": 5984375,
+    "sha256": "f2b17e628abaa8fa02b91bf6fad2646073f5526d5d6b21fd9cbe3016c982f176"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/trace/3053202-pdsch.csv",
+    "bytes": 8192,
+    "sha256": "648bb128de66ccba3ef87e7210954c3d67a7c1a8f5db20f986c83a146c736470"
+  },
+  {
+    "path": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-spin-nsys-r1/nsys/trace/3053202-sync.csv",
+    "bytes": 11264491,
+    "sha256": "5517d4257c957533b35005a630999fe9bd468c177117278f350be6a0b4d83dbc"
+  }
+]

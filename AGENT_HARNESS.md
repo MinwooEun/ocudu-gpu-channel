@@ -40,6 +40,8 @@ Reusable workflow and preferences. File ownership and update rules are defined i
 
 ## Validation and Evidence
 
+- Distinguish channel-function timing, dummy-IQ transport tests and live UE/gNB tests explicitly; ZMQ use alone does not identify a workload. Do not transfer bottleneck claims between these configurations without matched evidence.
+
 - Pair data-path changes with timing, throughput, buffering and IQ-continuity checks. Strict real-time gates fail on any starvation, queue overflow, sequence gap or ZMQ error.
 - Verify radio speed using cumulative IQ sample progress against monotonic elapsed time. Distinguish configured pacing, achieved sample rate and OS thread priority; record shared resources before attributing slowdown or delay differences to a scheduler.
 - Inspect every pacing layer in a software-radio path. A per-block relative sleep adds processing and wake-up overhead to radio time; when the broker supplies the clock, test removal of redundant peer pacing without disabling the broker's rate limit.

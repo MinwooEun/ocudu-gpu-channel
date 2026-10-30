@@ -1,0 +1,162 @@
+{
+  "sqlite": "/workspace/gpuch/gpu-ue-rootcause-20261030/u8/gpu-nsys-r1/nsys/timeline.sqlite",
+  "runtime_records": 77847,
+  "matched_device_activities": 37483,
+  "unmatched_device_activities": 0,
+  "matched_fences": 9743,
+  "summary": {
+    "FFT": {
+      "api_wait_us": {
+        "n": 8919,
+        "mean": 105.81418006502972,
+        "p50": 52.8,
+        "p90": 253.552,
+        "p99": 552.064,
+        "max": 7988.096
+      },
+      "device_remaining_at_sync_us": {
+        "n": 8919,
+        "mean": 12.130524049781366,
+        "p50": 7.808,
+        "p90": 20.192,
+        "p99": 129.552,
+        "max": 382.256
+      },
+      "post_device_return_us": {
+        "n": 8919,
+        "mean": 93.68365601524835,
+        "p50": 41.584,
+        "p90": 230.112,
+        "p99": 532.0,
+        "max": 7971.072
+      },
+      "device_activity_us": {
+        "n": 8919,
+        "mean": 15.956439959636732,
+        "p50": 14.688,
+        "p90": 22.272,
+        "p99": 69.152,
+        "max": 275.392
+      },
+      "device_span_us": {
+        "n": 8919,
+        "mean": 28.269486713757146,
+        "p50": 20.608,
+        "p90": 31.296,
+        "p99": 125.568,
+        "max": 7208.32
+      },
+      "first_dispatch_after_api_us": {
+        "n": 8919,
+        "mean": 1.4298517771050565,
+        "p50": 0.0,
+        "p90": 1.936,
+        "p99": 27.52,
+        "max": 266.96
+      },
+      "submit_api_us": {
+        "n": 8919,
+        "mean": 32.09930799416975,
+        "p50": 16.464,
+        "p90": 33.776,
+        "p99": 47.056,
+        "max": 10488.544
+      },
+      "blocking_osrt_names": {
+        "sem_wait": 8906
+      },
+      "post_device_to_osrt_return_us": {
+        "n": 8906,
+        "mean": 91.00341342914889,
+        "p50": 39.584,
+        "p90": 225.84,
+        "p99": 520.784,
+        "max": 7964.336
+      },
+      "bad_last_end_count": 1
+    },
+    "PDSCH": {
+      "api_wait_us": {
+        "n": 823,
+        "mean": 330.6457545565006,
+        "p50": 279.792,
+        "p90": 539.472,
+        "p99": 1009.104,
+        "max": 4501.664
+      },
+      "device_remaining_at_sync_us": {
+        "n": 823,
+        "mean": 137.93981044957474,
+        "p50": 118.752,
+        "p90": 176.544,
+        "p99": 754.0,
+        "max": 1040.672
+      },
+      "post_device_return_us": {
+        "n": 823,
+        "mean": 192.70594410692587,
+        "p50": 152.976,
+        "p90": 381.76,
+        "p99": 703.68,
+        "max": 4402.992
+      },
+      "device_activity_us": {
+        "n": 823,
+        "mean": 174.13700121506685,
+        "p50": 156.928,
+        "p90": 204.384,
+        "p99": 605.728,
+        "max": 1074.624
+      },
+      "device_span_us": {
+        "n": 823,
+        "mean": 389.82609963548,
+        "p50": 216.288,
+        "p90": 291.392,
+        "p99": 5179.84,
+        "max": 19882.528
+      },
+      "first_dispatch_after_api_us": {
+        "n": 823,
+        "mean": 0.7339392466585662,
+        "p50": 0.0,
+        "p90": 0.0,
+        "p99": 18.464,
+        "max": 91.6
+      },
+      "submit_api_us": {
+        "n": 823,
+        "mean": 82.22823815309842,
+        "p50": 81.76,
+        "p90": 89.44,
+        "p99": 101.232,
+        "max": 113.36
+      },
+      "blocking_osrt_names": {
+        "sem_wait": 823
+      },
+      "post_device_to_osrt_return_us": {
+        "n": 823,
+        "mean": 182.80093317132443,
+        "p50": 147.184,
+        "p90": 373.248,
+        "p99": 661.296,
+        "max": 1521.552
+      },
+      "bad_last_end_count": 0
+    },
+    "other": {
+      "api_wait_us": null,
+      "device_remaining_at_sync_us": null,
+      "post_device_return_us": null,
+      "device_activity_us": null,
+      "device_span_us": null,
+      "first_dispatch_after_api_us": null,
+      "submit_api_us": null,
+      "blocking_osrt_names": {},
+      "post_device_to_osrt_return_us": null,
+      "bad_last_end_count": 0
+    }
+  },
+  "limits": "Only UE0 is captured; other GPU clients remain uninstrumented. Device activity is observed elapsed execution, not arithmetic-only cycles. Post-device interval includes CUDA signaling/cleanup and CPU scheduling. In-stream gaps can include host submission gaps and other GPU clients; first dispatch after API is not an SM occupancy measurement."
+}

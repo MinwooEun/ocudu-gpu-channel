@@ -359,3 +359,13 @@ The candidate batch and diagnostics have finished; no runtime is left running. N
 - Diagnostic 16-UE traces confirm approximately 99% GPU PDSCH use and zero FFT fallback; matched 32-PRB/MCS18/10,504-bit PDSCH median rises 173→423 µs. GPU completion-wait median is 284 µs; queuing/execution/wakeup components remain unsplit.
 
 - Saved the completed first comparison batch under `experiments/gpu-ue-live-20261030/`, including raw-report extracts, lifecycle evidence, trace-tail audits and compact `comparison.json`. All four primary runs passed binary/input identity checks; no UE/gNB source changed and no benchmark remains running.
+
+- Targeted UE0 Nsight capture succeeded inside the live namespace; block-mode mean post-device return latency was 94 µs for FFT and 193 µs for PDSCH. Profiling-wrapper liveness/cleanup failed the run gate; captures remain diagnostic only.
+
+- Blocking→spin reduced post-device PDSCH return median 153→8 µs and FFT 42→6 µs while device activity stayed similar. The first two profiling runs failed wrapper liveness/cleanup gates; their captures are diagnostic, not qualified speed comparisons.
+
+- Corrected 8-UE block profiling passed its live gate and 30/30 segments; CPU-switch integration found 204 of 210 µs mean post-device PDSCH time off CPU. Separate wakeup tracing failed namespace-PID filtering and overran; notification-versus-runnable delay remains unsplit.
+
+- Reconciled dummy-IQ transport separately: 24 paths improved 0.661→0.873 by changing shared ZMQ I/O workers 2→4; real UE PHY is absent. RTX 5090 64-input gNB calls were approximately 1.2 ms despite approximately 68 µs kernels.
+
+- Saved causal conclusions, scripts, compact captures and raw-artifact hashes under `experiments/gpu-ue-rootcause-20261030/`; three Nsight originals are backed up locally with matching hashes. Benchmark processes and private tracing instances were cleaned; no application binary or protocol changed.
