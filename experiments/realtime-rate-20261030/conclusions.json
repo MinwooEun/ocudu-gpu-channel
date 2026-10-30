@@ -1,0 +1,93 @@
+{
+  "scope": "1 UE, real CUDA gNB and original CPU srsUE, 20 MHz / 23.04 MS/s / 1x1, original channel backend and fixed historical input bundle. HTML reports were not modified.",
+  "rate_windows": [
+    {
+      "case": "original-profile-r1",
+      "points": 400,
+      "whole_span": {
+        "radio_s": 39.9,
+        "wall_s": 40.219294279,
+        "ratio": 0.9920611665439709,
+        "lost_us": 319294.27900000464
+      },
+      "post_warmup_span": {
+        "radio_s": 29.9,
+        "wall_s": 30.108986727,
+        "ratio": 0.9930589916925834,
+        "lost_us": 208986.72700000275
+      }
+    },
+    {
+      "case": "original-r1",
+      "points": 400,
+      "whole_span": {
+        "radio_s": 39.9,
+        "wall_s": 39.959842888,
+        "ratio": 0.9985024243421645,
+        "lost_us": 59842.887999998595
+      },
+      "post_warmup_span": {
+        "radio_s": 29.9,
+        "wall_s": 29.909826684,
+        "ratio": 0.9996714563376171,
+        "lost_us": 9826.684000000085
+      }
+    },
+    {
+      "case": "original-sparse-r1",
+      "points": 400,
+      "whole_span": {
+        "radio_s": 39.9,
+        "wall_s": 39.970699773,
+        "ratio": 0.9982312100263063,
+        "lost_us": 70699.77300000118
+      },
+      "post_warmup_span": {
+        "radio_s": 29.9,
+        "wall_s": 29.916141431,
+        "ratio": 0.9994604440871083,
+        "lost_us": 16141.431000001205
+      }
+    }
+  ],
+  "confirmed_write_stalls": [
+    {
+      "tid": 3065553,
+      "start_ns": 3095923400533277,
+      "end_ns": 3095923408167726,
+      "us": 7634.449,
+      "fd": 73,
+      "file": "/workspace/gpuch/realtime-rate-20261030/u1/original-profile-r1/trace/broker-3065532-3065553.csv",
+      "settled_phase_increment_us": 6699.18017578125
+    },
+    {
+      "tid": 3065553,
+      "start_ns": 3095933406509846,
+      "end_ns": 3095933411103351,
+      "us": 4593.505,
+      "fd": 73,
+      "file": "/workspace/gpuch/realtime-rate-20261030/u1/original-profile-r1/trace/broker-3065532-3065553.csv",
+      "settled_phase_increment_us": 2698.7587890625
+    }
+  ],
+  "pacing_reconciliation": {
+    "observed_post_warmup_loss_us": 16141.431000001205,
+    "sum_deadline_rebase_us": 16153.043,
+    "difference_us": -11.611999998795,
+    "rebase_count": 51,
+    "largest_recorded_stage": {
+      "data_us": {
+        "count": 51,
+        "shift_us": 16153.042999999996
+      }
+    }
+  },
+  "mechanism": "After input stalls or other delays, RealTimePacer carries at most one nominal batch of lateness (1 ms here). Greater lateness rebases the deadline instead of licensing an unbounded catch-up burst. Samples remain intact; unrecovered wall-clock lag persists in the achieved radio/wall ratio.",
+  "limits": [
+    "CSV write syscall elapsed time includes kernel filesystem work and time off CPU; it does not alone prove a physical NVMe service-time bottleneck.",
+    "The instrumented and uninstrumented results are one run each; trace overhead is not a constant correction to subtract from other configurations.",
+    "Sparse attribution proves which producer stage dominates each rebase, not whether delayed input originated in UE compute, transport or receiver dispatch.",
+    "The historical 0.9975 report used warmup-inclusive control-tag endpoints; after warmup it was 0.9989. Early slow periods amplify the displayed whole-span deficit.",
+    "Independent rare delays can vary by run; the 16.15 ms reconciliation applies to the sparse diagnostic run, not the earlier 9.83 ms clean run."
+  ]
+}

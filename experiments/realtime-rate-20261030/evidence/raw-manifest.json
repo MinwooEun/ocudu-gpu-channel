@@ -1,0 +1,22 @@
+[
+  {
+    "path": "/workspace/gpuch/realtime-rate-20261030/u1/original-profile-r1/writes.data",
+    "bytes": 672973,
+    "sha256": "de20a76294fdd31f5614cfe9c3cf089fea95c1583ae1065c485ddd6edae2ecff"
+  },
+  {
+    "path": "/workspace/gpuch/realtime-rate-20261030/u1/original-profile-r1/writes.txt",
+    "bytes": 740321,
+    "sha256": "2281547cb95e8aad1c6f1c429a8e6ff4c124910b2c0e53c43fb9394bd4c0aa3e"
+  },
+  {
+    "path": "/workspace/gpuch/realtime-rate-20261030/u1/original-sparse-r1/gnb0-sparse.csv",
+    "bytes": 16501,
+    "sha256": "6addcc5b666d3c4ffd211dbd8e4bef5ac2fd6d22fa59d79afa0c7562fe499280"
+  },
+  {
+    "path": "/workspace/gpuch/realtime-rate-20261030/u1/original-sparse-r1/ue0-sparse.csv",
+    "bytes": 23484,
+    "sha256": "84b5e1a4b38132fa287d1260875c912cea2a057453f3171e1618932ee569dd64"
+  }
+]

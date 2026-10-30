@@ -40,6 +40,8 @@ Reusable workflow and preferences. File ownership and update rules are defined i
 
 ## Validation and Evidence
 
+- Audit speed windows independently from KPI warmup exclusion. For small progress deficits, account for pacing deadline rebases and instrumentation I/O on the critical thread before attributing the deficit to processing capacity.
+
 - Distinguish channel-function timing, dummy-IQ transport tests and live UE/gNB tests explicitly; ZMQ use alone does not identify a workload. Do not transfer bottleneck claims between these configurations without matched evidence.
 
 - Pair data-path changes with timing, throughput, buffering and IQ-continuity checks. Strict real-time gates fail on any starvation, queue overflow, sequence gap or ZMQ error.

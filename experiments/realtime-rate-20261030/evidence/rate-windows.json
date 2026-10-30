@@ -1,0 +1,50 @@
+[
+  {
+    "case": "original-profile-r1",
+    "points": 400,
+    "whole_span": {
+      "radio_s": 39.9,
+      "wall_s": 40.219294279,
+      "ratio": 0.9920611665439709,
+      "lost_us": 319294.27900000464
+    },
+    "post_warmup_span": {
+      "radio_s": 29.9,
+      "wall_s": 30.108986727,
+      "ratio": 0.9930589916925834,
+      "lost_us": 208986.72700000275
+    }
+  },
+  {
+    "case": "original-r1",
+    "points": 400,
+    "whole_span": {
+      "radio_s": 39.9,
+      "wall_s": 39.959842888,
+      "ratio": 0.9985024243421645,
+      "lost_us": 59842.887999998595
+    },
+    "post_warmup_span": {
+      "radio_s": 29.9,
+      "wall_s": 29.909826684,
+      "ratio": 0.9996714563376171,
+      "lost_us": 9826.684000000085
+    }
+  },
+  {
+    "case": "original-sparse-r1",
+    "points": 400,
+    "whole_span": {
+      "radio_s": 39.9,
+      "wall_s": 39.970699773,
+      "ratio": 0.9982312100263063,
+      "lost_us": 70699.77300000118
+    },
+    "post_warmup_span": {
+      "radio_s": 29.9,
+      "wall_s": 29.916141431,
+      "ratio": 0.9994604440871083,
+      "lost_us": 16141.431000001205
+    }
+  }
+]

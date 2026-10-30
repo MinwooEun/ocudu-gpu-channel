@@ -373,3 +373,11 @@ The candidate batch and diagnostics have finished; no runtime is left running. N
 - Updated both requested HTML reports with configuration-specific scaling summaries, implemented relay failures and targeted GPU-completion evidence. Added an interactive 20-core map switching 8/16 UEs; historical CPU-gNB experiments are labeled separately and original documents are backed up.
 
 - Both updated HTML reports pass 360/768/1440-pixel browser checks, 34 links per language, all existing controls and the 8/16-UE core map, with no JS errors or external requests. Saved matching checkpoint copies, companion evidence and refreshed checksums.
+
+- Audited the speed formula: srsUE runtime ratios span the 400 control updates including warmup, while KPIs exclude warmup. One-UE historical trace contains three 7.9–9.7 ms process stalls after 37–44 µs backend timings; cause attribution is active, HTML unchanged.
+
+- Direct syscall tracing caught 4 KiB profiling-CSV writes stopping an IQ producer for 7.634 and 4.594 ms. Matched one-UE runs measured post-warmup 0.993059 with profiling versus 0.999671 without; both completed with 30/30 valid segments.
+
+- Sparse in-memory pacing diagnostics reconciled 16.141 ms observed lag with 16.153 ms deadline rebasing across 51 events; input-wait time dominated each event. The one-batch catch-up bound preserves residual lag; upstream input-delay attribution remains separate.
+
+- Saved rate-window, syscall and pacer evidence under `experiments/realtime-rate-20261030/`; all twelve non-broker archive members remained byte-identical in the diagnostic build. Both requested HTML files were verified unchanged against the last saved versions.

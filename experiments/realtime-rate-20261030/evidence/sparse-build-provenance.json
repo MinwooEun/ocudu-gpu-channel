@@ -1,0 +1,37 @@
+{
+  "link_command": [
+    "/usr/bin/c++",
+    "-I/usr/local/cuda/include",
+    "-g",
+    "-O3",
+    "-DNDEBUG",
+    "/workspace/gpuch/profile-20261028/build/CMakeFiles/ocudu-gpu-channel.dir/apps/ocudu_gpu_channel.cpp.o",
+    "-o",
+    "/workspace/gpuch/realtime-rate-20261030/sparse-build/ocudu-gpu-channel",
+    "-L/usr/local/cuda/targets/sbsa-linux/lib/stubs",
+    "-L/usr/local/cuda/targets/sbsa-linux/lib",
+    "/workspace/gpuch/realtime-rate-20261030/sparse-build/libocudu_gpu_channel_lib.a",
+    "/usr/lib/aarch64-linux-gnu/libzmq.so",
+    "-lcudadevrt",
+    "-lcudart_static",
+    "-lrt",
+    "-lpthread",
+    "-ldl"
+  ],
+  "binary_sha256": "fa685b1b9889746e2e0caa6165daead5a2e7798cb5c348b70da29b8476781610",
+  "unchanged_archive_members": [
+    "backend.cpp.o",
+    "config.cpp.o",
+    "control_server.cpp.o",
+    "correlation.cpp.o",
+    "cpu_backend.cpp.o",
+    "latency.cpp.o",
+    "mutable_params.cpp.o",
+    "processing.cpp.o",
+    "ring.cpp.o",
+    "sample_executor.cpp.o",
+    "cuda_backend.cu.o",
+    "device_channel.cu.o"
+  ],
+  "modified_member": "broker.cpp.o"
+}

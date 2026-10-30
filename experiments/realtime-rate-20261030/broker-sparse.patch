@@ -1,0 +1,49 @@
+--- original/broker.cpp
++++ diagnostic/broker.cpp
+@@ -1144,6 +1144,17 @@
+       // One batch is the whole run-ahead the RX ring grants (`rx_high_water`),
+       // so it is also the most lateness this producer may ever spend at once.
+       RealTimePacer pacer(rate, batch_duration);
++      std::unique_ptr<std::FILE, int(*)(std::FILE*)> rate_trace(nullptr, std::fclose);
++      if (const char* directory = std::getenv("OCG_RATE_TRACE_DIR")) {
++        const std::string filename = std::string(directory) + "/" + node.id + ".csv";
++        rate_trace.reset(std::fopen(filename.c_str(), "w"));
++        if (!rate_trace) throw std::runtime_error("cannot open sparse rate trace");
++        std::fprintf(rate_trace.get(), "kind,now_ns,node,sample,count,expected_due_ns,due_ns,shift_ns,room_us,data_us,read_us,process_us,previous_loop_end_ns\n");
++      }
++      bool have_pace_due = false;
++      std::chrono::steady_clock::time_point expected_pace_due{};
++      long long previous_loop_end_ns = 0;
++
+       // Samples this node has produced since the broker started: the same
+       // count every incoming link's clock holds, since each call advances all
+       // of them together. Used only by the opt-in sample-indexed control.
+@@ -1418,7 +1429,19 @@
+         // owed that entire idle period and would spend it as a burst -- and a
+         // multi-port ZMQ radio dead-locks on a burst rather than absorbing it.
+         // See `pacing.h` for the OCUDU-side mechanism.
+-        const auto due = pacer.charge(std::chrono::steady_clock::now(), count);
++        const auto rate_now = std::chrono::steady_clock::now();
++        const auto due = pacer.charge(rate_now, count);
++        if (rate_trace && have_pace_due && due > expected_pace_due) {
++          const auto ns = [](auto t) { return std::chrono::duration_cast<std::chrono::nanoseconds>(t.time_since_epoch()).count(); };
++          const auto shift = std::chrono::duration_cast<std::chrono::nanoseconds>(due - expected_pace_due).count();
++          std::fprintf(rate_trace.get(), "rebase,%lld,%s,%llu,%zu,%lld,%lld,%lld,%.3f,%.3f,%.3f,%.3f,%lld\n",
++              (long long)ns(rate_now), node.id.c_str(), (unsigned long long)(node_sample-count), count,
++              (long long)ns(expected_pace_due), (long long)ns(due), (long long)shift,
++              room_us, data_us, read_us, process_us, previous_loop_end_ns);
++          std::fflush(rate_trace.get());
++        }
++        expected_pace_due = due + pacer.duration_for(count);
++        have_pace_due = true;
+         if (config_.runtime.pacing && due > std::chrono::steady_clock::now()) {
+           diag.state.store("throttle");
+           std::this_thread::sleep_until(due);
+@@ -1464,6 +1487,7 @@
+         store_us(diag.stage_us_bits[kProducerStagePush], push_us);
+         diag.last_samples.store(count);
+         diag.progress.fetch_add(1);
++        if (rate_trace) previous_loop_end_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+       }
+     } catch (const std::exception& e) {
+       report_thread_error("producer", e);

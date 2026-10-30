@@ -1,0 +1,38 @@
+{
+  "targets": [
+    {
+      "pid": 3065532,
+      "tid": 3065553,
+      "node": "gnb0"
+    },
+    {
+      "pid": 3065532,
+      "tid": 3065554,
+      "node": "ue0"
+    }
+  ],
+  "paired_writes": 3083,
+  "unmatched_exit": 0,
+  "unmatched_enter": 0,
+  "long_writes": [
+    {
+      "tid": 3065553,
+      "start_ns": 3095923400533277,
+      "end_ns": 3095923408167726,
+      "us": 7634.449,
+      "fd": 73,
+      "file": "/workspace/gpuch/realtime-rate-20261030/u1/original-profile-r1/trace/broker-3065532-3065553.csv",
+      "settled_phase_increment_us": 6699.18017578125
+    },
+    {
+      "tid": 3065553,
+      "start_ns": 3095933406509846,
+      "end_ns": 3095933411103351,
+      "us": 4593.505,
+      "fd": 73,
+      "file": "/workspace/gpuch/realtime-rate-20261030/u1/original-profile-r1/trace/broker-3065532-3065553.csv",
+      "settled_phase_increment_us": 2698.7587890625
+    }
+  ],
+  "note": "Perf trace text reports FAILED TO PARSE for an optional buffer field; tid/timestamp/fd/count and exit events remain present. Durations are reconstructed from raw entry/exit timestamps. No IQ contents are used. Phase increment compares 15 nearby producer samples before/after a write, not a complete causal partition."
+}
