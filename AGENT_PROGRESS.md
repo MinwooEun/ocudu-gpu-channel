@@ -369,3 +369,7 @@ The candidate batch and diagnostics have finished; no runtime is left running. N
 - Reconciled dummy-IQ transport separately: 24 paths improved 0.661→0.873 by changing shared ZMQ I/O workers 2→4; real UE PHY is absent. RTX 5090 64-input gNB calls were approximately 1.2 ms despite approximately 68 µs kernels.
 
 - Saved causal conclusions, scripts, compact captures and raw-artifact hashes under `experiments/gpu-ue-rootcause-20261030/`; three Nsight originals are backed up locally with matching hashes. Benchmark processes and private tracing instances were cleaned; no application binary or protocol changed.
+
+- Updated both requested HTML reports with configuration-specific scaling summaries, implemented relay failures and targeted GPU-completion evidence. Added an interactive 20-core map switching 8/16 UEs; historical CPU-gNB experiments are labeled separately and original documents are backed up.
+
+- Both updated HTML reports pass 360/768/1440-pixel browser checks, 34 links per language, all existing controls and the 8/16-UE core map, with no JS errors or external requests. Saved matching checkpoint copies, companion evidence and refreshed checksums.

@@ -1,0 +1,372 @@
+{
+  "gpu_ue": {
+    "conditions": "Live CUDA gNB + original channel build + 8 existing GPU UEs, 20 MHz, 23.04 MS/s, 1 cell, 1x1; only UE0 CUDA activity captured for six seconds.",
+    "post_device_return_us": {
+      "FFT": {
+        "block": {
+          "n": 8919,
+          "mean": 93.68365601524835,
+          "p50": 41.584,
+          "p90": 230.112,
+          "p99": 532.0,
+          "max": 7971.072
+        },
+        "spin": {
+          "n": 9222,
+          "mean": 6.1290756885708095,
+          "p50": 6.016,
+          "p90": 6.56,
+          "p99": 8.096,
+          "max": 13.728
+        },
+        "block_replication_with_cpu_switch_trace": {
+          "n": 8348,
+          "mean": 97.52874365117394,
+          "p50": 45.376,
+          "p90": 230.672,
+          "p99": 588.688,
+          "max": 6044.896
+        },
+        "post_device_scheduled_cpu": {
+          "n": 8348,
+          "mean": 4.141230474365117,
+          "p50": 3.088,
+          "p90": 7.504,
+          "p99": 15.376,
+          "max": 1289.584
+        },
+        "post_device_off_cpu": {
+          "n": 8348,
+          "mean": 93.38751317680881,
+          "p50": 42.384,
+          "p90": 223.36,
+          "p99": 571.44,
+          "max": 6037.408
+        },
+        "gpu_activity_block": {
+          "n": 8919,
+          "mean": 15.956439959636732,
+          "p50": 14.688,
+          "p90": 22.272,
+          "p99": 69.152,
+          "max": 275.392
+        },
+        "gpu_activity_spin": {
+          "n": 9222,
+          "mean": 15.469720234222512,
+          "p50": 14.72,
+          "p90": 21.472,
+          "p99": 50.752,
+          "max": 256.512
+        }
+      },
+      "PDSCH": {
+        "block": {
+          "n": 823,
+          "mean": 192.70594410692587,
+          "p50": 152.976,
+          "p90": 381.76,
+          "p99": 703.68,
+          "max": 4402.992
+        },
+        "spin": {
+          "n": 852,
+          "mean": 8.16150234741784,
+          "p50": 7.664,
+          "p90": 8.448,
+          "p99": 22.336,
+          "max": 50.016
+        },
+        "block_replication_with_cpu_switch_trace": {
+          "n": 735,
+          "mean": 209.94768979591836,
+          "p50": 163.824,
+          "p90": 445.072,
+          "p99": 683.984,
+          "max": 1455.664
+        },
+        "post_device_scheduled_cpu": {
+          "n": 735,
+          "mean": 5.715570068027211,
+          "p50": 4.64,
+          "p90": 9.088,
+          "p99": 15.088,
+          "max": 56.992
+        },
+        "post_device_off_cpu": {
+          "n": 735,
+          "mean": 204.23211972789116,
+          "p50": 158.464,
+          "p90": 436.64,
+          "p99": 677.6,
+          "max": 1442.432
+        },
+        "gpu_activity_block": {
+          "n": 823,
+          "mean": 174.13700121506685,
+          "p50": 156.928,
+          "p90": 204.384,
+          "p99": 605.728,
+          "max": 1074.624
+        },
+        "gpu_activity_spin": {
+          "n": 852,
+          "mean": 159.9946291079812,
+          "p50": 151.168,
+          "p90": 180.0,
+          "p99": 383.488,
+          "max": 731.328
+        }
+      }
+    },
+    "causal_result": "Changing blocking synchronization to spin removes most post-device return latency while device activity remains similar; CPU blocking/notification/resumption is a large added cost. CPU switch trace shows almost all post-device time is off CPU, rather than long caller-side arithmetic.",
+    "limits": [
+      "First block/spin profiling wrappers failed liveness/cleanup gate although measured segments were 30/30 valid; their CUDA captures are diagnostic only, not qualified throughput comparisons.",
+      "Corrected final block profiling run passed the live gate and 30/30 report segments; profiling overhead still makes its speed diagnostic.",
+      "Independent ftrace wakeup filter used namespace TIDs while tracepoints reported host TIDs; it captured no target wakeups. The switch ring also overwrote older records; these traces do not identify wakeup-to-run latency.",
+      "Nsight CPU switch data measures on/off CPU intervals but does not split interrupt/driver notification delay from runnable scheduling delay. No claim that CPU core shortage alone explains this post-device gap.",
+      "Spin is a latency probe, not a validated end-to-end scaling fix; it consumes CPU execution time.",
+      "Rare unmatched/boundary CUDA activities and fences returning before measured activity completion are counted; invalid timing partitions are excluded.",
+      "CUDA Unified Memory tracing was unsupported; no measured migration-cost conclusion is drawn."
+    ]
+  },
+  "dummy_iq_transport": {
+    "conditions": "Historical Spark synthetic source -> ZMQ -> GPU channel emulator -> ZMQ -> synthetic sink; no real gNB/srsUE PHY. 20 MHz, 23.04 MS/s, 1ms batches, 12s; broker CPUs 5-14, source/sink CPUs 15-19.",
+    "throughput": [
+      {
+        "group": "boundary",
+        "label": "u16-c1-bw20-a1x1-r0-trace0",
+        "ratio_min": "0.9995833333333334",
+        "ratio_mean": "0.999921568627451",
+        "ratio_max": "1.0",
+        "trace": "False",
+        "ues": "16",
+        "cells": "1",
+        "bandwidth_mhz": "20",
+        "gnb_antennas": "1",
+        "ue_antennas": "1",
+        "broker_rc": "0"
+      },
+      {
+        "group": "boundary",
+        "label": "u24-c1-bw20-a1x1-r0-trace0",
+        "ratio_min": "0.6605833333333333",
+        "ratio_mean": "0.7238766666666667",
+        "ratio_max": "0.7276666666666667",
+        "trace": "False",
+        "ues": "24",
+        "cells": "1",
+        "bandwidth_mhz": "20",
+        "gnb_antennas": "1",
+        "ue_antennas": "1",
+        "broker_rc": "0"
+      },
+      {
+        "group": "boundary",
+        "label": "u32-c1-bw20-a1x1-r0-trace0",
+        "ratio_min": "0.494",
+        "ratio_mean": "0.5194570707070707",
+        "ratio_max": "0.521",
+        "trace": "False",
+        "ues": "32",
+        "cells": "1",
+        "bandwidth_mhz": "20",
+        "gnb_antennas": "1",
+        "ue_antennas": "1",
+        "broker_rc": "0"
+      },
+      {
+        "group": "boundary",
+        "label": "u64-c1-bw20-a1x1-r0-trace0",
+        "ratio_min": "0.239",
+        "ratio_mean": "0.24131923076923076",
+        "ratio_max": "0.24775",
+        "trace": "False",
+        "ues": "64",
+        "cells": "1",
+        "bandwidth_mhz": "20",
+        "gnb_antennas": "1",
+        "ue_antennas": "1",
+        "broker_rc": "0"
+      },
+      {
+        "group": "diagnostic-io4",
+        "label": "u24-c1-bw20-a1x1-r0-trace0",
+        "ratio_min": "0.8734166666666666",
+        "ratio_mean": "0.8760866666666667",
+        "ratio_max": "0.88475",
+        "trace": "False",
+        "ues": "24",
+        "cells": "1",
+        "bandwidth_mhz": "20",
+        "gnb_antennas": "1",
+        "ue_antennas": "1",
+        "broker_rc": "0"
+      }
+    ],
+    "gnb_direction_timings": [
+      {
+        "run": "boundary/u24-c1-bw20-a1x1-r1-trace1",
+        "calls": 6475,
+        "radio_s": 6.475,
+        "wall_s": 9.653635115,
+        "mean_us_per_iteration": {
+          "room_us": 942.2248648648649,
+          "align_us": 0.06989683397683398,
+          "data_us": 349.72771196911197,
+          "read_us": 4.069979150579151,
+          "process_us": 182.46570409266408,
+          "commit_pace_us": 10.192982702702702,
+          "push_us": 0.2899698841698842
+        }
+      },
+      {
+        "run": "boundary/u32-c1-bw20-a1x1-r1-trace1",
+        "calls": 4736,
+        "radio_s": 4.736,
+        "wall_s": 9.676575455,
+        "mean_us_per_iteration": {
+          "room_us": 383.87500274493243,
+          "align_us": 0.05728103885135135,
+          "data_us": 1413.9808019425675,
+          "read_us": 6.434669974662162,
+          "process_us": 231.63732453547297,
+          "commit_pace_us": 5.105803842905406,
+          "push_us": 0.35309311655405407
+        }
+      },
+      {
+        "run": "diagnostic-io4/u24-c1-bw20-a1x1-r1-trace1",
+        "calls": 8533,
+        "radio_s": 8.533,
+        "wall_s": 9.648317969,
+        "mean_us_per_iteration": {
+          "room_us": 791.3729948435486,
+          "align_us": 0.08256287354974803,
+          "data_us": 48.466435016992854,
+          "read_us": 11.20831969998828,
+          "process_us": 222.3970201570374,
+          "commit_pace_us": 53.38273784132193,
+          "push_us": 0.4500418375717801
+        }
+      }
+    ],
+    "causal_result": "At 24 paths, changing broker ZMQ I/O threads from 2 to 4 increased minimum progress from 0.660583 to 0.873417. This establishes a host I/O service limitation; exact copies/kernel-TCP/source/sink CPU contributions have not been separately attributed.",
+    "source_work": "Source computes sine/cosine per IQ sample; sink accumulates per-sample power. These are synthetic helper costs, not UE PHY.",
+    "limits": [
+      "Source/sink and transport costs cannot be assigned to ZMQ wire format alone.",
+      "Historical Spark transport envelope is not a matched RTX 5090 end-to-end comparison.",
+      "Thread count is not CPU core count; all broker IQ connections share the configured ZMQ I/O worker pool."
+    ]
+  },
+  "rtx5090_64ue_audit": {
+    "ues": 64,
+    "runs": [
+      {
+        "model_mix_latency": {
+          "p50_us": 59.133,
+          "p99_us": 1196.58,
+          "max_us": 1807.577
+        },
+        "gpu_process_us": {
+          "p50_us": 50.876,
+          "p99_us": 537.693,
+          "max_us": 860.548
+        },
+        "node:gnb0:call_us": {
+          "p50_us": 1197.816,
+          "p99_us": 1347.793,
+          "max_us": 1805.002
+        },
+        "node:gnb0:host_prep_us": {
+          "p50_us": 658.199,
+          "p99_us": 807.779,
+          "max_us": 1257.729
+        },
+        "node:gnb0:h2d_us": {
+          "p50_us": 444.736,
+          "p99_us": 449.663,
+          "max_us": 472.768
+        },
+        "node:gnb0:kernel_us": {
+          "p50_us": 67.84,
+          "p99_us": 71.967,
+          "max_us": 286.944
+        }
+      },
+      {
+        "model_mix_latency": {
+          "p50_us": 59.052,
+          "p99_us": 1187.292,
+          "max_us": 1561.489
+        },
+        "gpu_process_us": {
+          "p50_us": 50.903,
+          "p99_us": 537.912,
+          "max_us": 1365.396
+        },
+        "node:gnb0:call_us": {
+          "p50_us": 1188.294,
+          "p99_us": 1334.155,
+          "max_us": 1559.436
+        },
+        "node:gnb0:host_prep_us": {
+          "p50_us": 648.51,
+          "p99_us": 792.435,
+          "max_us": 858.101
+        },
+        "node:gnb0:h2d_us": {
+          "p50_us": 444.959,
+          "p99_us": 450.495,
+          "max_us": 451.775
+        },
+        "node:gnb0:kernel_us": {
+          "p50_us": 67.808,
+          "p99_us": 71.935,
+          "max_us": 306.015
+        }
+      },
+      {
+        "model_mix_latency": {
+          "p50_us": 59.089,
+          "p99_us": 1195.94,
+          "max_us": 1943.646
+        },
+        "gpu_process_us": {
+          "p50_us": 50.84,
+          "p99_us": 537.138,
+          "max_us": 859.583
+        },
+        "node:gnb0:call_us": {
+          "p50_us": 1197.842,
+          "p99_us": 1338.493,
+          "max_us": 1942.166
+        },
+        "node:gnb0:host_prep_us": {
+          "p50_us": 658.086,
+          "p99_us": 794.679,
+          "max_us": 1391.877
+        },
+        "node:gnb0:h2d_us": {
+          "p50_us": 444.959,
+          "p99_us": 450.432,
+          "max_us": 467.231
+        },
+        "node:gnb0:kernel_us": {
+          "p50_us": 67.808,
+          "p99_us": 71.967,
+          "max_us": 285.567
+        }
+      }
+    ],
+    "gnb_call_p99_median_us": 1338.493
+  },
+  "raw_profiles_local": "/home/minwoo/ocudu-work/evidence/gpu-ue-rootcause-20261030",
+  "sources": {
+    "local-work/profiling-20261028/boundary-results.csv": "f257a5f2dabee6b61f2b70ac78f3186a936ea163cbb29a15a2aa6ffa99da70ef",
+    "local-work/profiling-20261028/timing-summary.json": "002a2745351dde8c65d19d991f34a1063c0f518056c96b5cd0bda2b199f2bf4c",
+    "local-work/profiling-20261028/audit-5090.json": "0840663cd202ab424671bd33b8f07eb499cd09b2c5f3bba5532b32646c9d7cee",
+    "apps/ocudu_zmq_source.cpp": "b0e0167adb823ae407e8c9bfa0ca1e117cce78e7bd4b9b08601c76080675f9ae",
+    "apps/ocudu_zmq_sink.cpp": "9f6075c01862aab563e3a0c7e3682fd229e26708b3696b05c98460dc4016a64e"
+  }
+}

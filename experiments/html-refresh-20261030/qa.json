@@ -1,0 +1,30 @@
+[
+  {
+    "language": "ko",
+    "widths": [
+      360,
+      768,
+      1440
+    ],
+    "cores": 20,
+    "coreToggle": "8/16 mapping checked",
+    "links": 34,
+    "errors": [],
+    "externalRequests": [],
+    "print": "all scaling panels visible"
+  },
+  {
+    "language": "en",
+    "widths": [
+      360,
+      768,
+      1440
+    ],
+    "cores": 20,
+    "coreToggle": "8/16 mapping checked",
+    "links": 34,
+    "errors": [],
+    "externalRequests": [],
+    "print": "all scaling panels visible"
+  }
+]
