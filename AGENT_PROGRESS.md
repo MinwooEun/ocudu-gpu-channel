@@ -297,7 +297,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-Receiver-quality cause is identified in `experiments/receiver-quality-20261030/conclusions.json`: CPU UE pilot-residual noise bias distorts MMSE equalization and increases LDPC work. Four diagnostic interventions passed; production estimator repair is not implemented, other broker/transport stalls remain, and both HTML reports remain unchanged.
+Receiver noise-estimation candidate and one-run UE IO priority changes are validated on one-UE Spark inputs; original binaries remain unchanged. Remaining sparse-repeat lag is 2.591 ms: output-room wait dominates, but late gNB request versus delayed broker REP service remains unresolved. Evidence is in `experiments/residual-rate-20261030/conclusions.json`; both HTML reports remain unchanged.
 
 ## Active relay patch — 2026-10-29
 
@@ -407,3 +407,15 @@ Receiver-quality cause is identified in `experiments/receiver-quality-20261030/c
 - Control/intervention radio-wall ratios were 0.997854/0.999302 and 0.995982/0.999829; all four runs passed live gates and 30/30 segments. Zero noise is diagnostic only; adaptive MCS and residual errors prevent treating it as a production fix.
 
 - Corrected the prior downlink-event association based solely on uplink sample progress; current analysis uses replay channel windows with boundary exclusions. Raw 7.5 GiB IQ remains on Spark; original binaries, ZMQ framing and both HTML documents remain unchanged.
+
+## Residual rate and receiver repair — 2026-10-30
+
+- Built an isolated CPU UE replacing only dmrs_sch.c.o with local pilot-residual noise estimation; original binary remains unchanged. Known-noise validation over 400 frozen channels achieved mean error below 0.14%; type1 live candidate passed 30/30 segments.
+
+- Receiver repair measured post-warmup 0.999837 with 4.874 ms loss over 29.9 radio seconds. Full scheduler diagnostics identified UE ZMQ IO runnable starvation while higher-priority STACK occupied the shared CPU for 5.553 ms.
+
+- Raising only UE IO to FIFO95 on CPU17 reduced one run's post-warmup loss to 0.506 ms, ratio 0.999983; all 30 segments passed. No extra core, original-binary edit or ZMQ framing change occurred.
+
+- Sparse-only priority repeat still lost 2.591 ms; eleven pacing rebases summed to 2.609 ms. A 3.173 ms output-room wait and following rebase contributed 2.004 ms; gNB request delay versus broker REP delay is unresolved.
+
+- Preserved failed profiler attempts and complete raw traces on Spark; full scheduler capture increased transport disturbance. Saved compact evidence and a separate receiver patch; no runtime remains and both HTML files are unchanged.

@@ -1,0 +1,21 @@
+{
+  "case": "original",
+  "ue_count": 1,
+  "tag": "zero-sched-r3",
+  "returncode": 2,
+  "wall_s": 6.942914896644652,
+  "metrics": {
+    "broker": {
+      "rx_starvations": 0,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    },
+    "real_time_ratio": null,
+    "slots_per_wall_second": null
+  },
+  "valid_segments": 0,
+  "gate": null,
+  "report_exists": true,
+  "diagnostic_trace": false
+}

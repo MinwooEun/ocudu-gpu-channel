@@ -1,0 +1,141 @@
+{
+  "note": "Direct scheduler evidence from an instrumented run. The profiler increases disturbance; this event is not retroactively assigned to an earlier clean run.",
+  "event": {
+    "sample": 902684166,
+    "shift_us": 3709.937,
+    "expected_due_ns": 3107189142785869,
+    "data_us": 4615.034,
+    "times": {
+      "request_start": 3107189140936749,
+      "ue_rf_tx_enter": 3107189141687033,
+      "ue_request_poll_start": 3107189141687113,
+      "ue_request_recv_end": 3107189141687721,
+      "ue_iq_send_start": 3107189141687785,
+      "ue_iq_send_end": 3107189141697305,
+      "broker_iq_recv_end": 3107189147412798,
+      "broker_ring_pushed": 3107189147418014,
+      "producer_data_ready": 3107189147453374,
+      "pace_call": 3107189147495806
+    },
+    "relative_to_due_us": {
+      "request_start": -1849.12,
+      "ue_rf_tx_enter": -1098.836,
+      "ue_request_poll_start": -1098.756,
+      "ue_request_recv_end": -1098.148,
+      "ue_iq_send_start": -1098.084,
+      "ue_iq_send_end": -1088.564,
+      "broker_iq_recv_end": 4626.929,
+      "broker_ring_pushed": 4632.145,
+      "producer_data_ready": 4667.505,
+      "pace_call": 4709.937
+    },
+    "rf_op": 30,
+    "matched_bytes": 184320,
+    "latest_rx_end_ns": 3107189141194652,
+    "rx_to_txready_us": 492.381,
+    "first_late_stage": "IQ transport / broker receiving"
+  },
+  "io_off_cpu": {
+    "host_tid": 3712713,
+    "namespace_tid": 3111823,
+    "comm": "ZMQbg/IO/0",
+    "start": 3107189141187420,
+    "state": "S",
+    "out": {
+      "comm": "ZMQbg/IO/0",
+      "tid": 3111823,
+      "cpu": 17,
+      "t": 3107189141187420,
+      "kind": "sched:sched_switch",
+      "raw": "prev_comm=ZMQbg/IO/0 prev_pid=3712713 prev_prio=120 prev_state=S ==> next_comm=srsue next_pid=3712705 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])",
+      "stack": []
+    },
+    "wakes": [
+      {
+        "comm": "WORKER0",
+        "tid": 3111828,
+        "cpu": 17,
+        "t": 3107189141696985,
+        "kind": "sched:sched_wakeup",
+        "raw": "comm=ZMQbg/IO/0 pid=3712713 prio=120 target_cpu=017 ffffd70bf42d6d48 [unknown] ([unknown])",
+        "stack": []
+      }
+    ],
+    "end": 3107189147360942,
+    "in_comm": "ZMQbg/IO/0",
+    "wall_us": 6173.522,
+    "blocked_us": 509.565,
+    "runnable_us": 5663.957
+  },
+  "cpu17_switches": [
+    {
+      "t": 3107189141699737,
+      "raw": "prev_comm=WORKER0 prev_pid=3712718 prev_prio=3 prev_state=S ==> next_comm=STACK next_pid=3712717 next_prio=5 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147253039,
+      "raw": "prev_comm=STACK prev_pid=3712717 prev_prio=5 prev_state=S ==> next_comm=srsue next_pid=3712705 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147352542,
+      "raw": "prev_comm=srsue prev_pid=3712705 prev_prio=120 prev_state=R ==> next_comm=STACK next_pid=3712717 next_prio=5 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147354974,
+      "raw": "prev_comm=STACK prev_pid=3712717 prev_prio=5 prev_state=S ==> next_comm=srsue next_pid=3712714 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147360942,
+      "raw": "prev_comm=srsue prev_pid=3712714 prev_prio=120 prev_state=S ==> next_comm=ZMQbg/IO/0 next_pid=3712713 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147399470,
+      "raw": "prev_comm=ZMQbg/IO/0 prev_pid=3712713 prev_prio=120 prev_state=S ==> next_comm=srsue next_pid=3712705 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147444238,
+      "raw": "prev_comm=srsue prev_pid=3712705 prev_prio=120 prev_state=R ==> next_comm=ZMQbg/IO/0 next_pid=3712713 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147447422,
+      "raw": "prev_comm=ZMQbg/IO/0 prev_pid=3712713 prev_prio=120 prev_state=S ==> next_comm=srsue next_pid=3712705 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147455902,
+      "raw": "prev_comm=srsue prev_pid=3712705 prev_prio=120 prev_state=R ==> next_comm=STACK next_pid=3712717 next_prio=5 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147458206,
+      "raw": "prev_comm=STACK prev_pid=3712717 prev_prio=5 prev_state=S ==> next_comm=ZMQbg/IO/0 next_pid=3712713 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147464638,
+      "raw": "prev_comm=ZMQbg/IO/0 prev_pid=3712713 prev_prio=120 prev_state=S ==> next_comm=srsue next_pid=3712714 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147468638,
+      "raw": "prev_comm=srsue prev_pid=3712714 prev_prio=120 prev_state=R+ ==> next_comm=SYNC next_pid=3712716 next_prio=1 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147470718,
+      "raw": "prev_comm=SYNC prev_pid=3712716 prev_prio=1 prev_state=S ==> next_comm=srsue next_pid=3712714 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147472830,
+      "raw": "prev_comm=srsue prev_pid=3712714 prev_prio=120 prev_state=R+ ==> next_comm=SYNC next_pid=3712716 next_prio=1 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147474318,
+      "raw": "prev_comm=SYNC prev_pid=3712716 prev_prio=1 prev_state=S ==> next_comm=srsue next_pid=3712714 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147480254,
+      "raw": "prev_comm=srsue prev_pid=3712714 prev_prio=120 prev_state=S ==> next_comm=ZMQbg/IO/0 next_pid=3712713 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    },
+    {
+      "t": 3107189147487182,
+      "raw": "prev_comm=ZMQbg/IO/0 prev_pid=3712713 prev_prio=120 prev_state=S ==> next_comm=srsue next_pid=3712705 next_prio=120 ffffd70bf42d7aac [unknown] ([unknown])"
+    }
+  ],
+  "stack_cpu_interval_us": 5553.302
+}

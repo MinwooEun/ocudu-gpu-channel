@@ -1,0 +1,58 @@
+{
+  "question": "Why does rate remain below 1 after correcting UE receiver noise bias?",
+  "confirmed": {
+    "receiver_repair": "Separate patch estimates noise from local pilot residuals rather than wideband coherent channel variation. Original UE archive changed only dmrs_sch.c.o; default original binary preserved.",
+    "noise_validation": "10 trials \u00d7 400 frozen channels at 0/10/20/30 dB; candidate mean estimated/true noise ratio 0.9986\u20131.00075 for multipath. At 30 dB original ratio is 58.42, candidate 1.00047. Type1 frozen scenario is validated; general type2/multi-cell envelopes are not established.",
+    "scheduler_event": "UE ZMQ IO was woken by WORKER0 but waited runnable for 5.664 ms on CPU17. STACK at internal priority5 occupied CPU17 for 5.553 ms; IO was SCHED_OTHER. The event was captured in an instrumented run and is not retroactively assigned to earlier runs.",
+    "priority_intervention": "Only UE ZMQ IO policy changed SCHED_OTHER/0 -> SCHED_FIFO/95, on the same CPU17; WORKER and SYNC remain above it. No extra CPU core or ZMQ format changes."
+  },
+  "rates_postwarmup": {
+    "receiver_repair_only": {
+      "ratio": 0.9998370118871811,
+      "radio_s": 29.9,
+      "lost_us": 4874.139
+    },
+    "receiver_repair_plus_io_priority_first_run": {
+      "ratio": 0.9999830722597973,
+      "radio_s": 29.9,
+      "lost_us": 506.148
+    },
+    "priority_repeat_with_sparse_pacer_only": {
+      "ratio": 0.9999133534614504,
+      "radio_s": 29.9,
+      "lost_us": 2590.956,
+      "rebases": 11,
+      "sum_rebase_us": 2609.163,
+      "endpoint_residual_us": -18.207
+    }
+  },
+  "why_not_exactly_one": "Neither receiver repair nor UE IO priority removes every stall. Pacing rebases lateness beyond its 1 ms catch-up bound, retaining that wall-clock loss; finite measurement endpoints add a smaller phase difference. The sparse repeat reconciles most of its remaining loss with measured rebases, so the deficit cannot be dismissed as rounding.",
+  "remaining_repeat_event": {
+    "sample": 971896320,
+    "room_wait_us": 3173.197,
+    "direct_deadline_loss_us": 1482.707,
+    "following_rebase_loss_us": 521.39,
+    "description": "Producer for gNB0 waited for output-buffer room. This proves the output was not drained in time, but does not by itself distinguish a late gNB request from delayed broker REP service. That initiating operation remains unresolved."
+  },
+  "limits": [
+    "The corrected estimator is an isolated candidate and is not enabled in the original/default UE binary.",
+    "Priority trials are individual runs with variable rare stalls, not proof of a guaranteed 1.000 rate or an expanded 8/16-UE scaling boundary.",
+    "Full scheduler captures noticeably perturb transport timing; they establish the specific runnable-starvation mechanism but do not measure the exact frequency of that event in uninstrumented runs.",
+    "No source-level attribution of the 5.553 ms STACK execution to one MAC/RLC operation has been established.",
+    "The remaining output-room event is not labeled a solved upstream cause.",
+    "Both HTML files are unchanged."
+  ],
+  "failed_diagnostics": {
+    "zero_sched_r1": "UE diagnostic executable basename was not recognized by interposer; no UE wire trace, excluded from complete causal attribution.",
+    "zero_sched_r2": "perf data exhausted tmpfs; incomplete capture preserved, excluded as a complete trace.",
+    "zero_sched_r3_r4_r5": "Compact-interposer dependency/build failures prevented attach; no valid measurement, preserved result files.",
+    "zero_sched_r6": "Complete stack trace capture, high observer overhead.",
+    "fixed_light_r1": "Complete scheduler capture without ordinary callchains; observer overhead remains."
+  },
+  "evidence": [
+    "evidence/rate-reconciliation.json",
+    "evidence/critical-io-starvation.json",
+    "evidence/local-noise-validation.csv",
+    "evidence/local-noise-build.json"
+  ]
+}

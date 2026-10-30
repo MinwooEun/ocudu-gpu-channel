@@ -1,0 +1,670 @@
+[
+  {
+    "case": "/workspace/gpuch/receiver-quality-20261030/u1/original-fixed-noise-r1",
+    "result": {
+      "case": "original",
+      "ue_count": 1,
+      "tag": "fixed-noise-r1",
+      "returncode": 0,
+      "wall_s": 74.9882964771241,
+      "metrics": {
+        "broker": {
+          "rx_starvations": 5,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "real_time_ratio": 0.9997052725540366,
+        "slots_per_wall_second": 999.7052725540366
+      },
+      "valid_segments": 30,
+      "gate": {
+        "all_ues_attached": true,
+        "broker": {
+          "control_batches_committed": 802,
+          "rx_requests": 171424,
+          "rx_starvations": 5,
+          "tx_pulls": 105988,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "broker_clean": true,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy": "rr",
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "link_adaptation": {
+                "found_in_config_dump": {
+                  "link_adaptation": "harq_olla"
+                },
+                "ok": true,
+                "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+                "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+                "requested": {
+                  "link_adaptation": "harq_olla"
+                }
+              },
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "replay_status": "measure_end",
+        "srsue_alive_at_stop": 1,
+        "status": "passed"
+      },
+      "report_exists": true,
+      "diagnostic_trace": false
+    },
+    "windows": {
+      "full": {
+        "radio_s": 39.9,
+        "wall_s": 39.911763092,
+        "ratio": 0.9997052725540366,
+        "lost_us": 11763.092000002473,
+        "start_sample": 122664960,
+        "end_sample": 1041960960
+      },
+      "post_warmup": {
+        "radio_s": 29.9,
+        "wall_s": 29.904874139,
+        "ratio": 0.9998370118871811,
+        "lost_us": 4874.139000001776,
+        "start_sample": 353064960,
+        "end_sample": 1041960960
+      }
+    }
+  },
+  {
+    "case": "/workspace/gpuch/receiver-quality-20261030/u1/original-io-prio-r1",
+    "result": {
+      "case": "original",
+      "ue_count": 1,
+      "tag": "io-prio-r1",
+      "returncode": 0,
+      "wall_s": 74.99723543319851,
+      "metrics": {
+        "broker": {
+          "rx_starvations": 6,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "real_time_ratio": 0.9999406623181618,
+        "slots_per_wall_second": 999.9406623181618
+      },
+      "valid_segments": 30,
+      "gate": {
+        "all_ues_attached": true,
+        "broker": {
+          "control_batches_committed": 802,
+          "rx_requests": 168411,
+          "rx_starvations": 6,
+          "tx_pulls": 105625,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "broker_clean": true,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy": "rr",
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "link_adaptation": {
+                "found_in_config_dump": {
+                  "link_adaptation": "harq_olla"
+                },
+                "ok": true,
+                "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+                "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+                "requested": {
+                  "link_adaptation": "harq_olla"
+                }
+              },
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "replay_status": "measure_end",
+        "srsue_alive_at_stop": 1,
+        "status": "passed"
+      },
+      "report_exists": true,
+      "diagnostic_trace": false
+    },
+    "windows": {
+      "full": {
+        "radio_s": 39.9,
+        "wall_s": 39.902367714,
+        "ratio": 0.9999406623181618,
+        "lost_us": 2367.714000001797,
+        "start_sample": 123886080,
+        "end_sample": 1043182080
+      },
+      "post_warmup": {
+        "radio_s": 29.9,
+        "wall_s": 29.900506148,
+        "ratio": 0.9999830722597973,
+        "lost_us": 506.14800000303717,
+        "start_sample": 354286080,
+        "end_sample": 1043182080
+      }
+    }
+  },
+  {
+    "case": "/workspace/gpuch/residual-rate-20261030/u1/original-io-pacer-r1",
+    "result": {
+      "case": "original",
+      "ue_count": 1,
+      "tag": "io-pacer-r1",
+      "returncode": 0,
+      "wall_s": 74.98504304466769,
+      "metrics": {
+        "broker": {
+          "rx_starvations": 5,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "real_time_ratio": 0.9998899612326699,
+        "slots_per_wall_second": 999.88996123267
+      },
+      "valid_segments": 30,
+      "gate": {
+        "all_ues_attached": true,
+        "broker": {
+          "control_batches_committed": 802,
+          "rx_requests": 189737,
+          "rx_starvations": 5,
+          "tx_pulls": 105903,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "broker_clean": true,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy": "rr",
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "link_adaptation": {
+                "found_in_config_dump": {
+                  "link_adaptation": "harq_olla"
+                },
+                "ok": true,
+                "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+                "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+                "requested": {
+                  "link_adaptation": "harq_olla"
+                }
+              },
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "replay_status": "measure_end",
+        "srsue_alive_at_stop": 1,
+        "status": "passed"
+      },
+      "report_exists": true,
+      "diagnostic_trace": false
+    },
+    "windows": {
+      "full": {
+        "radio_s": 39.9,
+        "wall_s": 39.90439103,
+        "ratio": 0.9998899612326698,
+        "lost_us": 4391.030000000739,
+        "start_sample": 122065920,
+        "end_sample": 1041361920
+      },
+      "post_warmup": {
+        "radio_s": 29.9,
+        "wall_s": 29.902590956,
+        "ratio": 0.9999133534614504,
+        "lost_us": 2590.956000002365,
+        "start_sample": 352465920,
+        "end_sample": 1041361920
+      }
+    },
+    "rebases": [
+      {
+        "kind": "rebase",
+        "now_ns": "3107746515780675",
+        "node": "gnb0",
+        "sample": "423498244",
+        "count": "23040",
+        "expected_due_ns": "3107746514769675",
+        "due_ns": "3107746514780675",
+        "shift_ns": "11000",
+        "room_us": "29.984",
+        "data_us": "1540.303",
+        "read_us": "0.112",
+        "process_us": "39.504",
+        "previous_loop_end_ns": "3107746514170644"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3107746734912424",
+        "node": "gnb0",
+        "sample": "428544004",
+        "count": "23036",
+        "expected_due_ns": "3107746733780472",
+        "due_ns": "3107746733912424",
+        "shift_ns": "131952",
+        "room_us": "0.704",
+        "data_us": "1040.447",
+        "read_us": "0.112",
+        "process_us": "38.336",
+        "previous_loop_end_ns": "3107746733832697"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3107749272052174",
+        "node": "gnb0",
+        "sample": "486996484",
+        "count": "23036",
+        "expected_due_ns": "3107749270909911",
+        "due_ns": "3107749271052174",
+        "shift_ns": "142263",
+        "room_us": "0.048",
+        "data_us": "0.112",
+        "read_us": "0.096",
+        "process_us": "43.712",
+        "previous_loop_end_ns": "3107749272007902"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3107749274066956",
+        "node": "gnb0",
+        "sample": "487042564",
+        "count": "23036",
+        "expected_due_ns": "3107749273052172",
+        "due_ns": "3107749273066956",
+        "shift_ns": "14784",
+        "room_us": "0.048",
+        "data_us": "0.112",
+        "read_us": "0.080",
+        "process_us": "45.696",
+        "previous_loop_end_ns": "3107749274020876"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3107752763103336",
+        "node": "gnb0",
+        "sample": "567429124",
+        "count": "23036",
+        "expected_due_ns": "3107752762063511",
+        "due_ns": "3107752762103336",
+        "shift_ns": "39825",
+        "room_us": "0.032",
+        "data_us": "933.119",
+        "read_us": "0.096",
+        "process_us": "37.168",
+        "previous_loop_end_ns": "3107752762132761"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3107758787195760",
+        "node": "gnb0",
+        "sample": "706222085",
+        "count": "23035",
+        "expected_due_ns": "3107758786097379",
+        "due_ns": "3107758786195760",
+        "shift_ns": "98381",
+        "room_us": "0.064",
+        "data_us": "1007.023",
+        "read_us": "0.096",
+        "process_us": "38.416",
+        "previous_loop_end_ns": "3107758786149585"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3107761813201672",
+        "node": "gnb0",
+        "sample": "775941125",
+        "count": "23035",
+        "expected_due_ns": "3107761812192734",
+        "due_ns": "3107761812201672",
+        "shift_ns": "8938",
+        "room_us": "0.048",
+        "data_us": "919.248",
+        "read_us": "0.096",
+        "process_us": "37.408",
+        "previous_loop_end_ns": "3107761812244728"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3107762820329139",
+        "node": "gnb0",
+        "sample": "799142406",
+        "count": "23034",
+        "expected_due_ns": "3107762819200708",
+        "due_ns": "3107762819329139",
+        "shift_ns": "128431",
+        "room_us": "0.096",
+        "data_us": "0.096",
+        "read_us": "0.064",
+        "process_us": "269.248",
+        "previous_loop_end_ns": "3107762820059347"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3107764901356550",
+        "node": "gnb0",
+        "sample": "847088646",
+        "count": "23034",
+        "expected_due_ns": "3107764900327058",
+        "due_ns": "3107764900356550",
+        "shift_ns": "29492",
+        "room_us": "0.064",
+        "data_us": "936.287",
+        "read_us": "0.128",
+        "process_us": "39.728",
+        "previous_loop_end_ns": "3107764900380183"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3107770319833579",
+        "node": "gnb0",
+        "sample": "971896320",
+        "count": "10",
+        "expected_due_ns": "3107770317350872",
+        "due_ns": "3107770318833579",
+        "shift_ns": "1482707",
+        "room_us": "3173.197",
+        "data_us": "0.080",
+        "read_us": "0.064",
+        "process_us": "61.616",
+        "previous_loop_end_ns": "3107770316598494"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3107770320355403",
+        "node": "gnb0",
+        "sample": "971896330",
+        "count": "23030",
+        "expected_due_ns": "3107770318834013",
+        "due_ns": "3107770319355403",
+        "shift_ns": "521390",
+        "room_us": "118.240",
+        "data_us": "347.408",
+        "read_us": "0.096",
+        "process_us": "43.360",
+        "previous_loop_end_ns": "3107770319846059"
+      }
+    ],
+    "sum_rebase_us": 2609.163,
+    "endpoint_residual_us": -18.206999997635194,
+    "priority": {
+      "pid": 3116379,
+      "tid": 3116389,
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          17
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          17
+        ]
+      },
+      "monotonic_ns": 3107727990472896
+    }
+  },
+  {
+    "case": "/workspace/gpuch/residual-rate-20261030/u1/original-zero-sched-r6",
+    "result": {
+      "case": "original",
+      "ue_count": 1,
+      "tag": "zero-sched-r6",
+      "returncode": 0,
+      "wall_s": 77.14068856323138,
+      "metrics": {
+        "broker": {
+          "rx_starvations": 5,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "real_time_ratio": 0.9977082581048752,
+        "slots_per_wall_second": 997.7082581048752
+      },
+      "valid_segments": 30,
+      "gate": {
+        "all_ues_attached": true,
+        "broker": {
+          "control_batches_committed": 802,
+          "rx_requests": 175327,
+          "rx_starvations": 5,
+          "tx_pulls": 106550,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "broker_clean": true,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy": "rr",
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "link_adaptation": {
+                "found_in_config_dump": {
+                  "link_adaptation": "harq_olla"
+                },
+                "ok": true,
+                "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+                "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+                "requested": {
+                  "link_adaptation": "harq_olla"
+                }
+              },
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "replay_status": "measure_end",
+        "srsue_alive_at_stop": 1,
+        "status": "passed"
+      },
+      "report_exists": true,
+      "diagnostic_trace": false
+    },
+    "windows": {
+      "full": {
+        "radio_s": 39.9,
+        "wall_s": 39.991650541,
+        "ratio": 0.9977082581048752,
+        "lost_us": 91650.54099999992,
+        "start_sample": 122941440,
+        "end_sample": 1042237440
+      },
+      "post_warmup": {
+        "radio_s": 29.9,
+        "wall_s": 29.988451426,
+        "ratio": 0.9970504837097619,
+        "lost_us": 88451.42600000244,
+        "start_sample": 353341440,
+        "end_sample": 1042237440
+      }
+    }
+  },
+  {
+    "case": "/workspace/gpuch/residual-rate-20261030/u1/original-fixed-light-r1",
+    "result": {
+      "case": "original",
+      "ue_count": 1,
+      "tag": "fixed-light-r1",
+      "returncode": 0,
+      "wall_s": 77.14160142512992,
+      "metrics": {
+        "broker": {
+          "rx_starvations": 5,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "real_time_ratio": 0.9980625932622049,
+        "slots_per_wall_second": 998.0625932622049
+      },
+      "valid_segments": 30,
+      "gate": {
+        "all_ues_attached": true,
+        "broker": {
+          "control_batches_committed": 802,
+          "rx_requests": 188016,
+          "rx_starvations": 5,
+          "tx_pulls": 106909,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "broker_clean": true,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy": "rr",
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "link_adaptation": {
+                "found_in_config_dump": {
+                  "link_adaptation": "harq_olla"
+                },
+                "ok": true,
+                "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+                "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+                "requested": {
+                  "link_adaptation": "harq_olla"
+                }
+              },
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "replay_status": "measure_end",
+        "srsue_alive_at_stop": 1,
+        "status": "passed"
+      },
+      "report_exists": true,
+      "diagnostic_trace": false
+    },
+    "windows": {
+      "full": {
+        "radio_s": 39.9,
+        "wall_s": 39.977452586,
+        "ratio": 0.9980625932622049,
+        "lost_us": 77452.58599999972,
+        "start_sample": 123632640,
+        "end_sample": 1042928640
+      },
+      "post_warmup": {
+        "radio_s": 29.9,
+        "wall_s": 29.973816209,
+        "ratio": 0.9975373102815704,
+        "lost_us": 73816.2090000003,
+        "start_sample": 354032640,
+        "end_sample": 1042928640
+      }
+    }
+  }
+]
