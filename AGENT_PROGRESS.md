@@ -393,3 +393,5 @@ One-UE initiating-delay evidence is saved in `experiments/initiating-delay-20261
 - Additional broker-ready and transport delays remain unattributed below their boundary measurements; one-UE results do not resolve every scaling limit. Saved diagnostic failures and provenance, removed private probes, and left both HTML reports unchanged.
 
 - Holding 95 PRBs, symbols, modulation, 2,754-byte TBS, coding rate and RV fixed, native PDSCH median was 261 µs for ≤2 iterations versus 941.5 µs for ≥8. Counts were 4,881/12; original UE binary was unchanged.
+
+- Audited the decoder event at scenario 29.702 s: fixed AWGN reference is 40 dB, trace gain −13.64 dB, but UE reports −2.5 dB. Pilot-residual SNR includes channel/estimation distortion; poor physical SNR is not established.

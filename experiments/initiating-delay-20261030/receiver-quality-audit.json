@@ -1,0 +1,28 @@
+{
+  "question": "Does the high AWGN setting explain away the high-iteration decoder events?",
+  "verified": {
+    "configured_awgn_snr_db": 40,
+    "reference_tx_dl_power": 0.0112,
+    "fixed_ue_noise_power": 1.12e-06,
+    "noise_semantics": "Absolute receiver noise, not continuously adjusted to maintain 40 dB after propagation.",
+    "event_sample": 806837766,
+    "epoch_s0": 122503680,
+    "scenario_time_s": 29.702000260416668,
+    "channel_update_k": 297,
+    "trace_wideband_gain_db": -13.635655132332644,
+    "nominal_reference_snr_after_gain_db": 26.364344867667356,
+    "ue_logged_snr_db": -2.5,
+    "native_pdsch_us": 921,
+    "native_avg_ldpc_iterations": 9.7,
+    "native_crc": "KO"
+  },
+  "estimator_source": {
+    "path": "/workspace/ocudu-spark-ranb/src/srsRAN_4G-local/lib/src/phy/ch_estimation/dmrs_sch.c",
+    "lines": "815-872",
+    "method": "After estimated timing-slope compensation, RSRP is squared magnitude of averaged complex pilot estimates; EPRE is average squared pilot magnitude. n0=EPRE-RSRP; SNR=10log10(RSRP/n0).",
+    "implication": "Channel variation or residual distortion across pilot estimates contributes to the residual; this is not a direct readback of injected AWGN power."
+  },
+  "conclusion": "High-iteration PDSCH decoding is measured; attribution of the difficult decoder input to genuinely poor propagation/noise is not established. Fixed noise and roughly 14 dB path gain loss alone do not explain a 40 dB setting turning into -2.5 dB reported PDSCH SNR.",
+  "remaining_question": "Separate channel/UE-estimation residuals from actual waveform distortion using aligned boundary IQ around the event; existing first-buffer captures do not span this event.",
+  "html_modified": false
+}
