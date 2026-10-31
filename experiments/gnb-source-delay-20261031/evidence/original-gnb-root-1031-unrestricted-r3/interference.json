@@ -1,0 +1,31 @@
+{
+  "mode": "unrestricted",
+  "mask": "0-19",
+  "pid": 3254392,
+  "start_mono_ns": 3192765708938474,
+  "end_mono_ns": 3192769074426867,
+  "start_unix_ns": 1793440254329396664,
+  "command": [
+    "sudo",
+    "-n",
+    "taskset",
+    "-c",
+    "0-19",
+    "/workspace/sionna-venv/bin/python",
+    "/workspace/gpuch/one-ue-realtime-20261030/analyze_causes.py",
+    "/workspace/gpuch/one-ue-realtime-20261030/u1/original-gnb-root-1031-unrestricted-r3/analysis-workload"
+  ],
+  "threads": {
+    "3254392": {
+      "cpus": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "comm": "sudo"
+    }
+  },
+  "original_analyzer_output_mtime_ns": 1793361077243617539
+}

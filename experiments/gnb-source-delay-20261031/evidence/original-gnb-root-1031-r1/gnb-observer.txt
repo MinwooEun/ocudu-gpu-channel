@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/workspace/gpuch/gnb-source-delay-20261031/capture_gnb.py", line 31, in <module>
+    with trace.open('a') as f:f.write(f'{prefix}:{group}/{kind} {binary}:0x{addr:x}{args}\n')
+         ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 22] Invalid argument

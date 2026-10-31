@@ -1437,5 +1437,6 @@
     "instrumented_source": "broker-room.cpp",
     "instrumented_patch": "broker-room.patch",
     "raw": "Full wire, pacing and scheduler originals retained on Spark; local per-case raw-index.json records locations and sizes"
-  }
+  },
+  "followup_20261031": "../gnb-source-delay-20261031/conclusions.json identifies the gNB CUDA-wait scheduling mechanism and reproduces/removes it by controlled CPU affinity. Earlier numbers remain historical."
 }

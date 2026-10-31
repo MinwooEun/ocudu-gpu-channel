@@ -1,0 +1,220 @@
+{
+  "load_bias": "0xb48143f40000",
+  "events": [
+    {
+      "tid": 3165279,
+      "start_ns": 3113585630868034,
+      "end_ns": 3113585631074596,
+      "yield_us": 206.562,
+      "cpu_before": 11,
+      "cpu_after": 11,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585631936303,
+      "end_ns": 3113585634498831,
+      "yield_us": 2562.528,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585635174151,
+      "end_ns": 3113585637799720,
+      "yield_us": 2625.569,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585638327726,
+      "end_ns": 3113585641014640,
+      "yield_us": 2686.914,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585641284419,
+      "end_ns": 3113585644132294,
+      "yield_us": 2847.875,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145820868",
+      "elf_offset": "0x18e0868",
+      "function": "cudaEventSynchronizeYielding (PUSCH)"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585644763390,
+      "end_ns": 3113585647343774,
+      "yield_us": 2580.384,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585647997542,
+      "end_ns": 3113585650662072,
+      "yield_us": 2664.53,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585652367181,
+      "end_ns": 3113585655050638,
+      "yield_us": 2683.457,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585655736759,
+      "end_ns": 3113585658375991,
+      "yield_us": 2639.232,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585658923550,
+      "end_ns": 3113585661655920,
+      "yield_us": 2732.37,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585662209111,
+      "end_ns": 3113585664871704,
+      "yield_us": 2662.593,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585665197212,
+      "end_ns": 3113585667983887,
+      "yield_us": 2786.675,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145820868",
+      "elf_offset": "0x18e0868",
+      "function": "cudaEventSynchronizeYielding (PUSCH)"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585668562102,
+      "end_ns": 3113585671179686,
+      "yield_us": 2617.584,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585672258884,
+      "end_ns": 3113585674966134,
+      "yield_us": 2707.25,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585675525116,
+      "end_ns": 3113585678175725,
+      "yield_us": 2650.609,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585678714260,
+      "end_ns": 3113585681392117,
+      "yield_us": 2677.857,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585681926316,
+      "end_ns": 3113585684609741,
+      "yield_us": 2683.425,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585685149348,
+      "end_ns": 3113585687830293,
+      "yield_us": 2680.945,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145aa222c",
+      "elf_offset": "0x1b6222c",
+      "function": "flush_pending_output -> wait_event_yielding"
+    },
+    {
+      "tid": 3165279,
+      "start_ns": 3113585688630831,
+      "end_ns": 3113585689903967,
+      "yield_us": 1273.136,
+      "cpu_before": 6,
+      "cpu_after": 6,
+      "caller_return_pc": "0xb48145820868",
+      "elf_offset": "0x18e0868",
+      "function": "cudaEventSynchronizeYielding (PUSCH)"
+    }
+  ],
+  "counts": {
+    "flush_pending_output -> wait_event_yielding": 16,
+    "cudaEventSynchronizeYielding (PUSCH)": 3
+  },
+  "total_yield_us": 46969.495,
+  "limitation": "This historical run captured yield intervals and caller PCs, but not scheduler ownership. Peer ownership is established by the new controlled co-location experiment."
+}

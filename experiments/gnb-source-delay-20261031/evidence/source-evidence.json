@@ -1,0 +1,50 @@
+{
+  "lib/phy/cuda/src/low_phy_tx.cu": {
+    "sha256": "57bf9930e92c533fab65e617170f2a5f32ed1eca4249d44df15a33ed3f9847ec",
+    "excerpts": [
+      {
+        "line": 247,
+        "text": "namespace {\n\nstatic bool wait_event_yielding(cudaEvent_t event)\n{\n    if (event == nullptr) {\n        return false;\n    }\n    cudaError_t status;\n    while ((status = cudaEventQuery(event)) == cudaErrorNotReady) {\n        sched_yield();\n    }\n    return status == cudaSuccess;\n}\n\nstatic bool flush_pending_output(ocudu_lowphy_tx_handle* h, bool wait_for_device)\n{\n    if (h == nullptr) {\n        return true;\n    }\n"
+      },
+      {
+        "line": 266,
+        "text": "\n    if (!h->pending_output_valid) {\n        if (wait_for_device && h->done_event_recorded && !wait_event_yielding(h->done_event)) {\n            return false;\n        }\n        h->done_event_recorded = false;\n        return true;\n    }\n    if (wait_for_device && (!h->done_event_recorded || !wait_event_yielding(h->done_event))) {\n        return false;\n    }\n    if ((h->h_output_staging == nullptr) || (h->pending_output_nof_ports <= 0) ||\n        (h->pending_output_port_bytes == 0)) {\n        h->pending_output_valid = false;\n        h->done_event_recorded = false;\n        return false;\n    }\n\n    if (h->pending_output_ports_are_contiguous) {\n        if (h->pending_output_ports[0] == nullptr) {"
+      },
+      {
+        "line": 272,
+        "text": "        return true;\n    }\n    if (wait_for_device && (!h->done_event_recorded || !wait_event_yielding(h->done_event))) {\n        return false;\n    }\n    if ((h->h_output_staging == nullptr) || (h->pending_output_nof_ports <= 0) ||\n        (h->pending_output_port_bytes == 0)) {\n        h->pending_output_valid = false;\n        h->done_event_recorded = false;\n        return false;\n    }\n\n    if (h->pending_output_ports_are_contiguous) {\n        if (h->pending_output_ports[0] == nullptr) {\n            h->pending_output_valid = false;\n            h->done_event_recorded = false;\n            return false;\n        }\n        std::memcpy(h->pending_output_ports[0],\n                    h->h_output_staging,"
+      },
+      {
+        "line": 591,
+        "text": "    int slot = h->h_grid_next_slot;\n    h->h_grid_next_slot = (h->h_grid_next_slot + 1) % HOST_GRID_STAGING_SLOTS;\n    if (h->h_grid_event_recorded[slot] && !wait_event_yielding(h->h_grid_ready_events[slot])) {\n        return nullptr;\n    }\n    h->h_grid_event_recorded[slot] = false;\n    if (slot_index != nullptr) {\n        *slot_index = slot;\n    }\n    return h->h_grid_staging[slot];\n}\n\nstatic bool enqueue_device_path_uncaptured(ocudu_lowphy_tx_handle* h, const void* d_grid_cbf16)\n{\n    int batches = h->cfg.nof_ports * h->cfg.nof_symbols;\n    int grid_blocks = (batches * h->cfg.dft_size + THREADS - 1) / THREADS;\n    int max_symbol_samples = 0;\n    for (int symbol = 0; symbol != h->cfg.nof_symbols; ++symbol) {\n        int symbol_end = (symbol + 1 < h->cfg.nof_symbols) ? h->cfg.symbol_offsets[symbol + 1] : h->cfg.nof_samples;\n        max_symbol_samples = std::max(max_symbol_samples, symbol_end - h->cfg.symbol_offsets[symbol]);"
+      }
+    ]
+  },
+  "lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.cpp": {
+    "sha256": "301b4090370241147b793dd1c8e733b16ed32d837a38ec551df8377848559401",
+    "excerpts": [
+      {
+        "line": 386,
+        "text": "/// \\param event The CUDA event to wait for.\n/// \\return cudaSuccess on success, or an error code if the event had an error.\ninline cudaError_t cudaEventSynchronizeYielding(cudaEvent_t event)\n{\n  if (cuda_sync_blocking_enabled()) {\n    return cudaEventSynchronize(event);\n  }\n  cudaError_t err;\n  while ((err = cudaEventQuery(event)) == cudaErrorNotReady) {\n    cuda_sync_poll_pause();\n  }\n  return err;\n}\n\nstatic unsigned get_gpu_ulsch_demultiplex_l1(const symbol_slot_mask& dmrs_symbol_mask)\n{\n  int first_symbol_dmrs = dmrs_symbol_mask.find_lowest(true);\n  ocudu_assert(first_symbol_dmrs >= 0, \"No DM-RS symbol found.\");\n  int first_symbol_without_dmrs =\n      dmrs_symbol_mask.find_lowest(static_cast<size_t>(first_symbol_dmrs), dmrs_symbol_mask.size(), false);"
+      }
+    ]
+  },
+  "lib/phy/upper/channel_coding/ldpc/cuda/cuda_rt_utils.h": {
+    "sha256": "e882149f63bcaee521bb9cae4f61732071e714724e61d5f13854f4abbb67f88b",
+    "excerpts": [
+      {
+        "line": 188,
+        "text": "/// \\param event The CUDA event to synchronize on.\n/// \\return cudaSuccess on success, or an error code if the event had an error.\ninline cudaError_t cudaEventSynchronizeYielding(cudaEvent_t event)\n{\n  if (cuda_sync_blocking_enabled()) {\n    return cudaEventSynchronize(event);\n  }\n  cudaError_t err;\n  while ((err = cudaEventQuery(event)) == cudaErrorNotReady) {\n    cuda_sync_poll_pause();\n  }\n  return err;\n}\n\n} // namespace ocudu"
+      }
+    ]
+  },
+  "apps/services/worker_manager/worker_manager.cpp": {
+    "sha256": "447cacb2d0e1e80226419fd2a23c00d54f063485e574367402657462e50877f3",
+    "excerpts": [
+      {
+        "line": 407,
+        "text": "  // Instantiate workers for the DU-low.\n  if (not rt_mode) {\n    create_prio_worker(\"phy_worker\",\n                       \"phy_exec\",\n                       task_worker_queue_size,\n                       concurrent_queue_policy::locking_mpsc,\n                       std::nullopt,\n                       main_pool_affinity_mng.calcute_affinity_mask(sched_affinity_mask_types::main),\n                       os_thread_realtime_priority::no_realtime());\n\n    // Get common physical layer executor.\n    task_executor* phy_exec = exec_mng.executors().at(\"phy_exec\");\n\n    // Fill the task executors.\n    du_low_exec_mapper_config.executors =\n        odu::du_low_executor_mapper_single_exec_config{.common_executor = {phy_exec, nof_workers_general_pool}};\n\n  } else {\n    // RF case.\n"
+      }
+    ]
+  }
+}

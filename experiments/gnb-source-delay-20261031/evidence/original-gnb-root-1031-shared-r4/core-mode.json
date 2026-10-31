@@ -1,0 +1,43 @@
+{
+  "mode": "shared",
+  "start_mono_ns": 3193222172034891,
+  "applied_mono_ns": 3193222172162076,
+  "restored_mono_ns": 3193222422283557,
+  "changes": [
+    {
+      "comm": "phy_worker",
+      "tid": 3256061,
+      "before": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "after": [
+        6
+      ]
+    },
+    {
+      "comm": "radio",
+      "tid": 3256062,
+      "before": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "after": [
+        6
+      ]
+    }
+  ],
+  "policy": "No priority or CPU allocation increase; affinity restored after 250 ms"
+}

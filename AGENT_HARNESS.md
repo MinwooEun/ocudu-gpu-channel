@@ -44,6 +44,10 @@ Reusable workflow and preferences. File ownership and update rules are defined i
 
 - Distinguish how delay accumulates from what initiates it. A wait interval or pacer rebase is not an upstream root cause; identify the blocking operation or scheduling event before calling that cause resolved.
 
+- Resolve captured wait/yield caller addresses against the actual ELF before adding broad profiling. Join runnable intervals to CPU ownership, then compare shared versus separate placement within the same CPU budget; an allowed CPU range does not reserve one core per thread.
+
+- Keep heavy trace analysis outside live measurement windows and bind observers to auxiliary CPUs. Audit CPU activity as well as GPU occupancy before calling runs isolated; reproduce suspected interference before attributing it as the initiating cause.
+
 - Audit speed windows independently from KPI warmup exclusion. For small progress deficits, account for pacing deadline rebases and instrumentation I/O on the critical thread before attributing the deficit to processing capacity.
 
 - Distinguish channel-function timing, dummy-IQ transport tests and live UE/gNB tests explicitly; ZMQ use alone does not identify a workload. Do not transfer bottleneck claims between these configurations without matched evidence.

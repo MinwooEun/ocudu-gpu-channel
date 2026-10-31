@@ -1,0 +1,397 @@
+{
+  "including_warmup": {
+    "radio_s": 39.9,
+    "wall_s": 40.070675132,
+    "ratio": 0.9957406474575793,
+    "loss_us": 170675.13199999952,
+    "rebase_count": 67,
+    "rebase_sum_us": 170661.567,
+    "largest_rebases": [
+      {
+        "kind": "rebase",
+        "now_ns": "3193222378844876",
+        "node": "gnb0",
+        "sample": "674357765",
+        "count": "23035",
+        "expected_due_ns": "3193222369033156",
+        "due_ns": "3193222377844876",
+        "shift_ns": "8811720",
+        "room_us": "0.256",
+        "data_us": "9715.334",
+        "read_us": "8.640",
+        "process_us": "48.097",
+        "previous_loop_end_ns": "3193222369071877"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222308412502",
+        "node": "gnb0",
+        "sample": "673804805",
+        "count": "23035",
+        "expected_due_ns": "3193222298973810",
+        "due_ns": "3193222307412502",
+        "shift_ns": "8438692",
+        "room_us": "0.256",
+        "data_us": "9328.994",
+        "read_us": "0.320",
+        "process_us": "37.680",
+        "previous_loop_end_ns": "3193222299044404"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222278607869",
+        "node": "gnb0",
+        "sample": "673620485",
+        "count": "23035",
+        "expected_due_ns": "3193222269557297",
+        "due_ns": "3193222277607869",
+        "shift_ns": "8050572",
+        "room_us": "0.320",
+        "data_us": "8987.070",
+        "read_us": "0.560",
+        "process_us": "57.969",
+        "previous_loop_end_ns": "3193222269561150"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222425448742",
+        "node": "gnb0",
+        "sample": "674726405",
+        "count": "23035",
+        "expected_due_ns": "3193222418033943",
+        "due_ns": "3193222424448742",
+        "shift_ns": "6414799",
+        "room_us": "0.240",
+        "data_us": "7247.564",
+        "read_us": "0.416",
+        "process_us": "99.441",
+        "previous_loop_end_ns": "3193222418100393"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222227204928",
+        "node": "gnb0",
+        "sample": "673251845",
+        "count": "23035",
+        "expected_due_ns": "3193222220689071",
+        "due_ns": "3193222226204928",
+        "shift_ns": "5515857",
+        "room_us": "0.256",
+        "data_us": "6459.092",
+        "read_us": "0.368",
+        "process_us": "52.561",
+        "previous_loop_end_ns": "3193222220692011"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222261953149",
+        "node": "gnb0",
+        "sample": "673528325",
+        "count": "23035",
+        "expected_due_ns": "3193222255589017",
+        "due_ns": "3193222260953149",
+        "shift_ns": "5364132",
+        "room_us": "0.240",
+        "data_us": "6269.442",
+        "read_us": "0.432",
+        "process_us": "53.472",
+        "previous_loop_end_ns": "3193222255628651"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222403125147",
+        "node": "gnb0",
+        "sample": "674542085",
+        "count": "23035",
+        "expected_due_ns": "3193222396942718",
+        "due_ns": "3193222402125147",
+        "shift_ns": "5182429",
+        "room_us": "0.240",
+        "data_us": "6138.929",
+        "read_us": "0.336",
+        "process_us": "38.448",
+        "previous_loop_end_ns": "3193222396946458"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222332558981",
+        "node": "gnb0",
+        "sample": "673989125",
+        "count": "23035",
+        "expected_due_ns": "3193222326381783",
+        "due_ns": "3193222331558981",
+        "shift_ns": "5177198",
+        "room_us": "0.272",
+        "data_us": "6132.384",
+        "read_us": "1.328",
+        "process_us": "38.193",
+        "previous_loop_end_ns": "3193222326385700"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222200088194",
+        "node": "gnb0",
+        "sample": "673067525",
+        "count": "23035",
+        "expected_due_ns": "3193222194148775",
+        "due_ns": "3193222199088194",
+        "shift_ns": "4939419",
+        "room_us": "0.272",
+        "data_us": "5883.198",
+        "read_us": "11.664",
+        "process_us": "40.336",
+        "previous_loop_end_ns": "3193222194152052"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222351614125",
+        "node": "gnb0",
+        "sample": "674173445",
+        "count": "23035",
+        "expected_due_ns": "3193222347483329",
+        "due_ns": "3193222350614125",
+        "shift_ns": "3130796",
+        "room_us": "0.240",
+        "data_us": "4055.851",
+        "read_us": "0.448",
+        "process_us": "36.432",
+        "previous_loop_end_ns": "3193222347520370"
+      }
+    ]
+  },
+  "post_warmup": {
+    "radio_s": 29.9,
+    "wall_s": 30.070613154,
+    "ratio": 0.9943262495804045,
+    "loss_us": 170613.15400000155,
+    "rebase_count": 67,
+    "rebase_sum_us": 170661.567,
+    "largest_rebases": [
+      {
+        "kind": "rebase",
+        "now_ns": "3193222378844876",
+        "node": "gnb0",
+        "sample": "674357765",
+        "count": "23035",
+        "expected_due_ns": "3193222369033156",
+        "due_ns": "3193222377844876",
+        "shift_ns": "8811720",
+        "room_us": "0.256",
+        "data_us": "9715.334",
+        "read_us": "8.640",
+        "process_us": "48.097",
+        "previous_loop_end_ns": "3193222369071877"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222308412502",
+        "node": "gnb0",
+        "sample": "673804805",
+        "count": "23035",
+        "expected_due_ns": "3193222298973810",
+        "due_ns": "3193222307412502",
+        "shift_ns": "8438692",
+        "room_us": "0.256",
+        "data_us": "9328.994",
+        "read_us": "0.320",
+        "process_us": "37.680",
+        "previous_loop_end_ns": "3193222299044404"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222278607869",
+        "node": "gnb0",
+        "sample": "673620485",
+        "count": "23035",
+        "expected_due_ns": "3193222269557297",
+        "due_ns": "3193222277607869",
+        "shift_ns": "8050572",
+        "room_us": "0.320",
+        "data_us": "8987.070",
+        "read_us": "0.560",
+        "process_us": "57.969",
+        "previous_loop_end_ns": "3193222269561150"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222425448742",
+        "node": "gnb0",
+        "sample": "674726405",
+        "count": "23035",
+        "expected_due_ns": "3193222418033943",
+        "due_ns": "3193222424448742",
+        "shift_ns": "6414799",
+        "room_us": "0.240",
+        "data_us": "7247.564",
+        "read_us": "0.416",
+        "process_us": "99.441",
+        "previous_loop_end_ns": "3193222418100393"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222227204928",
+        "node": "gnb0",
+        "sample": "673251845",
+        "count": "23035",
+        "expected_due_ns": "3193222220689071",
+        "due_ns": "3193222226204928",
+        "shift_ns": "5515857",
+        "room_us": "0.256",
+        "data_us": "6459.092",
+        "read_us": "0.368",
+        "process_us": "52.561",
+        "previous_loop_end_ns": "3193222220692011"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222261953149",
+        "node": "gnb0",
+        "sample": "673528325",
+        "count": "23035",
+        "expected_due_ns": "3193222255589017",
+        "due_ns": "3193222260953149",
+        "shift_ns": "5364132",
+        "room_us": "0.240",
+        "data_us": "6269.442",
+        "read_us": "0.432",
+        "process_us": "53.472",
+        "previous_loop_end_ns": "3193222255628651"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222403125147",
+        "node": "gnb0",
+        "sample": "674542085",
+        "count": "23035",
+        "expected_due_ns": "3193222396942718",
+        "due_ns": "3193222402125147",
+        "shift_ns": "5182429",
+        "room_us": "0.240",
+        "data_us": "6138.929",
+        "read_us": "0.336",
+        "process_us": "38.448",
+        "previous_loop_end_ns": "3193222396946458"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222332558981",
+        "node": "gnb0",
+        "sample": "673989125",
+        "count": "23035",
+        "expected_due_ns": "3193222326381783",
+        "due_ns": "3193222331558981",
+        "shift_ns": "5177198",
+        "room_us": "0.272",
+        "data_us": "6132.384",
+        "read_us": "1.328",
+        "process_us": "38.193",
+        "previous_loop_end_ns": "3193222326385700"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222200088194",
+        "node": "gnb0",
+        "sample": "673067525",
+        "count": "23035",
+        "expected_due_ns": "3193222194148775",
+        "due_ns": "3193222199088194",
+        "shift_ns": "4939419",
+        "room_us": "0.272",
+        "data_us": "5883.198",
+        "read_us": "11.664",
+        "process_us": "40.336",
+        "previous_loop_end_ns": "3193222194152052"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3193222351614125",
+        "node": "gnb0",
+        "sample": "674173445",
+        "count": "23035",
+        "expected_due_ns": "3193222347483329",
+        "due_ns": "3193222350614125",
+        "shift_ns": "3130796",
+        "room_us": "0.240",
+        "data_us": "4055.851",
+        "read_us": "0.448",
+        "process_us": "36.432",
+        "previous_loop_end_ns": "3193222347520370"
+      }
+    ]
+  },
+  "qualification": {
+    "case": "original",
+    "ue_count": 1,
+    "tag": "gnb-root-1031-shared-r4",
+    "returncode": 0,
+    "wall_s": 74.98013377794996,
+    "metrics": {
+      "broker": {
+        "rx_starvations": 23,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "real_time_ratio": 0.9957406474575793,
+      "slots_per_wall_second": 995.7406474575793
+    },
+    "valid_segments": 30,
+    "gate": {
+      "all_ues_attached": true,
+      "broker": {
+        "control_batches_committed": 802,
+        "rx_requests": 141166,
+        "rx_starvations": 23,
+        "tx_pulls": 106445,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "broker_clean": true,
+      "gnb_alive_at_stop": 1,
+      "measure_status": "completed",
+      "per_ue": {
+        "ue0": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        }
+      },
+      "policy": "rr",
+      "policy_check": {
+        "gnbs": {
+          "gnb0": {
+            "found_in_config_dump": [
+              "rr"
+            ],
+            "link_adaptation": {
+              "found_in_config_dump": {
+                "link_adaptation": "harq_olla"
+              },
+              "ok": true,
+              "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+              "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+              "requested": {
+                "link_adaptation": "harq_olla"
+              }
+            },
+            "ok": true,
+            "policy_block": "      rr_sched: ~\n",
+            "requested": "rr"
+          }
+        },
+        "ok": true
+      },
+      "replay_status": "measure_end",
+      "srsue_alive_at_stop": 1,
+      "status": "passed"
+    },
+    "report_exists": true,
+    "diagnostic_trace": false
+  }
+}

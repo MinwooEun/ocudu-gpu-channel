@@ -1,0 +1,250 @@
+{
+  "status": "Cause identified and reproduced: CFS CUDA-completion yield competes with busy-polling gNB radio on the same CPU",
+  "configuration": {
+    "platform": "Spark GB10",
+    "cells": 1,
+    "ues": 1,
+    "bandwidth_mhz": 20,
+    "sample_rate_hz": 23040000,
+    "antennas": "1x1",
+    "gnb": "unchanged CUDA gNB",
+    "ue": "CPU srsUE with previously isolated pilot noise-estimator repair",
+    "measure_s": 30,
+    "warmup_s": 10,
+    "endpoint_span_radio_s": 29.9
+  },
+  "causal_chain": [
+    "The same ordinary-priority phy_worker performs CUDA completion polling and the gNB PHY tasks.",
+    "Its OFDM flush_pending_output and PUSCH cudaEventSynchronizeYielding call sched_yield when an event is not ready.",
+    "If phy_worker shares a CPU with the continuously runnable radio polling thread, yielding permits radio to occupy that CPU for milliseconds.",
+    "The PHY thread remains runnable but cannot check completion, copy/submit output, or advance to radio TX; source IQ arrives late.",
+    "Broker waits for this missing input; its unchanged one-batch catch-up bound retains excess delay in cumulative progress."
+  ],
+  "direct_scheduler_example": {
+    "start_ns": 3193222257536575,
+    "end_ns": 3193222260507950,
+    "yield_us": 2971.375,
+    "cpu_before": 6,
+    "cpu_after": 6,
+    "caller_return_pc": "0xbf6fbd920868",
+    "elf_return_offset": "0x18e0868",
+    "function": "cudaEventSynchronizeYielding (PUSCH)",
+    "radio_cpu_us": 2854.1580000000004,
+    "phy_cpu_us": 1.968,
+    "other_cpu_us": 115.24900000000002
+  },
+  "controlled_comparison": {
+    "intervention": "250 ms at channel tag240: radio CPU6 in both; PHY CPU6 versus CPU7, all inside original CPU5-12 mask. Both affinities restored afterward.",
+    "binary_hashes_identical": true,
+    "input_hashes_identical": true,
+    "shared": {
+      "long_phy_yields_over_100us": 72,
+      "post_warmup": {
+        "radio_s": 29.9,
+        "wall_s": 30.070613154,
+        "ratio": 0.9943262495804045,
+        "loss_us": 170613.15400000155,
+        "rebase_count": 67,
+        "rebase_sum_us": 170661.567,
+        "largest_rebases": [
+          {
+            "kind": "rebase",
+            "now_ns": "3193222378844876",
+            "node": "gnb0",
+            "sample": "674357765",
+            "count": "23035",
+            "expected_due_ns": "3193222369033156",
+            "due_ns": "3193222377844876",
+            "shift_ns": "8811720",
+            "room_us": "0.256",
+            "data_us": "9715.334",
+            "read_us": "8.640",
+            "process_us": "48.097",
+            "previous_loop_end_ns": "3193222369071877"
+          },
+          {
+            "kind": "rebase",
+            "now_ns": "3193222308412502",
+            "node": "gnb0",
+            "sample": "673804805",
+            "count": "23035",
+            "expected_due_ns": "3193222298973810",
+            "due_ns": "3193222307412502",
+            "shift_ns": "8438692",
+            "room_us": "0.256",
+            "data_us": "9328.994",
+            "read_us": "0.320",
+            "process_us": "37.680",
+            "previous_loop_end_ns": "3193222299044404"
+          },
+          {
+            "kind": "rebase",
+            "now_ns": "3193222278607869",
+            "node": "gnb0",
+            "sample": "673620485",
+            "count": "23035",
+            "expected_due_ns": "3193222269557297",
+            "due_ns": "3193222277607869",
+            "shift_ns": "8050572",
+            "room_us": "0.320",
+            "data_us": "8987.070",
+            "read_us": "0.560",
+            "process_us": "57.969",
+            "previous_loop_end_ns": "3193222269561150"
+          },
+          {
+            "kind": "rebase",
+            "now_ns": "3193222425448742",
+            "node": "gnb0",
+            "sample": "674726405",
+            "count": "23035",
+            "expected_due_ns": "3193222418033943",
+            "due_ns": "3193222424448742",
+            "shift_ns": "6414799",
+            "room_us": "0.240",
+            "data_us": "7247.564",
+            "read_us": "0.416",
+            "process_us": "99.441",
+            "previous_loop_end_ns": "3193222418100393"
+          },
+          {
+            "kind": "rebase",
+            "now_ns": "3193222227204928",
+            "node": "gnb0",
+            "sample": "673251845",
+            "count": "23035",
+            "expected_due_ns": "3193222220689071",
+            "due_ns": "3193222226204928",
+            "shift_ns": "5515857",
+            "room_us": "0.256",
+            "data_us": "6459.092",
+            "read_us": "0.368",
+            "process_us": "52.561",
+            "previous_loop_end_ns": "3193222220692011"
+          },
+          {
+            "kind": "rebase",
+            "now_ns": "3193222261953149",
+            "node": "gnb0",
+            "sample": "673528325",
+            "count": "23035",
+            "expected_due_ns": "3193222255589017",
+            "due_ns": "3193222260953149",
+            "shift_ns": "5364132",
+            "room_us": "0.240",
+            "data_us": "6269.442",
+            "read_us": "0.432",
+            "process_us": "53.472",
+            "previous_loop_end_ns": "3193222255628651"
+          },
+          {
+            "kind": "rebase",
+            "now_ns": "3193222403125147",
+            "node": "gnb0",
+            "sample": "674542085",
+            "count": "23035",
+            "expected_due_ns": "3193222396942718",
+            "due_ns": "3193222402125147",
+            "shift_ns": "5182429",
+            "room_us": "0.240",
+            "data_us": "6138.929",
+            "read_us": "0.336",
+            "process_us": "38.448",
+            "previous_loop_end_ns": "3193222396946458"
+          },
+          {
+            "kind": "rebase",
+            "now_ns": "3193222332558981",
+            "node": "gnb0",
+            "sample": "673989125",
+            "count": "23035",
+            "expected_due_ns": "3193222326381783",
+            "due_ns": "3193222331558981",
+            "shift_ns": "5177198",
+            "room_us": "0.272",
+            "data_us": "6132.384",
+            "read_us": "1.328",
+            "process_us": "38.193",
+            "previous_loop_end_ns": "3193222326385700"
+          },
+          {
+            "kind": "rebase",
+            "now_ns": "3193222200088194",
+            "node": "gnb0",
+            "sample": "673067525",
+            "count": "23035",
+            "expected_due_ns": "3193222194148775",
+            "due_ns": "3193222199088194",
+            "shift_ns": "4939419",
+            "room_us": "0.272",
+            "data_us": "5883.198",
+            "read_us": "11.664",
+            "process_us": "40.336",
+            "previous_loop_end_ns": "3193222194152052"
+          },
+          {
+            "kind": "rebase",
+            "now_ns": "3193222351614125",
+            "node": "gnb0",
+            "sample": "674173445",
+            "count": "23035",
+            "expected_due_ns": "3193222347483329",
+            "due_ns": "3193222350614125",
+            "shift_ns": "3130796",
+            "room_us": "0.240",
+            "data_us": "4055.851",
+            "read_us": "0.448",
+            "process_us": "36.432",
+            "previous_loop_end_ns": "3193222347520370"
+          }
+        ]
+      },
+      "worst_source_gap_us": 9366.754
+    },
+    "separate": {
+      "long_phy_yields_over_100us": 0,
+      "post_warmup": {
+        "radio_s": 29.9,
+        "wall_s": 29.899999395,
+        "ratio": 1.0000000202341142,
+        "loss_us": -0.605000000319933,
+        "rebase_count": 0,
+        "rebase_sum_us": 0.0,
+        "largest_rebases": []
+      },
+      "worst_source_gap_us": 1425.806
+    },
+    "connectivity": "Both runs passed live gates and 30/30 segments; shared-core run intentionally violates real-time deadlines and is diagnostic, not real-time qualified."
+  },
+  "historical_43ms": {
+    "evidence": "evidence/historical-43ms-yields.json",
+    "return_addresses": "Two captured return PCs resolve to these exact CUDA wait functions with one consistent ELF load bias 0xb48143f40000.",
+    "yield_sum_in_selected_burst_us": 46969.495,
+    "limitation": "No scheduler ownership was captured in that historical run. New scheduler traces plus co-location/separation intervention prove the mechanism; attribution of the precise historical peer is an inference."
+  },
+  "measurement": {
+    "separate_radio_s": 29.9,
+    "separate_wall_s": 29.899999395,
+    "separate_ratio": 1.0000000202341142,
+    "separate_deadline_rebases": 0,
+    "interpretation": "The -0.605 us tag-endpoint phase difference is not accumulated lag. No raw metric was rounded or rewritten."
+  },
+  "remedy": {
+    "primary": "Keep busy radio and CUDA-completion PHY worker on separate reserved CPUs within the existing gNB allocation. A common allowed affinity range does not ensure separation.",
+    "other": "Replace unconditional OS yield in very short GPU completion polls with an explicitly bounded waiting policy, validated separately; this turn does not ship a gNB binary patch.",
+    "trap": "OCUDU_CUDA_SYNC_SPIN_US is not a no-yield spin option in this source: its spin loop still calls sched_yield, and low_phy_tx wait_event_yielding unconditionally yields.",
+    "compatibility": "No IQ sample, CUDA kernel, ZMQ wire format, sample rate, or timing metric changed in the core-affinity comparison."
+  },
+  "rejected_or_unproven": {
+    "analyzer": "Historical unpinned analysis overlaps the old burst, but an identical controlled analyzer rerun did not reproduce lag. It is not established as the initiating actor.",
+    "gpu_execution": "Device completion timestamps were not measured. CPU ownership and the affinity intervention establish the excess host scheduling component without equating yield wall time with kernel execution."
+  },
+  "artifacts": {
+    "original_source": "evidence/source-evidence.json",
+    "shared": "evidence/original-gnb-root-1031-shared-r4/core-analysis.json",
+    "separate": "evidence/original-gnb-root-1031-separate-r5/core-analysis.json",
+    "spark_raw_root": "/workspace/gpuch/one-ue-realtime-20261030/u1",
+    "first_attempt": "r1 live gate passed, but its observer failed on tracefs open flags; excluded from the scheduler comparison.",
+    "cleanup": "All owned capture/reservation/workload processes stopped, affinity changes restored, private uprobes removed, HTML documents unchanged."
+  }
+}

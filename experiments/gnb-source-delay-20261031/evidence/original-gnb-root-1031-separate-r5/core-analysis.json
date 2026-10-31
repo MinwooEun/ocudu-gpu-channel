@@ -1,0 +1,120 @@
+{
+  "mode": {
+    "mode": "separate",
+    "start_mono_ns": 3193315298187216,
+    "applied_mono_ns": 3193315298271585,
+    "restored_mono_ns": 3193315548393944,
+    "changes": [
+      {
+        "comm": "phy_worker",
+        "tid": 3258022,
+        "before": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "after": [
+          7
+        ]
+      },
+      {
+        "comm": "radio",
+        "tid": 3258023,
+        "before": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "after": [
+          6
+        ]
+      }
+    ],
+    "policy": "No priority or CPU allocation increase; affinity restored after 250 ms"
+  },
+  "namespace_tids": {
+    "phy_worker": 3258022,
+    "radio": 3258023
+  },
+  "host_tids": {
+    "phy_worker": 28702,
+    "radio": 28703
+  },
+  "elf_load_bias": "0xc1bcef550000",
+  "long_phy_yields_in_window": 0,
+  "largest_yields": [],
+  "largest_source_iq_gaps": [
+    {
+      "previous_send_end_ns": 3193315550636606,
+      "next_send_start_ns": 3193315552062412,
+      "gap_us": 1425.806
+    },
+    {
+      "previous_send_end_ns": 3193315357618347,
+      "next_send_start_ns": 3193315358855464,
+      "gap_us": 1237.117
+    },
+    {
+      "previous_send_end_ns": 3193315389530695,
+      "next_send_start_ns": 3193315390766019,
+      "gap_us": 1235.324
+    },
+    {
+      "previous_send_end_ns": 3193315548678219,
+      "next_send_start_ns": 3193315549912407,
+      "gap_us": 1234.188
+    },
+    {
+      "previous_send_end_ns": 3193315448660975,
+      "next_send_start_ns": 3193315449880635,
+      "gap_us": 1219.66
+    },
+    {
+      "previous_send_end_ns": 3193315400651109,
+      "next_send_start_ns": 3193315401865441,
+      "gap_us": 1214.332
+    },
+    {
+      "previous_send_end_ns": 3193315510669315,
+      "next_send_start_ns": 3193315511870287,
+      "gap_us": 1200.972
+    },
+    {
+      "previous_send_end_ns": 3193315450547649,
+      "next_send_start_ns": 3193315451734765,
+      "gap_us": 1187.116
+    },
+    {
+      "previous_send_end_ns": 3193315335663090,
+      "next_send_start_ns": 3193315336846862,
+      "gap_us": 1183.772
+    },
+    {
+      "previous_send_end_ns": 3193315527639979,
+      "next_send_start_ns": 3193315528823639,
+      "gap_us": 1183.66
+    }
+  ],
+  "rebases_in_window_and_20ms_tail": 0,
+  "rebase_sum_us_in_window_and_tail": 0.0,
+  "post_warmup": {
+    "radio_s": 29.9,
+    "wall_s": 29.899999395,
+    "ratio": 1.0000000202341142,
+    "loss_us": -0.605000000319933,
+    "rebase_count": 0,
+    "rebase_sum_us": 0.0,
+    "largest_rebases": []
+  },
+  "limitation": "The scheduler join measures which CPU thread ran during the CUDA-wait yield; GPU completion time itself is not measured. Affinity is a controlled intervention within the original gNB allocation, not a new core allocation."
+}

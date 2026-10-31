@@ -1,0 +1,41 @@
+{
+  "remote_case": "/workspace/gpuch/one-ue-realtime-20261030/u1/original-gnb-root-1031-unrestricted-r3",
+  "files": [
+    {
+      "file": "raw/mapping.data",
+      "size": 1860231
+    },
+    {
+      "file": "raw/gnb-functions.data",
+      "size": 453063853
+    },
+    {
+      "file": "raw/gnb-cpu.data",
+      "size": 2513068
+    },
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 1546
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 3097
+    },
+    {
+      "file": "raw/wire/srsue-3253697.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3253331.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3253486.wire",
+      "size": 96000064
+    },
+    {
+      "file": "raw/wire/gnb-3253517.wire",
+      "size": 64000064
+    }
+  ]
+}

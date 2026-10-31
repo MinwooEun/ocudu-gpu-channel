@@ -297,7 +297,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-One-UE attribution and candidate results are in `experiments/one-ue-realtime-20261030/conclusions.json`. Combined notification, RF RX priority and log drain removed the measured request/log delay categories but regressed overall rate; the next required attribution is before late gNB source-IQ sends. No owned runtime remains; both HTML reports are unchanged.
+The remaining gNB source-IQ delay is identified in `experiments/gnb-source-delay-20261031/conclusions.json`: CUDA completion polling yields to the busy radio thread when co-located. Shared/separate placement reproduced/removed the delay within the existing CPU budget; no shipping gNB patch was applied and no owned runtime remains. Both HTML reports are unchanged.
 
 ## Active relay patch — 2026-10-29
 
@@ -433,3 +433,15 @@ One-UE attribution and candidate results are in `experiments/one-ue-realtime-202
 - Adding RF RX priority and auxiliary log draining removed >1 ms ready-IQ request delays and long broker stdout calls, but rate regressed to 0.998561 with 43.099 ms loss. Largest remaining misses precede gNB source IQ sends; cause remains unresolved.
 
 - Saved scripts, minimal notification patch, exact rates, causal joins and raw-location indices under `experiments/one-ue-realtime-20261030/`. Full originals remain on Spark, owned processes are stopped, unrelated GPU sweep is untouched, and both HTML reports remain unchanged.
+
+## gNB completion-wait attribution — 2026-10-31
+
+- Resolved historical gNB yield return PCs to OFDM flush_pending_output and PUSCH cudaEventSynchronizeYielding with one consistent ELF load bias. The selected historical burst contains 46.969 ms of yields; kernel execution time is not inferred from those intervals.
+
+- Controlled 250 ms co-location on CPU6 reproduced 72 long PHY yields and 170.613 ms post-warmup loss. A 2.971 ms yielding interval contained 2.854 ms of radio execution and approximately 2 µs of PHY CPU use.
+
+- Separating radio/PHY onto CPUs6/7 within the same original allocation removed long yields and deadline rebases. Radio/wall endpoints were 29.9/29.899999395 seconds, ratio 1.000000020; both runs passed connectivity gates and 30/30 segments.
+
+- An unpinned analyzer rerun did not reproduce the historical lag, so analyzer activity is not established as its initiating actor. First tracefs observer failure is preserved; later scheduler captures succeeded and original binaries/inputs matched across the controlled comparison.
+
+- Saved causal joins, source excerpts, scripts and raw indices under `experiments/gnb-source-delay-20261031/`. Affinities were restored, owned captures stopped, private uprobes removed, and both HTML reports remain unchanged; continuous deployment of the affinity remedy is not applied.

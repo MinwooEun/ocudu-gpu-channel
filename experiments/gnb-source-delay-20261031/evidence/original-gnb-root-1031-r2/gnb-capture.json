@@ -1,0 +1,272 @@
+{
+  "pid": 3251317,
+  "tasks": {
+    "3251317": {
+      "comm": "gnb",
+      "priority": 0,
+      "policy": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251323": {
+      "comm": "gnb",
+      "priority": 0,
+      "policy": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251334": {
+      "comm": "main_pool#0",
+      "priority": 96,
+      "policy": 1,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251335": {
+      "comm": "main_pool#1",
+      "priority": 96,
+      "policy": 1,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251336": {
+      "comm": "main_pool#2",
+      "priority": 96,
+      "policy": 1,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251337": {
+      "comm": "main_pool#3",
+      "priority": 96,
+      "policy": 1,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251338": {
+      "comm": "main_pool#4",
+      "priority": 96,
+      "policy": 1,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251339": {
+      "comm": "phy_worker",
+      "priority": 0,
+      "policy": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251340": {
+      "comm": "radio",
+      "priority": 0,
+      "policy": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251341": {
+      "comm": "io_broker_epoll",
+      "priority": 6,
+      "policy": 1,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251342": {
+      "comm": "cuda0000280000b",
+      "priority": 0,
+      "policy": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251344": {
+      "comm": "cuda-EvtHandlr",
+      "priority": 0,
+      "policy": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251477": {
+      "comm": "ZMQbg/Reaper",
+      "priority": 0,
+      "policy": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251478": {
+      "comm": "ZMQbg/IO/0",
+      "priority": 95,
+      "policy": 1,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "3251480": {
+      "comm": "ws_server",
+      "priority": 0,
+      "policy": 0,
+      "cpus": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    }
+  },
+  "selected": [
+    3251339,
+    3251340
+  ],
+  "mapping": {
+    "3251340": 18957,
+    "3251339": 18956
+  },
+  "probes": {
+    "dl": 12001348,
+    "bb": 12025100,
+    "tx": 12264936,
+    "ul": 12003432
+  },
+  "command": [
+    "perf",
+    "record",
+    "--clockid",
+    "mono",
+    "-a",
+    "-m",
+    "4096",
+    "-e",
+    "ocg1031:*",
+    "-e",
+    "sched:sched_switch/call-graph=no/",
+    "--filter",
+    "prev_pid == 18957 || next_pid == 18957 || prev_pid == 18956 || next_pid == 18956",
+    "-e",
+    "sched:sched_wakeup/call-graph=no/",
+    "--filter",
+    "pid == 18957 || pid == 18956",
+    "-e",
+    "sched:sched_switch/call-graph=fp/",
+    "--filter",
+    "(prev_pid == 18957 || prev_pid == 18956) && prev_state != 0",
+    "-o",
+    "/dev/shm/ocudu-one-ue-rt-20261030/gnb-functions.data",
+    "--",
+    "sleep",
+    "30"
+  ]
+}
