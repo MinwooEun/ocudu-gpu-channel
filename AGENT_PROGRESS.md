@@ -10,7 +10,7 @@
 
 ## Current Objective
 
-- Completed RTX/Spark IQ-only and synthetic radio-ZMQ scaling across UE count, cells, bandwidth and radio ports. Initialization-certified results, controls and plots are under `experiments/transport-iq-boundaries-20261102/`; all owned measurements are stopped, and existing HTML remains unchanged.
+- Completed the standalone Korean scaling HTML: `experiments/transport-iq-boundaries-20261102/scaling-explained.ko.html`. Scope/axis diagrams,168 embedded records, repeated outcomes and live references are included; browser, mobile, print and standalone-copy checks passed.
 
 ## Repository State
 
@@ -509,3 +509,9 @@ UE12 RLC abort is reproduced without GPU/emulator: receiving [684,695] then [656
 - All-fast-core64UE checks remained below real-time throughput: RTX0.2035–0.234 and Spark0.778125–0.813. Counter-disabled transport controls retained sixteen-UE losses; shared topology SHA-256 and twelve unchanged backend archive members were verified across the appropriate comparisons.
 
 - Saved CSV, per-case compressed evidence, reproducible harness/build sources, raw indices, four-axis plots and Korean findings under `experiments/transport-iq-boundaries-20261102/`. Added throughput/progress definitions to the existing vocabulary; original live binaries and HTML remain unchanged.
+
+## Scaling HTML explanation — 2026-11-02
+
+- Generated one offline HTML with168 embedded primary records, four-axis interactive curves, workload diagrams, exact repeated results and source links. Added execution-scope diagrams, sample-time explanation, measured32UE stage/CPU comparisons and separate live-stack references without changing earlier HTML reports.
+
+- Browser validation passed18 checks covering three execution scopes,47 selectable axis values, measured tables, zoom, timing examples, data-worker counts, all source links,320–1440px layouts, all-axis print visibility and a copied standalone file. No JavaScript errors or external requests occurred.

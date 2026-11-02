@@ -1,0 +1,14 @@
+{
+  "html_file": "scaling-explained.ko.html",
+  "html_sha256": "6f05598d6c691d8293bb540433533460868758141f96dc65c981137c1484c568",
+  "primary_rows": 168,
+  "source_sha256": {
+    "curves.json": "f56669b1d12e84965881fd7832719930f8b84f2738366b76955da62302a20d3e",
+    "conclusions.json": "156b41b6ce0c5e89a69f6f0a21bd68734f935cd99d63491932448da610868e18",
+    "evidence/rtx/summary.json": "9e689a12aa0c83a21c651a025d0bc4bcd48e24eac46883f6b07a31c11b6c5e35",
+    "evidence/spark/summary.json": "94c735154ba81bf4a7bfb9a3bc5c0395499a69be0f8451106f92294d5fd51c57",
+    "../rtx-scaling-20261102/comparison.json": "ae9569ed191400853d2b80e0e66eb79b5a036485442ef6653deb66d5af77aa63",
+    "../multi-ue-affinity-20261102/evidence/comparison.json": "3d794735889cb9e1b029e548061fa5740c996a203d3f9b3b18c1502beb00b081"
+  },
+  "generation_script": "build_explainer.py"
+}

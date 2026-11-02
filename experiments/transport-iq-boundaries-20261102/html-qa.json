@@ -1,0 +1,26 @@
+{
+  "checks": [
+    "flow iq",
+    "flow radio",
+    "flow live",
+    "data ues 20 points; zoom",
+    "data cells 11 points; zoom",
+    "data bandwidth 3 points; zoom",
+    "data ports 13 points; zoom",
+    "same50/100MHz message size; doubled cadence",
+    "16x16 lanes and66data workers",
+    "32UE 33RX and99data workers",
+    "count ratio examples",
+    "all 18 evidence/anchor links",
+    "viewport 320",
+    "viewport 390",
+    "viewport 768",
+    "viewport 1440",
+    "print includes all four axes",
+    "single-file copy works without adjacent data/assets"
+  ],
+  "scriptErrors": [],
+  "externalRequests": [],
+  "sourceRows": 168,
+  "screenshots": "/home/minwoo/ocudu-work/html-preview-20261102/qa"
+}
