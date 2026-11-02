@@ -1,0 +1,711 @@
+{
+  "expected_ues": 16,
+  "rf_rx_by_pid": {
+    "51987": 52096,
+    "51984": 52095,
+    "51981": 52092,
+    "51978": 52091,
+    "51990": 52197,
+    "51975": 52192,
+    "51972": 52191,
+    "51969": 52189,
+    "51966": 52185,
+    "51963": 52158,
+    "51960": 52161,
+    "52010": 52214,
+    "52006": 52213,
+    "52002": 52212,
+    "51998": 52210,
+    "51995": 52198
+  },
+  "changes": {
+    "51585": {
+      "actor": "ocudu-gpu-channel-51575.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          6,
+          7
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          6,
+          7
+        ]
+      }
+    },
+    "51587": {
+      "actor": "ocudu-gpu-channel-51575.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          6,
+          7
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          6,
+          7
+        ]
+      }
+    },
+    "51589": {
+      "actor": "ocudu-gpu-channel-51575.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          6,
+          7
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          6,
+          7
+        ]
+      }
+    },
+    "51590": {
+      "actor": "ocudu-gpu-channel-51575.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          6,
+          7
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          6,
+          7
+        ]
+      }
+    },
+    "51880": {
+      "actor": "gnb-51674.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          8,
+          9
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          8,
+          9
+        ]
+      }
+    },
+    "52082": {
+      "actor": "srsue-51987.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          19
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          19
+        ]
+      }
+    },
+    "52096": {
+      "actor": "srsue-51987.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          19
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          19
+        ]
+      }
+    },
+    "52080": {
+      "actor": "srsue-51984.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          18
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          18
+        ]
+      }
+    },
+    "52095": {
+      "actor": "srsue-51984.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          18
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          18
+        ]
+      }
+    },
+    "52077": {
+      "actor": "srsue-51981.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          17
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          17
+        ]
+      }
+    },
+    "52092": {
+      "actor": "srsue-51981.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          17
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          17
+        ]
+      }
+    },
+    "52070": {
+      "actor": "srsue-51978.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          16
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          16
+        ]
+      }
+    },
+    "52091": {
+      "actor": "srsue-51978.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          16
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          16
+        ]
+      }
+    },
+    "52101": {
+      "actor": "srsue-51963.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          11
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          11
+        ]
+      }
+    },
+    "52102": {
+      "actor": "srsue-51960.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          10
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          10
+        ]
+      }
+    },
+    "52190": {
+      "actor": "srsue-52010.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          15
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          15
+        ]
+      }
+    },
+    "52188": {
+      "actor": "srsue-52006.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          14
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          14
+        ]
+      }
+    },
+    "52186": {
+      "actor": "srsue-52002.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          13
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          13
+        ]
+      }
+    },
+    "52182": {
+      "actor": "srsue-51998.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          12
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          12
+        ]
+      }
+    },
+    "52159": {
+      "actor": "srsue-51995.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          11
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          11
+        ]
+      }
+    },
+    "52156": {
+      "actor": "srsue-51990.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          10
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          10
+        ]
+      }
+    },
+    "52197": {
+      "actor": "srsue-51990.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          10
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          10
+        ]
+      }
+    },
+    "52137": {
+      "actor": "srsue-51975.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          15
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          15
+        ]
+      }
+    },
+    "52192": {
+      "actor": "srsue-51975.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          15
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          15
+        ]
+      }
+    },
+    "52134": {
+      "actor": "srsue-51972.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          14
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          14
+        ]
+      }
+    },
+    "52191": {
+      "actor": "srsue-51972.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          14
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          14
+        ]
+      }
+    },
+    "52125": {
+      "actor": "srsue-51969.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          13
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          13
+        ]
+      }
+    },
+    "52189": {
+      "actor": "srsue-51969.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          13
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          13
+        ]
+      }
+    },
+    "52122": {
+      "actor": "srsue-51966.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          12
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          12
+        ]
+      }
+    },
+    "52185": {
+      "actor": "srsue-51966.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          12
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          12
+        ]
+      }
+    },
+    "52158": {
+      "actor": "srsue-51963.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          11
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          11
+        ]
+      }
+    },
+    "52161": {
+      "actor": "srsue-51960.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          10
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          10
+        ]
+      }
+    },
+    "52214": {
+      "actor": "srsue-52010.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          15
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          15
+        ]
+      }
+    },
+    "52213": {
+      "actor": "srsue-52006.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          14
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          14
+        ]
+      }
+    },
+    "52212": {
+      "actor": "srsue-52002.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          13
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          13
+        ]
+      }
+    },
+    "52210": {
+      "actor": "srsue-51998.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          12
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          12
+        ]
+      }
+    },
+    "52198": {
+      "actor": "srsue-51995.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          11
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          11
+        ]
+      }
+    }
+  }
+}

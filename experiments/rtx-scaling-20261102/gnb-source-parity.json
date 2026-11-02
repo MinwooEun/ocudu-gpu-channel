@@ -1,0 +1,77 @@
+[
+  {
+    "file": "include/ocudu/phy/upper/channel_processors/pusch/factories.h",
+    "local_exists": true,
+    "same": true
+  },
+  {
+    "file": "lib/ofh/compression/iq_compression_cuda.cpp",
+    "local_exists": true,
+    "same": true
+  },
+  {
+    "file": "lib/phy/cuda/src/pusch_e2e.cu",
+    "local_exists": true,
+    "same": false
+  },
+  {
+    "file": "lib/phy/cuda/src/pusch_e2e_api.cu",
+    "local_exists": true,
+    "same": false
+  },
+  {
+    "file": "lib/phy/cuda/src/transport_block.cu",
+    "local_exists": true,
+    "same": true
+  },
+  {
+    "file": "lib/phy/upper/channel_coding/ldpc/cuda/pusch_codeblock_decoder_cuda_batch.cpp",
+    "local_exists": true,
+    "same": false
+  },
+  {
+    "file": "lib/phy/upper/channel_processors/pusch/demodulator_factories.cpp",
+    "local_exists": true,
+    "same": true
+  },
+  {
+    "file": "lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.cpp",
+    "local_exists": true,
+    "same": true
+  },
+  {
+    "file": "lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.h",
+    "local_exists": true,
+    "same": true
+  },
+  {
+    "file": "lib/phy/upper/signal_processors/srs/srs_estimator_cuda_impl.cpp",
+    "local_exists": true,
+    "same": true
+  },
+  {
+    "file": "lib/phy/upper/upper_phy_factories.cpp",
+    "local_exists": true,
+    "same": true
+  },
+  {
+    "file": "tests/integrationtests/phy/upper/channel_processors/CMakeLists.txt",
+    "local_exists": true,
+    "same": true
+  },
+  {
+    "file": "tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp",
+    "local_exists": true,
+    "same": true
+  },
+  {
+    "file": "tests/integrationtests/phy/upper/channel_processors/pusch_gpu_cpu_comparison_test.cpp",
+    "local_exists": true,
+    "same": true
+  },
+  {
+    "file": "tests/integrationtests/phy/upper/channel_processors/pxsch_bler_test_factories.cpp",
+    "local_exists": true,
+    "same": true
+  }
+]

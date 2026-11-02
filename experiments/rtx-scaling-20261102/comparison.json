@@ -1,0 +1,3925 @@
+{
+  "hardware": "RTX5090 + Core Ultra9 285K",
+  "configuration": {
+    "cells": 1,
+    "bandwidth_mhz": 20,
+    "sample_rate_hz": 23040000,
+    "antenna_ports": "1x1",
+    "gnb": "CUDA all with Spark UL fixes",
+    "ue": "CPU srsUE with Spark access/RF patches and local pilot-noise repair",
+    "cpu_budget": "gNB P0-7, radio P1 separated; broker E8-9; UE E10-19 one core per UE modulo10; aux E20-23"
+  },
+  "metric": "radio seconds / wall seconds, not success fraction; post-warmup endpoints span29.9 radio seconds",
+  "rows": [
+    {
+      "invalid_kpi_reasons": {},
+      "ue_count": 1,
+      "layout": "matched-r1",
+      "cpu_mapping": "gNB P0-7; broker E8-9; CPU UEs E10-19; auxiliary E20-23; fixed allocation across UE sweep",
+      "case": "u1-matched-r1",
+      "configuration_verified": true,
+      "returncode": 0,
+      "valid_kpi_windows": 30,
+      "expected_kpi_windows": 30,
+      "full_ratio": 0.9997867784054749,
+      "rate": {
+        "including_warmup": {
+          "radio_s": 39.9,
+          "wall_s": 39.908509356,
+          "ratio": 0.9997867784054749,
+          "loss_us": 8509.356000004685,
+          "rebase_count": 2,
+          "rebase_sum_us": 8461.406,
+          "largest_rebases": [
+            {
+              "kind": "rebase",
+              "now_ns": "1581659586353",
+              "node": "gnb0",
+              "sample": "423175695",
+              "count": "23025",
+              "expected_due_ns": "1581654308430",
+              "due_ns": "1581658586353",
+              "shift_ns": "4277923",
+              "room_us": "5194.921",
+              "data_us": "0.093",
+              "read_us": "0.115",
+              "process_us": "79.584",
+              "previous_loop_end_ns": "1581654311362"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1604701759919",
+              "node": "gnb0",
+              "sample": "953971207",
+              "count": "23040",
+              "expected_due_ns": "1604696576436",
+              "due_ns": "1604700759919",
+              "shift_ns": "4183483",
+              "room_us": "5101.515",
+              "data_us": "0.074",
+              "read_us": "0.210",
+              "process_us": "78.843",
+              "previous_loop_end_ns": "1604696578939"
+            }
+          ]
+        },
+        "post_warmup": {
+          "radio_s": 29.9,
+          "wall_s": 29.908452991,
+          "ratio": 0.9997173711725396,
+          "loss_us": 8452.991000002186,
+          "rebase_count": 2,
+          "rebase_sum_us": 8461.406,
+          "largest_rebases": [
+            {
+              "kind": "rebase",
+              "now_ns": "1581659586353",
+              "node": "gnb0",
+              "sample": "423175695",
+              "count": "23025",
+              "expected_due_ns": "1581654308430",
+              "due_ns": "1581658586353",
+              "shift_ns": "4277923",
+              "room_us": "5194.921",
+              "data_us": "0.093",
+              "read_us": "0.115",
+              "process_us": "79.584",
+              "previous_loop_end_ns": "1581654311362"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1604701759919",
+              "node": "gnb0",
+              "sample": "953971207",
+              "count": "23040",
+              "expected_due_ns": "1604696576436",
+              "due_ns": "1604700759919",
+              "shift_ns": "4183483",
+              "room_us": "5101.515",
+              "data_us": "0.074",
+              "read_us": "0.210",
+              "process_us": "78.843",
+              "previous_loop_end_ns": "1604696578939"
+            }
+          ]
+        }
+      },
+      "gate": {
+        "all_ues_attached": true,
+        "broker": {
+          "control_batches_committed": 802,
+          "rx_requests": 155092,
+          "rx_starvations": 7,
+          "tx_pulls": 104901,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "broker_clean": true,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy": "rr",
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "link_adaptation": {
+                "found_in_config_dump": {
+                  "link_adaptation": "harq_olla"
+                },
+                "ok": true,
+                "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+                "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+                "requested": {
+                  "link_adaptation": "harq_olla"
+                }
+              },
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "replay_status": "measure_end",
+        "srsue_alive_at_stop": 1,
+        "status": "passed"
+      },
+      "trace_integrity": {
+        "dropped": 0,
+        "uncommitted": 0,
+        "files": [
+          {
+            "file": "gnb-26416.wire",
+            "count": 257446,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "gnb-26230.wire",
+            "count": 0,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-26689.wire",
+            "count": 481296,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "ocudu-gpu-channel-26381.wire",
+            "count": 520361,
+            "capacity": 6000000,
+            "dropped": 0,
+            "uncommitted": 0
+          }
+        ]
+      },
+      "broker_terminal_events": [
+        "event=stop tx_pulls=104901 rx_requests=155092 rx_starvations=7 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0 control_msgs_received=93612 control_updates_applied=802 control_updates_rejected=0 control_batches_committed=802 control_batches_aborted=0 telemetry_frames=6270 telemetry_drops=0 force_inert_warnings=0"
+      ],
+      "sr_exhaustion_whole_run": {},
+      "assertions": {},
+      "post_warmup_cpu_time": {
+        "srsue-26689.wire": {
+          "wall_s": 29.121468022,
+          "cpu_seconds": 21.51,
+          "average_cores": 0.7386303459616161,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.51,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.51,
+            "SYNC": 0.93,
+            "WORKER0": 8.33,
+            "STACK": 0.63,
+            "WORKER1": 8.56,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.04
+          }
+        },
+        "gnb-26416.wire": {
+          "wall_s": 29.121468022,
+          "cpu_seconds": 43.52,
+          "average_cores": 1.4944301560320565,
+          "by_thread_name_cpu_seconds": {
+            "gnb": 0.39,
+            "main_pool#0": 1.07,
+            "main_pool#1": 1.07,
+            "main_pool#2": 1.05,
+            "main_pool#3": 1.07,
+            "main_pool#4": 1.09,
+            "phy_worker": 9.54,
+            "radio": 26.98,
+            "io_broker_epoll": 0.1,
+            "cuda0000280000b": 0.0,
+            "cuda-EvtHandlr": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.16,
+            "ws_server": 0.0
+          }
+        },
+        "ocudu-gpu-channel-26381.wire": {
+          "wall_s": 29.121468022,
+          "cpu_seconds": 12.44,
+          "average_cores": 0.4271762670275455,
+          "by_thread_name_cpu_seconds": {
+            "ocudu-gpu-chann": 8.07,
+            "cuda00001400006": 0.0,
+            "cuda-EvtHandlr": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.6599999999999997,
+            "ZMQbg/IO/1": 1.71
+          }
+        }
+      },
+      "affinity_checks": 134,
+      "tags": 400
+    },
+    {
+      "invalid_kpi_reasons": {},
+      "ue_count": 4,
+      "layout": "matched-r1",
+      "cpu_mapping": "gNB P0-7; broker E8-9; CPU UEs E10-19; auxiliary E20-23; fixed allocation across UE sweep",
+      "case": "u4-matched-r1",
+      "configuration_verified": true,
+      "returncode": 0,
+      "valid_kpi_windows": 30,
+      "expected_kpi_windows": 30,
+      "full_ratio": 0.9980979389911915,
+      "rate": {
+        "including_warmup": {
+          "radio_s": 39.9,
+          "wall_s": 39.976036861,
+          "ratio": 0.9980979389911915,
+          "loss_us": 76036.86099999862,
+          "rebase_count": 226,
+          "rebase_sum_us": 75937.434,
+          "largest_rebases": [
+            {
+              "kind": "rebase",
+              "now_ns": "1670247591379",
+              "node": "gnb0",
+              "sample": "789719045",
+              "count": "23039",
+              "expected_due_ns": "1670243338135",
+              "due_ns": "1670246591379",
+              "shift_ns": "3253244",
+              "room_us": "3575.845",
+              "data_us": "0.169",
+              "read_us": "0.179",
+              "process_us": "507.775",
+              "previous_loop_end_ns": "1670243506656"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1676285958078",
+              "node": "gnb0",
+              "sample": "928719365",
+              "count": "23040",
+              "expected_due_ns": "1676283107834",
+              "due_ns": "1676284958078",
+              "shift_ns": "1850244",
+              "room_us": "50.337",
+              "data_us": "2669.634",
+              "read_us": "0.234",
+              "process_us": "123.934",
+              "previous_loop_end_ns": "1676283113472"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1670240160702",
+              "node": "gnb0",
+              "sample": "789626885",
+              "count": "23039",
+              "expected_due_ns": "1670237915760",
+              "due_ns": "1670239160702",
+              "shift_ns": "1244942",
+              "room_us": "1956.341",
+              "data_us": "0.183",
+              "read_us": "0.174",
+              "process_us": "282.618",
+              "previous_loop_end_ns": "1670237920780"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1651013573861",
+              "node": "gnb0",
+              "sample": "346682886",
+              "count": "23040",
+              "expected_due_ns": "1651011447512",
+              "due_ns": "1651012573861",
+              "shift_ns": "1126349",
+              "room_us": "69.331",
+              "data_us": "2761.145",
+              "read_us": "8.720",
+              "process_us": "125.205",
+              "previous_loop_end_ns": "1651010608898"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1676295417669",
+              "node": "gnb0",
+              "sample": "928903685",
+              "count": "23040",
+              "expected_due_ns": "1676293352721",
+              "due_ns": "1676294417669",
+              "shift_ns": "1064948",
+              "room_us": "56.231",
+              "data_us": "1830.135",
+              "read_us": "0.272",
+              "process_us": "173.168",
+              "previous_loop_end_ns": "1676293357433"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1647672508187",
+              "node": "gnb0",
+              "sample": "270950706",
+              "count": "23040",
+              "expected_due_ns": "1647670571989",
+              "due_ns": "1647671508187",
+              "shift_ns": "936198",
+              "room_us": "13.021",
+              "data_us": "1708.878",
+              "read_us": "0.163",
+              "process_us": "197.736",
+              "previous_loop_end_ns": "1647670587826"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1676221715407",
+              "node": "gnb0",
+              "sample": "927313924",
+              "count": "23036",
+              "expected_due_ns": "1676219804304",
+              "due_ns": "1676220715407",
+              "shift_ns": "911103",
+              "room_us": "0.028",
+              "data_us": "1773.606",
+              "read_us": "0.205",
+              "process_us": "132.475",
+              "previous_loop_end_ns": "1676219808667"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1647733236636",
+              "node": "gnb0",
+              "sample": "271964466",
+              "count": "23040",
+              "expected_due_ns": "1647731486841",
+              "due_ns": "1647732236636",
+              "shift_ns": "749795",
+              "room_us": "23.591",
+              "data_us": "1475.728",
+              "read_us": "14.049",
+              "process_us": "223.144",
+              "previous_loop_end_ns": "1647731499585"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1647771610678",
+              "node": "gnb0",
+              "sample": "272609586",
+              "count": "22734",
+              "expected_due_ns": "1647769868036",
+              "due_ns": "1647770610678",
+              "shift_ns": "742642",
+              "room_us": "21.805",
+              "data_us": "1486.996",
+              "read_us": "0.206",
+              "process_us": "222.306",
+              "previous_loop_end_ns": "1647769878819"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1651006460535",
+              "node": "gnb0",
+              "sample": "346544946",
+              "count": "22734",
+              "expected_due_ns": "1651004721180",
+              "due_ns": "1651005460535",
+              "shift_ns": "739355",
+              "room_us": "0.024",
+              "data_us": "1492.179",
+              "read_us": "0.201",
+              "process_us": "172.233",
+              "previous_loop_end_ns": "1651004795344"
+            }
+          ]
+        },
+        "post_warmup": {
+          "radio_s": 29.9,
+          "wall_s": 29.915653129,
+          "ratio": 0.9994767579055519,
+          "loss_us": 15653.129000000376,
+          "rebase_count": 31,
+          "rebase_sum_us": 15727.121,
+          "largest_rebases": [
+            {
+              "kind": "rebase",
+              "now_ns": "1670247591379",
+              "node": "gnb0",
+              "sample": "789719045",
+              "count": "23039",
+              "expected_due_ns": "1670243338135",
+              "due_ns": "1670246591379",
+              "shift_ns": "3253244",
+              "room_us": "3575.845",
+              "data_us": "0.169",
+              "read_us": "0.179",
+              "process_us": "507.775",
+              "previous_loop_end_ns": "1670243506656"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1676285958078",
+              "node": "gnb0",
+              "sample": "928719365",
+              "count": "23040",
+              "expected_due_ns": "1676283107834",
+              "due_ns": "1676284958078",
+              "shift_ns": "1850244",
+              "room_us": "50.337",
+              "data_us": "2669.634",
+              "read_us": "0.234",
+              "process_us": "123.934",
+              "previous_loop_end_ns": "1676283113472"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1670240160702",
+              "node": "gnb0",
+              "sample": "789626885",
+              "count": "23039",
+              "expected_due_ns": "1670237915760",
+              "due_ns": "1670239160702",
+              "shift_ns": "1244942",
+              "room_us": "1956.341",
+              "data_us": "0.183",
+              "read_us": "0.174",
+              "process_us": "282.618",
+              "previous_loop_end_ns": "1670237920780"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1676295417669",
+              "node": "gnb0",
+              "sample": "928903685",
+              "count": "23040",
+              "expected_due_ns": "1676293352721",
+              "due_ns": "1676294417669",
+              "shift_ns": "1064948",
+              "room_us": "56.231",
+              "data_us": "1830.135",
+              "read_us": "0.272",
+              "process_us": "173.168",
+              "previous_loop_end_ns": "1676293357433"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1676221715407",
+              "node": "gnb0",
+              "sample": "927313924",
+              "count": "23036",
+              "expected_due_ns": "1676219804304",
+              "due_ns": "1676220715407",
+              "shift_ns": "911103",
+              "room_us": "0.028",
+              "data_us": "1773.606",
+              "read_us": "0.205",
+              "process_us": "132.475",
+              "previous_loop_end_ns": "1676219808667"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1676234703892",
+              "node": "gnb0",
+              "sample": "927590404",
+              "count": "23040",
+              "expected_due_ns": "1676232995322",
+              "due_ns": "1676233703892",
+              "shift_ns": "708570",
+              "room_us": "12.674",
+              "data_us": "1477.195",
+              "read_us": "0.167",
+              "process_us": "227.242",
+              "previous_loop_end_ns": "1676232986039"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1683032993498",
+              "node": "gnb0",
+              "sample": "1084078087",
+              "count": "23040",
+              "expected_due_ns": "1683031356237",
+              "due_ns": "1683031993498",
+              "shift_ns": "637261",
+              "room_us": "51.058",
+              "data_us": "1604.356",
+              "read_us": "0.173",
+              "process_us": "123.398",
+              "previous_loop_end_ns": "1683031214006"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1676297037478",
+              "node": "gnb0",
+              "sample": "928926725",
+              "count": "23040",
+              "expected_due_ns": "1676295417669",
+              "due_ns": "1676296037478",
+              "shift_ns": "619809",
+              "room_us": "12.854",
+              "data_us": "1452.034",
+              "read_us": "0.205",
+              "process_us": "144.572",
+              "previous_loop_end_ns": "1676295427370"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1676305885469",
+              "node": "gnb0",
+              "sample": "929111045",
+              "count": "23039",
+              "expected_due_ns": "1676304348148",
+              "due_ns": "1676304885469",
+              "shift_ns": "537321",
+              "room_us": "56.634",
+              "data_us": "1233.224",
+              "read_us": "0.185",
+              "process_us": "204.604",
+              "previous_loop_end_ns": "1676304390298"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1683040470407",
+              "node": "gnb0",
+              "sample": "1084239367",
+              "count": "23040",
+              "expected_due_ns": "1683038993498",
+              "due_ns": "1683039470407",
+              "shift_ns": "476909",
+              "room_us": "50.735",
+              "data_us": "2283.814",
+              "read_us": "0.235",
+              "process_us": "137.181",
+              "previous_loop_end_ns": "1683037998002"
+            }
+          ]
+        }
+      },
+      "gate": {
+        "all_ues_attached": true,
+        "broker": {
+          "control_batches_committed": 3208,
+          "rx_requests": 315021,
+          "rx_starvations": 14,
+          "tx_pulls": 296426,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "broker_clean": true,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue1": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue2": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue3": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy": "rr",
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "link_adaptation": {
+                "found_in_config_dump": {
+                  "link_adaptation": "harq_olla"
+                },
+                "ok": true,
+                "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+                "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+                "requested": {
+                  "link_adaptation": "harq_olla"
+                }
+              },
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "replay_status": "measure_end",
+        "srsue_alive_at_stop": 1,
+        "status": "passed"
+      },
+      "trace_integrity": {
+        "dropped": 0,
+        "uncommitted": 0,
+        "files": [
+          {
+            "file": "srsue-29192.wire",
+            "count": 476736,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "gnb-28943.wire",
+            "count": 266153,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "gnb-28679.wire",
+            "count": 0,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-29183.wire",
+            "count": 481759,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "ocudu-gpu-channel-28898.wire",
+            "count": 1223728,
+            "capacity": 6000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-29186.wire",
+            "count": 481444,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-29189.wire",
+            "count": 483019,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          }
+        ]
+      },
+      "broker_terminal_events": [
+        "event=stop tx_pulls=296426 rx_requests=315021 rx_starvations=14 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0 control_msgs_received=204950 control_updates_applied=3208 control_updates_rejected=0 control_batches_committed=3208 control_batches_aborted=0 telemetry_frames=27144 telemetry_drops=0 force_inert_warnings=0"
+      ],
+      "sr_exhaustion_whole_run": {},
+      "assertions": {},
+      "post_warmup_cpu_time": {
+        "srsue-29192.wire": {
+          "wall_s": 29.73101344,
+          "cpu_seconds": 11.56,
+          "average_cores": 0.3888195746616298,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.02,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.52,
+            "SYNC": 0.95,
+            "WORKER0": 3.59,
+            "STACK": 0.49,
+            "WORKER1": 3.97,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.02
+          }
+        },
+        "srsue-29189.wire": {
+          "wall_s": 29.73101344,
+          "cpu_seconds": 17.16,
+          "average_cores": 0.5771750779579211,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.31,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.53,
+            "SYNC": 0.93,
+            "STACK": 0.63,
+            "WORKER0": 5.76,
+            "WORKER1": 6.95,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.05
+          }
+        },
+        "srsue-29186.wire": {
+          "wall_s": 29.73101344,
+          "cpu_seconds": 12.32,
+          "average_cores": 0.41438210725184077,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.13,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.53,
+            "SYNC": 0.96,
+            "WORKER0": 4.03,
+            "STACK": 0.54,
+            "WORKER1": 4.11,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.02
+          }
+        },
+        "srsue-29183.wire": {
+          "wall_s": 29.73101344,
+          "cpu_seconds": 17.96,
+          "average_cores": 0.6040830070002484,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.38,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.45,
+            "SYNC": 0.99,
+            "WORKER0": 6.44,
+            "STACK": 0.64,
+            "WORKER1": 7.01,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.05
+          }
+        },
+        "gnb-28943.wire": {
+          "wall_s": 29.73101344,
+          "cpu_seconds": 49.25,
+          "average_cores": 1.6565193816682757,
+          "by_thread_name_cpu_seconds": {
+            "gnb": 0.47,
+            "main_pool#0": 1.37,
+            "main_pool#1": 1.37,
+            "main_pool#2": 1.37,
+            "main_pool#3": 1.37,
+            "main_pool#4": 1.36,
+            "phy_worker": 13.15,
+            "radio": 27.51,
+            "io_broker_epoll": 0.1,
+            "cuda0000280000b": 0.0,
+            "cuda-EvtHandlr": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.18,
+            "ws_server": 0.0
+          }
+        },
+        "ocudu-gpu-channel-28898.wire": {
+          "wall_s": 29.73101344,
+          "cpu_seconds": 35.05,
+          "average_cores": 1.1789036411669658,
+          "by_thread_name_cpu_seconds": {
+            "ocudu-gpu-chann": 24.529999999999998,
+            "cuda00001400006": 0.0,
+            "cuda-EvtHandlr": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 5.09,
+            "ZMQbg/IO/1": 5.43
+          }
+        }
+      },
+      "affinity_checks": 175,
+      "tags": 400
+    },
+    {
+      "invalid_kpi_reasons": {},
+      "ue_count": 8,
+      "layout": "matched-r1",
+      "cpu_mapping": "gNB P0-7; broker E8-9; CPU UEs E10-19; auxiliary E20-23; fixed allocation across UE sweep",
+      "case": "u8-matched-r1",
+      "configuration_verified": true,
+      "returncode": 0,
+      "valid_kpi_windows": 30,
+      "expected_kpi_windows": 30,
+      "full_ratio": 0.8182711519252743,
+      "rate": {
+        "including_warmup": {
+          "radio_s": 39.9,
+          "wall_s": 48.761342626,
+          "ratio": 0.8182711519252742,
+          "loss_us": 8861342.626000002,
+          "rebase_count": 15852,
+          "rebase_sum_us": 8862769.517,
+          "largest_rebases": [
+            {
+              "kind": "rebase",
+              "now_ns": "1789020338882",
+              "node": "gnb0",
+              "sample": "1158082563",
+              "count": "23040",
+              "expected_due_ns": "1789014294882",
+              "due_ns": "1789019338882",
+              "shift_ns": "5044000",
+              "room_us": "71.095",
+              "data_us": "6429.497",
+              "read_us": "0.377",
+              "process_us": "208.200",
+              "previous_loop_end_ns": "1789013628798"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1765979871383",
+              "node": "gnb0",
+              "sample": "722096644",
+              "count": "23040",
+              "expected_due_ns": "1765975730935",
+              "due_ns": "1765978871383",
+              "shift_ns": "3140448",
+              "room_us": "44.010",
+              "data_us": "4650.299",
+              "read_us": "0.478",
+              "process_us": "216.960",
+              "previous_loop_end_ns": "1765974958724"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1782985896636",
+              "node": "gnb0",
+              "sample": "1044472326",
+              "count": "23038",
+              "expected_due_ns": "1782982634406",
+              "due_ns": "1782984896636",
+              "shift_ns": "2262230",
+              "room_us": "0.057",
+              "data_us": "0.271",
+              "read_us": "1260.323",
+              "process_us": "1179.035",
+              "previous_loop_end_ns": "1782983456092"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1760238394826",
+              "node": "gnb0",
+              "sample": "614384646",
+              "count": "23038",
+              "expected_due_ns": "1760235135155",
+              "due_ns": "1760237394826",
+              "shift_ns": "2259671",
+              "room_us": "0.038",
+              "data_us": "707.755",
+              "read_us": "1626.472",
+              "process_us": "611.934",
+              "previous_loop_end_ns": "1760235447736"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1754644356767",
+              "node": "gnb0",
+              "sample": "509944324",
+              "count": "23040",
+              "expected_due_ns": "1754641144095",
+              "due_ns": "1754643356767",
+              "shift_ns": "2212672",
+              "room_us": "2323.310",
+              "data_us": "0.357",
+              "read_us": "0.267",
+              "process_us": "882.278",
+              "previous_loop_end_ns": "1754641149029"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1787017446723",
+              "node": "gnb0",
+              "sample": "1120458244",
+              "count": "23040",
+              "expected_due_ns": "1787014350093",
+              "due_ns": "1787016446723",
+              "shift_ns": "2096630",
+              "room_us": "0.055",
+              "data_us": "0.413",
+              "read_us": "0.446",
+              "process_us": "1137.941",
+              "previous_loop_end_ns": "1787016306921"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1799944510590",
+              "node": "gnb0",
+              "sample": "1364636164",
+              "count": "23040",
+              "expected_due_ns": "1799941466856",
+              "due_ns": "1799943510590",
+              "shift_ns": "2043734",
+              "room_us": "0.053",
+              "data_us": "1073.498",
+              "read_us": "0.465",
+              "process_us": "1639.997",
+              "previous_loop_end_ns": "1799941722452"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1766820856650",
+              "node": "gnb0",
+              "sample": "737948165",
+              "count": "23035",
+              "expected_due_ns": "1766817834843",
+              "due_ns": "1766819856650",
+              "shift_ns": "2021807",
+              "room_us": "0.051",
+              "data_us": "541.572",
+              "read_us": "0.229",
+              "process_us": "1734.952",
+              "previous_loop_end_ns": "1766818578733"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1799581819930",
+              "node": "gnb0",
+              "sample": "1357816324",
+              "count": "23040",
+              "expected_due_ns": "1799578798233",
+              "due_ns": "1799580819930",
+              "shift_ns": "2021697",
+              "room_us": "83.094",
+              "data_us": "1890.490",
+              "read_us": "0.647",
+              "process_us": "1158.150",
+              "previous_loop_end_ns": "1799578610462"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1793116583269",
+              "node": "gnb0",
+              "sample": "1235612164",
+              "count": "23040",
+              "expected_due_ns": "1793113594858",
+              "due_ns": "1793115583269",
+              "shift_ns": "1988411",
+              "room_us": "0.044",
+              "data_us": "1498.140",
+              "read_us": "0.327",
+              "process_us": "1319.263",
+              "previous_loop_end_ns": "1793113764381"
+            }
+          ]
+        },
+        "post_warmup": {
+          "radio_s": 29.9,
+          "wall_s": 36.416830338,
+          "ratio": 0.8210489414505727,
+          "loss_us": 6516830.337999999,
+          "rebase_count": 11782,
+          "rebase_sum_us": 6517829.194,
+          "largest_rebases": [
+            {
+              "kind": "rebase",
+              "now_ns": "1789020338882",
+              "node": "gnb0",
+              "sample": "1158082563",
+              "count": "23040",
+              "expected_due_ns": "1789014294882",
+              "due_ns": "1789019338882",
+              "shift_ns": "5044000",
+              "room_us": "71.095",
+              "data_us": "6429.497",
+              "read_us": "0.377",
+              "process_us": "208.200",
+              "previous_loop_end_ns": "1789013628798"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1765979871383",
+              "node": "gnb0",
+              "sample": "722096644",
+              "count": "23040",
+              "expected_due_ns": "1765975730935",
+              "due_ns": "1765978871383",
+              "shift_ns": "3140448",
+              "room_us": "44.010",
+              "data_us": "4650.299",
+              "read_us": "0.478",
+              "process_us": "216.960",
+              "previous_loop_end_ns": "1765974958724"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1782985896636",
+              "node": "gnb0",
+              "sample": "1044472326",
+              "count": "23038",
+              "expected_due_ns": "1782982634406",
+              "due_ns": "1782984896636",
+              "shift_ns": "2262230",
+              "room_us": "0.057",
+              "data_us": "0.271",
+              "read_us": "1260.323",
+              "process_us": "1179.035",
+              "previous_loop_end_ns": "1782983456092"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1787017446723",
+              "node": "gnb0",
+              "sample": "1120458244",
+              "count": "23040",
+              "expected_due_ns": "1787014350093",
+              "due_ns": "1787016446723",
+              "shift_ns": "2096630",
+              "room_us": "0.055",
+              "data_us": "0.413",
+              "read_us": "0.446",
+              "process_us": "1137.941",
+              "previous_loop_end_ns": "1787016306921"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1799944510590",
+              "node": "gnb0",
+              "sample": "1364636164",
+              "count": "23040",
+              "expected_due_ns": "1799941466856",
+              "due_ns": "1799943510590",
+              "shift_ns": "2043734",
+              "room_us": "0.053",
+              "data_us": "1073.498",
+              "read_us": "0.465",
+              "process_us": "1639.997",
+              "previous_loop_end_ns": "1799941722452"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1766820856650",
+              "node": "gnb0",
+              "sample": "737948165",
+              "count": "23035",
+              "expected_due_ns": "1766817834843",
+              "due_ns": "1766819856650",
+              "shift_ns": "2021807",
+              "room_us": "0.051",
+              "data_us": "541.572",
+              "read_us": "0.229",
+              "process_us": "1734.952",
+              "previous_loop_end_ns": "1766818578733"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1799581819930",
+              "node": "gnb0",
+              "sample": "1357816324",
+              "count": "23040",
+              "expected_due_ns": "1799578798233",
+              "due_ns": "1799580819930",
+              "shift_ns": "2021697",
+              "room_us": "83.094",
+              "data_us": "1890.490",
+              "read_us": "0.647",
+              "process_us": "1158.150",
+              "previous_loop_end_ns": "1799578610462"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1793116583269",
+              "node": "gnb0",
+              "sample": "1235612164",
+              "count": "23040",
+              "expected_due_ns": "1793113594858",
+              "due_ns": "1793115583269",
+              "shift_ns": "1988411",
+              "room_us": "0.044",
+              "data_us": "1498.140",
+              "read_us": "0.327",
+              "process_us": "1319.263",
+              "previous_loop_end_ns": "1793113764381"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1776099371482",
+              "node": "gnb0",
+              "sample": "914204164",
+              "count": "23040",
+              "expected_due_ns": "1776096404662",
+              "due_ns": "1776098371482",
+              "shift_ns": "1966820",
+              "room_us": "402.662",
+              "data_us": "1337.988",
+              "read_us": "1503.038",
+              "process_us": "715.582",
+              "previous_loop_end_ns": "1776095411314"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1768185068128",
+              "node": "gnb0",
+              "sample": "763292160",
+              "count": "23040",
+              "expected_due_ns": "1768182113911",
+              "due_ns": "1768184068128",
+              "shift_ns": "1954217",
+              "room_us": "0.073",
+              "data_us": "0.284",
+              "read_us": "0.183",
+              "process_us": "2346.273",
+              "previous_loop_end_ns": "1768182720162"
+            }
+          ]
+        }
+      },
+      "gate": {
+        "all_ues_attached": true,
+        "broker": {
+          "control_batches_committed": 6416,
+          "rx_requests": 631708,
+          "rx_starvations": 34,
+          "tx_pulls": 607164,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "broker_clean": true,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue1": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue2": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue3": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue4": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue5": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue6": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue7": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy": "rr",
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "link_adaptation": {
+                "found_in_config_dump": {
+                  "link_adaptation": "harq_olla"
+                },
+                "ok": true,
+                "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+                "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+                "requested": {
+                  "link_adaptation": "harq_olla"
+                }
+              },
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "replay_status": "measure_end",
+        "srsue_alive_at_stop": 1,
+        "status": "passed"
+      },
+      "trace_integrity": {
+        "dropped": 0,
+        "uncommitted": 0,
+        "files": [
+          {
+            "file": "srsue-32832.wire",
+            "count": 544645,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-32823.wire",
+            "count": 543937,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-32826.wire",
+            "count": 543974,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-32829.wire",
+            "count": 543055,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "ocudu-gpu-channel-32489.wire",
+            "count": 2479456,
+            "capacity": 6000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-32841.wire",
+            "count": 543474,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "gnb-32243.wire",
+            "count": 0,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-32820.wire",
+            "count": 545150,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "gnb-32548.wire",
+            "count": 308624,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-32835.wire",
+            "count": 544653,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-32838.wire",
+            "count": 544228,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          }
+        ]
+      },
+      "broker_terminal_events": [
+        "event=stop tx_pulls=607164 rx_requests=631708 rx_starvations=34 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0 control_msgs_received=384787 control_updates_applied=6416 control_updates_rejected=0 control_batches_committed=6416 control_batches_aborted=0 telemetry_frames=68128 telemetry_drops=0 force_inert_warnings=0"
+      ],
+      "sr_exhaustion_whole_run": {},
+      "assertions": {},
+      "post_warmup_cpu_time": {
+        "srsue-32841.wire": {
+          "wall_s": 35.955066544,
+          "cpu_seconds": 12.58,
+          "average_cores": 0.3498811491450094,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.16,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.6,
+            "SYNC": 1.04,
+            "WORKER0": 4.41,
+            "STACK": 0.61,
+            "WORKER1": 3.73,
+            "WORKER2": 0.01,
+            "METRICS_HUB": 0.0,
+            "GW": 0.02
+          }
+        },
+        "srsue-32838.wire": {
+          "wall_s": 35.955066544,
+          "cpu_seconds": 13.07,
+          "average_cores": 0.36350927021663537,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.28,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.59,
+            "SYNC": 1.05,
+            "WORKER0": 4.72,
+            "STACK": 0.64,
+            "WORKER1": 3.72,
+            "WORKER2": 0.01,
+            "METRICS_HUB": 0.01,
+            "GW": 0.05
+          }
+        },
+        "srsue-32835.wire": {
+          "wall_s": 35.955066544,
+          "cpu_seconds": 12.700000000000001,
+          "average_cores": 0.3532186481829586,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.2000000000000002,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.65,
+            "SYNC": 1.08,
+            "WORKER0": 4.21,
+            "STACK": 0.59,
+            "WORKER1": 3.93,
+            "WORKER2": 0.01,
+            "METRICS_HUB": 0.0,
+            "GW": 0.03
+          }
+        },
+        "srsue-32832.wire": {
+          "wall_s": 35.955066544,
+          "cpu_seconds": 14.08,
+          "average_cores": 0.39159988711937455,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.33,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.68,
+            "SYNC": 1.08,
+            "WORKER0": 4.83,
+            "STACK": 0.64,
+            "WORKER1": 4.46,
+            "WORKER2": 0.01,
+            "METRICS_HUB": 0.0,
+            "GW": 0.05
+          }
+        },
+        "srsue-32829.wire": {
+          "wall_s": 35.955066544,
+          "cpu_seconds": 12.91,
+          "average_cores": 0.3590592714993697,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.25,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.65,
+            "SYNC": 1.08,
+            "WORKER0": 4.15,
+            "STACK": 0.61,
+            "WORKER1": 4.14,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.03
+          }
+        },
+        "srsue-32826.wire": {
+          "wall_s": 35.955066544,
+          "cpu_seconds": 13.99,
+          "average_cores": 0.38909676284091266,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.33,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.69,
+            "SYNC": 1.08,
+            "WORKER0": 4.65,
+            "STACK": 0.61,
+            "WORKER1": 4.57,
+            "WORKER2": 0.01,
+            "METRICS_HUB": 0.0,
+            "GW": 0.05
+          }
+        },
+        "srsue-32823.wire": {
+          "wall_s": 35.955066544,
+          "cpu_seconds": 13.46,
+          "average_cores": 0.3743561420899703,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.3,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.73,
+            "SYNC": 1.14,
+            "WORKER0": 4.32,
+            "STACK": 0.66,
+            "WORKER1": 4.29,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.02
+          }
+        },
+        "srsue-32820.wire": {
+          "wall_s": 35.955066544,
+          "cpu_seconds": 14.69,
+          "average_cores": 0.40856550722894974,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.4,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.72,
+            "SYNC": 1.14,
+            "WORKER0": 4.94,
+            "STACK": 0.66,
+            "WORKER1": 4.75,
+            "WORKER2": 0.01,
+            "METRICS_HUB": 0.0,
+            "GW": 0.07
+          }
+        },
+        "gnb-32548.wire": {
+          "wall_s": 35.955066544,
+          "cpu_seconds": 63.58,
+          "average_cores": 1.7683182402734257,
+          "by_thread_name_cpu_seconds": {
+            "gnb": 0.62,
+            "main_pool#0": 1.92,
+            "main_pool#1": 1.92,
+            "main_pool#2": 1.91,
+            "main_pool#3": 1.93,
+            "main_pool#4": 1.91,
+            "phy_worker": 18.31,
+            "radio": 33.69,
+            "io_broker_epoll": 0.13,
+            "cuda0000280000b": 0.0,
+            "cuda-EvtHandlr": 0.01,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.23,
+            "ws_server": 0.0
+          }
+        },
+        "ocudu-gpu-channel-32489.wire": {
+          "wall_s": 35.955066544,
+          "cpu_seconds": 70.19999999999999,
+          "average_cores": 1.9524369372002905,
+          "by_thread_name_cpu_seconds": {
+            "ocudu-gpu-chann": 50.48999999999999,
+            "cuda00001400006": 0.0,
+            "cuda-EvtHandlr": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 11.129999999999999,
+            "ZMQbg/IO/1": 8.58
+          }
+        }
+      },
+      "affinity_checks": 250,
+      "tags": 400
+    },
+    {
+      "invalid_kpi_reasons": {
+        "ue1: no UE metrics row": 27
+      },
+      "ue_count": 16,
+      "layout": "matched-r1",
+      "cpu_mapping": "gNB P0-7; broker E8-9; CPU UEs E10-19; auxiliary E20-23; fixed allocation across UE sweep",
+      "case": "u16-matched-r1",
+      "configuration_verified": true,
+      "returncode": 0,
+      "valid_kpi_windows": 3,
+      "expected_kpi_windows": 30,
+      "full_ratio": 0.32208439626166047,
+      "rate": {
+        "including_warmup": {
+          "radio_s": 39.9,
+          "wall_s": 123.880574356,
+          "ratio": 0.32208439626166047,
+          "loss_us": 83980574.356,
+          "rebase_count": 36999,
+          "rebase_sum_us": 83980978.089,
+          "largest_rebases": [
+            {
+              "kind": "rebase",
+              "now_ns": "1986965635174",
+              "node": "gnb0",
+              "sample": "948487684",
+              "count": "23036",
+              "expected_due_ns": "1986955995092",
+              "due_ns": "1986964635174",
+              "shift_ns": "8640082",
+              "room_us": "0.041",
+              "data_us": "5753.874",
+              "read_us": "0.636",
+              "process_us": "2446.432",
+              "previous_loop_end_ns": "1986957432617"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1983129812512",
+              "node": "gnb0",
+              "sample": "920010244",
+              "count": "21948",
+              "expected_due_ns": "1983120560165",
+              "due_ns": "1983128812512",
+              "shift_ns": "8252347",
+              "room_us": "0.057",
+              "data_us": "6057.680",
+              "read_us": "0.621",
+              "process_us": "2233.830",
+              "previous_loop_end_ns": "1983121519070"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2007895351309",
+              "node": "gnb0",
+              "sample": "1105159680",
+              "count": "21952",
+              "expected_due_ns": "2007886540110",
+              "due_ns": "2007894351309",
+              "shift_ns": "7811199",
+              "room_us": "0.193",
+              "data_us": "0.483",
+              "read_us": "0.564",
+              "process_us": "7558.004",
+              "previous_loop_end_ns": "2007887778149"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1964034361570",
+              "node": "gnb0",
+              "sample": "777991680",
+              "count": "21953",
+              "expected_due_ns": "1964025570715",
+              "due_ns": "1964033361570",
+              "shift_ns": "7790855",
+              "room_us": "0.240",
+              "data_us": "0.606",
+              "read_us": "0.287",
+              "process_us": "7721.470",
+              "previous_loop_end_ns": "1964026637092"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1930960265452",
+              "node": "gnb0",
+              "sample": "533767680",
+              "count": "21953",
+              "expected_due_ns": "1930951474853",
+              "due_ns": "1930959265452",
+              "shift_ns": "7790599",
+              "room_us": "0.044",
+              "data_us": "0.324",
+              "read_us": "0.378",
+              "process_us": "8526.591",
+              "previous_loop_end_ns": "1930951736311"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1934064746556",
+              "node": "gnb0",
+              "sample": "556807680",
+              "count": "21953",
+              "expected_due_ns": "1934056023302",
+              "due_ns": "1934063746556",
+              "shift_ns": "7723254",
+              "room_us": "0.041",
+              "data_us": "0.256",
+              "read_us": "0.314",
+              "process_us": "8720.774",
+              "previous_loop_end_ns": "1934055992526"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1942229902707",
+              "node": "gnb0",
+              "sample": "616711680",
+              "count": "21953",
+              "expected_due_ns": "1942221259549",
+              "due_ns": "1942228902707",
+              "shift_ns": "7643158",
+              "room_us": "0.023",
+              "data_us": "38.240",
+              "read_us": "0.300",
+              "process_us": "8226.973",
+              "previous_loop_end_ns": "1942221566604"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1940684862809",
+              "node": "gnb0",
+              "sample": "605191680",
+              "count": "21953",
+              "expected_due_ns": "1940676240395",
+              "due_ns": "1940683862809",
+              "shift_ns": "7622414",
+              "room_us": "0.044",
+              "data_us": "0.356",
+              "read_us": "0.376",
+              "process_us": "7587.431",
+              "previous_loop_end_ns": "1940677197113"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1956586797477",
+              "node": "gnb0",
+              "sample": "722695680",
+              "count": "23032",
+              "expected_due_ns": "1956578179535",
+              "due_ns": "1956585797477",
+              "shift_ns": "7617942",
+              "room_us": "0.032",
+              "data_us": "0.226",
+              "read_us": "0.294",
+              "process_us": "7843.156",
+              "previous_loop_end_ns": "1956578952229"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1914361974216",
+              "node": "gnb0",
+              "sample": "410895364",
+              "count": "23040",
+              "expected_due_ns": "1914353366090",
+              "due_ns": "1914360974216",
+              "shift_ns": "7608126",
+              "room_us": "0.047",
+              "data_us": "5798.404",
+              "read_us": "0.738",
+              "process_us": "2418.849",
+              "previous_loop_end_ns": "1914353754559"
+            }
+          ]
+        },
+        "post_warmup": {
+          "radio_s": 29.9,
+          "wall_s": 92.643857702,
+          "ratio": 0.3227413100194608,
+          "loss_us": 62743857.70200001,
+          "rebase_count": 27869,
+          "rebase_sum_us": 62746072.96,
+          "largest_rebases": [
+            {
+              "kind": "rebase",
+              "now_ns": "1986965635174",
+              "node": "gnb0",
+              "sample": "948487684",
+              "count": "23036",
+              "expected_due_ns": "1986955995092",
+              "due_ns": "1986964635174",
+              "shift_ns": "8640082",
+              "room_us": "0.041",
+              "data_us": "5753.874",
+              "read_us": "0.636",
+              "process_us": "2446.432",
+              "previous_loop_end_ns": "1986957432617"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1983129812512",
+              "node": "gnb0",
+              "sample": "920010244",
+              "count": "21948",
+              "expected_due_ns": "1983120560165",
+              "due_ns": "1983128812512",
+              "shift_ns": "8252347",
+              "room_us": "0.057",
+              "data_us": "6057.680",
+              "read_us": "0.621",
+              "process_us": "2233.830",
+              "previous_loop_end_ns": "1983121519070"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2007895351309",
+              "node": "gnb0",
+              "sample": "1105159680",
+              "count": "21952",
+              "expected_due_ns": "2007886540110",
+              "due_ns": "2007894351309",
+              "shift_ns": "7811199",
+              "room_us": "0.193",
+              "data_us": "0.483",
+              "read_us": "0.564",
+              "process_us": "7558.004",
+              "previous_loop_end_ns": "2007887778149"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1964034361570",
+              "node": "gnb0",
+              "sample": "777991680",
+              "count": "21953",
+              "expected_due_ns": "1964025570715",
+              "due_ns": "1964033361570",
+              "shift_ns": "7790855",
+              "room_us": "0.240",
+              "data_us": "0.606",
+              "read_us": "0.287",
+              "process_us": "7721.470",
+              "previous_loop_end_ns": "1964026637092"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1942229902707",
+              "node": "gnb0",
+              "sample": "616711680",
+              "count": "21953",
+              "expected_due_ns": "1942221259549",
+              "due_ns": "1942228902707",
+              "shift_ns": "7643158",
+              "room_us": "0.023",
+              "data_us": "38.240",
+              "read_us": "0.300",
+              "process_us": "8226.973",
+              "previous_loop_end_ns": "1942221566604"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1940684862809",
+              "node": "gnb0",
+              "sample": "605191680",
+              "count": "21953",
+              "expected_due_ns": "1940676240395",
+              "due_ns": "1940683862809",
+              "shift_ns": "7622414",
+              "room_us": "0.044",
+              "data_us": "0.356",
+              "read_us": "0.376",
+              "process_us": "7587.431",
+              "previous_loop_end_ns": "1940677197113"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1956586797477",
+              "node": "gnb0",
+              "sample": "722695680",
+              "count": "23032",
+              "expected_due_ns": "1956578179535",
+              "due_ns": "1956585797477",
+              "shift_ns": "7617942",
+              "room_us": "0.032",
+              "data_us": "0.226",
+              "read_us": "0.294",
+              "process_us": "7843.156",
+              "previous_loop_end_ns": "1956578952229"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2017730588514",
+              "node": "gnb0",
+              "sample": "1177758724",
+              "count": "23039",
+              "expected_due_ns": "2017722060997",
+              "due_ns": "2017729588514",
+              "shift_ns": "7527517",
+              "room_us": "0.039",
+              "data_us": "4770.094",
+              "read_us": "0.597",
+              "process_us": "2718.326",
+              "previous_loop_end_ns": "2017723075372"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1969302935727",
+              "node": "gnb0",
+              "sample": "817159680",
+              "count": "21953",
+              "expected_due_ns": "1969294421764",
+              "due_ns": "1969301935727",
+              "shift_ns": "7513963",
+              "room_us": "0.056",
+              "data_us": "0.317",
+              "read_us": "0.297",
+              "process_us": "8185.818",
+              "previous_loop_end_ns": "1969294747448"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "1965830362053",
+              "node": "gnb0",
+              "sample": "791285764",
+              "count": "23040",
+              "expected_due_ns": "1965821946850",
+              "due_ns": "1965829362053",
+              "shift_ns": "7415203",
+              "room_us": "0.103",
+              "data_us": "2610.721",
+              "read_us": "0.903",
+              "process_us": "4414.700",
+              "previous_loop_end_ns": "1965823333079"
+            }
+          ]
+        }
+      },
+      "gate": {
+        "all_ues_attached": true,
+        "broker": {
+          "control_batches_committed": 12832,
+          "rx_requests": 1019912,
+          "rx_starvations": 1835,
+          "tx_pulls": 995034,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "broker_clean": true,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 2,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue1": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue10": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue11": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue12": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue13": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue14": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 2,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue15": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 2,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue2": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 2,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue3": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue4": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue5": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue6": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue7": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue8": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue9": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          }
+        },
+        "policy": "rr",
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "link_adaptation": {
+                "found_in_config_dump": {
+                  "link_adaptation": "harq_olla"
+                },
+                "ok": true,
+                "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+                "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+                "requested": {
+                  "link_adaptation": "harq_olla"
+                }
+              },
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "replay_status": "measure_end",
+        "srsue_alive_at_stop": 1,
+        "status": "passed"
+      },
+      "trace_integrity": {
+        "dropped": 0,
+        "uncommitted": 0,
+        "files": [
+          {
+            "file": "srsue-37662.wire",
+            "count": 470370,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37665.wire",
+            "count": 470108,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37679.wire",
+            "count": 470637,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37659.wire",
+            "count": 470238,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37644.wire",
+            "count": 470347,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37650.wire",
+            "count": 470218,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37656.wire",
+            "count": 471092,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "gnb-37040.wire",
+            "count": 0,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37690.wire",
+            "count": 470360,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37647.wire",
+            "count": 470337,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "gnb-37401.wire",
+            "count": 295208,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37653.wire",
+            "count": 470743,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37687.wire",
+            "count": 473176,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "ocudu-gpu-channel-37315.wire",
+            "count": 4033219,
+            "capacity": 6000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37672.wire",
+            "count": 470802,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37675.wire",
+            "count": 470188,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37668.wire",
+            "count": 470016,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37683.wire",
+            "count": 470919,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-37641.wire",
+            "count": 470814,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          }
+        ]
+      },
+      "broker_terminal_events": [
+        "event=stop tx_pulls=995034 rx_requests=1019912 rx_starvations=1835 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0 control_msgs_received=1126314 control_updates_applied=12832 control_updates_rejected=0 control_batches_committed=12832 control_batches_aborted=0 telemetry_frames=284800 telemetry_drops=0 force_inert_warnings=0"
+      ],
+      "sr_exhaustion_whole_run": {
+        "srsue-ue9-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.306430 [MAC-NR ] [I] [ 1965] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:54.952464 [MAC-NR ] [I] [ 4405] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue1-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:19:47.407060 [MAC-NR ] [I] [ 1997] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:47.407060 [MAC-NR ] [I] [ 1997] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue3-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:19:47.351376 [MAC-NR ] [I] [ 1979] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:47.351376 [MAC-NR ] [I] [ 1979] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue12-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.562538 [MAC-NR ] [I] [ 2048] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:52.862301 [MAC-NR ] [I] [ 3768] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue8-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:19:47.550139 [MAC-NR ] [I] [ 2044] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:47.550139 [MAC-NR ] [I] [ 2044] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue7-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.361438 [MAC-NR ] [I] [ 1983] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:53.379221 [MAC-NR ] [I] [ 3923] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue6-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.299625 [MAC-NR ] [I] [ 1962] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:54.943301 [MAC-NR ] [I] [ 4402] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue0-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.526980 [MAC-NR ] [I] [ 2036] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:52.513812 [MAC-NR ] [I] [ 3656] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue4-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.293125 [MAC-NR ] [I] [ 1960] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:54.938031 [MAC-NR ] [I] [ 4400] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue14-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.571205 [MAC-NR ] [I] [ 2050] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:54.969683 [MAC-NR ] [I] [ 4410] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue5-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.297342 [MAC-NR ] [I] [ 1961] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:52.841776 [MAC-NR ] [I] [ 3761] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue13-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.321080 [MAC-NR ] [I] [ 1969] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:52.867392 [MAC-NR ] [I] [ 3769] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue10-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.613039 [MAC-NR ] [I] [ 2066] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:51.866266 [MAC-NR ] [I] [ 3446] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue15-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.625959 [MAC-NR ] [I] [ 2071] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:54.970321 [MAC-NR ] [I] [ 4411] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue2-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.531286 [MAC-NR ] [I] [ 2038] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:52.519265 [MAC-NR ] [I] [ 3658] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue11-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:19:47.375865 [MAC-NR ] [I] [ 1987] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:19:54.961389 [MAC-NR ] [I] [ 4407] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        }
+      },
+      "assertions": {},
+      "post_warmup_cpu_time": {
+        "srsue-37690.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 15.03,
+          "average_cores": 0.1632390432369658,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.92,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.06,
+            "SYNC": 1.32,
+            "WORKER0": 4.14,
+            "STACK": 1.38,
+            "WORKER1": 4.17,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.01,
+            "GW": 0.03
+          }
+        },
+        "srsue-37687.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 15.549999999999999,
+          "average_cores": 0.16888670141948225,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.96,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.05,
+            "SYNC": 1.32,
+            "WORKER0": 4.37,
+            "STACK": 1.42,
+            "WORKER1": 4.35,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.02,
+            "GW": 0.06
+          }
+        },
+        "srsue-37683.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 15.02,
+          "average_cores": 0.16313043442576358,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.95,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.06,
+            "SYNC": 1.34,
+            "WORKER0": 4.06,
+            "STACK": 1.39,
+            "WORKER1": 4.16,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.02,
+            "GW": 0.04
+          }
+        },
+        "srsue-37679.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 15.32,
+          "average_cores": 0.16638869876183077,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.9699999999999998,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.09,
+            "SYNC": 1.33,
+            "WORKER0": 4.2,
+            "STACK": 1.41,
+            "WORKER1": 4.24,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.01,
+            "GW": 0.07
+          }
+        },
+        "srsue-37675.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 15.669999999999998,
+          "average_cores": 0.17019000715390914,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 2.01,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.16,
+            "SYNC": 1.39,
+            "WORKER0": 4.27,
+            "STACK": 1.45,
+            "WORKER1": 4.35,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.01,
+            "GW": 0.03
+          }
+        },
+        "srsue-37672.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 16.21,
+          "average_cores": 0.1760548829588301,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 2.05,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.2,
+            "SYNC": 1.38,
+            "WORKER0": 4.59,
+            "STACK": 1.43,
+            "WORKER1": 4.49,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.01,
+            "GW": 0.06
+          }
+        },
+        "srsue-37668.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 14.58,
+          "average_cores": 0.15835164673286506,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.9100000000000001,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.93,
+            "SYNC": 1.23,
+            "WORKER0": 4.0,
+            "STACK": 1.42,
+            "WORKER1": 4.05,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.01,
+            "GW": 0.03
+          }
+        },
+        "srsue-37665.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 15.26,
+          "average_cores": 0.16573704589461732,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.98,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.95,
+            "SYNC": 1.24,
+            "WORKER0": 4.39,
+            "STACK": 1.47,
+            "WORKER1": 4.16,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.01,
+            "GW": 0.06
+          }
+        },
+        "srsue-37662.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 14.74,
+          "average_cores": 0.16008938771210088,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.92,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.96,
+            "SYNC": 1.23,
+            "WORKER0": 4.03,
+            "STACK": 1.44,
+            "WORKER1": 4.12,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.01,
+            "GW": 0.03
+          }
+        },
+        "srsue-37659.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 15.27,
+          "average_cores": 0.16584565470581958,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.96,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.98,
+            "SYNC": 1.24,
+            "WORKER0": 4.33,
+            "STACK": 1.47,
+            "WORKER1": 4.23,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.06
+          }
+        },
+        "srsue-37656.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 15.03,
+          "average_cores": 0.1632390432369658,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.93,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.06,
+            "SYNC": 1.3,
+            "WORKER0": 4.12,
+            "STACK": 1.37,
+            "WORKER1": 4.22,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.03
+          }
+        },
+        "srsue-37653.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 15.59,
+          "average_cores": 0.16932113666429124,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.9899999999999998,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.06,
+            "SYNC": 1.33,
+            "WORKER0": 4.36,
+            "STACK": 1.43,
+            "WORKER1": 4.36,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.06
+          }
+        },
+        "srsue-37650.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 15.049999999999999,
+          "average_cores": 0.1634562608593703,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.95,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.03,
+            "SYNC": 1.31,
+            "WORKER0": 4.11,
+            "STACK": 1.38,
+            "WORKER1": 4.22,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.01,
+            "GW": 0.04
+          }
+        },
+        "srsue-37647.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 15.79,
+          "average_cores": 0.17149331288833602,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.9899999999999998,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.05,
+            "SYNC": 1.3,
+            "WORKER0": 4.33,
+            "STACK": 1.42,
+            "WORKER1": 4.62,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.01,
+            "GW": 0.07
+          }
+        },
+        "srsue-37644.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 13.12,
+          "average_cores": 0.1424947602973381,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.8599999999999999,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.13,
+            "SYNC": 1.38,
+            "WORKER0": 3.3,
+            "STACK": 1.23,
+            "WORKER1": 3.21,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.01,
+            "GW": 0.0
+          }
+        },
+        "srsue-37641.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 16.19,
+          "average_cores": 0.1758376653364256,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 2.05,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 2.2,
+            "SYNC": 1.39,
+            "WORKER0": 4.57,
+            "STACK": 1.45,
+            "WORKER1": 4.45,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.02,
+            "GW": 0.06
+          }
+        },
+        "gnb-37401.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 136.91,
+          "average_cores": 1.4869632341698598,
+          "by_thread_name_cpu_seconds": {
+            "gnb": 1.54,
+            "main_pool#0": 3.94,
+            "main_pool#1": 3.95,
+            "main_pool#2": 3.95,
+            "main_pool#3": 3.95,
+            "main_pool#4": 3.98,
+            "phy_worker": 24.47,
+            "radio": 89.62,
+            "io_broker_epoll": 0.19,
+            "cuda0000280000b": 0.0,
+            "cuda-EvtHandlr": 0.03,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.29,
+            "ws_server": 0.0
+          }
+        },
+        "ocudu-gpu-channel-37315.wire": {
+          "wall_s": 92.073560969,
+          "cpu_seconds": 183.29000000000002,
+          "average_cores": 1.9906909005258462,
+          "by_thread_name_cpu_seconds": {
+            "ocudu-gpu-chann": 140.12000000000003,
+            "cuda00001400006": 0.0,
+            "cuda-EvtHandlr": 0.01,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 25.75,
+            "ZMQbg/IO/1": 17.41
+          }
+        }
+      },
+      "affinity_checks": 512,
+      "tags": 400
+    },
+    {
+      "invalid_kpi_reasons": {},
+      "ue_count": 8,
+      "layout": "pbroker-r1",
+      "cpu_mapping": "gNB P0-5+E8-9; broker P6-7; CPU UEs E10-19; auxiliary E20-23; same role core counts",
+      "case": "u8-pbroker-r1",
+      "configuration_verified": true,
+      "returncode": 0,
+      "valid_kpi_windows": 30,
+      "expected_kpi_windows": 30,
+      "full_ratio": 0.9600910068561778,
+      "rate": {
+        "including_warmup": {
+          "radio_s": 39.9,
+          "wall_s": 41.558560298,
+          "ratio": 0.9600910068561778,
+          "loss_us": 1658560.2980000046,
+          "rebase_count": 5774,
+          "rebase_sum_us": 1657932.739,
+          "largest_rebases": [
+            {
+              "kind": "rebase",
+              "now_ns": "2162696461879",
+              "node": "gnb0",
+              "sample": "535173125",
+              "count": "23040",
+              "expected_due_ns": "2162687916338",
+              "due_ns": "2162695461879",
+              "shift_ns": "7545541",
+              "room_us": "14.692",
+              "data_us": "8220.937",
+              "read_us": "0.678",
+              "process_us": "1293.158",
+              "previous_loop_end_ns": "2162686931467"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2173865106716",
+              "node": "gnb0",
+              "sample": "780526085",
+              "count": "23039",
+              "expected_due_ns": "2173862590316",
+              "due_ns": "2173864106716",
+              "shift_ns": "1516400",
+              "room_us": "0.034",
+              "data_us": "682.677",
+              "read_us": "0.553",
+              "process_us": "1141.425",
+              "previous_loop_end_ns": "2173863281390"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2196107845814",
+              "node": "gnb0",
+              "sample": "1276761607",
+              "count": "23037",
+              "expected_due_ns": "2196105423113",
+              "due_ns": "2196106845814",
+              "shift_ns": "1422701",
+              "room_us": "0.052",
+              "data_us": "2033.937",
+              "read_us": "0.546",
+              "process_us": "279.130",
+              "previous_loop_end_ns": "2196105531454"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2161903189847",
+              "node": "gnb0",
+              "sample": "517824015",
+              "count": "23030",
+              "expected_due_ns": "2161900819909",
+              "due_ns": "2161902189847",
+              "shift_ns": "1369938",
+              "room_us": "0.025",
+              "data_us": "188.220",
+              "read_us": "0.420",
+              "process_us": "1792.986",
+              "previous_loop_end_ns": "2161901207520"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2186246192711",
+              "node": "gnb0",
+              "sample": "1056983043",
+              "count": "23037",
+              "expected_due_ns": "2186243839334",
+              "due_ns": "2186245192711",
+              "shift_ns": "1353377",
+              "room_us": "0.025",
+              "data_us": "0.255",
+              "read_us": "0.153",
+              "process_us": "1111.657",
+              "previous_loop_end_ns": "2186245080027"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2174284595239",
+              "node": "gnb0",
+              "sample": "789765125",
+              "count": "23039",
+              "expected_due_ns": "2174282251578",
+              "due_ns": "2174283595239",
+              "shift_ns": "1343661",
+              "room_us": "0.038",
+              "data_us": "0.158",
+              "read_us": "0.139",
+              "process_us": "2260.877",
+              "previous_loop_end_ns": "2174282333202"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2189656686111",
+              "node": "gnb0",
+              "sample": "1132945923",
+              "count": "23040",
+              "expected_due_ns": "2189654432272",
+              "due_ns": "2189655686111",
+              "shift_ns": "1253839",
+              "room_us": "0.056",
+              "data_us": "0.217",
+              "read_us": "672.780",
+              "process_us": "1510.290",
+              "previous_loop_end_ns": "2189654501851"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2173337197397",
+              "node": "gnb0",
+              "sample": "768936965",
+              "count": "23027",
+              "expected_due_ns": "2173334948535",
+              "due_ns": "2173336197397",
+              "shift_ns": "1248862",
+              "room_us": "0.029",
+              "data_us": "1017.117",
+              "read_us": "0.208",
+              "process_us": "968.586",
+              "previous_loop_end_ns": "2173335210815"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2159445058991",
+              "node": "gnb0",
+              "sample": "464786226",
+              "count": "23040",
+              "expected_due_ns": "2159442820624",
+              "due_ns": "2159444058991",
+              "shift_ns": "1238367",
+              "room_us": "60.453",
+              "data_us": "1914.351",
+              "read_us": "1.226",
+              "process_us": "258.586",
+              "previous_loop_end_ns": "2159442823494"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2176144751214",
+              "node": "gnb0",
+              "sample": "831098885",
+              "count": "23035",
+              "expected_due_ns": "2176142571052",
+              "due_ns": "2176143751214",
+              "shift_ns": "1180162",
+              "room_us": "0.024",
+              "data_us": "608.644",
+              "read_us": "0.221",
+              "process_us": "646.333",
+              "previous_loop_end_ns": "2176143495265"
+            }
+          ]
+        },
+        "post_warmup": {
+          "radio_s": 29.9,
+          "wall_s": 30.943169229,
+          "ratio": 0.9662875763862501,
+          "loss_us": 1043169.229,
+          "rebase_count": 3988,
+          "rebase_sum_us": 1043359.835,
+          "largest_rebases": [
+            {
+              "kind": "rebase",
+              "now_ns": "2173865106716",
+              "node": "gnb0",
+              "sample": "780526085",
+              "count": "23039",
+              "expected_due_ns": "2173862590316",
+              "due_ns": "2173864106716",
+              "shift_ns": "1516400",
+              "room_us": "0.034",
+              "data_us": "682.677",
+              "read_us": "0.553",
+              "process_us": "1141.425",
+              "previous_loop_end_ns": "2173863281390"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2196107845814",
+              "node": "gnb0",
+              "sample": "1276761607",
+              "count": "23037",
+              "expected_due_ns": "2196105423113",
+              "due_ns": "2196106845814",
+              "shift_ns": "1422701",
+              "room_us": "0.052",
+              "data_us": "2033.937",
+              "read_us": "0.546",
+              "process_us": "279.130",
+              "previous_loop_end_ns": "2196105531454"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2186246192711",
+              "node": "gnb0",
+              "sample": "1056983043",
+              "count": "23037",
+              "expected_due_ns": "2186243839334",
+              "due_ns": "2186245192711",
+              "shift_ns": "1353377",
+              "room_us": "0.025",
+              "data_us": "0.255",
+              "read_us": "0.153",
+              "process_us": "1111.657",
+              "previous_loop_end_ns": "2186245080027"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2174284595239",
+              "node": "gnb0",
+              "sample": "789765125",
+              "count": "23039",
+              "expected_due_ns": "2174282251578",
+              "due_ns": "2174283595239",
+              "shift_ns": "1343661",
+              "room_us": "0.038",
+              "data_us": "0.158",
+              "read_us": "0.139",
+              "process_us": "2260.877",
+              "previous_loop_end_ns": "2174282333202"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2189656686111",
+              "node": "gnb0",
+              "sample": "1132945923",
+              "count": "23040",
+              "expected_due_ns": "2189654432272",
+              "due_ns": "2189655686111",
+              "shift_ns": "1253839",
+              "room_us": "0.056",
+              "data_us": "0.217",
+              "read_us": "672.780",
+              "process_us": "1510.290",
+              "previous_loop_end_ns": "2189654501851"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2173337197397",
+              "node": "gnb0",
+              "sample": "768936965",
+              "count": "23027",
+              "expected_due_ns": "2173334948535",
+              "due_ns": "2173336197397",
+              "shift_ns": "1248862",
+              "room_us": "0.029",
+              "data_us": "1017.117",
+              "read_us": "0.208",
+              "process_us": "968.586",
+              "previous_loop_end_ns": "2173335210815"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2176144751214",
+              "node": "gnb0",
+              "sample": "831098885",
+              "count": "23035",
+              "expected_due_ns": "2176142571052",
+              "due_ns": "2176143751214",
+              "shift_ns": "1180162",
+              "room_us": "0.024",
+              "data_us": "608.644",
+              "read_us": "0.221",
+              "process_us": "646.333",
+              "previous_loop_end_ns": "2176143495265"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2196611924190",
+              "node": "gnb0",
+              "sample": "1288051204",
+              "count": "23040",
+              "expected_due_ns": "2196609794277",
+              "due_ns": "2196610924190",
+              "shift_ns": "1129913",
+              "room_us": "996.051",
+              "data_us": "0.450",
+              "read_us": "0.287",
+              "process_us": "1219.269",
+              "previous_loop_end_ns": "2196609707094"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2176662613185",
+              "node": "gnb0",
+              "sample": "842618884",
+              "count": "23036",
+              "expected_due_ns": "2176660504509",
+              "due_ns": "2176661613185",
+              "shift_ns": "1108676",
+              "room_us": "0.036",
+              "data_us": "0.260",
+              "read_us": "0.199",
+              "process_us": "1196.563",
+              "previous_loop_end_ns": "2176661415304"
+            },
+            {
+              "kind": "rebase",
+              "now_ns": "2188206128713",
+              "node": "gnb0",
+              "sample": "1100759043",
+              "count": "23040",
+              "expected_due_ns": "2188204027655",
+              "due_ns": "2188205128713",
+              "shift_ns": "1101058",
+              "room_us": "620.654",
+              "data_us": "0.271",
+              "read_us": "0.283",
+              "process_us": "1466.986",
+              "previous_loop_end_ns": "2188204039712"
+            }
+          ]
+        }
+      },
+      "gate": {
+        "all_ues_attached": true,
+        "broker": {
+          "control_batches_committed": 6416,
+          "rx_requests": 637490,
+          "rx_starvations": 35,
+          "tx_pulls": 611088,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 0
+        },
+        "broker_clean": true,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "completed",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue1": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue2": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue3": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue4": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue5": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue6": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          },
+          "ue7": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 0
+          }
+        },
+        "policy": "rr",
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "link_adaptation": {
+                "found_in_config_dump": {
+                  "link_adaptation": "harq_olla"
+                },
+                "ok": true,
+                "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+                "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+                "requested": {
+                  "link_adaptation": "harq_olla"
+                }
+              },
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "replay_status": "measure_end",
+        "srsue_alive_at_stop": 1,
+        "status": "passed"
+      },
+      "trace_integrity": {
+        "dropped": 0,
+        "uncommitted": 0,
+        "files": [
+          {
+            "file": "srsue-47298.wire",
+            "count": 547616,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-47280.wire",
+            "count": 547994,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "gnb-46738.wire",
+            "count": 0,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-47277.wire",
+            "count": 547324,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "gnb-47034.wire",
+            "count": 308345,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "ocudu-gpu-channel-46980.wire",
+            "count": 2498766,
+            "capacity": 6000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-47274.wire",
+            "count": 548162,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-47286.wire",
+            "count": 547381,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-47301.wire",
+            "count": 547692,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-47295.wire",
+            "count": 548919,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-47292.wire",
+            "count": 548569,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          }
+        ]
+      },
+      "broker_terminal_events": [
+        "event=stop tx_pulls=611088 rx_requests=637490 rx_starvations=35 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0 control_msgs_received=345989 control_updates_applied=6416 control_updates_rejected=0 control_batches_committed=6416 control_batches_aborted=0 telemetry_frames=62512 telemetry_drops=0 force_inert_warnings=0"
+      ],
+      "sr_exhaustion_whole_run": {},
+      "assertions": {},
+      "post_warmup_cpu_time": {
+        "srsue-47301.wire": {
+          "wall_s": 30.393440325,
+          "cpu_seconds": 12.77,
+          "average_cores": 0.4201564503211599,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.1600000000000001,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.73,
+            "SYNC": 1.09,
+            "WORKER0": 4.15,
+            "STACK": 0.55,
+            "WORKER1": 4.05,
+            "WORKER2": 0.01,
+            "METRICS_HUB": 0.0,
+            "GW": 0.03
+          }
+        },
+        "srsue-47298.wire": {
+          "wall_s": 30.393440325,
+          "cpu_seconds": 13.5,
+          "average_cores": 0.44417479086418626,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.26,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.73,
+            "SYNC": 1.1,
+            "WORKER0": 4.95,
+            "STACK": 0.55,
+            "WORKER1": 3.84,
+            "WORKER2": 0.01,
+            "METRICS_HUB": 0.0,
+            "GW": 0.06
+          }
+        },
+        "srsue-47295.wire": {
+          "wall_s": 30.393440325,
+          "cpu_seconds": 13.569999999999999,
+          "average_cores": 0.4464779194094079,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.25,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.84,
+            "SYNC": 1.14,
+            "WORKER0": 4.64,
+            "STACK": 0.53,
+            "WORKER1": 4.14,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.03
+          }
+        },
+        "srsue-47292.wire": {
+          "wall_s": 30.393440325,
+          "cpu_seconds": 14.5,
+          "average_cores": 0.47707662722449634,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.33,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.84,
+            "SYNC": 1.16,
+            "WORKER0": 5.48,
+            "STACK": 0.57,
+            "WORKER1": 4.05,
+            "WORKER2": 0.01,
+            "METRICS_HUB": 0.0,
+            "GW": 0.06
+          }
+        },
+        "srsue-47286.wire": {
+          "wall_s": 30.393440325,
+          "cpu_seconds": 13.24,
+          "average_cores": 0.4356203134105056,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.24,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.82,
+            "SYNC": 1.17,
+            "WORKER0": 4.21,
+            "STACK": 0.55,
+            "WORKER1": 4.22,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.03
+          }
+        },
+        "srsue-47280.wire": {
+          "wall_s": 30.393440325,
+          "cpu_seconds": 14.68,
+          "average_cores": 0.48299895776935214,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.32,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.87,
+            "SYNC": 1.17,
+            "WORKER0": 4.88,
+            "STACK": 0.56,
+            "WORKER1": 4.81,
+            "WORKER2": 0.01,
+            "METRICS_HUB": 0.0,
+            "GW": 0.06
+          }
+        },
+        "srsue-47277.wire": {
+          "wall_s": 30.393440325,
+          "cpu_seconds": 12.870000000000001,
+          "average_cores": 0.4234466339571909,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.1800000000000002,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.75,
+            "SYNC": 1.12,
+            "WORKER0": 4.09,
+            "STACK": 0.55,
+            "WORKER1": 4.15,
+            "WORKER2": 0.0,
+            "METRICS_HUB": 0.0,
+            "GW": 0.03
+          }
+        },
+        "srsue-47274.wire": {
+          "wall_s": 30.393440325,
+          "cpu_seconds": 14.290000000000001,
+          "average_cores": 0.4701672415888313,
+          "by_thread_name_cpu_seconds": {
+            "srsue": 1.29,
+            "TASKWORKER0": 0.0,
+            "TASKWORKER1": 0.0,
+            "PHY_CMD": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.75,
+            "SYNC": 1.1,
+            "WORKER0": 4.58,
+            "STACK": 0.58,
+            "WORKER1": 4.92,
+            "WORKER2": 0.01,
+            "METRICS_HUB": 0.0,
+            "GW": 0.06
+          }
+        },
+        "gnb-47034.wire": {
+          "wall_s": 30.393440325,
+          "cpu_seconds": 57.2,
+          "average_cores": 1.8819850398097373,
+          "by_thread_name_cpu_seconds": {
+            "gnb": 0.6,
+            "main_pool#0": 1.78,
+            "main_pool#1": 1.78,
+            "main_pool#2": 1.79,
+            "main_pool#3": 1.77,
+            "main_pool#4": 1.78,
+            "phy_worker": 18.19,
+            "radio": 27.94,
+            "io_broker_epoll": 0.13,
+            "cuda0000280000b": 0.0,
+            "cuda-EvtHandlr": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 1.44,
+            "ws_server": 0.0
+          }
+        },
+        "ocudu-gpu-channel-46980.wire": {
+          "wall_s": 30.393440325,
+          "cpu_seconds": 57.290000000000006,
+          "average_cores": 1.8849462050821655,
+          "by_thread_name_cpu_seconds": {
+            "ocudu-gpu-chann": 41.74000000000001,
+            "cuda00001400006": 0.0,
+            "cuda-EvtHandlr": 0.0,
+            "ZMQbg/Reaper": 0.0,
+            "ZMQbg/IO/0": 8.709999999999999,
+            "ZMQbg/IO/1": 6.84
+          }
+        }
+      },
+      "affinity_checks": 235,
+      "tags": 400
+    },
+    {
+      "invalid_kpi_reasons": {},
+      "ue_count": 16,
+      "layout": "pbroker-r1",
+      "cpu_mapping": "gNB P0-5+E8-9; broker P6-7; CPU UEs E10-19; auxiliary E20-23; same role core counts",
+      "case": "u16-pbroker-r1",
+      "configuration_verified": true,
+      "returncode": 1,
+      "valid_kpi_windows": 16,
+      "expected_kpi_windows": 30,
+      "full_ratio": 0.40463272295724034,
+      "rate": {},
+      "gate": {
+        "all_ues_attached": true,
+        "broker": {
+          "control_batches_committed": 8704,
+          "rx_requests": 808588,
+          "rx_starvations": 986,
+          "tx_pulls": 781038,
+          "tx_queue_overflows": 0,
+          "tx_sequence_gaps": 0,
+          "zmq_errors": 1
+        },
+        "broker_clean": false,
+        "gnb_alive_at_stop": 1,
+        "measure_status": "process_exited",
+        "per_ue": {
+          "ue0": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue1": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue10": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue11": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue12": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue13": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue14": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue15": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue2": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue3": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue4": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue5": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 2,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue6": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 2,
+            "rrc_connected": 1,
+            "rrc_release": 2
+          },
+          "ue7": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue8": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          },
+          "ue9": {
+            "camped_pci": 1,
+            "crashed": 0,
+            "out_of_sync": 0,
+            "pdu_session": 1,
+            "ping_ok": 1,
+            "random_access_complete": 1,
+            "rrc_connected": 1,
+            "rrc_release": 1
+          }
+        },
+        "policy": "rr",
+        "policy_check": {
+          "gnbs": {
+            "gnb0": {
+              "found_in_config_dump": [
+                "rr"
+              ],
+              "link_adaptation": {
+                "found_in_config_dump": {
+                  "link_adaptation": "harq_olla"
+                },
+                "ok": true,
+                "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+                "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+                "requested": {
+                  "link_adaptation": "harq_olla"
+                }
+              },
+              "ok": true,
+              "policy_block": "      rr_sched: ~\n",
+              "requested": "rr"
+            }
+          },
+          "ok": true
+        },
+        "replay_status": "interrupted",
+        "srsue_alive_at_stop": 1,
+        "status": "failed"
+      },
+      "trace_integrity": {
+        "dropped": 0,
+        "uncommitted": 0,
+        "files": [
+          {
+            "file": "gnb-51674.wire",
+            "count": 236422,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51969.wire",
+            "count": 369573,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51990.wire",
+            "count": 369163,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51995.wire",
+            "count": 369358,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51960.wire",
+            "count": 369424,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51966.wire",
+            "count": 369426,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51978.wire",
+            "count": 368952,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-52002.wire",
+            "count": 369973,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51972.wire",
+            "count": 369721,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-52006.wire",
+            "count": 372520,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51963.wire",
+            "count": 369670,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51981.wire",
+            "count": 369339,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-52010.wire",
+            "count": 369338,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51975.wire",
+            "count": 369657,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "ocudu-gpu-channel-51575.wire",
+            "count": 3184161,
+            "capacity": 6000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "gnb-51266.wire",
+            "count": 0,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51987.wire",
+            "count": 369088,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51984.wire",
+            "count": 368999,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          },
+          {
+            "file": "srsue-51998.wire",
+            "count": 369536,
+            "capacity": 1000000,
+            "dropped": 0,
+            "uncommitted": 0
+          }
+        ]
+      },
+      "broker_terminal_events": [
+        "event=relay_wedged waited_ms=10006 ports=[gnb0_p0:puller=recv_reply/45823/1056568620,producer=wait_data/57199,rep=wait_row/57199 ue0_p0:puller=recv_reply/45893/1056637433,producer=wait_data/47023,rep=wait_row/47023 ue1_p0:puller=recv_reply/45953/1056637444,producer=wait_data/46971,rep=wait_row/46971 ue2_p0:puller=recv_reply/45869/1056637444,producer=wait_data/47085,rep=wait_row/47085 ue3_p0:puller=recv_reply/45967/1056637444,producer=wait_data/47070,rep=wait_row/47070 ue4_p0:puller=recv_reply/45938/1056637445,producer=wait_data/47028,rep=wait_row/47028 ue5_p0:puller=recv_reply/45923/1056637446,producer=wait_data/47039,rep=wait_row/47039 ue6_p0:puller=recv_reply/45926/1056637444,producer=wait_data/46697,rep=wait_row/46697 ue7_p0:puller=recv_reply/45938/1056637443,producer=wait_data/46856,rep=wait_row/46856 ue8_p0:puller=recv_reply/45948/1056545284,producer=wait_data/46753,rep=wait_row/46753 ue9_p0:puller=recv_reply/45885/1056637444,producer=wait_data/46878,rep=wait_row/46878 ue10_p0:puller=recv_reply/45878/1056637433,producer=wait_data/46913,rep=wait_row/46913 ue11_p0:puller=recv_reply/45890/1056637444,producer=wait_data/46974,rep=wait_row/46974 ue12_p0:puller=recv_reply/45965/1056637444,producer=wait_data/47037,rep=wait_row/47037 ue13_p0:puller=recv_reply/45981/1056637446,producer=wait_data/47007,rep=wait_row/47007 ue14_p0:puller=recv_reply/46372/1056637446,producer=wait_data/47093,rep=wait_row/47093 ue15_p0:puller=recv_reply/45889/1056637444,producer=wait_data/46965,rep=wait_row/46965]",
+        "event=stop tx_pulls=781038 rx_requests=808588 rx_starvations=986 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=1 control_msgs_received=954350 control_updates_applied=8704 control_updates_rejected=0 control_batches_committed=8704 control_batches_aborted=0 telemetry_frames=196928 telemetry_drops=0 force_inert_warnings=0"
+      ],
+      "sr_exhaustion_whole_run": {
+        "srsue-ue9-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.784264 [MAC-NR ] [I] [ 6765] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.784264 [MAC-NR ] [I] [ 6765] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue1-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.625407 [MAC-NR ] [I] [ 6697] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.625407 [MAC-NR ] [I] [ 6697] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue3-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.578816 [MAC-NR ] [I] [ 6679] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.578816 [MAC-NR ] [I] [ 6679] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue12-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.794940 [MAC-NR ] [I] [ 6767] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.794940 [MAC-NR ] [I] [ 6767] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue8-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.807762 [MAC-NR ] [I] [ 6774] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.807762 [MAC-NR ] [I] [ 6774] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue7-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.589392 [MAC-NR ] [I] [ 6683] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.589392 [MAC-NR ] [I] [ 6683] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue6-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:26:24.632301 [MAC-NR ] [I] [ 6702] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:28.144338 [MAC-NR ] [I] [ 8082] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue0-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.812959 [MAC-NR ] [I] [ 6776] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.812959 [MAC-NR ] [I] [ 6776] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue4-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.773653 [MAC-NR ] [I] [ 6760] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.773653 [MAC-NR ] [I] [ 6760] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue14-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.795621 [MAC-NR ] [I] [ 6770] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.795621 [MAC-NR ] [I] [ 6770] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue5-internal.log": {
+          "sr_exhaustion_count": 2,
+          "first": "2026-11-02T09:26:24.629870 [MAC-NR ] [I] [ 6701] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:28.143266 [MAC-NR ] [I] [ 8081] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue13-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.797395 [MAC-NR ] [I] [ 6769] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.797395 [MAC-NR ] [I] [ 6769] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue10-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.835943 [MAC-NR ] [I] [ 6786] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.835943 [MAC-NR ] [I] [ 6786] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue15-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.606943 [MAC-NR ] [I] [ 6691] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.606943 [MAC-NR ] [I] [ 6691] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue2-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.769235 [MAC-NR ] [I] [ 6758] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.769235 [MAC-NR ] [I] [ 6758] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        },
+        "srsue-ue11-internal.log": {
+          "sr_exhaustion_count": 1,
+          "first": "2026-11-02T09:26:24.597375 [MAC-NR ] [I] [ 6687] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+          "last": "2026-11-02T09:26:24.597375 [MAC-NR ] [I] [ 6687] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+        }
+      },
+      "assertions": {},
+      "post_warmup_cpu_time": {},
+      "affinity_checks": 418,
+      "tags": 270
+    }
+  ],
+  "limitations": [
+    "One run per UE count and CPU placement; results are not a repeated-run distribution.",
+    "Different CPU architecture/core budget and toolchain from Spark; this compares whole hosts, not GPU silicon in isolation.",
+    "CPU utilization and API waits do not by themselves establish the causal instruction/kernel that caused a missed deadline.",
+    "SR failure console wording alone is not proof of an RRC state release."
+  ]
+}

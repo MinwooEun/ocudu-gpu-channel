@@ -1,0 +1,77 @@
+[
+  {
+    "file": "include/ocudu/phy/upper/channel_processors/pusch/factories.h",
+    "sha256": "1f6a5b76a5a4776ab7c5ad1d721b8079193b889389d106e42b90cfea5e3816d6",
+    "same": true
+  },
+  {
+    "file": "lib/ofh/compression/iq_compression_cuda.cpp",
+    "sha256": "2fdf0b7663ede4f81babf5b4eb2c8df67e5de582aa557bbbd659a4548c6c6855",
+    "same": true
+  },
+  {
+    "file": "lib/phy/cuda/src/pusch_e2e.cu",
+    "sha256": "f290515732c4c8c12c019a513a478658514edf14a2e31c4eff14a05b3c064cd2",
+    "same": true
+  },
+  {
+    "file": "lib/phy/cuda/src/pusch_e2e_api.cu",
+    "sha256": "907f312d3ceb991e835410b99193b7f422a1af8add410825fb72d8fa89551083",
+    "same": true
+  },
+  {
+    "file": "lib/phy/cuda/src/transport_block.cu",
+    "sha256": "d27b7f3dc1d17e174a134ba5927874e90463c6a71b9382dbb4983ae202ed633a",
+    "same": true
+  },
+  {
+    "file": "lib/phy/upper/channel_coding/ldpc/cuda/pusch_codeblock_decoder_cuda_batch.cpp",
+    "sha256": "4d36195a27286964663ca0a1c2e92e1b19230439542cfcab4f540b3e07cc0fc2",
+    "same": true
+  },
+  {
+    "file": "lib/phy/upper/channel_processors/pusch/demodulator_factories.cpp",
+    "sha256": "3bb549a9373eab7c28d364970195fa7ad42d200f4e53f7479e100cb1fc41805d",
+    "same": true
+  },
+  {
+    "file": "lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.cpp",
+    "sha256": "301b4090370241147b793dd1c8e733b16ed32d837a38ec551df8377848559401",
+    "same": true
+  },
+  {
+    "file": "lib/phy/upper/channel_processors/pusch/pusch_demodulator_gpu_impl.h",
+    "sha256": "ab0e79185171de9f90b796631d2803fe9b92d6ddaff5a0cba75f5ad6c8694a39",
+    "same": true
+  },
+  {
+    "file": "lib/phy/upper/signal_processors/srs/srs_estimator_cuda_impl.cpp",
+    "sha256": "3348ca203bb17b2ed0eaee6b94e4a31d9750a2f30d8d712942e2f380e45c80a8",
+    "same": true
+  },
+  {
+    "file": "lib/phy/upper/upper_phy_factories.cpp",
+    "sha256": "0dbad07d54e5c1c97788e54835465fbf3b6e5caf61ec655689d38d3981f4731b",
+    "same": true
+  },
+  {
+    "file": "tests/integrationtests/phy/upper/channel_processors/CMakeLists.txt",
+    "sha256": "19bda0f0381124e7838cf842e8b232dbc5170c65d981ff23610b5f9c0af31882",
+    "same": true
+  },
+  {
+    "file": "tests/integrationtests/phy/upper/channel_processors/pdsch_gpu_e2e_test.cpp",
+    "sha256": "05d26d7ba99c53b8bf65d2b1986e87ad4d46265a60bbca4d371feb648fc319db",
+    "same": true
+  },
+  {
+    "file": "tests/integrationtests/phy/upper/channel_processors/pusch_gpu_cpu_comparison_test.cpp",
+    "sha256": "9411a175d2f8eb28441579d0e5e0c90f33d1c8bcf3a7f56ce35ff7da9759fd0d",
+    "same": true
+  },
+  {
+    "file": "tests/integrationtests/phy/upper/channel_processors/pxsch_bler_test_factories.cpp",
+    "sha256": "76038a0a113b528bb54270b235e54713ebf76b0e40bcb7decee02c823b3cb1cc",
+    "same": true
+  }
+]

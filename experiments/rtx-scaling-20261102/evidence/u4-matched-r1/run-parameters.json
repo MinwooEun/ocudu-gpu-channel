@@ -1,0 +1,24 @@
+{
+  "awgn_snr_db": 40.0,
+  "channel_build": "/home/minwoo/ocudu-work/rtx-scaling-20261102/pipe-build",
+  "channel_bundle": "/home/minwoo/ocudu-work/rtx-scaling-20261102/bundles/tagged-profile1028-u4-20261028T080002Z-g161/bundle/channel",
+  "cpus": {
+    "aux": "20-23",
+    "broker": "8-9",
+    "gnb": "0-7",
+    "ues": "10-19"
+  },
+  "gnb_rx_gain_db": -55.0,
+  "link_adaptation": {
+    "link_adaptation": "harq_olla"
+  },
+  "platform_profile": "none",
+  "policy": "rr",
+  "scenario": "/home/minwoo/ocudu-work/rtx-scaling-20261102/bundles/tagged-profile1028-u4-20261028T080002Z-g161/bundle/scenario.json",
+  "seed": 20261016,
+  "traffic_bundle": "/home/minwoo/ocudu-work/rtx-scaling-20261102/bundles/tagged-profile1028-u4-20261028T080002Z-g161/bundle/traffic",
+  "traffic_profile": "mixed",
+  "tx_power_dl": null,
+  "tx_power_ul": 300.0,
+  "ue_count": 4
+}

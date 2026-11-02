@@ -1,0 +1,42 @@
+{
+  "different_before_noise": [],
+  "delta_sources": [
+    "lib/src/phy/phch/sch_nr.c",
+    "lib/src/phy/rf/rf_zmq_imp.c",
+    "lib/src/phy/fec/ldpc/ldpc_decoder.c",
+    "lib/src/phy/fec/ldpc/ldpc_dec_all.h",
+    "lib/include/srsran/phy/fec/ldpc/ldpc_decoder.h",
+    "lib/include/srsran/phy/fec/ldpc/ldpc_encoder.h",
+    "srsue/hdr/stack/mac_nr/demux_nr.h",
+    "srsue/hdr/stack/mac_nr/proc_ra_nr.h",
+    "srsue/src/stack/mac_nr/proc_ra_nr.cc",
+    "srsue/src/stack/mac_nr/demux_nr.cc",
+    "srsue/src/stack/mac_nr/mac_nr.cc"
+  ],
+  "configure": [
+    "cmake",
+    "-S",
+    "/home/minwoo/ocudu-work/rtx-scaling-20261102/ue-matched-src",
+    "-B",
+    "/home/minwoo/ocudu-work/rtx-scaling-20261102/ue-matched-build",
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DENABLE_SRSUE=ON",
+    "-DENABLE_SRSENB=OFF",
+    "-DENABLE_SRSEPC=OFF",
+    "-DENABLE_UHD=OFF",
+    "-DENABLE_ZEROMQ=ON",
+    "-DENABLE_WERROR=OFF",
+    "-DENABLE_EXPORT=ON",
+    "-DCMAKE_PREFIX_PATH=/home/minwoo/ocudu-work/ocudu-native-workspace/install/gnutls-3.7.3;/home/minwoo/ocudu-work/ocudu-native-workspace/install/sysroot/usr",
+    "-DCMAKE_INCLUDE_PATH=/home/minwoo/ocudu-work/ocudu-native-workspace/install/gnutls-3.7.3/include;/home/minwoo/ocudu-work/ocudu-native-workspace/install/sysroot/usr/include;/home/minwoo/ocudu-work/ocudu-native-workspace/install/sysroot/usr/include/x86_64-linux-gnu",
+    "-DCMAKE_LIBRARY_PATH=/home/minwoo/ocudu-work/ocudu-native-workspace/install/gnutls-3.7.3/lib;/home/minwoo/ocudu-work/ocudu-native-workspace/install/sysroot/usr/lib/x86_64-linux-gnu"
+  ],
+  "binary": "/home/minwoo/ocudu-work/rtx-scaling-20261102/ue-matched-build/srsue/src/srsue",
+  "source_files_present_compared": 1538,
+  "missing_arm_only_files": [
+    "lib/src/phy/fec/ldpc/ldpc_dec_c_neon.c",
+    "lib/src/phy/fec/ldpc/test/ldpc_dec_neon_test.c",
+    "lib/src/phy/fec/ldpc/simde_shim/immintrin.h"
+  ],
+  "source_manifest_total": 1541
+}

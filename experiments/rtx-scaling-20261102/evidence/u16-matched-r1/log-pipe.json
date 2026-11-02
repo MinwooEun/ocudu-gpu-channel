@@ -1,0 +1,17 @@
+{
+  "pid": 37309,
+  "child_pid": 37315,
+  "reader_cpus": [
+    20,
+    21,
+    22,
+    23
+  ],
+  "pipe_bytes": 1048576,
+  "start_mono_ns": 1858971606782,
+  "real_binary": "/home/minwoo/ocudu-work/rtx-scaling-20261102/channel-build/ocudu-gpu-channel",
+  "read_bytes": 8207836,
+  "written_bytes": 8207836,
+  "child_exit_code": 0,
+  "end_mono_ns": 2038901635649
+}

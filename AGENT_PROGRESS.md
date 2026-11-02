@@ -10,7 +10,7 @@
 
 ## Current Objective
 
-- Attributed UE12's sixteen-UE RLC abort to contained overlapping RX segments and reproduced it through the unchanged CPU UE RLC library. Explanation and control results are in `experiments/rlc-overlap-20261102/conclusions.json`; production binaries and both HTML reports remain unchanged.
+- Completed RTX 5090 live-stack UE scaling and a CPU placement control after cold boot. Results and limits: `experiments/rtx-scaling-20261102/findings.ko.txt` and `comparison.json`; all owned processes/container are stopped, and HTML is unchanged.
 
 ## Repository State
 
@@ -479,3 +479,15 @@ UE12 RLC abort is reproduced without GPU/emulator: receiving [684,695] then [656
 - Linked a standalone replay to the unchanged CPU UE RLC archive using its existing fixture/configuration. Inner-first reproduces the exact SN617 assertion and SIGABRT; outer-first completes STATUS generation, without GPU, gNB, emulator or real-time load.
 
 - Saved original-library build commands, source excerpts, live headers/order and positive/negative controls under `experiments/rlc-overlap-20261102/`. Replay payloads are synthetic; the earlier loss/ACK/scheduling trigger is not attributed, and no production patch or HTML edit was applied.
+
+## RTX scaling recovery — 2026-11-02
+
+- Confirmed local RTX 5090 and driver 595.71.05 after cold boot. Prepared isolated x86 CUDA channel, CPU UE noise-estimator/RF patches, and Spark frozen bundles; original checkouts/binaries and HTML remain unchanged.
+
+- Source parity audit found three missing gNB UL fixes and CPU UE access patches in the old RTX builds. Rebuilt isolated candidates from matching Spark sources; excluded preflight/unmatched trials and began the qualified 1/4/8/16-UE sweep.
+
+- Completed RTX 1/4/8/16-UE trials with matching Spark patches, fixed20MHz/23.04MS/s/1×1 and CPU srsUE. Post-warmup ratios:0.999717/0.999477/0.821049/0.322741; valid KPI windows:30/30,30/30,30/30,3/30, with UE1 metrics absent in27 sixteen-UE windows.
+
+- Exchanging two P/E cores between gNB and broker preserved role core counts and identical binaries/inputs. Eight-UE ratio improved0.821049→0.966288 with30/30 valid windows; sixteen-UE control stalled and watchdog-stopped after10.006s without IQ progress, without an RLC assertion.
+
+- All six captures passed affinity/priority checks and contain zero dropped/uncommitted trace records. Saved evidence, manifests and raw indices under `experiments/rtx-scaling-20261102/`; original builds and HTML remain unchanged, the private container is removed, and GPU compute is idle.

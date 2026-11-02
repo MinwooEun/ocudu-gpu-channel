@@ -1,0 +1,14 @@
+--- a/use_cases/ran_benchmark/run-single-cell-policy.sh
++++ b/use_cases/ran_benchmark/run-single-cell-policy.sh
+@@ -227 +227 @@
+-if [[ "${SINGLE_CELL_GNB_SEPARATE_RADIO:-1}" == "1" && "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" == "spark-gb10" && -n "${SINGLE_CELL_GNB_ACCELERATION:-}" && "${SINGLE_CELL_GNB_ACCELERATION}" != "disabled" ]]; then
++if [[ "${SINGLE_CELL_GNB_SEPARATE_RADIO:-1}" == "1" && "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" != "unused" && -n "${SINGLE_CELL_GNB_ACCELERATION:-}" && "${SINGLE_CELL_GNB_ACCELERATION}" != "disabled" ]]; then
+@@ -260 +260 @@
+-unshare --user --map-root-user --net --mount --fork --kill-child=TERM --propagation private \
++unshare --net --mount --fork --kill-child=TERM --propagation private \
+--- a/use_cases/ran_benchmark/run-single-cell-policy-inner.sh
++++ b/use_cases/ran_benchmark/run-single-cell-policy-inner.sh
+@@ -55,2 +55 @@
+-awk -v uid="${outer_uid}" '$1 == 0 && $2 == uid && $3 == 1 { found = 1 } END { exit !found }' \
+-  /proc/self/uid_map || usage_error "user namespace does not contain the exact root mapping"
++[[ "$(id -u)" == 0 ]] || usage_error "dedicated privileged test container required"

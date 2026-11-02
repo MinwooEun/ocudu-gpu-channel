@@ -1,0 +1,85 @@
+{
+  "path": "/home/minwoo/ocudu-work/rtx-scaling-20261102/u8-matched-r1",
+  "files": [
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 2379920
+    },
+    {
+      "file": "raw/pacing/ue4.csv",
+      "size": 2383212
+    },
+    {
+      "file": "raw/pacing/ue2.csv",
+      "size": 2364986
+    },
+    {
+      "file": "raw/pacing/ue7.csv",
+      "size": 2367338
+    },
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 1969122
+    },
+    {
+      "file": "raw/pacing/ue5.csv",
+      "size": 2369341
+    },
+    {
+      "file": "raw/pacing/ue6.csv",
+      "size": 2353663
+    },
+    {
+      "file": "raw/pacing/ue3.csv",
+      "size": 2360057
+    },
+    {
+      "file": "raw/pacing/ue1.csv",
+      "size": 2368836
+    },
+    {
+      "file": "raw/wire/srsue-32832.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-32823.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-32826.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-32829.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-32489.wire",
+      "size": 384000064
+    },
+    {
+      "file": "raw/wire/srsue-32841.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-32243.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-32820.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-32548.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-32835.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-32838.wire",
+      "size": 64000064
+    }
+  ]
+}

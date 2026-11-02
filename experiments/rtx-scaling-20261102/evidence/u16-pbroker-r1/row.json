@@ -1,0 +1,447 @@
+{
+  "invalid_kpi_reasons": {},
+  "ue_count": 16,
+  "layout": "pbroker-r1",
+  "cpu_mapping": "gNB P0-5+E8-9; broker P6-7; CPU UEs E10-19; auxiliary E20-23; same role core counts",
+  "case": "u16-pbroker-r1",
+  "configuration_verified": true,
+  "returncode": 1,
+  "valid_kpi_windows": 16,
+  "expected_kpi_windows": 30,
+  "full_ratio": 0.40463272295724034,
+  "rate": {},
+  "gate": {
+    "all_ues_attached": true,
+    "broker": {
+      "control_batches_committed": 8704,
+      "rx_requests": 808588,
+      "rx_starvations": 986,
+      "tx_pulls": 781038,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 1
+    },
+    "broker_clean": false,
+    "gnb_alive_at_stop": 1,
+    "measure_status": "process_exited",
+    "per_ue": {
+      "ue0": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue1": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue10": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue11": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue12": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue13": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue14": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue15": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue2": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue3": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue4": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue5": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 2,
+        "rrc_connected": 1,
+        "rrc_release": 2
+      },
+      "ue6": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 2,
+        "rrc_connected": 1,
+        "rrc_release": 2
+      },
+      "ue7": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue8": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      },
+      "ue9": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 1
+      }
+    },
+    "policy": "rr",
+    "policy_check": {
+      "gnbs": {
+        "gnb0": {
+          "found_in_config_dump": [
+            "rr"
+          ],
+          "link_adaptation": {
+            "found_in_config_dump": {
+              "link_adaptation": "harq_olla"
+            },
+            "ok": true,
+            "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+            "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+            "requested": {
+              "link_adaptation": "harq_olla"
+            }
+          },
+          "ok": true,
+          "policy_block": "      rr_sched: ~\n",
+          "requested": "rr"
+        }
+      },
+      "ok": true
+    },
+    "replay_status": "interrupted",
+    "srsue_alive_at_stop": 1,
+    "status": "failed"
+  },
+  "trace_integrity": {
+    "dropped": 0,
+    "uncommitted": 0,
+    "files": [
+      {
+        "file": "gnb-51674.wire",
+        "count": 236422,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51969.wire",
+        "count": 369573,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51990.wire",
+        "count": 369163,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51995.wire",
+        "count": 369358,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51960.wire",
+        "count": 369424,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51966.wire",
+        "count": 369426,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51978.wire",
+        "count": 368952,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-52002.wire",
+        "count": 369973,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51972.wire",
+        "count": 369721,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-52006.wire",
+        "count": 372520,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51963.wire",
+        "count": 369670,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51981.wire",
+        "count": 369339,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-52010.wire",
+        "count": 369338,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51975.wire",
+        "count": 369657,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "ocudu-gpu-channel-51575.wire",
+        "count": 3184161,
+        "capacity": 6000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "gnb-51266.wire",
+        "count": 0,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51987.wire",
+        "count": 369088,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51984.wire",
+        "count": 368999,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-51998.wire",
+        "count": 369536,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      }
+    ]
+  },
+  "broker_terminal_events": [
+    "event=relay_wedged waited_ms=10006 ports=[gnb0_p0:puller=recv_reply/45823/1056568620,producer=wait_data/57199,rep=wait_row/57199 ue0_p0:puller=recv_reply/45893/1056637433,producer=wait_data/47023,rep=wait_row/47023 ue1_p0:puller=recv_reply/45953/1056637444,producer=wait_data/46971,rep=wait_row/46971 ue2_p0:puller=recv_reply/45869/1056637444,producer=wait_data/47085,rep=wait_row/47085 ue3_p0:puller=recv_reply/45967/1056637444,producer=wait_data/47070,rep=wait_row/47070 ue4_p0:puller=recv_reply/45938/1056637445,producer=wait_data/47028,rep=wait_row/47028 ue5_p0:puller=recv_reply/45923/1056637446,producer=wait_data/47039,rep=wait_row/47039 ue6_p0:puller=recv_reply/45926/1056637444,producer=wait_data/46697,rep=wait_row/46697 ue7_p0:puller=recv_reply/45938/1056637443,producer=wait_data/46856,rep=wait_row/46856 ue8_p0:puller=recv_reply/45948/1056545284,producer=wait_data/46753,rep=wait_row/46753 ue9_p0:puller=recv_reply/45885/1056637444,producer=wait_data/46878,rep=wait_row/46878 ue10_p0:puller=recv_reply/45878/1056637433,producer=wait_data/46913,rep=wait_row/46913 ue11_p0:puller=recv_reply/45890/1056637444,producer=wait_data/46974,rep=wait_row/46974 ue12_p0:puller=recv_reply/45965/1056637444,producer=wait_data/47037,rep=wait_row/47037 ue13_p0:puller=recv_reply/45981/1056637446,producer=wait_data/47007,rep=wait_row/47007 ue14_p0:puller=recv_reply/46372/1056637446,producer=wait_data/47093,rep=wait_row/47093 ue15_p0:puller=recv_reply/45889/1056637444,producer=wait_data/46965,rep=wait_row/46965]",
+    "event=stop tx_pulls=781038 rx_requests=808588 rx_starvations=986 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=1 control_msgs_received=954350 control_updates_applied=8704 control_updates_rejected=0 control_batches_committed=8704 control_batches_aborted=0 telemetry_frames=196928 telemetry_drops=0 force_inert_warnings=0"
+  ],
+  "sr_exhaustion_whole_run": {
+    "srsue-ue9-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.784264 [MAC-NR ] [I] [ 6765] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.784264 [MAC-NR ] [I] [ 6765] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue1-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.625407 [MAC-NR ] [I] [ 6697] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.625407 [MAC-NR ] [I] [ 6697] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue3-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.578816 [MAC-NR ] [I] [ 6679] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.578816 [MAC-NR ] [I] [ 6679] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue12-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.794940 [MAC-NR ] [I] [ 6767] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.794940 [MAC-NR ] [I] [ 6767] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue8-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.807762 [MAC-NR ] [I] [ 6774] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.807762 [MAC-NR ] [I] [ 6774] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue7-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.589392 [MAC-NR ] [I] [ 6683] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.589392 [MAC-NR ] [I] [ 6683] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue6-internal.log": {
+      "sr_exhaustion_count": 2,
+      "first": "2026-11-02T09:26:24.632301 [MAC-NR ] [I] [ 6702] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:28.144338 [MAC-NR ] [I] [ 8082] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue0-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.812959 [MAC-NR ] [I] [ 6776] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.812959 [MAC-NR ] [I] [ 6776] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue4-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.773653 [MAC-NR ] [I] [ 6760] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.773653 [MAC-NR ] [I] [ 6760] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue14-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.795621 [MAC-NR ] [I] [ 6770] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.795621 [MAC-NR ] [I] [ 6770] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue5-internal.log": {
+      "sr_exhaustion_count": 2,
+      "first": "2026-11-02T09:26:24.629870 [MAC-NR ] [I] [ 6701] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:28.143266 [MAC-NR ] [I] [ 8081] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue13-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.797395 [MAC-NR ] [I] [ 6769] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.797395 [MAC-NR ] [I] [ 6769] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue10-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.835943 [MAC-NR ] [I] [ 6786] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.835943 [MAC-NR ] [I] [ 6786] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue15-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.606943 [MAC-NR ] [I] [ 6691] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.606943 [MAC-NR ] [I] [ 6691] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue2-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.769235 [MAC-NR ] [I] [ 6758] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.769235 [MAC-NR ] [I] [ 6758] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    },
+    "srsue-ue11-internal.log": {
+      "sr_exhaustion_count": 1,
+      "first": "2026-11-02T09:26:24.597375 [MAC-NR ] [I] [ 6687] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "last": "2026-11-02T09:26:24.597375 [MAC-NR ] [I] [ 6687] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    }
+  },
+  "assertions": {},
+  "post_warmup_cpu_time": {},
+  "affinity_checks": 418,
+  "tags": 270
+}

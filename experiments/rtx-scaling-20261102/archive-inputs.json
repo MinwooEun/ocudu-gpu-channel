@@ -1,0 +1,12 @@
+{
+  "runner.tar.gz": {
+    "local_path": "/home/minwoo/ocudu-work/checkpoint-20261029/experiments/rtx-scaling-20261102/runner.tar.gz",
+    "sha256": "ef0f34cc87e4e1791aa8e33dbb334f3d1e13d17e7b7561f0290f0a9b90727267",
+    "bytes": 839192
+  },
+  "bundles.tar.gz": {
+    "local_path": "/home/minwoo/ocudu-work/checkpoint-20261029/experiments/rtx-scaling-20261102/bundles.tar.gz",
+    "sha256": "093e06e5d185fc9526e863de4f8758cb4a38e963e559922b3ee080ff901f7f8f",
+    "bytes": 15892469
+  }
+}

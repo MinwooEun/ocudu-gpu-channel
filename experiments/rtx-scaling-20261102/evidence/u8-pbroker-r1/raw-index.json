@@ -1,0 +1,85 @@
+{
+  "path": "/home/minwoo/ocudu-work/rtx-scaling-20261102/u8-pbroker-r1",
+  "files": [
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 623315
+    },
+    {
+      "file": "raw/pacing/ue4.csv",
+      "size": 626164
+    },
+    {
+      "file": "raw/pacing/ue2.csv",
+      "size": 610076
+    },
+    {
+      "file": "raw/pacing/ue7.csv",
+      "size": 632514
+    },
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 699869
+    },
+    {
+      "file": "raw/pacing/ue5.csv",
+      "size": 625422
+    },
+    {
+      "file": "raw/pacing/ue6.csv",
+      "size": 626124
+    },
+    {
+      "file": "raw/pacing/ue3.csv",
+      "size": 623262
+    },
+    {
+      "file": "raw/pacing/ue1.csv",
+      "size": 614602
+    },
+    {
+      "file": "raw/wire/srsue-47298.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-47280.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-46738.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-47277.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-47034.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-46980.wire",
+      "size": 384000064
+    },
+    {
+      "file": "raw/wire/srsue-47274.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-47286.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-47301.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-47295.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-47292.wire",
+      "size": 64000064
+    }
+  ]
+}

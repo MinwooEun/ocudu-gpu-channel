@@ -1,0 +1,53 @@
+{
+  "path": "/home/minwoo/ocudu-work/rtx-scaling-20261102/u4-matched-r1",
+  "files": [
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 27074
+    },
+    {
+      "file": "raw/pacing/ue2.csv",
+      "size": 26566
+    },
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 29592
+    },
+    {
+      "file": "raw/pacing/ue3.csv",
+      "size": 27985
+    },
+    {
+      "file": "raw/pacing/ue1.csv",
+      "size": 28106
+    },
+    {
+      "file": "raw/wire/srsue-29192.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-28943.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-28679.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-29183.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-28898.wire",
+      "size": 384000064
+    },
+    {
+      "file": "raw/wire/srsue-29186.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-29189.wire",
+      "size": 64000064
+    }
+  ]
+}

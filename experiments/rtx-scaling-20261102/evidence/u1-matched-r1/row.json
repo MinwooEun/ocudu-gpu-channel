@@ -1,0 +1,246 @@
+{
+  "invalid_kpi_reasons": {},
+  "ue_count": 1,
+  "layout": "matched-r1",
+  "cpu_mapping": "gNB P0-7; broker E8-9; CPU UEs E10-19; auxiliary E20-23; fixed allocation across UE sweep",
+  "case": "u1-matched-r1",
+  "configuration_verified": true,
+  "returncode": 0,
+  "valid_kpi_windows": 30,
+  "expected_kpi_windows": 30,
+  "full_ratio": 0.9997867784054749,
+  "rate": {
+    "including_warmup": {
+      "radio_s": 39.9,
+      "wall_s": 39.908509356,
+      "ratio": 0.9997867784054749,
+      "loss_us": 8509.356000004685,
+      "rebase_count": 2,
+      "rebase_sum_us": 8461.406,
+      "largest_rebases": [
+        {
+          "kind": "rebase",
+          "now_ns": "1581659586353",
+          "node": "gnb0",
+          "sample": "423175695",
+          "count": "23025",
+          "expected_due_ns": "1581654308430",
+          "due_ns": "1581658586353",
+          "shift_ns": "4277923",
+          "room_us": "5194.921",
+          "data_us": "0.093",
+          "read_us": "0.115",
+          "process_us": "79.584",
+          "previous_loop_end_ns": "1581654311362"
+        },
+        {
+          "kind": "rebase",
+          "now_ns": "1604701759919",
+          "node": "gnb0",
+          "sample": "953971207",
+          "count": "23040",
+          "expected_due_ns": "1604696576436",
+          "due_ns": "1604700759919",
+          "shift_ns": "4183483",
+          "room_us": "5101.515",
+          "data_us": "0.074",
+          "read_us": "0.210",
+          "process_us": "78.843",
+          "previous_loop_end_ns": "1604696578939"
+        }
+      ]
+    },
+    "post_warmup": {
+      "radio_s": 29.9,
+      "wall_s": 29.908452991,
+      "ratio": 0.9997173711725396,
+      "loss_us": 8452.991000002186,
+      "rebase_count": 2,
+      "rebase_sum_us": 8461.406,
+      "largest_rebases": [
+        {
+          "kind": "rebase",
+          "now_ns": "1581659586353",
+          "node": "gnb0",
+          "sample": "423175695",
+          "count": "23025",
+          "expected_due_ns": "1581654308430",
+          "due_ns": "1581658586353",
+          "shift_ns": "4277923",
+          "room_us": "5194.921",
+          "data_us": "0.093",
+          "read_us": "0.115",
+          "process_us": "79.584",
+          "previous_loop_end_ns": "1581654311362"
+        },
+        {
+          "kind": "rebase",
+          "now_ns": "1604701759919",
+          "node": "gnb0",
+          "sample": "953971207",
+          "count": "23040",
+          "expected_due_ns": "1604696576436",
+          "due_ns": "1604700759919",
+          "shift_ns": "4183483",
+          "room_us": "5101.515",
+          "data_us": "0.074",
+          "read_us": "0.210",
+          "process_us": "78.843",
+          "previous_loop_end_ns": "1604696578939"
+        }
+      ]
+    }
+  },
+  "gate": {
+    "all_ues_attached": true,
+    "broker": {
+      "control_batches_committed": 802,
+      "rx_requests": 155092,
+      "rx_starvations": 7,
+      "tx_pulls": 104901,
+      "tx_queue_overflows": 0,
+      "tx_sequence_gaps": 0,
+      "zmq_errors": 0
+    },
+    "broker_clean": true,
+    "gnb_alive_at_stop": 1,
+    "measure_status": "completed",
+    "per_ue": {
+      "ue0": {
+        "camped_pci": 1,
+        "crashed": 0,
+        "out_of_sync": 0,
+        "pdu_session": 1,
+        "ping_ok": 1,
+        "random_access_complete": 1,
+        "rrc_connected": 1,
+        "rrc_release": 0
+      }
+    },
+    "policy": "rr",
+    "policy_check": {
+      "gnbs": {
+        "gnb0": {
+          "found_in_config_dump": [
+            "rr"
+          ],
+          "link_adaptation": {
+            "found_in_config_dump": {
+              "link_adaptation": "harq_olla"
+            },
+            "ok": true,
+            "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+            "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+            "requested": {
+              "link_adaptation": "harq_olla"
+            }
+          },
+          "ok": true,
+          "policy_block": "      rr_sched: ~\n",
+          "requested": "rr"
+        }
+      },
+      "ok": true
+    },
+    "replay_status": "measure_end",
+    "srsue_alive_at_stop": 1,
+    "status": "passed"
+  },
+  "trace_integrity": {
+    "dropped": 0,
+    "uncommitted": 0,
+    "files": [
+      {
+        "file": "gnb-26416.wire",
+        "count": 257446,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "gnb-26230.wire",
+        "count": 0,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "srsue-26689.wire",
+        "count": 481296,
+        "capacity": 1000000,
+        "dropped": 0,
+        "uncommitted": 0
+      },
+      {
+        "file": "ocudu-gpu-channel-26381.wire",
+        "count": 520361,
+        "capacity": 6000000,
+        "dropped": 0,
+        "uncommitted": 0
+      }
+    ]
+  },
+  "broker_terminal_events": [
+    "event=stop tx_pulls=104901 rx_requests=155092 rx_starvations=7 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0 control_msgs_received=93612 control_updates_applied=802 control_updates_rejected=0 control_batches_committed=802 control_batches_aborted=0 telemetry_frames=6270 telemetry_drops=0 force_inert_warnings=0"
+  ],
+  "sr_exhaustion_whole_run": {},
+  "assertions": {},
+  "post_warmup_cpu_time": {
+    "srsue-26689.wire": {
+      "wall_s": 29.121468022,
+      "cpu_seconds": 21.51,
+      "average_cores": 0.7386303459616161,
+      "by_thread_name_cpu_seconds": {
+        "srsue": 1.51,
+        "TASKWORKER0": 0.0,
+        "TASKWORKER1": 0.0,
+        "PHY_CMD": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 1.51,
+        "SYNC": 0.93,
+        "WORKER0": 8.33,
+        "STACK": 0.63,
+        "WORKER1": 8.56,
+        "WORKER2": 0.0,
+        "METRICS_HUB": 0.0,
+        "GW": 0.04
+      }
+    },
+    "gnb-26416.wire": {
+      "wall_s": 29.121468022,
+      "cpu_seconds": 43.52,
+      "average_cores": 1.4944301560320565,
+      "by_thread_name_cpu_seconds": {
+        "gnb": 0.39,
+        "main_pool#0": 1.07,
+        "main_pool#1": 1.07,
+        "main_pool#2": 1.05,
+        "main_pool#3": 1.07,
+        "main_pool#4": 1.09,
+        "phy_worker": 9.54,
+        "radio": 26.98,
+        "io_broker_epoll": 0.1,
+        "cuda0000280000b": 0.0,
+        "cuda-EvtHandlr": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 1.16,
+        "ws_server": 0.0
+      }
+    },
+    "ocudu-gpu-channel-26381.wire": {
+      "wall_s": 29.121468022,
+      "cpu_seconds": 12.44,
+      "average_cores": 0.4271762670275455,
+      "by_thread_name_cpu_seconds": {
+        "ocudu-gpu-chann": 8.07,
+        "cuda00001400006": 0.0,
+        "cuda-EvtHandlr": 0.0,
+        "ZMQbg/Reaper": 0.0,
+        "ZMQbg/IO/0": 2.6599999999999997,
+        "ZMQbg/IO/1": 1.71
+      }
+    }
+  },
+  "affinity_checks": 134,
+  "tags": 400
+}

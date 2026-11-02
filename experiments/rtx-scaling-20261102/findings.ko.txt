@@ -1,0 +1,27 @@
+RTX 5090 live-stack scaling — 2026-11-02
+
+Live CUDA gNB + existing CPU srsUE; one cell,20MHz,23.04MS/s,1x1; UE sweep1/4/8/16. No GPU UE and no independent sample-rate sweep.
+
+진행률은 무선 시간 / 실제 경과 시간이며 성공 비율이 아니다. Post-warmup endpoints span29.9 radio seconds.
+
+UE | 기본 배치 진행률 | P-core broker 배치 | 유효 KPI 구간(기본/교환)
+1 | 0.999717371 | — | 30/30 / —
+4 | 0.999476758 | — | 30/30 / —
+8 | 0.821048941 | 0.966287576 | 30/30 / 30/30
+16 | 0.322741310 | 중도 중단; 완주 진행률 없음 | 3/30 / 16/30
+
+기본: gNB P0-7(radioP1), brokerE8-9, UE E10-19, 보조 E20-23.
+교환: gNB P0-5+E8-9(radioP1), brokerP6-7, UE/보조 동일. 역할별 코어 수8/2/10/4, main_pool5, gNB radio/PHY 분리 유지.
+
+8 UE의 broker CPU 사용은 기본1.952/2코어, 교환1.885/2코어였다. 진행률은 약17.69% 향상했으나1.0에는 미달했다.
+16 UE 기본의 KPI 제외27개는 UE1 metrics 행 누락 때문이다. 이를27회 통신 실패로 해석하지 않는다.
+16 UE 교환 실행은10.006초 IQ 무진행 watchdog으로 중단되었고 모든 producer가 wait_data였다. 이후 제어 요청의 ZMQ Again은 관측된 후속 오류이며 근본 원인으로 특정하지 않는다.
+이번 테스트에서는 RLC assertion이 관측되지 않았다. 기존 RLC overlap production fix는 적용하지 않았다.
+
+수정 조건: Spark와 같은 gNB UL 추정/LDPC 수정3개, CPU UE 접속/RF 패치 및 잡음 추정 수정, broker CV reply+poll10us+분리 logger를 x86에서 사용. CUDA gNB sourcecommit5830c9c, channel SM120.
+15개 gNB 수정 소스 최종 동등성,1538개 공통 UE 소스(잡음 추정 수정 적용 전), 동일 UE 수 두 배치의 입력/실행파일 동등성을 확인했다.
+원래의 CUDA gNB/CPU UE 빌드와 HTML은 수정하지 않았다. Setup/unmatched trials are excluded.
+원본 추적 기록과 실행 로그: /home/minwoo/ocudu-work/rtx-scaling-20261102
+정리 JSON: comparison.json,conclusions.json,identity-checks.json; 회차별 evidence/ 디렉터리.
+
+한 번씩 수행한 측정이다. 전체 호스트 비교이며 GPU 단독 성능 또는16 UE 정지의 최하위 원인까지 증명한 결과는 아니다.

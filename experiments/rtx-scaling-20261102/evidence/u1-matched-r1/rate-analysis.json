@@ -1,0 +1,82 @@
+{
+  "including_warmup": {
+    "radio_s": 39.9,
+    "wall_s": 39.908509356,
+    "ratio": 0.9997867784054749,
+    "loss_us": 8509.356000004685,
+    "rebase_count": 2,
+    "rebase_sum_us": 8461.406,
+    "largest_rebases": [
+      {
+        "kind": "rebase",
+        "now_ns": "1581659586353",
+        "node": "gnb0",
+        "sample": "423175695",
+        "count": "23025",
+        "expected_due_ns": "1581654308430",
+        "due_ns": "1581658586353",
+        "shift_ns": "4277923",
+        "room_us": "5194.921",
+        "data_us": "0.093",
+        "read_us": "0.115",
+        "process_us": "79.584",
+        "previous_loop_end_ns": "1581654311362"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "1604701759919",
+        "node": "gnb0",
+        "sample": "953971207",
+        "count": "23040",
+        "expected_due_ns": "1604696576436",
+        "due_ns": "1604700759919",
+        "shift_ns": "4183483",
+        "room_us": "5101.515",
+        "data_us": "0.074",
+        "read_us": "0.210",
+        "process_us": "78.843",
+        "previous_loop_end_ns": "1604696578939"
+      }
+    ]
+  },
+  "post_warmup": {
+    "radio_s": 29.9,
+    "wall_s": 29.908452991,
+    "ratio": 0.9997173711725396,
+    "loss_us": 8452.991000002186,
+    "rebase_count": 2,
+    "rebase_sum_us": 8461.406,
+    "largest_rebases": [
+      {
+        "kind": "rebase",
+        "now_ns": "1581659586353",
+        "node": "gnb0",
+        "sample": "423175695",
+        "count": "23025",
+        "expected_due_ns": "1581654308430",
+        "due_ns": "1581658586353",
+        "shift_ns": "4277923",
+        "room_us": "5194.921",
+        "data_us": "0.093",
+        "read_us": "0.115",
+        "process_us": "79.584",
+        "previous_loop_end_ns": "1581654311362"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "1604701759919",
+        "node": "gnb0",
+        "sample": "953971207",
+        "count": "23040",
+        "expected_due_ns": "1604696576436",
+        "due_ns": "1604700759919",
+        "shift_ns": "4183483",
+        "room_us": "5101.515",
+        "data_us": "0.074",
+        "read_us": "0.210",
+        "process_us": "78.843",
+        "previous_loop_end_ns": "1604696578939"
+      }
+    ]
+  }
+}

@@ -108,3 +108,8 @@ Reusable workflow and preferences. File ownership and update rules are defined i
 - Link detailed logs, commands, hashes, measurements and investigation history instead of copying them into progress.
 - Record only changed state; omit repeated context, routine steps and unchanged results. Update the resume point only when it changes, preserving ledger history under `AGENT.md`.
 - Before finishing, check every added or revised entry against these limits and shorten any that exceed them.
+
+## Cross-host live-stack comparisons
+
+- Match compiled source and local patch manifests across architectures; a shared upstream commit does not prove equivalent binaries. Verify access/RF patches before scaling and exclude setup failures from timing comparisons.
+- Record physical P/E core types and role allocations alongside core counts. Treat a role-to-core exchange as a whole placement intervention, and distinguish whole-host scaling from an isolated GPU comparison.

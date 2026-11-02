@@ -1,0 +1,21 @@
+{
+  "scope": "Live CUDA gNB + existing CPU srsUE; one cell,20MHz,23.04MS/s,1x1; UE sweep1/4/8/16. No GPU UE and no independent sample-rate sweep.",
+  "completed_trials": 5,
+  "interrupted_trials": 1,
+  "all_six_configuration_verified": true,
+  "eight_ue_cpu_placement_speedup": 0.1768940042466649,
+  "observations": [
+    "1/4 UE approach real time but retain2/31 post-warmup pacing rebases.",
+    "8 UE has30/30 valid windows but cannot keep real time in either placement.",
+    "Exchanging two P/E cores between broker and gNB changes8 UE ratio0.821049 to0.966288 with identical binaries/inputs and equal role core counts. This establishes sensitivity to CPU placement; it does not isolate all effects to the broker.",
+    "16 UE baseline completes at0.322741; only3/30 KPI windows are valid because UE1 metrics rows are absent in27 measurement windows. All16 UEs show SR exhaustion; RRC-state release is not established by this counter.",
+    "16 UE P-broker run ends early after10.006s without IQ progress; broker watchdog logs wait_data on every producer and outstanding IQ replies. Replay control then raisesZMQ Again. No complete29.9s post-warmup endpoint exists, so no full ratio is reported."
+  ],
+  "limits": [
+    "One run per cell in the comparison. No repeated-run distribution.",
+    "Driver/device-kernel or scheduler-stack attribution of16 UE stall is not established by these captures.",
+    "RTX vs Spark compares different whole hosts,CPU architectures,core budgets,CUDA toolchains and automatic host-memory routes; it is not a GPU-only speed comparison."
+  ],
+  "raw_root": "/home/minwoo/ocudu-work/rtx-scaling-20261102",
+  "evidence": "/home/minwoo/ocudu-work/checkpoint-20261029/experiments/rtx-scaling-20261102/evidence"
+}

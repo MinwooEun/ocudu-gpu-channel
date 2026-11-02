@@ -1,0 +1,10 @@
+{
+  "root": "/home/minwoo/ocudu-work/rtx-scaling-20261102",
+  "exclusions": {
+    "on-r1": "Root-context git ownership preflight failure.",
+    "on-r2": "Runtime directory collision; no benchmark.",
+    "on-r3": "Missing YAML dependency during affinity render.",
+    "on-r4": "CUDA12.4 NVRTC cannot targetSM120; gNB PRACH startup failed.",
+    "on-r5": "Old gNB misses three Spark UL fixes; old UE misses multi-UE access patches. One UE finishes; four-UE attempt interrupted while repeating access."
+  }
+}

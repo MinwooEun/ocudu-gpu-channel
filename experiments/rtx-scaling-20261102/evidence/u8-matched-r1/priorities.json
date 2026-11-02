@@ -1,0 +1,415 @@
+{
+  "expected_ues": 8,
+  "rf_rx_by_pid": {
+    "32841": 32919,
+    "32838": 32918,
+    "32835": 32926,
+    "32832": 32925,
+    "32829": 32924,
+    "32826": 32922,
+    "32823": 32916,
+    "32820": 32914
+  },
+  "changes": {
+    "32503": {
+      "actor": "ocudu-gpu-channel-32489.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          8,
+          9
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          8,
+          9
+        ]
+      }
+    },
+    "32505": {
+      "actor": "ocudu-gpu-channel-32489.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          8,
+          9
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          8,
+          9
+        ]
+      }
+    },
+    "32507": {
+      "actor": "ocudu-gpu-channel-32489.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          8,
+          9
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          8,
+          9
+        ]
+      }
+    },
+    "32509": {
+      "actor": "ocudu-gpu-channel-32489.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          8,
+          9
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          8,
+          9
+        ]
+      }
+    },
+    "32747": {
+      "actor": "gnb-32548.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      }
+    },
+    "32906": {
+      "actor": "srsue-32841.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          17
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          17
+        ]
+      }
+    },
+    "32919": {
+      "actor": "srsue-32841.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          17
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          17
+        ]
+      }
+    },
+    "32902": {
+      "actor": "srsue-32838.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          16
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          16
+        ]
+      }
+    },
+    "32918": {
+      "actor": "srsue-32838.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          16
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          16
+        ]
+      }
+    },
+    "32915": {
+      "actor": "srsue-32835.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          15
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          15
+        ]
+      }
+    },
+    "32926": {
+      "actor": "srsue-32835.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          15
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          15
+        ]
+      }
+    },
+    "32912": {
+      "actor": "srsue-32832.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          14
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          14
+        ]
+      }
+    },
+    "32925": {
+      "actor": "srsue-32832.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          14
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          14
+        ]
+      }
+    },
+    "32907": {
+      "actor": "srsue-32829.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          13
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          13
+        ]
+      }
+    },
+    "32924": {
+      "actor": "srsue-32829.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          13
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          13
+        ]
+      }
+    },
+    "32901": {
+      "actor": "srsue-32826.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          12
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          12
+        ]
+      }
+    },
+    "32922": {
+      "actor": "srsue-32826.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          12
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          12
+        ]
+      }
+    },
+    "32889": {
+      "actor": "srsue-32823.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          11
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          11
+        ]
+      }
+    },
+    "32916": {
+      "actor": "srsue-32823.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          11
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          11
+        ]
+      }
+    },
+    "32883": {
+      "actor": "srsue-32820.wire",
+      "kind": "ZMQ IO",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          10
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          10
+        ]
+      }
+    },
+    "32914": {
+      "actor": "srsue-32820.wire",
+      "kind": "RF RX request",
+      "before": {
+        "policy": 0,
+        "priority": 0,
+        "cpus": [
+          10
+        ]
+      },
+      "after": {
+        "policy": 1,
+        "priority": 95,
+        "cpus": [
+          10
+        ]
+      }
+    }
+  }
+}
