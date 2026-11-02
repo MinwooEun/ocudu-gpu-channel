@@ -1,0 +1,324 @@
+{
+  "whole_run_counters": {
+    "ue0": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 7
+    },
+    "ue1": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 3,
+      "rrc_connected": 1,
+      "rrc_release": 9
+    },
+    "ue10": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 2,
+      "rrc_connected": 1,
+      "rrc_release": 7
+    },
+    "ue11": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 5,
+      "rrc_connected": 1,
+      "rrc_release": 13
+    },
+    "ue12": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 7
+    },
+    "ue13": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 9
+    },
+    "ue14": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 7
+    },
+    "ue15": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 8
+    },
+    "ue2": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 2,
+      "rrc_connected": 1,
+      "rrc_release": 9
+    },
+    "ue3": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 7
+    },
+    "ue4": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 6
+    },
+    "ue5": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 2,
+      "rrc_connected": 1,
+      "rrc_release": 9
+    },
+    "ue6": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 7
+    },
+    "ue7": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 8
+    },
+    "ue8": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 6
+    },
+    "ue9": {
+      "camped_pci": 1,
+      "crashed": 0,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 7
+    }
+  },
+  "scheduling_request_exhaustion_during_measurement": {
+    "ue0": [
+      "2026-11-02T07:16:06.310774 [MAC-NR ] [I] [ 6556] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:09.474167 [MAC-NR ] [I] [ 7936] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.973256 [MAC-NR ] [I] [ 1336] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.470554 [MAC-NR ] [I] [ 9956] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.914663 [MAC-NR ] [I] [ 7915] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.298975 [MAC-NR ] [I] [ 2696] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.499862 [MAC-NR ] [I] [ 4556] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue1": [
+      "2026-11-02T07:16:06.445371 [MAC-NR ] [I] [ 6617] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.798986 [MAC-NR ] [I] [ 1257] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.473739 [MAC-NR ] [I] [ 9957] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:41.561373 [MAC-NR ] [I] [ 1537] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:46.989377 [MAC-NR ] [I] [ 3937] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.735943 [MAC-NR ] [I] [ 7837] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.119321 [MAC-NR ] [I] [ 2617] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:12.616649 [MAC-NR ] [I] [ 5057] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:20.330540 [MAC-NR ] [I] [ 8517] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue10": [
+      "2026-11-02T07:16:06.468692 [MAC-NR ] [I] [ 6626] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:11.785420 [MAC-NR ] [I] [ 8886] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.953989 [MAC-NR ] [I] [ 1326] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.447092 [MAC-NR ] [I] [ 9946] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.937639 [MAC-NR ] [I] [ 7926] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.279097 [MAC-NR ] [I] [ 2686] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.476393 [MAC-NR ] [I] [ 4546] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue11": [
+      "2026-11-02T07:16:06.337289 [MAC-NR ] [I] [ 6567] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:11.416123 [MAC-NR ] [I] [ 8727] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.818769 [MAC-NR ] [I] [ 1267] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:22.395608 [MAC-NR ] [I] [ 3287] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.452845 [MAC-NR ] [I] [ 9947] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:41.545445 [MAC-NR ] [I] [ 1527] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:45.882946 [MAC-NR ] [I] [ 3447] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:50.907832 [MAC-NR ] [I] [ 5687] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.716096 [MAC-NR ] [I] [ 7827] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:58.818595 [MAC-NR ] [I] [ 9206] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.278992 [MAC-NR ] [I] [ 2686] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.525456 [MAC-NR ] [I] [ 4566] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:20.307347 [MAC-NR ] [I] [ 8506] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue12": [
+      "2026-11-02T07:16:06.292193 [MAC-NR ] [I] [ 6548] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:12.027109 [MAC-NR ] [I] [ 8988] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.955286 [MAC-NR ] [I] [ 1327] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.630088 [MAC-NR ] [I] [10028] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.943333 [MAC-NR ] [I] [ 7928] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.280619 [MAC-NR ] [I] [ 2688] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.482722 [MAC-NR ] [I] [ 4547] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue13": [
+      "2026-11-02T07:16:06.338859 [MAC-NR ] [I] [ 6569] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:10.559554 [MAC-NR ] [I] [ 8409] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.822525 [MAC-NR ] [I] [ 1268] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.455157 [MAC-NR ] [I] [ 9949] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:40.819538 [MAC-NR ] [I] [ 1209] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.763094 [MAC-NR ] [I] [ 7848] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.327504 [MAC-NR ] [I] [ 2709] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.481383 [MAC-NR ] [I] [ 4549] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:20.271877 [MAC-NR ] [I] [ 8489] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue14": [
+      "2026-11-02T07:16:06.430746 [MAC-NR ] [I] [ 6610] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:10.096688 [MAC-NR ] [I] [ 8210] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:18.007218 [MAC-NR ] [I] [ 1349] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.634560 [MAC-NR ] [I] [10030] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.898161 [MAC-NR ] [I] [ 7909] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.285114 [MAC-NR ] [I] [ 2689] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.621836 [MAC-NR ] [I] [ 4610] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue15": [
+      "2026-11-02T07:16:06.298080 [MAC-NR ] [I] [ 6551] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:11.050388 [MAC-NR ] [I] [ 8571] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.826740 [MAC-NR ] [I] [ 1271] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.506503 [MAC-NR ] [I] [ 9970] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.906449 [MAC-NR ] [I] [ 7911] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.287843 [MAC-NR ] [I] [ 2691] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.533809 [MAC-NR ] [I] [ 4570] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:20.277184 [MAC-NR ] [I] [ 8491] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue2": [
+      "2026-11-02T07:16:06.271993 [MAC-NR ] [I] [ 6537] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:11.813907 [MAC-NR ] [I] [ 8898] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.978994 [MAC-NR ] [I] [ 1338] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.476528 [MAC-NR ] [I] [ 9957] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:43.024755 [MAC-NR ] [I] [ 2178] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:48.424527 [MAC-NR ] [I] [ 4578] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.920225 [MAC-NR ] [I] [ 7918] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.303071 [MAC-NR ] [I] [ 2698] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:12.262873 [MAC-NR ] [I] [ 4897] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue3": [
+      "2026-11-02T07:16:06.447401 [MAC-NR ] [I] [ 6619] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.799973 [MAC-NR ] [I] [ 1258] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.476134 [MAC-NR ] [I] [ 9959] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.741277 [MAC-NR ] [I] [ 7839] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.123655 [MAC-NR ] [I] [ 2619] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.459193 [MAC-NR ] [I] [ 4538] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:20.336908 [MAC-NR ] [I] [ 8519] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue4": [
+      "2026-11-02T07:16:06.274317 [MAC-NR ] [I] [ 6539] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:18.028750 [MAC-NR ] [I] [ 1360] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.434178 [MAC-NR ] [I] [ 9939] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.924253 [MAC-NR ] [I] [ 7919] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.309066 [MAC-NR ] [I] [ 2700] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.507555 [MAC-NR ] [I] [ 4560] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue5": [
+      "2026-11-02T07:16:06.327287 [MAC-NR ] [I] [ 6561] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.806066 [MAC-NR ] [I] [ 1261] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.436711 [MAC-NR ] [I] [ 9941] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:42.618654 [MAC-NR ] [I] [ 2001] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:48.033641 [MAC-NR ] [I] [ 4401] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.744495 [MAC-NR ] [I] [ 7840] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.128530 [MAC-NR ] [I] [ 2620] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.511187 [MAC-NR ] [I] [ 4561] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:20.296064 [MAC-NR ] [I] [ 8501] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue6": [
+      "2026-11-02T07:16:06.456124 [MAC-NR ] [I] [ 6621] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:10.167738 [MAC-NR ] [I] [ 8242] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:18.033917 [MAC-NR ] [I] [ 1362] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.487815 [MAC-NR ] [I] [ 9962] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.928394 [MAC-NR ] [I] [ 7921] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.271638 [MAC-NR ] [I] [ 2682] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.514367 [MAC-NR ] [I] [ 4562] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue7": [
+      "2026-11-02T07:16:06.325559 [MAC-NR ] [I] [ 6563] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:09.445697 [MAC-NR ] [I] [ 7923] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.809411 [MAC-NR ] [I] [ 1263] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.487533 [MAC-NR ] [I] [ 9962] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.753079 [MAC-NR ] [I] [ 7843] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.270166 [MAC-NR ] [I] [ 2682] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.472111 [MAC-NR ] [I] [ 4543] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:20.305038 [MAC-NR ] [I] [ 8503] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue8": [
+      "2026-11-02T07:16:06.459743 [MAC-NR ] [I] [ 6624] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.993773 [MAC-NR ] [I] [ 1344] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.619738 [MAC-NR ] [I] [10024] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.932734 [MAC-NR ] [I] [ 7924] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.317156 [MAC-NR ] [I] [ 2704] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.516479 [MAC-NR ] [I] [ 4564] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ],
+    "ue9": [
+      "2026-11-02T07:16:06.286159 [MAC-NR ] [I] [ 6545] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:17.815039 [MAC-NR ] [I] [ 1265] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:37.445043 [MAC-NR ] [I] [ 9944] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:16:55.753335 [MAC-NR ] [I] [ 7844] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:07.093555 [MAC-NR ] [I] [ 2605] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:11.475504 [MAC-NR ] [I] [ 4544] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64",
+      "2026-11-02T07:17:20.306782 [MAC-NR ] [I] [ 8505] SR:    Releasing PUCCH/SRS resources, sr_counter=64, sr-TransMax=64"
+    ]
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "remote_case": "/workspace/gpuch/multi-ue-affinity-20261102/u8/original-multi-u8-on-r1",
+  "files": [
+    {
+      "file": "raw/pacing/ue7.csv",
+      "size": 1719894
+    },
+    {
+      "file": "raw/pacing/ue6.csv",
+      "size": 1758922
+    },
+    {
+      "file": "raw/pacing/ue2.csv",
+      "size": 1573654
+    },
+    {
+      "file": "raw/pacing/ue5.csv",
+      "size": 1572322
+    },
+    {
+      "file": "raw/pacing/ue1.csv",
+      "size": 1577521
+    },
+    {
+      "file": "raw/pacing/ue3.csv",
+      "size": 1560815
+    },
+    {
+      "file": "raw/pacing/ue4.csv",
+      "size": 1578709
+    },
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 1551163
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 1564662
+    },
+    {
+      "file": "raw/wire/srsue-3439854.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3439848.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3439857.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3439664.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3439390.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3439839.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3439845.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3439600.wire",
+      "size": 384000064
+    },
+    {
+      "file": "raw/wire/srsue-3439851.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3439842.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3439860.wire",
+      "size": 64000064
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "remote_case": "/workspace/gpuch/multi-ue-affinity-20261102/u4/original-multi-u4-on-r1",
+  "files": [
+    {
+      "file": "raw/pacing/ue2.csv",
+      "size": 30406
+    },
+    {
+      "file": "raw/pacing/ue1.csv",
+      "size": 29918
+    },
+    {
+      "file": "raw/pacing/ue3.csv",
+      "size": 30968
+    },
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 30001
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 29104
+    },
+    {
+      "file": "raw/wire/srsue-3433713.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3433304.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3433707.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3433531.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3433482.wire",
+      "size": 384000064
+    },
+    {
+      "file": "raw/wire/srsue-3433704.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3433710.wire",
+      "size": 64000064
+    }
+  ]
+}

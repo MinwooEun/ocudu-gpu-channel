@@ -48,6 +48,10 @@ Reusable workflow and preferences. File ownership and update rules are defined i
 
 - Keep heavy trace analysis outside live measurement windows and bind observers to auxiliary CPUs. Audit CPU activity as well as GPU occupancy before calling runs isolated; reproduce suspected interference before attributing it as the initiating cause.
 
+- Confirm lifecycle transitions in the implementation before interpreting console-derived counters; resource-release requests and retry messages do not alone prove session teardown. Scope lifecycle evidence to measured timestamps and separate application completion from configuration-audit success.
+
+- Propagate application exit status after saving experimental reports. A successful wrapper or observer exit does not override a failed application or partial measurement.
+
 - Audit speed windows independently from KPI warmup exclusion. For small progress deficits, account for pacing deadline rebases and instrumentation I/O on the critical thread before attributing the deficit to processing capacity.
 
 - Distinguish channel-function timing, dummy-IQ transport tests and live UE/gNB tests explicitly; ZMQ use alone does not identify a workload. Do not transfer bottleneck claims between these configurations without matched evidence.

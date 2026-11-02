@@ -1,0 +1,1 @@
+event=stop tx_pulls=295803 rx_requests=313815 rx_starvations=14 tx_queue_overflows=0 tx_sequence_gaps=0 zmq_errors=0 control_msgs_received=187600 control_updates_applied=3208 control_updates_rejected=0 control_batches_committed=3208 control_batches_aborted=0 telemetry_frames=27560 telemetry_drops=0 force_inert_warnings=0

@@ -1,0 +1,171 @@
+{
+  "outcome": "Persistent core separation is verified at multiple UE counts, but is not a complete scaling remedy. Four-UE ON held real-time cadence in this run; eight-UE ON remained below real time; sixteen-UE runs showed protocol-health failures.",
+  "configuration": {
+    "hardware": "Spark GB10",
+    "cells": 1,
+    "bandwidth_mhz": 20,
+    "sample_rate_hz": 23040000,
+    "antennas": "1x1",
+    "gnb": "CUDA all, MPS",
+    "ue": "CPU srsUE with existing local pilot-noise repair",
+    "warmup_radio_s": 10,
+    "measure_radio_s": 30,
+    "gnb_cpu_budget": "5-12",
+    "broker_cpus": "15-16",
+    "aux_cpus": "0-4",
+    "ue_cpus": "same frozen per-UE assignments on 13,14,17,18,19",
+    "io_policy": "Existing IO/RF RX FIFO95 applied to every UE in both comparison modes"
+  },
+  "trials": [
+    {
+      "ues": 1,
+      "patch": "on",
+      "case": "original-multi-u1-on-r2",
+      "application_completed": true,
+      "gate": "passed",
+      "valid_one_second_kpi_windows": 30,
+      "post_warmup_ratio": 0.9999658094967896,
+      "post_warmup_rebases": 1,
+      "post_warmup_endpoint_lag_ms": 1.0223310000014862,
+      "ue_sr_exhaustion_count": 0,
+      "crashed_ues": [],
+      "audit_duration_s": 68.105326923,
+      "audit_checks": 137
+    },
+    {
+      "ues": 4,
+      "patch": "on",
+      "case": "original-multi-u4-on-r1",
+      "application_completed": true,
+      "gate": "passed",
+      "valid_one_second_kpi_windows": 30,
+      "post_warmup_ratio": 1.0000045312579904,
+      "post_warmup_rebases": 0,
+      "post_warmup_endpoint_lag_ms": -0.13548399999763205,
+      "ue_sr_exhaustion_count": 0,
+      "crashed_ues": [],
+      "audit_duration_s": 89.642177609,
+      "audit_checks": 180
+    },
+    {
+      "ues": 8,
+      "patch": "off",
+      "case": "original-multi-u8-off-r1",
+      "application_completed": true,
+      "gate": "passed",
+      "valid_one_second_kpi_windows": 30,
+      "post_warmup_ratio": 0.9044777905656549,
+      "post_warmup_rebases": 9659,
+      "post_warmup_endpoint_lag_ms": 3157.749246999998,
+      "ue_sr_exhaustion_count": 0,
+      "crashed_ues": [],
+      "audit_duration_s": 123.687974477,
+      "audit_checks": 248
+    },
+    {
+      "ues": 8,
+      "patch": "on",
+      "case": "original-multi-u8-on-r1",
+      "application_completed": true,
+      "gate": "passed",
+      "valid_one_second_kpi_windows": 30,
+      "post_warmup_ratio": 0.9206754955034216,
+      "post_warmup_rebases": 8684,
+      "post_warmup_endpoint_lag_ms": 2576.154895000002,
+      "ue_sr_exhaustion_count": 0,
+      "crashed_ues": [],
+      "audit_duration_s": 122.19345341,
+      "audit_checks": 245
+    },
+    {
+      "ues": 16,
+      "patch": "off",
+      "case": "original-multi-u16-off-r1",
+      "application_completed": true,
+      "gate": "passed",
+      "valid_one_second_kpi_windows": 20,
+      "post_warmup_ratio": 0.4348668265469496,
+      "post_warmup_rebases": 33183,
+      "post_warmup_endpoint_lag_ms": 38856.681758,
+      "ue_sr_exhaustion_count": 16,
+      "crashed_ues": [],
+      "audit_duration_s": 231.368434077,
+      "audit_checks": 463
+    },
+    {
+      "ues": 16,
+      "patch": "on",
+      "case": "original-multi-u16-on-r1",
+      "application_completed": false,
+      "gate": "failed",
+      "valid_one_second_kpi_windows": 2,
+      "post_warmup_ratio": null,
+      "post_warmup_rebases": null,
+      "post_warmup_endpoint_lag_ms": null,
+      "ue_sr_exhaustion_count": 0,
+      "crashed_ues": [
+        "ue12"
+      ],
+      "audit_duration_s": 171.266873759,
+      "audit_checks": 343
+    },
+    {
+      "ues": 16,
+      "patch": "on",
+      "case": "original-multi-u16-on-r2",
+      "application_completed": true,
+      "gate": "passed",
+      "valid_one_second_kpi_windows": 30,
+      "post_warmup_ratio": 0.44299712287144566,
+      "post_warmup_rebases": 33932,
+      "post_warmup_endpoint_lag_ms": 37594.795014,
+      "ue_sr_exhaustion_count": 16,
+      "crashed_ues": [],
+      "audit_duration_s": 229.856724149,
+      "audit_checks": 460
+    }
+  ],
+  "controls": [
+    {
+      "ues": 8,
+      "on_case": "original-multi-u8-on-r1",
+      "identical_binaries": true,
+      "identical_frozen_inputs": true
+    },
+    {
+      "ues": 16,
+      "on_case": "original-multi-u16-on-r1",
+      "identical_binaries": true,
+      "identical_frozen_inputs": true
+    },
+    {
+      "ues": 16,
+      "on_case": "original-multi-u16-on-r2",
+      "identical_binaries": true,
+      "identical_frozen_inputs": true
+    }
+  ],
+  "known_wait_findings": "No millisecond-scale yields were recorded at the two previously identified gNB CUDA-wait call sites in the completed 8/16-UE trials; the largest tracked 16-UE interval was 135.535 us OFF and 119.917 us ON. This does not localize every remaining wait or GPU operation.",
+  "native_failure": {
+    "case": "original-multi-u16-on-r1",
+    "ue": "ue12",
+    "operation": "CPU srsUE RLC AM NR retransmission segment calculation",
+    "assertion": "SO_start=765 > SO_end=683; NACK_SN=617",
+    "file": "lib/src/rlc/rlc_am_nr.cc:1776",
+    "effect": "UE process aborted; missing IQ then stalled the common-input broker, which triggered its 10 s wedge detector.",
+    "comparison": "Excluded from completed-run speed comparison. Repeat ON completed with post-warmup ratio 0.442997, but all 16 UEs showed repeated SR exhaustion during the execution."
+  },
+  "lifecycle_interpretation": "The console-derived rrc_release counter counts Scheduling request failed: releasing RRC connection messages. Source calls the empty NR release_pucch_srs hook, clears pending PHY grants and starts MAC random access; it is not itself proof of an RRC state transition.",
+  "limits": [
+    "One cold trial per ordinary configuration, with a repeated 16-UE ON trial after the first aborted. Small speed differences are observations, not a repeatability claim.",
+    "The one-UE trial retained one 1.022 ms endpoint lag; not all runs are strictly zero-miss.",
+    "UE counts 5-7 and counts above16 were not tested. No universal maximum UE count is established.",
+    "KPI-valid window counts and startup attachment gates do not establish uninterrupted protocol health."
+  ],
+  "instrumentation": {
+    "change": "Only broker capture capacity enlarged 1.5M to 6M records; source equivalence asserted",
+    "wire_sha256": "7210978908034e89bea72cede0947a40b10f490b8628fa291aa3a64c8283295e"
+  },
+  "evidence": "evidence/comparison.json",
+  "cleanup": "All owned benchmark/observer/reservation processes stopped and temporary memory captures archived on Spark. Persistent deployment remains enabled by default; original binaries and frozen inputs are unchanged; HTML unchanged."
+}

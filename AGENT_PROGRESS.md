@@ -10,7 +10,7 @@
 
 ## Current Objective
 
-- Identify and repair initiating operations behind one-UE sub-1.000 progress on Spark, preserving CUDA gNB, CPU srsUE, frozen inputs and ZMQ framing. Both HTML reports remain unchanged.
+- Completed 1/4/8/16-UE validation of persistent gNB CPU separation on Spark; eight and sixteen UEs remain below real time, and sixteen-UE protocol health is unqualified. Results and limitations are in `experiments/multi-ue-affinity-20261102/conclusions.json`; both HTML reports remain unchanged.
 
 ## Repository State
 
@@ -297,7 +297,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-Persistent native CPU separation is deployed in the active Spark CUDA single-cell launcher; radio CPU6 and PHY/main CPUs5,7–12 are disjoint from startup, preserving five main workers. Final one-UE validation passed with zero measured rebases; evidence is in `experiments/persistent-affinity-20261102/conclusions.json`. No benchmark remains running; both HTML reports are unchanged.
+Multi-UE verification is complete; no owned runtime remains. Persistent core separation held at all tested counts, but 8-UE OFF/ON rates were 0.904478/0.920675 and completed 16-UE OFF/ON rates 0.434867/0.442997 with SR exhaustion; one 16-UE ON trial aborted in CPU UE12 RLC. Detailed evidence is under `experiments/multi-ue-affinity-20261102/`.
 
 ## Active relay patch — 2026-10-29
 
@@ -457,3 +457,17 @@ Persistent native CPU separation is deployed in the active Spark CUDA single-cel
 - Clarified the metric: live progress is radio time divided by wall time, not successes divided by attempts. Claude channel-function ratios count completions against expected real-time cadence; successful operation and speed are separate measurements.
 
 - Saved the launcher patch/helper under `integrations/ocudu/spark-realtime/` and deployment/audit evidence under `experiments/persistent-affinity-20261102/`. Active remote defaults persist, original binaries/inputs and HTML remain unchanged, and no owned benchmark remains running.
+
+## Multi-UE affinity verification — 2026-11-02
+
+- Completed seven qualified-configuration trials at 1/4/8/16 UEs using CUDA gNB and locally repaired CPU srsUE, fixed 20 MHz/23.04 MS/s/1×1 and original CPU assignments. Eight/sixteen-UE OFF/ON controls passed binary and frozen-input identity checks.
+
+- Applied the existing IO/RF RX priority policy to every UE and audited gNB masks throughout each run. Enlarged only broker trace capacity; all seven captures have zero dropped or uncommitted records, and heavy analysis ran after measurement.
+
+- One/four-UE ON post-warmup ratios were 0.999966/1.000005 with one/zero rebases. Eight-UE OFF/ON measured 0.904478/0.920675, both 30/30 KPI windows valid; the local core patch does not restore eight-UE real-time operation.
+
+- Sixteen-UE OFF completed at 0.434867 with 20/30 valid windows. First ON aborted in UE12 RLC AM NR at SO_start=765 > SO_end=683; repeated ON completed at 0.442997 with 30/30 valid windows, while all UEs repeated SR exhaustion.
+
+- Corrected lifecycle interpretation: the console's RRC-release wording calls an empty NR resource-release hook, clears PHY grants and starts MAC random access. Timestamped SR failures are retained; these counters alone do not prove an RRC state transition.
+
+- Saved scripts, seven-trial comparison, native crash/source evidence, identity checks and raw indices under `experiments/multi-ue-affinity-20261102/`. Initial observer failure is excluded, child failure propagation is repaired, all owned processes stopped, deployment remains enabled, and HTML is unchanged.

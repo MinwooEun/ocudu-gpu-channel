@@ -1,0 +1,29 @@
+{
+  "remote_case": "/workspace/gpuch/multi-ue-affinity-20261102/u1/original-multi-u1-on-r2",
+  "files": [
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 1940
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 2442
+    },
+    {
+      "file": "raw/wire/srsue-3431795.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3431584.wire",
+      "size": 384000064
+    },
+    {
+      "file": "raw/wire/gnb-3431435.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3431620.wire",
+      "size": 64000064
+    }
+  ]
+}

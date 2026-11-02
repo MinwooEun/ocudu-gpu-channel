@@ -1,0 +1,45 @@
+CHx rx_sleep=false
+CHx base_srate=23.04e6
+Current sample rate is 1.92 MHz with a base rate of 23.04 MHz (x12 decimation)
+CH0 rx_port=tcp://127.0.0.1:2124
+CH0 tx_port=tcp://127.0.0.1:2125
+Current sample rate is 23.04 MHz with a base rate of 23.04 MHz (x1 decimation)
+Current sample rate is 23.04 MHz with a base rate of 23.04 MHz (x1 decimation)
+Waiting PHY to initialize ... done!
+Attaching UE...
+Closing stdin thread.
+Random Access Transmission: prach_occasion=0, preamble_index=48, ra-rnti=0x39, tti=174
+Random Access Complete.     c-rnti=0x460d, ta=2
+RRC Connected
+PDU Session Establishment successful. IP: 10.45.1.14
+RRC NR reconfiguration successful.
+srsLog error - The backend queue size is about to reach its maximum capacity of 8192 elements, new log entries will get discarded.
+Consider increasing the queue capacity.
+/workspace/ocudu-spark-ranb/src/srsRAN_4G-local/lib/src/rlc/rlc_am_nr.cc:1776: Assertion Failure: Error: SO_start=765 > SO_end=683. NACK_SN=617
+--- command='/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue --general.metrics_csv_enable 1 --general.metrics_period_secs 1 --general.metrics_csv_filename /workspace/gpuch/multi-ue-affinity-20261102/u16/original-multi-u16-on-r1/runtime/logs/srsue-metrics-ue12.csv /workspace/gpuch/multi-ue-affinity-20261102/u16/original-multi-u16-on-r1/runtime/configs/srsue-ue12.conf' version=23.04.0 signal=6 date='02/11/2026 07:09:25' ---
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0x2c9ec0) [0xb82d7eac9ec0]
+	linux-vdso.so.1(__kernel_rt_sigreturn+0) [0xe284a0a80a60]
+	/lib/aarch64-linux-gnu/libc.so.6(+0x874d8) [0xe284a02a74d8]
+	/lib/aarch64-linux-gnu/libc.so.6(gsignal+0x1c) [0xe284a025cb3c]
+	/lib/aarch64-linux-gnu/libc.so.6(abort+0xf4) [0xe284a0247e00]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0xfaf7c) [0xb82d7e8faf7c]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0x409a24) [0xb82d7ec09a24]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0x40a0fc) [0xb82d7ec0a0fc]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0x40a9d8) [0xb82d7ec0a9d8]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0x3bf438) [0xb82d7ebbf438]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0x3bf4b0) [0xb82d7ebbf4b0]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0x2a5974) [0xb82d7eaa5974]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0x2a61b0) [0xb82d7eaa61b0]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0xf5b78) [0xb82d7e8f5b78]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0xf43f0) [0xb82d7e8f43f0]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0x7a2e8) [0xb82d7e87a2e8]
+	/lib/aarch64-linux-gnu/libc.so.6(+0x8582c) [0xe284a02a582c]
+	/lib/aarch64-linux-gnu/libc.so.6(+0xebb4c) [0xe284a030bb4c]
+srsRAN crashed. Please send this backtrace to the developers ...
+---  exiting  ---
+--- command='/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue --general.metrics_csv_enable 1 --general.metrics_period_secs 1 --general.metrics_csv_filename /workspace/gpuch/multi-ue-affinity-20261102/u16/original-multi-u16-on-r1/runtime/logs/srsue-metrics-ue12.csv /workspace/gpuch/multi-ue-affinity-20261102/u16/original-multi-u16-on-r1/runtime/configs/srsue-ue12.conf' version=23.04.0 signal=11 date='02/11/2026 07:09:25' ---
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0x2c9ec0) [0xb82d7eac9ec0]
+	linux-vdso.so.1(__kernel_rt_sigreturn+0) [0xe284a0a80a60]
+	/workspace/gpuch/receiver-quality-20261030/local-noise-build/srsue(+0xac24c0) [0xb82d7f2c24c0]
+srsRAN crashed. Please send this backtrace to the developers ...
+---  exiting  ---

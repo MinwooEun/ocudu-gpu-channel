@@ -1,0 +1,83 @@
+{
+  "files": [
+    {
+      "file": "srsue-3439854.wire",
+      "records": 552846,
+      "capacity": 1000000,
+      "dropped": 0,
+      "uncommitted": 0
+    },
+    {
+      "file": "srsue-3439848.wire",
+      "records": 552180,
+      "capacity": 1000000,
+      "dropped": 0,
+      "uncommitted": 0
+    },
+    {
+      "file": "srsue-3439857.wire",
+      "records": 583714,
+      "capacity": 1000000,
+      "dropped": 0,
+      "uncommitted": 0
+    },
+    {
+      "file": "gnb-3439664.wire",
+      "records": 334454,
+      "capacity": 1000000,
+      "dropped": 0,
+      "uncommitted": 0
+    },
+    {
+      "file": "gnb-3439390.wire",
+      "records": 0,
+      "capacity": 1000000,
+      "dropped": 0,
+      "uncommitted": 0
+    },
+    {
+      "file": "srsue-3439839.wire",
+      "records": 553917,
+      "capacity": 1000000,
+      "dropped": 0,
+      "uncommitted": 0
+    },
+    {
+      "file": "srsue-3439845.wire",
+      "records": 556245,
+      "capacity": 1000000,
+      "dropped": 0,
+      "uncommitted": 0
+    },
+    {
+      "file": "ocudu-gpu-channel-3439600.wire",
+      "records": 2644265,
+      "capacity": 6000000,
+      "dropped": 0,
+      "uncommitted": 0
+    },
+    {
+      "file": "srsue-3439851.wire",
+      "records": 552862,
+      "capacity": 1000000,
+      "dropped": 0,
+      "uncommitted": 0
+    },
+    {
+      "file": "srsue-3439842.wire",
+      "records": 553145,
+      "capacity": 1000000,
+      "dropped": 0,
+      "uncommitted": 0
+    },
+    {
+      "file": "srsue-3439860.wire",
+      "records": 585689,
+      "capacity": 1000000,
+      "dropped": 0,
+      "uncommitted": 0
+    }
+  ],
+  "dropped": 0,
+  "uncommitted": 0
+}

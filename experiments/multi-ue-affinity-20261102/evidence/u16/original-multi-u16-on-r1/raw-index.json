@@ -1,0 +1,149 @@
+{
+  "remote_case": "/workspace/gpuch/multi-ue-affinity-20261102/u16/original-multi-u16-on-r1",
+  "files": [
+    {
+      "file": "raw/pacing/ue7.csv",
+      "size": 3577145
+    },
+    {
+      "file": "raw/pacing/ue12.csv",
+      "size": 3496764
+    },
+    {
+      "file": "raw/pacing/ue6.csv",
+      "size": 3613394
+    },
+    {
+      "file": "raw/pacing/ue2.csv",
+      "size": 3445660
+    },
+    {
+      "file": "raw/pacing/ue11.csv",
+      "size": 3479737
+    },
+    {
+      "file": "raw/pacing/ue5.csv",
+      "size": 3459532
+    },
+    {
+      "file": "raw/pacing/ue1.csv",
+      "size": 3445773
+    },
+    {
+      "file": "raw/pacing/ue8.csv",
+      "size": 3450699
+    },
+    {
+      "file": "raw/pacing/ue14.csv",
+      "size": 3623101
+    },
+    {
+      "file": "raw/pacing/ue3.csv",
+      "size": 3467557
+    },
+    {
+      "file": "raw/pacing/ue4.csv",
+      "size": 3464555
+    },
+    {
+      "file": "raw/pacing/ue10.csv",
+      "size": 3489882
+    },
+    {
+      "file": "raw/pacing/ue15.csv",
+      "size": 3637844
+    },
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 3889897
+    },
+    {
+      "file": "raw/pacing/ue9.csv",
+      "size": 3463580
+    },
+    {
+      "file": "raw/pacing/ue13.csv",
+      "size": 3501195
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 3458861
+    },
+    {
+      "file": "raw/wire/srsue-3450095.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450080.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450086.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450112.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450122.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450108.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450126.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3449821.wire",
+      "size": 384000064
+    },
+    {
+      "file": "raw/wire/gnb-3449543.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450130.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450104.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450116.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450092.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450083.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450089.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450119.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450101.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3449909.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3450098.wire",
+      "size": 64000064
+    }
+  ]
+}

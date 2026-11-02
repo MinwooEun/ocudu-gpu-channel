@@ -1,0 +1,17 @@
+{
+  "srsue/src/stack/mac_nr/proc_sr_nr.cc": {
+    "sha256": "5e745d1373d7435bb0a015ef27fa5e4d02f51ac205e36f8e872baae629e457e4",
+    "first_line": 110,
+    "text": "    reset_nolock();\n    return;\n  }\n\n  // Handle\n  if (sr_counter >= cfg.item[0].trans_max) {\n    logger.info(\n        \"SR:    Releasing PUCCH/SRS resources, sr_counter=%d, sr-TransMax=%d\", sr_counter, cfg.item[0].trans_max);\n    srsran::console(\"Scheduling request failed: releasing RRC connection...\\n\");\n    rrc->release_pucch_srs();\n\n    // 4> clear any configured downlink assignments and uplink grants;\n    phy->clear_pending_grants();\n\n    // 4> clear any PUSCH resources for semi-persistent CSI reporting;\n    // ... TODO\n\n    mac->start_ra();\n    reset_nolock();\n  }\n}\n\nbool proc_sr_nr::sr_opportunity(uint32_t tti, uint32_t sr_id, bool meas_gap, bool ul_sch_tx)"
+  },
+  "srsue/src/stack/rrc_nr/rrc_nr.cc": {
+    "sha256": "03b6805c55d5ec1051a256bbd85a1c6cfb98e29814384a71b88688bf03debbda",
+    "first_line": 2308,
+    "text": "  if (rrc_eutra) {\n    rrc_eutra->nr_scg_failure_information(scg_failure_cause_t::random_access_problem);\n  } else {\n    // TODO: handle RA problem\n  }\n}\n\nvoid rrc_nr::release_pucch_srs() {}\n\n// STACK interface\nvoid rrc_nr::cell_search_found_cell(const rrc_interface_phy_nr::cell_search_result_t& result)"
+  },
+  "lib/src/rlc/rlc_am_nr.cc": {
+    "sha256": "1f938f73e9fb5a5773940012aa72e95e9d01ead0aaad7629d1c3111042b068ea",
+    "first_line": 1765,
+    "text": "              for (auto segm_it = (*rx_window)[i].segments.begin(); segm_it != (*rx_window)[i].segments.end();\n                   segm_it++) {\n                RlcError(\"Segment: segm.header.so=%d, segm.buf.N_bytes=%d\", segm_it->header.so, segm_it->buf->N_bytes);\n              }\n              RlcError(\"Error: SO_start=%d > SO_end=%d. NACK_SN=%d. SO_start=%d, SO_end=%d, seg.so=%d\",\n                       nack.so_start,\n                       nack.so_end,\n                       nack.nack_sn,\n                       nack.so_start,\n                       nack.so_end,\n                       segm->header.so);\n              srsran_assert(nack.so_start <= nack.so_end,\n                            \"Error: SO_start=%d > SO_end=%d. NACK_SN=%d\",\n                            nack.so_start,\n                            nack.so_end,\n                            nack.nack_sn);\n            } else {\n              RlcDebug(\"First/middle segment missing. NACK_SN=%d. SO_start=%d, SO_end=%d\",\n                       nack.nack_sn,"
+  }
+}

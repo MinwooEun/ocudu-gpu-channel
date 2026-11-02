@@ -1,0 +1,15 @@
+{
+  "whole_run_counters": {
+    "ue12": {
+      "camped_pci": 1,
+      "crashed": 1,
+      "out_of_sync": 0,
+      "pdu_session": 1,
+      "ping_ok": 1,
+      "random_access_complete": 1,
+      "rrc_connected": 1,
+      "rrc_release": 0
+    }
+  },
+  "scheduling_request_exhaustion_during_measurement": {}
+}

@@ -1,0 +1,142 @@
+{
+  "including_warmup": {
+    "radio_s": 39.9,
+    "wall_s": 39.902952778,
+    "ratio": 0.9999260010151021,
+    "loss_us": 2952.778000000933,
+    "rebase_count": 2,
+    "rebase_sum_us": 2935.906,
+    "largest_rebases": [
+      {
+        "kind": "rebase",
+        "now_ns": "3355121950204574",
+        "node": "gnb0",
+        "sample": "252426240",
+        "count": "23040",
+        "expected_due_ns": "3355121947303861",
+        "due_ns": "3355121949204574",
+        "shift_ns": "1900713",
+        "room_us": "3741.923",
+        "data_us": "0.112",
+        "read_us": "0.064",
+        "process_us": "147.072",
+        "previous_loop_end_ns": "3355121946315099"
+      },
+      {
+        "kind": "rebase",
+        "now_ns": "3355127922238107",
+        "node": "gnb0",
+        "sample": "389998095",
+        "count": "23025",
+        "expected_due_ns": "3355127920202914",
+        "due_ns": "3355127921238107",
+        "shift_ns": "1035193",
+        "room_us": "1979.497",
+        "data_us": "0.144",
+        "read_us": "0.080",
+        "process_us": "49.776",
+        "previous_loop_end_ns": "3355127920208338"
+      }
+    ]
+  },
+  "post_warmup": {
+    "radio_s": 29.9,
+    "wall_s": 29.901022331,
+    "ratio": 0.9999658094967896,
+    "loss_us": 1022.3310000014862,
+    "rebase_count": 1,
+    "rebase_sum_us": 1035.193,
+    "largest_rebases": [
+      {
+        "kind": "rebase",
+        "now_ns": "3355127922238107",
+        "node": "gnb0",
+        "sample": "389998095",
+        "count": "23025",
+        "expected_due_ns": "3355127920202914",
+        "due_ns": "3355127921238107",
+        "shift_ns": "1035193",
+        "room_us": "1979.497",
+        "data_us": "0.144",
+        "read_us": "0.080",
+        "process_us": "49.776",
+        "previous_loop_end_ns": "3355127920208338"
+      }
+    ]
+  },
+  "qualification": {
+    "case": "original",
+    "ue_count": 1,
+    "tag": "multi-u1-on-r2",
+    "returncode": 0,
+    "wall_s": 74.97361946804449,
+    "metrics": {
+      "broker": {
+        "rx_starvations": 5,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "real_time_ratio": 0.9999260010151021,
+      "slots_per_wall_second": 999.9260010151021
+    },
+    "valid_segments": 30,
+    "gate": {
+      "all_ues_attached": true,
+      "broker": {
+        "control_batches_committed": 802,
+        "rx_requests": 153980,
+        "rx_starvations": 5,
+        "tx_pulls": 106616,
+        "tx_queue_overflows": 0,
+        "tx_sequence_gaps": 0,
+        "zmq_errors": 0
+      },
+      "broker_clean": true,
+      "gnb_alive_at_stop": 1,
+      "measure_status": "completed",
+      "per_ue": {
+        "ue0": {
+          "camped_pci": 1,
+          "crashed": 0,
+          "out_of_sync": 0,
+          "pdu_session": 1,
+          "ping_ok": 1,
+          "random_access_complete": 1,
+          "rrc_connected": 1,
+          "rrc_release": 0
+        }
+      },
+      "policy": "rr",
+      "policy_check": {
+        "gnbs": {
+          "gnb0": {
+            "found_in_config_dump": [
+              "rr"
+            ],
+            "link_adaptation": {
+              "found_in_config_dump": {
+                "link_adaptation": "harq_olla"
+              },
+              "ok": true,
+              "pdsch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_cqi_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_cqi_offset: 14.0\n",
+              "pusch_block": "    min_ue_mcs: 0\n    max_ue_mcs: 28\n    mcs_table: qam64\n    olla_snr_inc_step: 0.001\n    olla_target_bler: 0.01\n    olla_max_snr_offset: 5.0\n",
+              "requested": {
+                "link_adaptation": "harq_olla"
+              }
+            },
+            "ok": true,
+            "policy_block": "      rr_sched: ~\n",
+            "requested": "rr"
+          }
+        },
+        "ok": true
+      },
+      "replay_status": "measure_end",
+      "srsue_alive_at_stop": 1,
+      "status": "passed"
+    },
+    "report_exists": true,
+    "diagnostic_trace": false
+  }
+}
