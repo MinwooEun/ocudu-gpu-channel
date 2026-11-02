@@ -1,0 +1,60 @@
+{
+  "cause": "CPU srsUE NR RLC receiver fails to normalize a received segment that fully contains an existing segment, then misclassifies overlapping bytes as a missing interval while generating a STATUS NACK.",
+  "live": {
+    "ue": "ue12",
+    "sn": 617,
+    "first": {
+      "time": "2026-11-02T07:09:25.070212",
+      "sn": 617,
+      "so": 684,
+      "length": 12,
+      "end_inclusive": 695,
+      "si": 3,
+      "header_hex": "b0026902ac"
+    },
+    "second": {
+      "time": "2026-11-02T07:09:25.143317",
+      "sn": 617,
+      "so": 656,
+      "length": 109,
+      "end_inclusive": 764,
+      "si": 3,
+      "header_hex": "b002690290"
+    },
+    "assertion": "SO_start=765 > SO_end=683; NACK_SN=617",
+    "source": "lib/src/rlc/rlc_am_nr.cc:1776"
+  },
+  "code_path": [
+    "handle_data_pdu checks whether either incoming endpoint lies inside a stored segment, but does not detect an incoming range that fully contains a stored segment.",
+    "insert_received_segment inserts both ranges, sorted by start offset.",
+    "get_status_pdu handles any segment start differing from last_so as a missing gap, without distinguishing overlap.",
+    "After [656,764], last_so is765; the stored [684,695] then produces NACK [765,683].",
+    "The interval-order assertion aborts the UE; the broker subsequently stops after missing that UE IQ."
+  ],
+  "reproduction": {
+    "library": "Unmodified libsrsran_rlc.a from the CPU UE build",
+    "with_gpu_or_channel_emulator": false,
+    "headers": "18-bit SN617, middle segments; lengths and offsets match the captured live packets",
+    "payload": "Zero-filled synthetic bytes; range handling does not inspect payload values",
+    "inner_first": {
+      "order": [
+        "684..695",
+        "656..764"
+      ],
+      "returncode": -6,
+      "result": "Same 765 >683, SN617 assertion"
+    },
+    "outer_first": {
+      "order": [
+        "656..764",
+        "684..695"
+      ],
+      "returncode": 0,
+      "result": "Duplicate detected and STATUS generation completes"
+    }
+  },
+  "interpretation": "The arrival/overlap pattern is sufficient to trigger the bug without multi-UE CPU load, gNB affinity changes or GPU execution. The experiment does not establish which earlier loss, ACK timing or scheduling event caused those live retransmissions.",
+  "repair_direction": "Normalize overlapping received byte ranges while preserving newly received bytes, and generate STATUS NACKs from actual missing intervals; keep the receive frontier monotonic.",
+  "changes": "Diagnostic reproduction only. No UE/gNB/channel production source or binary changed; no application fix applied.",
+  "evidence": "evidence/results.json"
+}

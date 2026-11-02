@@ -1,0 +1,12 @@
+DELIVER SN617 [656,764]
+2026-11-02T07:56:14.633451 [RLC_REPLAY] [I] [    0] : AM NR configured - tx_sn_field_length=18, rx_sn_field_length=18, t_poll_retx=45, poll_pdu=4, poll_byte=0, max_retx_thresh=4, t_reassembly=35, t_status_prohibit=8, tx_queue_length=256
+2026-11-02T07:56:14.633485 [RLC_REPLAY] [I] [    0] : Rx PDU - N bytes 114
+2026-11-02T07:56:14.633549 [RLC_REPLAY] [I] [    0] : Rx data PDU SN=617 (114 B)
+DELIVER SN617 [684,695]
+GENERATE STATUS
+STATUS COMPLETED
+2026-11-02T07:56:14.633629 [RLC_REPLAY] [I] [    0] : Rx PDU - N bytes 17
+2026-11-02T07:56:14.633629 [RLC_REPLAY] [I] [    0] : Rx data PDU SN=617 (17 B)
+2026-11-02T07:56:14.633630 [RLC_REPLAY] [I] [    0] : Got SDU segment with duplicate bytes. Discarding.
+2026-11-02T07:56:14.633630 [RLC_REPLAY] [I] [    0] : Discarded SDU segment. SN=617, SO=684, last_byte=696, payload=12
+2026-11-02T07:56:14.633631 [RLC_REPLAY] [I] [    0] : Overlaping with SDU segment with SN=617, SO=656, last_byte=764, payload=109

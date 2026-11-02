@@ -1,0 +1,12 @@
+DELIVER SN617 [684,695]
+DELIVER SN617 [656,764]
+GENERATE STATUS
+2026-11-02T07:56:14.656821 [RLC_REPLAY] [I] [    0] : AM NR configured - tx_sn_field_length=18, rx_sn_field_length=18, t_poll_retx=45, poll_pdu=4, poll_byte=0, max_retx_thresh=4, t_reassembly=35, t_status_prohibit=8, tx_queue_length=256
+2026-11-02T07:56:14.656845 [RLC_REPLAY] [I] [    0] : Rx PDU - N bytes 17
+2026-11-02T07:56:14.656849 [RLC_REPLAY] [I] [    0] : Rx data PDU SN=617 (17 B)
+2026-11-02T07:56:14.656866 [RLC_REPLAY] [I] [    0] : Rx PDU - N bytes 114
+2026-11-02T07:56:14.656867 [RLC_REPLAY] [I] [    0] : Rx data PDU SN=617 (114 B)
+2026-11-02T07:56:14.656884 [RLC_REPLAY] [E] [    0] : Segment: segm.header.so=656, segm.buf.N_bytes=109
+2026-11-02T07:56:14.656885 [RLC_REPLAY] [E] [    0] : Segment: segm.header.so=684, segm.buf.N_bytes=12
+2026-11-02T07:56:14.656886 [RLC_REPLAY] [E] [    0] : Error: SO_start=765 > SO_end=683. NACK_SN=617. SO_start=765, SO_end=683, seg.so=684
+/workspace/ocudu-spark-ranb/src/srsRAN_4G-local/lib/src/rlc/rlc_am_nr.cc:1776: Assertion Failure: Error: SO_start=765 > SO_end=683. NACK_SN=617

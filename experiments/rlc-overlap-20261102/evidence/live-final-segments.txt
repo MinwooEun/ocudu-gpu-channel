@@ -1,0 +1,11 @@
+2026-11-02T07:09:25.162048 [RLC-NR ] [E] DRB1: Segment: segm.header.so=0, segm.buf.N_bytes=246
+2026-11-02T07:09:25.162048 [RLC-NR ] [E] DRB1: Segment: segm.header.so=246, segm.buf.N_bytes=2
+2026-11-02T07:09:25.162049 [RLC-NR ] [E] DRB1: Segment: segm.header.so=248, segm.buf.N_bytes=109
+2026-11-02T07:09:25.162049 [RLC-NR ] [E] DRB1: Segment: segm.header.so=357, segm.buf.N_bytes=109
+2026-11-02T07:09:25.162049 [RLC-NR ] [E] DRB1: Segment: segm.header.so=466, segm.buf.N_bytes=81
+2026-11-02T07:09:25.162050 [RLC-NR ] [E] DRB1: Segment: segm.header.so=547, segm.buf.N_bytes=109
+2026-11-02T07:09:25.162050 [RLC-NR ] [E] DRB1: Segment: segm.header.so=656, segm.buf.N_bytes=109
+2026-11-02T07:09:25.162051 [RLC-NR ] [E] DRB1: Segment: segm.header.so=684, segm.buf.N_bytes=12
+2026-11-02T07:09:25.162051 [RLC-NR ] [E] DRB1: Segment: segm.header.so=765, segm.buf.N_bytes=109
+2026-11-02T07:09:25.162052 [RLC-NR ] [E] DRB1: Segment: segm.header.so=983, segm.buf.N_bytes=28
+2026-11-02T07:09:25.162052 [RLC-NR ] [E] DRB1: Error: SO_start=765 > SO_end=683. NACK_SN=617. SO_start=765, SO_end=683, seg.so=684

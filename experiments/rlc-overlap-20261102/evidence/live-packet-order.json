@@ -1,0 +1,178 @@
+{
+  "packets": [
+    {
+      "time": "2026-11-02T07:09:15.417294",
+      "sn": 617,
+      "so": 0,
+      "length": 246,
+      "end_inclusive": 245,
+      "si": 1,
+      "header_hex": "900269"
+    },
+    {
+      "time": "2026-11-02T07:09:24.980150",
+      "sn": 617,
+      "so": 248,
+      "length": 109,
+      "end_inclusive": 356,
+      "si": 3,
+      "header_hex": "b0026900f8"
+    },
+    {
+      "time": "2026-11-02T07:09:25.005762",
+      "sn": 617,
+      "so": 246,
+      "length": 2,
+      "end_inclusive": 247,
+      "si": 3,
+      "header_hex": "b0026900f6"
+    },
+    {
+      "time": "2026-11-02T07:09:25.011199",
+      "sn": 617,
+      "so": 466,
+      "length": 81,
+      "end_inclusive": 546,
+      "si": 3,
+      "header_hex": "b0026901d2"
+    },
+    {
+      "time": "2026-11-02T07:09:25.021472",
+      "sn": 617,
+      "so": 246,
+      "length": 2,
+      "end_inclusive": 247,
+      "si": 3,
+      "header_hex": "b0026900f6"
+    },
+    {
+      "time": "2026-11-02T07:09:25.028424",
+      "sn": 617,
+      "so": 357,
+      "length": 109,
+      "end_inclusive": 465,
+      "si": 3,
+      "header_hex": "b002690165"
+    },
+    {
+      "time": "2026-11-02T07:09:25.032562",
+      "sn": 617,
+      "so": 357,
+      "length": 109,
+      "end_inclusive": 465,
+      "si": 3,
+      "header_hex": "b002690165"
+    },
+    {
+      "time": "2026-11-02T07:09:25.044709",
+      "sn": 617,
+      "so": 466,
+      "length": 109,
+      "end_inclusive": 574,
+      "si": 3,
+      "header_hex": "b0026901d2"
+    },
+    {
+      "time": "2026-11-02T07:09:25.070212",
+      "sn": 617,
+      "so": 684,
+      "length": 12,
+      "end_inclusive": 695,
+      "si": 3,
+      "header_hex": "b0026902ac"
+    },
+    {
+      "time": "2026-11-02T07:09:25.093995",
+      "sn": 617,
+      "so": 547,
+      "length": 109,
+      "end_inclusive": 655,
+      "si": 3,
+      "header_hex": "b002690223"
+    },
+    {
+      "time": "2026-11-02T07:09:25.095405",
+      "sn": 617,
+      "so": 575,
+      "length": 109,
+      "end_inclusive": 683,
+      "si": 3,
+      "header_hex": "b00269023f"
+    },
+    {
+      "time": "2026-11-02T07:09:25.114662",
+      "sn": 617,
+      "so": 765,
+      "length": 109,
+      "end_inclusive": 873,
+      "si": 3,
+      "header_hex": "b0026902fd"
+    },
+    {
+      "time": "2026-11-02T07:09:25.119872",
+      "sn": 617,
+      "so": 696,
+      "length": 109,
+      "end_inclusive": 804,
+      "si": 3,
+      "header_hex": "b0026902b8"
+    },
+    {
+      "time": "2026-11-02T07:09:25.143310",
+      "sn": 617,
+      "so": 983,
+      "length": 28,
+      "end_inclusive": 1010,
+      "si": 3,
+      "header_hex": "b0026903d7"
+    },
+    {
+      "time": "2026-11-02T07:09:25.143317",
+      "sn": 617,
+      "so": 656,
+      "length": 109,
+      "end_inclusive": 764,
+      "si": 3,
+      "header_hex": "b002690290"
+    },
+    {
+      "time": "2026-11-02T07:09:25.159797",
+      "sn": 617,
+      "so": 656,
+      "length": 28,
+      "end_inclusive": 683,
+      "si": 3,
+      "header_hex": "b002690290"
+    },
+    {
+      "time": "2026-11-02T07:09:25.159802",
+      "sn": 617,
+      "so": 696,
+      "length": 69,
+      "end_inclusive": 764,
+      "si": 3,
+      "header_hex": "b0026902b8"
+    }
+  ],
+  "trigger": [
+    {
+      "time": "2026-11-02T07:09:25.070212",
+      "sn": 617,
+      "so": 684,
+      "length": 12,
+      "end_inclusive": 695,
+      "si": 3,
+      "header_hex": "b0026902ac"
+    },
+    {
+      "time": "2026-11-02T07:09:25.143317",
+      "sn": 617,
+      "so": 656,
+      "length": 109,
+      "end_inclusive": 764,
+      "si": 3,
+      "header_hex": "b002690290"
+    }
+  ],
+  "payload_note": "Only captured headers and lengths are required for this range-management reproduction. Replay payloads are zero-filled, not bit-exact IQ replay."
+}

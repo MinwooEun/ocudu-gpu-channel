@@ -10,7 +10,7 @@
 
 ## Current Objective
 
-- Completed 1/4/8/16-UE validation of persistent gNB CPU separation on Spark; eight and sixteen UEs remain below real time, and sixteen-UE protocol health is unqualified. Results and limitations are in `experiments/multi-ue-affinity-20261102/conclusions.json`; both HTML reports remain unchanged.
+- Attributed UE12's sixteen-UE RLC abort to contained overlapping RX segments and reproduced it through the unchanged CPU UE RLC library. Explanation and control results are in `experiments/rlc-overlap-20261102/conclusions.json`; production binaries and both HTML reports remain unchanged.
 
 ## Repository State
 
@@ -297,7 +297,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-Multi-UE verification is complete; no owned runtime remains. Persistent core separation held at all tested counts, but 8-UE OFF/ON rates were 0.904478/0.920675 and completed 16-UE OFF/ON rates 0.434867/0.442997 with SR exhaustion; one 16-UE ON trial aborted in CPU UE12 RLC. Detailed evidence is under `experiments/multi-ue-affinity-20261102/`.
+UE12 RLC abort is reproduced without GPU/emulator: receiving [684,695] then [656,764] generates invalid NACK [765,683] through unchanged srsUE RLC; reversed order succeeds. Evidence is under `experiments/rlc-overlap-20261102/`; no production fix is applied and no benchmark remains running. Multi-UE timing/SR limitations remain as recorded.
 
 ## Active relay patch — 2026-10-29
 
@@ -471,3 +471,11 @@ Multi-UE verification is complete; no owned runtime remains. Persistent core sep
 - Corrected lifecycle interpretation: the console's RRC-release wording calls an empty NR resource-release hook, clears PHY grants and starts MAC random access. Timestamped SR failures are retained; these counters alone do not prove an RRC state transition.
 
 - Saved scripts, seven-trial comparison, native crash/source evidence, identity checks and raw indices under `experiments/multi-ue-affinity-20261102/`. Initial observer failure is excluded, child failure propagation is repaired, all owned processes stopped, deployment remains enabled, and HTML is unchanged.
+
+## UE12 RLC abort attribution — 2026-11-02
+
+- Live RX headers show SN617 [684,695] arriving at 07:09:25.070212 before [656,764] at .143317. Endpoint-only overlap checking misses this containment, retaining both; STATUS generation then mistakes the overlap for missing bytes and asserts on NACK [765,683].
+
+- Linked a standalone replay to the unchanged CPU UE RLC archive using its existing fixture/configuration. Inner-first reproduces the exact SN617 assertion and SIGABRT; outer-first completes STATUS generation, without GPU, gNB, emulator or real-time load.
+
+- Saved original-library build commands, source excerpts, live headers/order and positive/negative controls under `experiments/rlc-overlap-20261102/`. Replay payloads are synthetic; the earlier loss/ACK/scheduling trigger is not attributed, and no production patch or HTML edit was applied.
