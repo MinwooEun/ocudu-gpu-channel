@@ -1,0 +1,28 @@
+{
+  "host": "spark",
+  "files": {
+    "iq_capacity.cpp": "273e05ee7df0ac4b4abe66cb868cbe66a99b606408b3359594d16aba79e41904",
+    "iq_capacity.ready.cpp": "30a630521dfae7c51e253c276e65db6ff6a7b46aa4be5e710ce79a2325665d61",
+    "radio_peer.cpp": "804e68181b5964e3081ab52129e76c0c7eb3c2de70cd8e495ec72cd7a1d6acef",
+    "broker-probe.cpp": "e5aefc7f446075335ea05d647c5080f94e3adc39f968d030427e87a32461fc7d",
+    "gen.py": "273f1ebd9c17546a082fd8ddb3036ce9f7bbf11415500a8ae526ca15e625ea38",
+    "run_case.py": "9b12990f394a13aac231d8797c2e308546c0af9d96e81ace70a7635b95d6cf8e",
+    "campaign.py": "a911a5e83330f5c99ea435973c37f21f0332d782993761c1fca386b451becaf0",
+    "ready_campaign.py": "89402657caf8f9363dfc7b9854bfd7f7a02d9cdea2542772d81762a36df2d87a",
+    "counter_controls.py": "e5685e7fb1f345119b2c93be54456002dc744b48a70df72daab5c838c4e91039",
+    "iq-capacity": "fa4d281b0711003aff552aa0fbc06515a3663f73f5d277b83e73d60b6e0219d1",
+    "iq-capacity-ready": "0f763d0515417ece4ee5b1ebed264019d4d92e052d5406f5bb9c0344e6d7cfaf",
+    "radio-peer": "ef7018881f656ff7b108d013d6faf768013d6fe58507d47c464b435a4cf0b3f4",
+    "ocudu-gpu-channel": "323ad2cfb5ada70e9bdaad72a28695e0313a13ab742eb449c4d361d958df6e9f"
+  },
+  "gpu": "NVIDIA GB10, 580.178.04",
+  "cpu": "Architecture:                            aarch64\nCPU op-mode(s):                          64-bit\nByte Order:                              Little Endian\nCPU(s):                                  20\nOn-line CPU(s) list:                     0-19\nVendor ID:                               ARM\nModel name:                              Cortex-X925\nModel:                                   1\nThread(s) per core:                      1\nCore(s) per socket:                      10\nSocket(s):                               1\nStepping:                                r0p1\nFrequency boost:                         disabled\nCPU(s) scaling MHz:                      100%\nCPU max MHz:                             3900.0000\nCPU min MHz:                             1378.0000\nBogoMIPS:                                2000.00\nFlags:                                   fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 sm3 sm4 asimddp sha512 sve asimdfhm dit uscat ilrcpc flagm sb paca pacg dcpodp sve2 sveaes svepmull svebitperm svesha3 svesm4 flagm2 frint svei8mm svebf16 i8mm bf16 dgh bti ecv afp wfxt\nModel name:                              Cortex-A725\nModel:                                   1\nThread(s) per core:                      1\nCore(s) per socket:                      10\nSocket(s):                               1\nStepping:                                r0p1\nCPU(s) scaling MHz:                      100%\nCPU max MHz:                             2808.0000\nCPU min MHz:                             338.0000\nBogoMIPS:                                2000.00\nFlags:                                   fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 sm3 sm4 asimddp sha512 sve asimdfhm dit uscat ilrcpc flagm sb paca pacg dcpodp sve2 sveaes svepmull svebitperm svesha3 svesm4 flagm2 frint svei8mm svebf16 i8mm bf16 dgh bti ecv afp wfxt\nL1d cache:                               1.3 MiB (20 instances)\nL1i cache:                               1.3 MiB (20 instances)\nL2 cache:                                25 MiB (20 instances)\nL3 cache:                                24 MiB (2 instances)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-19\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; CSV2, BHB\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected\n",
+  "clock_pair": {
+    "unix_ns": 1793615340733090495,
+    "monotonic_ns": 3367852112635553
+  },
+  "changed_archive_members": [
+    "broker.cpp.o"
+  ],
+  "unchanged_backend_members": 12
+}

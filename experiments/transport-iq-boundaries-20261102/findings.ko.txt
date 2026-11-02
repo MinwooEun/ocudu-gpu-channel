@@ -1,0 +1,59 @@
+채널 에뮬레이터 격리 스케일링 검증 — RTX 5090 / Spark GB10
+
+정식 168회, 추가 대조 18회. 초기 측정창/동작 확인 자료 79회는 별도 보존했다.
+
+이번에 비교한 세 가지 실행 범위
+라이브 스택: 이전 실험의 실제 CUDA gNB + CPU srsUE + 코어/트래픽.
+ZMQ-only: PHY/MAC 없이 가상 IQ 송수신기가 raw cf32 REQ/REP로 같은 채널 에뮬레이터에 연결된다. OCUDU radio_zmq 클래스나 srsUE RF 구현 자체를 분리 실행한 결과는 아니다.
+IQ-only: 메모리 IQ를 같은 ChannelProcessor 함수에 전달한다. CPU 준비, CPU↔GPU 전달, GPU 처리와 반환·동기화를 포함한다.
+
+비교 조건
+채널 처리 CPU는 장비마다 빠른 코어5개로 고정했다. RTX P0-4, Spark X9255-9. 코어는 OS/다른 작업으로부터 예약하지 않았다.
+IQ와 ZMQ는 같은 정적8-tap TDL/수신 AWGN, 토폴로지와 CUDA backend object를 쓴다. 라이브 moving-Sionna replay와는 다른 격리 부하다.
+기본1cell/20MHz/1×1. 셀 축은4UE/cell·단일broker·셀 간 간섭 없음. BW 축은4UE, 안테나 축은1UE에서 양쪽 동일 raw포트 수를 늘린다.
+20/50/100MHz는 라이브 레시피에 대응하는23.04/61.44/122.88MS/s와1/1/0.5ms 배치를 쓴다. 독립 샘플레이트 sweep은 하지 않았다.
+모든 정식 IQ worker는 실제 첫 CUDA 호출 완료를 확인한 뒤2초 워밍업과8초 측정을 시작했다. ZMQ는 모든 포트가 워밍업 중 IQ를 생산했음을 로그로 확인했다.
+
+처리량 전이 구간 — 확정된 최대값으로 읽지 않는다
+축 | RTX IQ-only | RTX ZMQ-only | Spark IQ-only | Spark ZMQ-only
+UE 수 | 31–32 | 10–11 (mixed) | 56–57 (mixed) | 7–8 (mixed)
+셀 수 | 7–8 | 2–3 (2도 mixed) | 12–13 (13 mixed) | 2–3 (2도 mixed)
+대역폭 | 100 MHz까지 확인 | 50–100 MHz | 100 MHz까지 확인 | 50–100 MHz (50도 mixed)
+양쪽 포트 수 | 15–16 | 8–9 (9 mixed) | 10–11 | 5–6 (6 mixed)
+
+mixed는 같은 점의 반복 실행에서 처리량 판정이 갈렸다는 뜻이다. 정확한 비율과 통과 횟수는 replicated-points.json에 전부 남겼다.
+UE 축에서3회 모두 처리량 기준을 만족한 확인점: RTX IQ31UE, RTX ZMQ8UE, Spark IQ48UE, Spark ZMQ4UE. 이것을 최대값 또는 deadline0회 보장으로 확대하지 않는다.
+
+진행률과 deadline을 구분하는 이유
+진행률 = 완료한 IQ 샘플 / (샘플레이트 × 측정 wall time), 모든 RX 중 최저값이다. 성공횟수/시도횟수가 아니다.
+8초 공통 창의 시작/끝에 한 배치가 걸칠 수 있으므로 처리량 판정은 expected_batches-1을 명시적으로 허용한다. 20MHz에서는7999/8000=0.999875다. 이 값은 부동소수점 오차가 아니다.
+별도로 IQ의 예정 시각 초과 완료, ZMQ producer의 pacing rebase와1배치 예산 초과 함수 호출을 기록했다. 처리량1.000과 deadline위반0회는 서로 다른 결과다.
+
+64UE 확인 — 모든 수신 노드를 함께 처리
+추가로 RTX의 P코어8개와 Spark의 X92510개를 사용해64UE IQ-only를3회씩 실행했다.
+rtx: 0.234000000, 0.213000000, 0.203500000
+spark: 0.781500000, 0.813000000, 0.778125000
+이번64UE 구성은 전체65개 RX노드를 함께 처리한다. 예전 fan-in 자료의 gNB 단일 호출 P99 그래프는 전체 노드가 매 주기 처리되었다는 증거가 아니다.
+참고 원문: /home/minwoo/ocudu-work/ocudu-upstream-main/docs/reports/performance/2026-10-13-fanin/README.md — sequential calling, per-gNB call latency,1ms reference is not a passed deadline test를 명시한다.
+
+32UE ZMQ에서 실제로 시간이 걸린 위치
+아래는 gNB producer의 측정 구간 평균이며, 순수 GPU 커널 시간이 아니다.
+rtx: 출력공간 확보 구간 788.896us, 입력준비 구간 51.289us, 링 읽기 15.443us, 채널 함수 2695.950us. 함수 내부 thread CPU 1028.470us. Broker 평균 CPU 4.965/5코어.
+spark: 출력공간 확보 구간 1029.386us, 입력준비 구간 543.251us, 링 읽기 36.521us, 채널 함수 529.978us. 함수 내부 thread CPU 190.094us. Broker 평균 CPU 4.917/5코어.
+구간 wall time에는 스레드가 실행되지 못한 시간도 들어간다. 출력 버퍼가 그 시간 내내 차 있었다거나, GPU 커널이 함수 전체 시간을 썼다고 바꿔 읽지 않는다.
+확인된 점은 PHY/MAC이 없는 조건에서도 처리량 손실이 생기고,32UE에서 emulator CPU할당이 거의 찼다는 것이다. RTX는 채널 함수 구간이1ms를 넘고, Spark는 출력공간/입력준비 구간이 큰 비중을 차지했다.
+CUDA 자동 host-memory 모드는 RTX copy, Spark zero-copy로 실제 실행됐음을 IQ 로그에서 확인했다. 이를 GPU 코어 성능만의 비교로 읽지 않는다.
+
+계측 영향 확인
+같은 broker 실행파일에서 메모리 카운터를 끈 UE 경계 양쪽 및16UE 실행을 장비마다6회 진행했다. 작은 손실은 반복 변동이 있었고,16UE 처리량 손실은 카운터OFF에서도 유지됐다.
+rtx counter-OFF: 10UE=1.000000000, 10UE=0.999875000, 11UE=0.999500000, 11UE=0.999750000, 16UE=0.992375000, 16UE=0.992750000
+spark counter-OFF: 16UE=0.974875000, 16UE=0.984875000, 7UE=0.999375000, 7UE=0.999125000, 8UE=1.000000000, 8UE=0.999250000
+
+보존/검증
+기존 라이브 검증 실행파일·상위 소스·HTML은 수정하지 않았다. Broker 계측은 broker.cpp.o만 교체했고, CUDA backend를 포함한 나머지12개 archive member가 동일함을 검증했다.
+가상 송신 IQ의 캐시화는 실제 ZMQ로 기존 송신기와16,220,160bytes를 비교해 일치했다.
+정식 실행은 전부 application/peer health와 초기화 확인을 통과했다. Broker의 ZMQ 오류/queue overflow/sequence gap0은 원본 stop counter에 남아 있다.
+measurements.csv: 정식 전체 수치. curves.json / replicated-points.json: 반복 범위. evidence/{rtx,spark}/*.json.gz: 회차별 설정/결과/CPU요약/원본 경로.
+로컬 원본: /home/minwoo/ocudu-work/transport-iq-boundaries-20261102
+Spark 원본: /workspace/gpuch/transport-iq-boundaries-20261102
+원본 source-call / GPU kernel / scheduler 세부 원인의 분리는 별도 계측이 필요한 범위이며 이번 처리량 경계 결과와 구분한다.

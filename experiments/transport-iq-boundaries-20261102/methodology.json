@@ -1,0 +1,58 @@
+{
+  "modes": {
+    "iq_only": "One concurrent worker per RX node invokes the live-tested ChannelProcessor::process_superposition with cached readonly IQ. No sockets, PHY, MAC or per-output power scan on its critical path. Same CUDA backend object files.",
+    "radio_zmq_only": "Synthetic per-radio cf32 peers (one ZMQ context per radio, TX REP/RX REQ sockets per port) exchange IQ with the live-tested broker. This is not OCUDU radio_zmq class or srsUE RF code; it measures synthetic raw-IQ transport, not native radio implementation or PHY/MAC."
+  },
+  "channel": {
+    "taps": 8,
+    "model": "Static deterministic8-tap TDL with receiver AWGN",
+    "cells": "independent, no inter-cell edges; one broker instance",
+    "live_difference": "Live stack uses frozen moving Sionna channel updates; current isolation sweep keeps a static common channel in both modes."
+  },
+  "axes": {
+    "ue_count": "1cell,20MHz,1x1; powers through64, extend passing upper bounds and refine integer bracket",
+    "cells": "4UEs/cell,20MHz,1x1; one broker, integer refinement",
+    "bandwidth": "4UEs,1cell,1x1;20/50/100MHz use23.04/61.44/122.88MS/s and1/1/0.5ms batches. Bandwidth is represented by the corresponding live-radio IQ workload, not a separate channel-emulator MHz parameter.",
+    "ports": "1UE,1cell,20MHz; raw symmetric channel-matrix port counts, not NR spatial layers or a live-stack antenna capability claim."
+  },
+  "timing": {
+    "warmup_seconds": 2,
+    "measure_seconds": 8,
+    "iq_pacing": "absolute deadlines with unbounded catch-up (no radio buffers); report late completions separately",
+    "radio_pacing": "shipping broker bounded catch-up; cached peers do not add their own rate cap",
+    "cadence_gate": "All receivers complete at least floor(measure_duration/batch_duration)-1 batches; the single-batch uncertainty comes from counting periodic publications in a finite common wall window.",
+    "strict_gate": "No IQ completion after its slot deadline; for radio, zero producer pacing rebases and zero channel calls longer than the batch period; health required.",
+    "clarification": "Cadence coverage is not a packet-success rate or a guarantee of zero deadline misses; detailed exact ratios/miss counts are retained.",
+    "startup": "Certified IQ results wait until every RX worker completes a real first CUDA call before opening the common warmup/measurement schedule. Radio captures were audited: every port had produced IQ by heartbeat2, before the common measurement window."
+  },
+  "resources": {
+    "rtx": {
+      "channel": "P0-4",
+      "peers": "P5-7,E8-19",
+      "aux": "E20-23"
+    },
+    "spark": {
+      "channel": "X9255-9",
+      "peers": "X92515-19",
+      "aux": "A7250-4"
+    }
+  },
+  "measurement_changes": [
+    "Broker counters accumulate in memory, read the epoch file only in its20ms control loop before measurement, and write summaries after producer shutdown. Backend and pacing logic are unchanged.",
+    "Cached peer sine cycles were wire-compared to the existing per-sample trigonometric generator across24messages at23040/61440sample sizes:16,220,160bytes identical.",
+    "IQ workers maintain private timing/count arrays, avoiding the old benchmark shared accounting mutex and shared last_timings phase attribution.",
+    "Process CPU usage is not synonymous with arithmetic time; CUDA runtime work and CPU waiting may consume CPU time."
+  ],
+  "limits": [
+    "Finite-duration, placement-dependent whole-host results; not an architecture-independent GPU maximum.",
+    "Synthetic peer and IQ harness input patterns differ; byte sizes, topology and8-tap model work are matched, with reused host buffers on both sides.",
+    "The new source cache removes historical dummy sine-generation CPU cost; old radio-only boundaries therefore are historical references, not identical harness results.",
+    "Reference64UE claims must distinguish single gNB fan-in call latency from all-node throughput and deadline coverage."
+  ],
+  "excluded": "Initial timer-only IQ runs are retained as preflight evidence, not used for final boundaries; the fixed200ms startup signal did not certify all workers had initialized.",
+  "additional_controls": [
+    "64UE IQ checked3times using all fast cores: RTX P0-7 and Spark X9255-9,15-19.",
+    "Transport counters disabled for observed UE boundary sides and16UE; same broker executable and5-core allocation.",
+    "Bandwidth50/100MHz and conservative lower-load points repeated."
+  ]
+}

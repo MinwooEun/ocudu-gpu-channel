@@ -10,7 +10,7 @@
 
 ## Current Objective
 
-- Completed RTX 5090 live-stack UE scaling and a CPU placement control after cold boot. Results and limits: `experiments/rtx-scaling-20261102/findings.ko.txt` and `comparison.json`; all owned processes/container are stopped, and HTML is unchanged.
+- Completed RTX/Spark IQ-only and synthetic radio-ZMQ scaling across UE count, cells, bandwidth and radio ports. Initialization-certified results, controls and plots are under `experiments/transport-iq-boundaries-20261102/`; all owned measurements are stopped, and existing HTML remains unchanged.
 
 ## Repository State
 
@@ -491,3 +491,21 @@ UE12 RLC abort is reproduced without GPU/emulator: receiving [684,695] then [656
 - Exchanging two P/E cores between gNB and broker preserved role core counts and identical binaries/inputs. Eight-UE ratio improved0.821049→0.966288 with30/30 valid windows; sixteen-UE control stalled and watchdog-stopped after10.006s without IQ progress, without an RLC assertion.
 
 - All six captures passed affinity/priority checks and contain zero dropped/uncommitted trace records. Saved evidence, manifests and raw indices under `experiments/rtx-scaling-20261102/`; original builds and HTML remain unchanged, the private container is removed, and GPU compute is idle.
+
+## Transport and IQ boundaries — 2026-11-02
+
+- Audited historical synthetic-ZMQ tools and IQ benchmark sources. Existing source generation includes per-sample sin/cos, and the threaded IQ benchmark serializes output accounting; preparing measurement-only peers/counters to keep these harness costs explicit.
+
+- Built IQ-only per-node counters and synthetic raw-ZMQ peers against the unchanged CUDA backend, with broker summaries written only after measurement. Wire validation confirms16,220,160 cached-generator bytes match the legacy source; both hosts now run four-axis sweeps with fixed P-core channel allocations.
+
+- Added explicit first-call readiness before IQ warmup after large configurations exposed unverified worker startup in the initial timer-based harness. Initial IQ sweeps remain preflight evidence; certified IQ sweeps, all-fast-core64UE checks and counter-disabled transport controls are queued/running on both hosts.
+
+- Completed168 initialization-certified cases across both hosts and both isolation modes, plus18 controls;79 timer/startup preflight cases remain separate. Every primary capture passed peer/application health, initialized all RXs before measurement, and retained zero broker ZMQ errors, overflows and sequence gaps.
+
+- With five fast channel CPU cores, IQ UE transitions were RTX31–32 and Spark56–57; synthetic ZMQ transitions were RTX10–11 and Spark7–8. Repeated outcomes are mixed near these intervals, so neither values nor average-rate passes certify zero deadline misses.
+
+- Completed cell, bandwidth and raw-port sweeps with boundary repeats. IQ sustained the100MHz-equivalent workload at4UEs; synthetic ZMQ lost progress there on both hosts, while full tables and repeated ranges preserve lower-bandwidth jitter.
+
+- All-fast-core64UE checks remained below real-time throughput: RTX0.2035–0.234 and Spark0.778125–0.813. Counter-disabled transport controls retained sixteen-UE losses; shared topology SHA-256 and twelve unchanged backend archive members were verified across the appropriate comparisons.
+
+- Saved CSV, per-case compressed evidence, reproducible harness/build sources, raw indices, four-axis plots and Korean findings under `experiments/transport-iq-boundaries-20261102/`. Added throughput/progress definitions to the existing vocabulary; original live binaries and HTML remain unchanged.

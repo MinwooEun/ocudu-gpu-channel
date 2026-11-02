@@ -74,6 +74,8 @@ Format: one entry per line, `Word: short description.`
 - REP worker: a broker thread that answers an RX port's requests using samples already written to its ring.
 - pacing: control of sample release times to match the sample rate.
 - latency: elapsed time from a stated input event to its corresponding output event.
+- throughput: the number of completed IQ samples per second of elapsed computer time.
+- progress ratio: completed represented signal time divided by elapsed computer time over a stated interval.
 - deadline: the latest time a stated operation may finish.
 - starvation: a wait for required samples that lasts beyond the stated limit.
 - overflow: an attempt to put more data into a buffer than it has room to hold.

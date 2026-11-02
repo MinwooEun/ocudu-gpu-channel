@@ -1,0 +1,12 @@
+The retained source/archive dependencies are indexed by build.py and per-host evidence/provenance.json.
+Run build.py with an empty runtime directory on the corresponding host; it preserves upstream sources/binaries.
+The build includes the initial timer-only IQ harness solely to reproduce the retained preflight experiment.
+For a certified individual IQ point, select the initialized harness explicitly:
+  BOUND_IQ_BINARY=iq-capacity-ready BOUND_PROFILE=ready-start-iq python3 RUNTIME/run_case.py iq --ues 32
+For a synthetic raw-ZMQ point:
+  BOUND_IQ_BINARY=iq-capacity-ready python3 RUNTIME/run_case.py radio --ues 16
+The four-axis scripts reflect the actual campaign order: campaign.py, ready_campaign.py, counter_controls.py, then confirm_points.py.
+ready_campaign.py waits for campaign.py and excludes the timer-only IQ data from the certified results.
+collect_host.py runs after measurements; copy its evidence directory to evidence/{rtx,spark} and run analyze.py here.
+The plots/report use only initialization-certified primary cases, keep finite-window counts explicit, and retain every mixed outcome.
+CPU masks, fixed static8-tap topology, input waveform policy and trace scopes are described in methodology.json.

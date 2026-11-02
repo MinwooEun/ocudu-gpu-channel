@@ -1,0 +1,682 @@
+[
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "ues",
+    "x": 31,
+    "replicates": 3,
+    "minimum": 0.999875,
+    "median": 0.999875,
+    "maximum": 0.999875,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u31-c1-bw20-a1x1-r1-ready-start-iq",
+      "iq-u31-c1-bw20-a1x1-r2-ready-start-iq",
+      "iq-u31-c1-bw20-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "ues",
+    "x": 32,
+    "replicates": 3,
+    "minimum": 0.996875,
+    "median": 0.99725,
+    "maximum": 0.999875,
+    "cadence_passes": 1,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u32-c1-bw20-a1x1-r1-ready-start-iq",
+      "iq-u32-c1-bw20-a1x1-r2-ready-start-iq",
+      "iq-u32-c1-bw20-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "cells",
+    "x": 7,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u4-c7-bw20-a1x1-r1-ready-start-iq",
+      "iq-u4-c7-bw20-a1x1-r2-ready-start-iq",
+      "iq-u4-c7-bw20-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "cells",
+    "x": 8,
+    "replicates": 3,
+    "minimum": 0.79025,
+    "median": 0.849375,
+    "maximum": 0.851375,
+    "cadence_passes": 0,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u4-c8-bw20-a1x1-r1-ready-start-iq",
+      "iq-u4-c8-bw20-a1x1-r2-ready-start-iq",
+      "iq-u4-c8-bw20-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "bandwidth",
+    "x": 50,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 3,
+    "labels": [
+      "iq-u4-c1-bw50-a1x1-r1-ready-start-iq",
+      "iq-u4-c1-bw50-a1x1-r2-ready-start-iq",
+      "iq-u4-c1-bw50-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "bandwidth",
+    "x": 100,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u4-c1-bw100-a1x1-r1-ready-start-iq",
+      "iq-u4-c1-bw100-a1x1-r2-ready-start-iq",
+      "iq-u4-c1-bw100-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "ports",
+    "x": 15,
+    "replicates": 3,
+    "minimum": 0.999875,
+    "median": 0.999875,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u1-c1-bw20-a15x15-r1-ready-start-iq",
+      "iq-u1-c1-bw20-a15x15-r2-ready-start-iq",
+      "iq-u1-c1-bw20-a15x15-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "ports",
+    "x": 16,
+    "replicates": 3,
+    "minimum": 0.960875,
+    "median": 0.963625,
+    "maximum": 0.964,
+    "cadence_passes": 0,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u1-c1-bw20-a16x16-r1-ready-start-iq",
+      "iq-u1-c1-bw20-a16x16-r2-ready-start-iq",
+      "iq-u1-c1-bw20-a16x16-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "ues",
+    "x": 4,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 3,
+    "labels": [
+      "radio-u4-c1-bw20-a1x1-r1",
+      "radio-u4-c1-bw20-a1x1-r2",
+      "radio-u4-c1-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "ues",
+    "x": 8,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 3,
+    "labels": [
+      "radio-u8-c1-bw20-a1x1-r1",
+      "radio-u8-c1-bw20-a1x1-r2",
+      "radio-u8-c1-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "ues",
+    "x": 10,
+    "replicates": 3,
+    "minimum": 0.999375,
+    "median": 0.999875,
+    "maximum": 1.0,
+    "cadence_passes": 2,
+    "zero_deadline_miss_runs": 2,
+    "labels": [
+      "radio-u10-c1-bw20-a1x1-r1",
+      "radio-u10-c1-bw20-a1x1-r2",
+      "radio-u10-c1-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "ues",
+    "x": 11,
+    "replicates": 3,
+    "minimum": 0.999625,
+    "median": 0.999875,
+    "maximum": 1.0,
+    "cadence_passes": 2,
+    "zero_deadline_miss_runs": 2,
+    "labels": [
+      "radio-u11-c1-bw20-a1x1-r1",
+      "radio-u11-c1-bw20-a1x1-r2",
+      "radio-u11-c1-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "cells",
+    "x": 1,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 3,
+    "labels": [
+      "radio-u4-c1-bw20-a1x1-r1",
+      "radio-u4-c1-bw20-a1x1-r2",
+      "radio-u4-c1-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "cells",
+    "x": 2,
+    "replicates": 3,
+    "minimum": 0.99975,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 2,
+    "zero_deadline_miss_runs": 2,
+    "labels": [
+      "radio-u4-c2-bw20-a1x1-r1",
+      "radio-u4-c2-bw20-a1x1-r2",
+      "radio-u4-c2-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "cells",
+    "x": 3,
+    "replicates": 3,
+    "minimum": 0.997625,
+    "median": 0.99825,
+    "maximum": 0.99925,
+    "cadence_passes": 0,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "radio-u4-c3-bw20-a1x1-r1",
+      "radio-u4-c3-bw20-a1x1-r2",
+      "radio-u4-c3-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "bandwidth",
+    "x": 20,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 3,
+    "labels": [
+      "radio-u4-c1-bw20-a1x1-r1",
+      "radio-u4-c1-bw20-a1x1-r2",
+      "radio-u4-c1-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "bandwidth",
+    "x": 50,
+    "replicates": 3,
+    "minimum": 0.999875,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 3,
+    "labels": [
+      "radio-u4-c1-bw50-a1x1-r1",
+      "radio-u4-c1-bw50-a1x1-r2",
+      "radio-u4-c1-bw50-a1x1-r3"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "bandwidth",
+    "x": 100,
+    "replicates": 3,
+    "minimum": 0.983,
+    "median": 0.9835625,
+    "maximum": 0.9885625,
+    "cadence_passes": 0,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "radio-u4-c1-bw100-a1x1-r1",
+      "radio-u4-c1-bw100-a1x1-r2",
+      "radio-u4-c1-bw100-a1x1-r3"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "ports",
+    "x": 8,
+    "replicates": 3,
+    "minimum": 0.999875,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 3,
+    "labels": [
+      "radio-u1-c1-bw20-a8x8-r1",
+      "radio-u1-c1-bw20-a8x8-r2",
+      "radio-u1-c1-bw20-a8x8-r3"
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "ports",
+    "x": 9,
+    "replicates": 3,
+    "minimum": 0.99975,
+    "median": 0.999875,
+    "maximum": 1.0,
+    "cadence_passes": 2,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "radio-u1-c1-bw20-a9x9-r1",
+      "radio-u1-c1-bw20-a9x9-r2",
+      "radio-u1-c1-bw20-a9x9-r3"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "ues",
+    "x": 48,
+    "replicates": 3,
+    "minimum": 0.999875,
+    "median": 0.999875,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u48-c1-bw20-a1x1-r1-ready-start-iq",
+      "iq-u48-c1-bw20-a1x1-r2-ready-start-iq",
+      "iq-u48-c1-bw20-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "ues",
+    "x": 56,
+    "replicates": 3,
+    "minimum": 0.999625,
+    "median": 0.999875,
+    "maximum": 1.00025,
+    "cadence_passes": 2,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u56-c1-bw20-a1x1-r1-ready-start-iq",
+      "iq-u56-c1-bw20-a1x1-r2-ready-start-iq",
+      "iq-u56-c1-bw20-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "ues",
+    "x": 57,
+    "replicates": 3,
+    "minimum": 0.996625,
+    "median": 0.999375,
+    "maximum": 0.999875,
+    "cadence_passes": 1,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u57-c1-bw20-a1x1-r1-ready-start-iq",
+      "iq-u57-c1-bw20-a1x1-r2-ready-start-iq",
+      "iq-u57-c1-bw20-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "cells",
+    "x": 12,
+    "replicates": 3,
+    "minimum": 0.999875,
+    "median": 0.999875,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u4-c12-bw20-a1x1-r1-ready-start-iq",
+      "iq-u4-c12-bw20-a1x1-r2-ready-start-iq",
+      "iq-u4-c12-bw20-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "cells",
+    "x": 13,
+    "replicates": 3,
+    "minimum": 0.999125,
+    "median": 0.99975,
+    "maximum": 0.999875,
+    "cadence_passes": 1,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u4-c13-bw20-a1x1-r1-ready-start-iq",
+      "iq-u4-c13-bw20-a1x1-r2-ready-start-iq",
+      "iq-u4-c13-bw20-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "bandwidth",
+    "x": 50,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 1,
+    "labels": [
+      "iq-u4-c1-bw50-a1x1-r1-ready-start-iq",
+      "iq-u4-c1-bw50-a1x1-r2-ready-start-iq",
+      "iq-u4-c1-bw50-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "bandwidth",
+    "x": 100,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u4-c1-bw100-a1x1-r1-ready-start-iq",
+      "iq-u4-c1-bw100-a1x1-r2-ready-start-iq",
+      "iq-u4-c1-bw100-a1x1-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "ports",
+    "x": 10,
+    "replicates": 3,
+    "minimum": 0.999875,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u1-c1-bw20-a10x10-r1-ready-start-iq",
+      "iq-u1-c1-bw20-a10x10-r2-ready-start-iq",
+      "iq-u1-c1-bw20-a10x10-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "ports",
+    "x": 11,
+    "replicates": 3,
+    "minimum": 0.874375,
+    "median": 0.87675,
+    "maximum": 0.88375,
+    "cadence_passes": 0,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "iq-u1-c1-bw20-a11x11-r1-ready-start-iq",
+      "iq-u1-c1-bw20-a11x11-r2-ready-start-iq",
+      "iq-u1-c1-bw20-a11x11-r3-ready-start-iq"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "ues",
+    "x": 4,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 3,
+    "labels": [
+      "radio-u4-c1-bw20-a1x1-r1",
+      "radio-u4-c1-bw20-a1x1-r2",
+      "radio-u4-c1-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "ues",
+    "x": 7,
+    "replicates": 3,
+    "minimum": 0.999625,
+    "median": 0.999875,
+    "maximum": 1.0,
+    "cadence_passes": 2,
+    "zero_deadline_miss_runs": 1,
+    "labels": [
+      "radio-u7-c1-bw20-a1x1-r1",
+      "radio-u7-c1-bw20-a1x1-r2",
+      "radio-u7-c1-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "ues",
+    "x": 8,
+    "replicates": 3,
+    "minimum": 0.998875,
+    "median": 0.9995,
+    "maximum": 1.0,
+    "cadence_passes": 1,
+    "zero_deadline_miss_runs": 1,
+    "labels": [
+      "radio-u8-c1-bw20-a1x1-r1",
+      "radio-u8-c1-bw20-a1x1-r2",
+      "radio-u8-c1-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "cells",
+    "x": 1,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 3,
+    "labels": [
+      "radio-u4-c1-bw20-a1x1-r1",
+      "radio-u4-c1-bw20-a1x1-r2",
+      "radio-u4-c1-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "cells",
+    "x": 2,
+    "replicates": 3,
+    "minimum": 0.999375,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 2,
+    "zero_deadline_miss_runs": 1,
+    "labels": [
+      "radio-u4-c2-bw20-a1x1-r1",
+      "radio-u4-c2-bw20-a1x1-r2",
+      "radio-u4-c2-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "cells",
+    "x": 3,
+    "replicates": 3,
+    "minimum": 0.9925,
+    "median": 0.995,
+    "maximum": 0.996125,
+    "cadence_passes": 0,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "radio-u4-c3-bw20-a1x1-r1",
+      "radio-u4-c3-bw20-a1x1-r2",
+      "radio-u4-c3-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "bandwidth",
+    "x": 20,
+    "replicates": 3,
+    "minimum": 1.0,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 3,
+    "labels": [
+      "radio-u4-c1-bw20-a1x1-r1",
+      "radio-u4-c1-bw20-a1x1-r2",
+      "radio-u4-c1-bw20-a1x1-r3"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "bandwidth",
+    "x": 50,
+    "replicates": 3,
+    "minimum": 0.999625,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 2,
+    "zero_deadline_miss_runs": 2,
+    "labels": [
+      "radio-u4-c1-bw50-a1x1-r1",
+      "radio-u4-c1-bw50-a1x1-r2",
+      "radio-u4-c1-bw50-a1x1-r3"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "bandwidth",
+    "x": 100,
+    "replicates": 3,
+    "minimum": 0.7766875,
+    "median": 0.78125,
+    "maximum": 0.807625,
+    "cadence_passes": 0,
+    "zero_deadline_miss_runs": 0,
+    "labels": [
+      "radio-u4-c1-bw100-a1x1-r1",
+      "radio-u4-c1-bw100-a1x1-r2",
+      "radio-u4-c1-bw100-a1x1-r3"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "ports",
+    "x": 5,
+    "replicates": 3,
+    "minimum": 0.999875,
+    "median": 1.0,
+    "maximum": 1.0,
+    "cadence_passes": 3,
+    "zero_deadline_miss_runs": 2,
+    "labels": [
+      "radio-u1-c1-bw20-a5x5-r1",
+      "radio-u1-c1-bw20-a5x5-r2",
+      "radio-u1-c1-bw20-a5x5-r3"
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "ports",
+    "x": 6,
+    "replicates": 3,
+    "minimum": 0.99975,
+    "median": 0.999875,
+    "maximum": 0.999875,
+    "cadence_passes": 2,
+    "zero_deadline_miss_runs": 1,
+    "labels": [
+      "radio-u1-c1-bw20-a6x6-r1",
+      "radio-u1-c1-bw20-a6x6-r2",
+      "radio-u1-c1-bw20-a6x6-r3"
+    ]
+  }
+]

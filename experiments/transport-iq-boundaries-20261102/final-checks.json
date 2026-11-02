@@ -1,0 +1,18 @@
+{
+  "rtx": {
+    "checked": 93,
+    "identical_peer_binary_across_primary_and_controls": true,
+    "identical_broker_binary_across_primary_and_controls": true,
+    "identical_ready_iq_binary_across_primary_and_all_fast": true,
+    "all_radio_iq_power_finite_positive": true,
+    "all_radio_zmq_errors_overflows_sequence_gaps_zero": true
+  },
+  "spark": {
+    "checked": 93,
+    "identical_peer_binary_across_primary_and_controls": true,
+    "identical_broker_binary_across_primary_and_controls": true,
+    "identical_ready_iq_binary_across_primary_and_all_fast": true,
+    "all_radio_iq_power_finite_positive": true,
+    "all_radio_zmq_errors_overflows_sequence_gaps_zero": true
+  }
+}

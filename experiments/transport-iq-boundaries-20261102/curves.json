@@ -1,0 +1,1490 @@
+[
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "ues",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u1-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u4-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u8-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 1,
+        "minimum": 1.000125,
+        "median": 1.000125,
+        "maximum": 1.000125,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u16-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 24,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u24-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 28,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u28-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 30,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u30-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 31,
+        "replicates": 3,
+        "minimum": 0.999875,
+        "median": 0.999875,
+        "maximum": 0.999875,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u31-c1-bw20-a1x1-r1-ready-start-iq",
+          "iq-u31-c1-bw20-a1x1-r2-ready-start-iq",
+          "iq-u31-c1-bw20-a1x1-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 32,
+        "replicates": 3,
+        "minimum": 0.996875,
+        "median": 0.99725,
+        "maximum": 0.999875,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u32-c1-bw20-a1x1-r1-ready-start-iq",
+          "iq-u32-c1-bw20-a1x1-r2-ready-start-iq",
+          "iq-u32-c1-bw20-a1x1-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 64,
+        "replicates": 1,
+        "minimum": 0.2035,
+        "median": 0.2035,
+        "maximum": 0.2035,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u64-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "cells",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u4-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 2,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c2-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c4-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 6,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c6-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 7,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c7-bw20-a1x1-r1-ready-start-iq",
+          "iq-u4-c7-bw20-a1x1-r2-ready-start-iq",
+          "iq-u4-c7-bw20-a1x1-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 3,
+        "minimum": 0.79025,
+        "median": 0.849375,
+        "maximum": 0.851375,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c8-bw20-a1x1-r1-ready-start-iq",
+          "iq-u4-c8-bw20-a1x1-r2-ready-start-iq",
+          "iq-u4-c8-bw20-a1x1-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 1,
+        "minimum": 0.40075,
+        "median": 0.40075,
+        "maximum": 0.40075,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c16-bw20-a1x1-r1-ready-start-iq"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "bandwidth",
+    "points": [
+      {
+        "x": 20,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u4-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 50,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 3,
+        "labels": [
+          "iq-u4-c1-bw50-a1x1-r1-ready-start-iq",
+          "iq-u4-c1-bw50-a1x1-r2-ready-start-iq",
+          "iq-u4-c1-bw50-a1x1-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 100,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c1-bw100-a1x1-r1-ready-start-iq",
+          "iq-u4-c1-bw100-a1x1-r2-ready-start-iq",
+          "iq-u4-c1-bw100-a1x1-r3-ready-start-iq"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "iq",
+    "axis": "ports",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u1-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 2,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u1-c1-bw20-a2x2-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u1-c1-bw20-a4x4-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u1-c1-bw20-a8x8-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 12,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u1-c1-bw20-a12x12-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 14,
+        "replicates": 1,
+        "minimum": 0.999875,
+        "median": 0.999875,
+        "maximum": 0.999875,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u1-c1-bw20-a14x14-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 15,
+        "replicates": 3,
+        "minimum": 0.999875,
+        "median": 0.999875,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u1-c1-bw20-a15x15-r1-ready-start-iq",
+          "iq-u1-c1-bw20-a15x15-r2-ready-start-iq",
+          "iq-u1-c1-bw20-a15x15-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 3,
+        "minimum": 0.960875,
+        "median": 0.963625,
+        "maximum": 0.964,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u1-c1-bw20-a16x16-r1-ready-start-iq",
+          "iq-u1-c1-bw20-a16x16-r2-ready-start-iq",
+          "iq-u1-c1-bw20-a16x16-r3-ready-start-iq"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "ues",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u1-c1-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 3,
+        "labels": [
+          "radio-u4-c1-bw20-a1x1-r1",
+          "radio-u4-c1-bw20-a1x1-r2",
+          "radio-u4-c1-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 3,
+        "labels": [
+          "radio-u8-c1-bw20-a1x1-r1",
+          "radio-u8-c1-bw20-a1x1-r2",
+          "radio-u8-c1-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 10,
+        "replicates": 3,
+        "minimum": 0.999375,
+        "median": 0.999875,
+        "maximum": 1.0,
+        "cadence_passes": 2,
+        "zero_deadline_miss_runs": 2,
+        "labels": [
+          "radio-u10-c1-bw20-a1x1-r1",
+          "radio-u10-c1-bw20-a1x1-r2",
+          "radio-u10-c1-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 11,
+        "replicates": 3,
+        "minimum": 0.999625,
+        "median": 0.999875,
+        "maximum": 1.0,
+        "cadence_passes": 2,
+        "zero_deadline_miss_runs": 2,
+        "labels": [
+          "radio-u11-c1-bw20-a1x1-r1",
+          "radio-u11-c1-bw20-a1x1-r2",
+          "radio-u11-c1-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 12,
+        "replicates": 1,
+        "minimum": 0.99825,
+        "median": 0.99825,
+        "maximum": 0.99825,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u12-c1-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 1,
+        "minimum": 0.994375,
+        "median": 0.994375,
+        "maximum": 0.994375,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u16-c1-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 32,
+        "replicates": 1,
+        "minimum": 0.276125,
+        "median": 0.276125,
+        "maximum": 0.276125,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u32-c1-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 64,
+        "replicates": 1,
+        "minimum": 0.060125,
+        "median": 0.060125,
+        "maximum": 0.060125,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u64-c1-bw20-a1x1-r1"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "cells",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 3,
+        "labels": [
+          "radio-u4-c1-bw20-a1x1-r1",
+          "radio-u4-c1-bw20-a1x1-r2",
+          "radio-u4-c1-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 2,
+        "replicates": 3,
+        "minimum": 0.99975,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 2,
+        "zero_deadline_miss_runs": 2,
+        "labels": [
+          "radio-u4-c2-bw20-a1x1-r1",
+          "radio-u4-c2-bw20-a1x1-r2",
+          "radio-u4-c2-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 3,
+        "replicates": 3,
+        "minimum": 0.997625,
+        "median": 0.99825,
+        "maximum": 0.99925,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u4-c3-bw20-a1x1-r1",
+          "radio-u4-c3-bw20-a1x1-r2",
+          "radio-u4-c3-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 1,
+        "minimum": 0.979375,
+        "median": 0.979375,
+        "maximum": 0.979375,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u4-c4-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 1,
+        "minimum": 0.30725,
+        "median": 0.30725,
+        "maximum": 0.30725,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u4-c8-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 1,
+        "minimum": 0.039125,
+        "median": 0.039125,
+        "maximum": 0.039125,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u4-c16-bw20-a1x1-r1"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "bandwidth",
+    "points": [
+      {
+        "x": 20,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 3,
+        "labels": [
+          "radio-u4-c1-bw20-a1x1-r1",
+          "radio-u4-c1-bw20-a1x1-r2",
+          "radio-u4-c1-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 50,
+        "replicates": 3,
+        "minimum": 0.999875,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 3,
+        "labels": [
+          "radio-u4-c1-bw50-a1x1-r1",
+          "radio-u4-c1-bw50-a1x1-r2",
+          "radio-u4-c1-bw50-a1x1-r3"
+        ]
+      },
+      {
+        "x": 100,
+        "replicates": 3,
+        "minimum": 0.983,
+        "median": 0.9835625,
+        "maximum": 0.9885625,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u4-c1-bw100-a1x1-r1",
+          "radio-u4-c1-bw100-a1x1-r2",
+          "radio-u4-c1-bw100-a1x1-r3"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "rtx",
+    "mode": "radio",
+    "axis": "ports",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u1-c1-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 2,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u1-c1-bw20-a2x2-r1"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u1-c1-bw20-a4x4-r1"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 3,
+        "minimum": 0.999875,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 3,
+        "labels": [
+          "radio-u1-c1-bw20-a8x8-r1",
+          "radio-u1-c1-bw20-a8x8-r2",
+          "radio-u1-c1-bw20-a8x8-r3"
+        ]
+      },
+      {
+        "x": 9,
+        "replicates": 3,
+        "minimum": 0.99975,
+        "median": 0.999875,
+        "maximum": 1.0,
+        "cadence_passes": 2,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u1-c1-bw20-a9x9-r1",
+          "radio-u1-c1-bw20-a9x9-r2",
+          "radio-u1-c1-bw20-a9x9-r3"
+        ]
+      },
+      {
+        "x": 10,
+        "replicates": 1,
+        "minimum": 0.999625,
+        "median": 0.999625,
+        "maximum": 0.999625,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u1-c1-bw20-a10x10-r1"
+        ]
+      },
+      {
+        "x": 12,
+        "replicates": 1,
+        "minimum": 0.805625,
+        "median": 0.805625,
+        "maximum": 0.805625,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u1-c1-bw20-a12x12-r1"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 1,
+        "minimum": 0.617125,
+        "median": 0.617125,
+        "maximum": 0.617125,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u1-c1-bw20-a16x16-r1"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "ues",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u1-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u8-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u16-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 32,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u32-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 48,
+        "replicates": 3,
+        "minimum": 0.999875,
+        "median": 0.999875,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u48-c1-bw20-a1x1-r1-ready-start-iq",
+          "iq-u48-c1-bw20-a1x1-r2-ready-start-iq",
+          "iq-u48-c1-bw20-a1x1-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 56,
+        "replicates": 3,
+        "minimum": 0.999625,
+        "median": 0.999875,
+        "maximum": 1.00025,
+        "cadence_passes": 2,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u56-c1-bw20-a1x1-r1-ready-start-iq",
+          "iq-u56-c1-bw20-a1x1-r2-ready-start-iq",
+          "iq-u56-c1-bw20-a1x1-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 57,
+        "replicates": 3,
+        "minimum": 0.996625,
+        "median": 0.999375,
+        "maximum": 0.999875,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u57-c1-bw20-a1x1-r1-ready-start-iq",
+          "iq-u57-c1-bw20-a1x1-r2-ready-start-iq",
+          "iq-u57-c1-bw20-a1x1-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 58,
+        "replicates": 1,
+        "minimum": 0.995625,
+        "median": 0.995625,
+        "maximum": 0.995625,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u58-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 60,
+        "replicates": 1,
+        "minimum": 0.990875,
+        "median": 0.990875,
+        "maximum": 0.990875,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u60-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 64,
+        "replicates": 1,
+        "minimum": 0.7995,
+        "median": 0.7995,
+        "maximum": 0.7995,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u64-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "cells",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 2,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c2-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c4-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c8-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 12,
+        "replicates": 3,
+        "minimum": 0.999875,
+        "median": 0.999875,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c12-bw20-a1x1-r1-ready-start-iq",
+          "iq-u4-c12-bw20-a1x1-r2-ready-start-iq",
+          "iq-u4-c12-bw20-a1x1-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 13,
+        "replicates": 3,
+        "minimum": 0.999125,
+        "median": 0.99975,
+        "maximum": 0.999875,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c13-bw20-a1x1-r1-ready-start-iq",
+          "iq-u4-c13-bw20-a1x1-r2-ready-start-iq",
+          "iq-u4-c13-bw20-a1x1-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 14,
+        "replicates": 1,
+        "minimum": 0.993875,
+        "median": 0.993875,
+        "maximum": 0.993875,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c14-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 1,
+        "minimum": 0.757125,
+        "median": 0.757125,
+        "maximum": 0.757125,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c16-bw20-a1x1-r1-ready-start-iq"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "bandwidth",
+    "points": [
+      {
+        "x": 20,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 50,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u4-c1-bw50-a1x1-r1-ready-start-iq",
+          "iq-u4-c1-bw50-a1x1-r2-ready-start-iq",
+          "iq-u4-c1-bw50-a1x1-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 100,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u4-c1-bw100-a1x1-r1-ready-start-iq",
+          "iq-u4-c1-bw100-a1x1-r2-ready-start-iq",
+          "iq-u4-c1-bw100-a1x1-r3-ready-start-iq"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "iq",
+    "axis": "ports",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u1-c1-bw20-a1x1-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 2,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u1-c1-bw20-a2x2-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "iq-u1-c1-bw20-a4x4-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u1-c1-bw20-a8x8-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 10,
+        "replicates": 3,
+        "minimum": 0.999875,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u1-c1-bw20-a10x10-r1-ready-start-iq",
+          "iq-u1-c1-bw20-a10x10-r2-ready-start-iq",
+          "iq-u1-c1-bw20-a10x10-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 11,
+        "replicates": 3,
+        "minimum": 0.874375,
+        "median": 0.87675,
+        "maximum": 0.88375,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u1-c1-bw20-a11x11-r1-ready-start-iq",
+          "iq-u1-c1-bw20-a11x11-r2-ready-start-iq",
+          "iq-u1-c1-bw20-a11x11-r3-ready-start-iq"
+        ]
+      },
+      {
+        "x": 12,
+        "replicates": 1,
+        "minimum": 0.756875,
+        "median": 0.756875,
+        "maximum": 0.756875,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u1-c1-bw20-a12x12-r1-ready-start-iq"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 1,
+        "minimum": 0.4405,
+        "median": 0.4405,
+        "maximum": 0.4405,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "iq-u1-c1-bw20-a16x16-r1-ready-start-iq"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "ues",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 1,
+        "minimum": 0.999875,
+        "median": 0.999875,
+        "maximum": 0.999875,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u1-c1-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 3,
+        "labels": [
+          "radio-u4-c1-bw20-a1x1-r1",
+          "radio-u4-c1-bw20-a1x1-r2",
+          "radio-u4-c1-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 6,
+        "replicates": 1,
+        "minimum": 0.999875,
+        "median": 0.999875,
+        "maximum": 0.999875,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u6-c1-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 7,
+        "replicates": 3,
+        "minimum": 0.999625,
+        "median": 0.999875,
+        "maximum": 1.0,
+        "cadence_passes": 2,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u7-c1-bw20-a1x1-r1",
+          "radio-u7-c1-bw20-a1x1-r2",
+          "radio-u7-c1-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 3,
+        "minimum": 0.998875,
+        "median": 0.9995,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u8-c1-bw20-a1x1-r1",
+          "radio-u8-c1-bw20-a1x1-r2",
+          "radio-u8-c1-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 1,
+        "minimum": 0.98225,
+        "median": 0.98225,
+        "maximum": 0.98225,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u16-c1-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 32,
+        "replicates": 1,
+        "minimum": 0.414875,
+        "median": 0.414875,
+        "maximum": 0.414875,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u32-c1-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 64,
+        "replicates": 1,
+        "minimum": 0.043125,
+        "median": 0.043125,
+        "maximum": 0.043125,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u64-c1-bw20-a1x1-r1"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "cells",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 3,
+        "labels": [
+          "radio-u4-c1-bw20-a1x1-r1",
+          "radio-u4-c1-bw20-a1x1-r2",
+          "radio-u4-c1-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 2,
+        "replicates": 3,
+        "minimum": 0.999375,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 2,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u4-c2-bw20-a1x1-r1",
+          "radio-u4-c2-bw20-a1x1-r2",
+          "radio-u4-c2-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 3,
+        "replicates": 3,
+        "minimum": 0.9925,
+        "median": 0.995,
+        "maximum": 0.996125,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u4-c3-bw20-a1x1-r1",
+          "radio-u4-c3-bw20-a1x1-r2",
+          "radio-u4-c3-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 1,
+        "minimum": 0.841125,
+        "median": 0.841125,
+        "maximum": 0.841125,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u4-c4-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 1,
+        "minimum": 0.261875,
+        "median": 0.261875,
+        "maximum": 0.261875,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u4-c8-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 1,
+        "minimum": 0.035,
+        "median": 0.035,
+        "maximum": 0.035,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u4-c16-bw20-a1x1-r1"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "bandwidth",
+    "points": [
+      {
+        "x": 20,
+        "replicates": 3,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 3,
+        "labels": [
+          "radio-u4-c1-bw20-a1x1-r1",
+          "radio-u4-c1-bw20-a1x1-r2",
+          "radio-u4-c1-bw20-a1x1-r3"
+        ]
+      },
+      {
+        "x": 50,
+        "replicates": 3,
+        "minimum": 0.999625,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 2,
+        "zero_deadline_miss_runs": 2,
+        "labels": [
+          "radio-u4-c1-bw50-a1x1-r1",
+          "radio-u4-c1-bw50-a1x1-r2",
+          "radio-u4-c1-bw50-a1x1-r3"
+        ]
+      },
+      {
+        "x": 100,
+        "replicates": 3,
+        "minimum": 0.7766875,
+        "median": 0.78125,
+        "maximum": 0.807625,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u4-c1-bw100-a1x1-r1",
+          "radio-u4-c1-bw100-a1x1-r2",
+          "radio-u4-c1-bw100-a1x1-r3"
+        ]
+      }
+    ]
+  },
+  {
+    "host": "spark",
+    "mode": "radio",
+    "axis": "ports",
+    "points": [
+      {
+        "x": 1,
+        "replicates": 1,
+        "minimum": 0.999875,
+        "median": 0.999875,
+        "maximum": 0.999875,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u1-c1-bw20-a1x1-r1"
+        ]
+      },
+      {
+        "x": 2,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u1-c1-bw20-a2x2-r1"
+        ]
+      },
+      {
+        "x": 4,
+        "replicates": 1,
+        "minimum": 1.0,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 1,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u1-c1-bw20-a4x4-r1"
+        ]
+      },
+      {
+        "x": 5,
+        "replicates": 3,
+        "minimum": 0.999875,
+        "median": 1.0,
+        "maximum": 1.0,
+        "cadence_passes": 3,
+        "zero_deadline_miss_runs": 2,
+        "labels": [
+          "radio-u1-c1-bw20-a5x5-r1",
+          "radio-u1-c1-bw20-a5x5-r2",
+          "radio-u1-c1-bw20-a5x5-r3"
+        ]
+      },
+      {
+        "x": 6,
+        "replicates": 3,
+        "minimum": 0.99975,
+        "median": 0.999875,
+        "maximum": 0.999875,
+        "cadence_passes": 2,
+        "zero_deadline_miss_runs": 1,
+        "labels": [
+          "radio-u1-c1-bw20-a6x6-r1",
+          "radio-u1-c1-bw20-a6x6-r2",
+          "radio-u1-c1-bw20-a6x6-r3"
+        ]
+      },
+      {
+        "x": 8,
+        "replicates": 1,
+        "minimum": 0.999,
+        "median": 0.999,
+        "maximum": 0.999,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u1-c1-bw20-a8x8-r1"
+        ]
+      },
+      {
+        "x": 16,
+        "replicates": 1,
+        "minimum": 0.339125,
+        "median": 0.339125,
+        "maximum": 0.339125,
+        "cadence_passes": 0,
+        "zero_deadline_miss_runs": 0,
+        "labels": [
+          "radio-u1-c1-bw20-a16x16-r1"
+        ]
+      }
+    ]
+  }
+]

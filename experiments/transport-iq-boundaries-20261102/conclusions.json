@@ -1,0 +1,85 @@
+{
+  "configuration": {
+    "channel": "static deterministic8-tap TDL+receiver AWGN",
+    "measurement_s": 8,
+    "warmup_s": 2,
+    "channel_cpus": "5 fast cores on each host",
+    "default": "1cell,20MHz,1x1",
+    "cells_axis": "4UEs/cell,1broker",
+    "bandwidth_axis": "4UEs,1cell,1x1;20/50/100MHz\u219223.04/61.44/122.88MS/s,1/1/0.5ms batch",
+    "ports_axis": "1UE,1cell,20MHz; raw symmetric radio port matrix, not NR rank/layers"
+  },
+  "counts": {
+    "primary": 168,
+    "controls": 18,
+    "preflight": 79
+  },
+  "transition_intervals": {
+    "rtx": {
+      "iq": {
+        "ues": "31\u201332",
+        "cells": "7\u20138",
+        "bandwidth": "100 MHz\uae4c\uc9c0 \ud655\uc778",
+        "ports": "15\u201316"
+      },
+      "radio": {
+        "ues": "10\u201311 (mixed)",
+        "cells": "2\u20133 (2\ub3c4 mixed)",
+        "bandwidth": "50\u2013100 MHz",
+        "ports": "8\u20139 (9 mixed)"
+      }
+    },
+    "spark": {
+      "iq": {
+        "ues": "56\u201357 (mixed)",
+        "cells": "12\u201313 (13 mixed)",
+        "bandwidth": "100 MHz\uae4c\uc9c0 \ud655\uc778",
+        "ports": "10\u201311"
+      },
+      "radio": {
+        "ues": "7\u20138 (mixed)",
+        "cells": "2\u20133 (2\ub3c4 mixed)",
+        "bandwidth": "50\u2013100 MHz (50\ub3c4 mixed)",
+        "ports": "5\u20136 (6 mixed)"
+      }
+    }
+  },
+  "all_fast_64": {
+    "rtx": {
+      "cpus": "P0-7",
+      "ratios": [
+        0.234,
+        0.213,
+        0.2035
+      ]
+    },
+    "spark": {
+      "cpus": "X9255-9,15-19",
+      "ratios": [
+        0.7815,
+        0.813,
+        0.778125
+      ]
+    }
+  },
+  "definitions": {
+    "progress": "Completed IQ samples / (nominal sample rate \u00d7 measured wall duration), worst RX port/node. Not success/attempt counts.",
+    "cadence_coverage": "Expected publications minus one finite-window boundary batch (one batch can straddle the window edge); exact ratios are retained.",
+    "deadline_misses": "IQ late completion or radio pacer rebase/call exceeding its batch budget, reported separately. Cadence coverage does not imply zero deadline misses.",
+    "transition": "Repeated-run turnover region under the stated hardware/CPU/model/window; mixed results are not a hard maximum."
+  },
+  "limitations": [
+    "Synthetic ZMQ peers do not execute OCUDU radio_zmq or srsUE RF/PHY/MAC; live-stack validation remains the earlier, separately indexed experiment.",
+    "Static TDL isolation workload differs from the live moving Sionna control replay.",
+    "CPU masks allow execution on those cores; cores were not reserved from OS/desktop/background tasks.",
+    "Different host architectures, peer CPU pools,drivers and automatic GPU host-memory routes; not an isolated GPU-silicon comparison.",
+    "No device-kernel or scheduler-stack causal attribution is claimed from process call/wait-region wall times."
+  ],
+  "artifacts": [
+    "measurements.csv",
+    "curves.json",
+    "scaling-curves.png",
+    "radio-stage-comparison.png",
+    "evidence/"
+  ]
+}

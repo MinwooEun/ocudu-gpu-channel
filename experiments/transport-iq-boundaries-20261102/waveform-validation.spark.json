@@ -1,0 +1,14 @@
+[
+  {
+    "batch_samples": 23040,
+    "messages": 24,
+    "compared_bytes": 4423680,
+    "wire_bytes_identical": true
+  },
+  {
+    "batch_samples": 61440,
+    "messages": 24,
+    "compared_bytes": 11796480,
+    "wire_bytes_identical": true
+  }
+]

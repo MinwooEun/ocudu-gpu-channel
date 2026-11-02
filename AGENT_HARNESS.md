@@ -113,3 +113,9 @@ Reusable workflow and preferences. File ownership and update rules are defined i
 
 - Match compiled source and local patch manifests across architectures; a shared upstream commit does not prove equivalent binaries. Verify access/RF patches before scaling and exclude setup failures from timing comparisons.
 - Record physical P/E core types and role allocations alongside core counts. Treat a role-to-core exchange as a whole placement intervention, and distinguish whole-host scaling from an isolated GPU comparison.
+
+## Scaling measurement readiness
+
+- Complete one real channel call on every RX worker before starting a common warmup/measurement schedule; thread creation or a first heartbeat alone does not certify initialization. Preserve earlier unverified windows as preflight evidence.
+- Measure all RX nodes/ports when reporting topology capacity; one gNB call percentile does not establish aggregate real-time operation. Keep cached-waveform equivalence and backend-object identity checks with synthetic transport comparisons.
+- Report finite-window sample progress, deadline misses and protocol health separately. Keep mixed repeated outcomes as a transition interval; a one-batch window-edge allowance must be explicit and cannot imply zero deadline misses.

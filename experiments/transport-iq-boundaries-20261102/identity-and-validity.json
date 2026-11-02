@@ -1,0 +1,28 @@
+{
+  "primary_cases": 168,
+  "total_retained_cases": 265,
+  "all_primary_application_protocol_health": true,
+  "all_primary_initialized_before_window": true,
+  "common_topology_configurations": 24,
+  "common_topology_sha256_identical": true,
+  "backend_members_unchanged": {
+    "rtx": 12,
+    "spark": 12
+  },
+  "changed_archive_members": {
+    "rtx": [
+      "broker.cpp.o"
+    ],
+    "spark": [
+      "broker.cpp.o"
+    ]
+  },
+  "iq_zero_copy": {
+    "rtx": [
+      0
+    ],
+    "spark": [
+      1
+    ]
+  }
+}

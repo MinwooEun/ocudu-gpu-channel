@@ -1,0 +1,25 @@
+{
+  "host": "rtx",
+  "files": {
+    "broker-probe.cpp": "e5aefc7f446075335ea05d647c5080f94e3adc39f968d030427e87a32461fc7d",
+    "gen.py": "273f1ebd9c17546a082fd8ddb3036ce9f7bbf11415500a8ae526ca15e625ea38",
+    "run_case.py": "9b12990f394a13aac231d8797c2e308546c0af9d96e81ace70a7635b95d6cf8e",
+    "campaign.py": "a911a5e83330f5c99ea435973c37f21f0332d782993761c1fca386b451becaf0",
+    "ready_campaign.py": "89402657caf8f9363dfc7b9854bfd7f7a02d9cdea2542772d81762a36df2d87a",
+    "counter_controls.py": "e5685e7fb1f345119b2c93be54456002dc744b48a70df72daab5c838c4e91039",
+    "iq-capacity": "390a70d7a22fb6c7482c2c436563166b3cbb187dd6f21c374a69c4344760884a",
+    "iq-capacity-ready": "42a77985a9ccd3eb3dadf31d78a78a67aa8b5ffe93798d0ec32378ef2e54a428",
+    "radio-peer": "a085da3b761ddab580f98bc6880f77fcd9b02df94874343d5146c8e84a421c29",
+    "ocudu-gpu-channel": "1886957d82531f8eaf5cc814fea8548d3f3c5bf53b823c3f7b0ab34d40b99cf7"
+  },
+  "gpu": "NVIDIA GeForce RTX 5090, 595.71.05",
+  "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           46 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  24\nOn-line CPU(s) list:                     0-23\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Core(TM) Ultra 9 285K\nCPU family:                              6\nModel:                                   198\nThread(s) per core:                      1\nCore(s) per socket:                      24\nSocket(s):                               1\nStepping:                                2\nCPU(s) scaling MHz:                      31%\nCPU max MHz:                             6500.0000\nCPU min MHz:                             800.0000\nBogoMIPS:                                7372.80\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdt_a rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni lam wbnoinvd dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid bus_lock_detect movdiri movdir64b fsrm md_clear serialize arch_lbr ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               768 KiB (20 instances)\nL1i cache:                               1.3 MiB (20 instances)\nL2 cache:                                40 MiB (12 instances)\nL3 cache:                                36 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-23\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS Not affected; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n",
+  "clock_pair": {
+    "unix_ns": 1793615339821160957,
+    "monotonic_ns": 6080963829899
+  },
+  "changed_archive_members": [
+    "broker.cpp.o"
+  ],
+  "unchanged_backend_members": 12
+}
