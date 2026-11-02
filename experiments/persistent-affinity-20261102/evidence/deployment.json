@@ -1,0 +1,10 @@
+{
+  "launcher": "/workspace/gpuch/profile-20261028/ranb/use_cases/ran_benchmark/run-single-cell-policy.sh",
+  "launcher_sha256": "f139bea2e53e19fd67210e9d166f07114040811cb2dd141aed29f53f2889f27c",
+  "original_sha256": "c04f99dad5cda133bab98fa1d61eb64b3790661757dd1a01b74669ba1aaac588",
+  "helper": "/workspace/gpuch/profile-20261028/ranb/use_cases/ran_benchmark/configure_gnb_affinity.py",
+  "helper_sha256": "ecab77251cf5747d38c5ad96e3ae8725cabfa2b8906fc647667aced5e554d0e6",
+  "default_enabled": "Spark CUDA benchmark, SINGLE_CELL_GNB_SEPARATE_RADIO defaults to 1",
+  "control_override": "SINGLE_CELL_GNB_SEPARATE_RADIO=0",
+  "original_binary_unchanged": true
+}

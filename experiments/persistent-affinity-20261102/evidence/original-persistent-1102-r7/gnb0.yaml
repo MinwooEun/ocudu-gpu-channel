@@ -1,0 +1,104 @@
+cu_cp:
+  amf:
+    addrs: 127.0.0.2
+    port: 38412
+    bind_addrs: 127.0.0.11
+    supported_tracking_areas:
+    - tac: 7
+      plmn_list:
+      - plmn: '00101'
+        tai_slice_support_list:
+        - sst: 1
+cu_up:
+  ngu:
+    socket:
+    - bind_addr: 127.0.0.11
+ru_sdr:
+  expert_cfg:
+    low_phy_rx_acceleration_mode: enabled
+    low_phy_tx_acceleration_mode: enabled
+    low_phy_prach_demodulation_acceleration_mode: enabled
+  device_driver: zmq
+  device_args: tx_port=tcp://127.0.0.1:2000,rx_port=tcp://127.0.0.1:2001,base_srate=23.04e6
+  clock: default
+  srate: 23.04
+  tx_gain: 0
+  rx_gain: -55
+cell_cfg:
+  scheduler:
+    policy:
+      rr_sched: null
+  pci: 1
+  dl_arfcn: 368500
+  band: 3
+  channel_bandwidth_MHz: 20
+  common_scs: 15
+  plmn: '00101'
+  tac: 7
+  pdcch:
+    dedicated:
+      ss2_type: common
+      dci_format_0_1_and_1_1: false
+    common:
+      ss0_index: 0
+      coreset0_index: 12
+  prach:
+    prach_config_index: 1
+    prach_root_sequence_index: 1
+  pdsch:
+    mcs_table: qam64
+    min_ue_mcs: 0
+    max_ue_mcs: 28
+    olla_cqi_inc_step: 0.001
+    olla_target_bler: 0.01
+    olla_max_cqi_offset: 14.0
+  pusch:
+    mcs_table: qam64
+    min_ue_mcs: 0
+    max_ue_mcs: 28
+    olla_snr_inc_step: 0.001
+    olla_target_bler: 0.01
+    olla_max_snr_offset: 5.0
+log:
+  filename: /workspace/gpuch/one-ue-realtime-20261030/u1/original-persistent-1102-r7/runtime/logs/gnb0-internal.log
+  all_level: info
+  phy_level: warning
+  rlc_level: warning
+  pdcp_level: warning
+  gtpu_level: warning
+  config_level: info
+pcap:
+  mac_enable: false
+  mac_filename: /workspace/gpuch/one-ue-realtime-20261030/u1/original-persistent-1102-r7/runtime/logs/gnb0_mac.pcap
+  ngap_enable: false
+  ngap_filename: /workspace/gpuch/one-ue-realtime-20261030/u1/original-persistent-1102-r7/runtime/logs/gnb0_ngap.pcap
+gnb_id: 411
+ran_node_name: gnb0
+metrics:
+  enable_json: true
+  layers:
+    enable_sched: true
+    enable_sched_ue: true
+  periodicity:
+    du_report_period: 1000
+remote_control:
+  enabled: true
+  bind_addr: 127.0.0.1
+  port: 8001
+expert_phy:
+  pusch_acceleration_mode: enabled
+  pdsch_acceleration_mode: enabled
+  prach_acceleration_mode: enabled
+  srs_acceleration_mode: enabled
+  ul_cuda_visible_grid_mode: managed
+  dl_cuda_visible_grid_mode: managed
+expert_execution:
+  threads:
+    main_pool:
+      nof_threads: 5
+  affinities:
+    main_pool_cpus: 5,7,8,9,10,11,12
+    main_pool_pinning: mask
+  cell_affinities:
+  - ru_cpus: '6'
+    ru_pinning: mask

@@ -1,0 +1,12 @@
+{
+  "case": "original",
+  "ue_count": 1,
+  "tag": "persistent-1102-r4",
+  "returncode": 2,
+  "wall_s": 2.8325363979674876,
+  "metrics": null,
+  "valid_segments": null,
+  "gate": null,
+  "report_exists": false,
+  "diagnostic_trace": false
+}

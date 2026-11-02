@@ -297,7 +297,7 @@ Historical ledgers:
 
 ## Next Resume Point
 
-The remaining gNB source-IQ delay is identified in `experiments/gnb-source-delay-20261031/conclusions.json`: CUDA completion polling yields to the busy radio thread when co-located. Shared/separate placement reproduced/removed the delay within the existing CPU budget; no shipping gNB patch was applied and no owned runtime remains. Both HTML reports are unchanged.
+Persistent native CPU separation is deployed in the active Spark CUDA single-cell launcher; radio CPU6 and PHY/main CPUs5,7–12 are disjoint from startup, preserving five main workers. Final one-UE validation passed with zero measured rebases; evidence is in `experiments/persistent-affinity-20261102/conclusions.json`. No benchmark remains running; both HTML reports are unchanged.
 
 ## Active relay patch — 2026-10-29
 
@@ -445,3 +445,15 @@ The remaining gNB source-IQ delay is identified in `experiments/gnb-source-delay
 - An unpinned analyzer rerun did not reproduce the historical lag, so analyzer activity is not established as its initiating actor. First tracefs observer failure is preserved; later scheduler captures succeeded and original binaries/inputs matched across the controlled comparison.
 
 - Saved causal joins, source excerpts, scripts and raw indices under `experiments/gnb-source-delay-20261031/`. Affinities were restored, owned captures stopped, private uprobes removed, and both HTML reports remain unchanged; continuous deployment of the affinity remedy is not applied.
+
+## Persistent native affinity — 2026-11-02
+
+- Installed native affinity rendering in the active Spark CUDA single-cell launcher, enabled by default. Radio uses CPU6, PHY/main exclude CPU6, the existing eight-core allocation and five main workers are preserved, and dryrun uses the actual gNB CPU mask.
+
+- Final cold start passed connectivity and 30/30 segments; 339 checks verified disjoint masks throughout 67.859 seconds. Post-warmup ratio was 1.000001358 with zero deadline rebases; the 40.601 µs endpoint difference is retained unrounded.
+
+- Intermediate startup/restart checks maintained separation; one retained 2.715 ms loss and another had zero rebases, before preserving the original worker count. Deployment and preflight failures are retained and excluded from final validation; universal zero-miss operation remains unproven.
+
+- Clarified the metric: live progress is radio time divided by wall time, not successes divided by attempts. Claude channel-function ratios count completions against expected real-time cadence; successful operation and speed are separate measurements.
+
+- Saved the launcher patch/helper under `integrations/ocudu/spark-realtime/` and deployment/audit evidence under `experiments/persistent-affinity-20261102/`. Active remote defaults persist, original binaries/inputs and HTML remain unchanged, and no owned benchmark remains running.

@@ -1,0 +1,4 @@
+
+--== OCUDU gNB (commit 5830c9cb78) ==--
+
+OCUDU ERROR: Invalid CPU core selected '5'. Valid CPU ids: 0 1 2 3 4 in the 'main_pool_cpus' property

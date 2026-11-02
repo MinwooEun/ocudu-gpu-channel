@@ -1,0 +1,38 @@
+--- a/use_cases/ran_benchmark/run-single-cell-policy.sh
++++ b/use_cases/ran_benchmark/run-single-cell-policy.sh
+@@ -201,12 +201,6 @@
+ open(path, "w").write(text)
+ PY2
+ fi
+-printf 'event=local_knobs ue_rx_sleep=%s log_level=%s pcap=%s broker_env=%s ue_phy_threads=%s gnb_main_pool=%s quiet_logs=%s gnb_binary=%s rx_to_tx_max_ms=%s gnb_acceleration=%s mps=%s lower_prach=%s\n' "${SINGLE_CELL_UE_RX_SLEEP:-true}" \
+-  "${SINGLE_CELL_LOG_LEVEL:-default}" "${SINGLE_CELL_PCAP:-on}" "${OCG_BROKER_SPIN:-unset}" "${SINGLE_CELL_UE_PHY_THREADS:-3}" "${SINGLE_CELL_GNB_MAIN_POOL:-auto}" "${SINGLE_CELL_QUIET_LOGS:-0}" \
+-  "${gnb_binary}" "${OCUDU_LPHY_RX_TO_TX_MAX_MS:-unset}" "${SINGLE_CELL_GNB_ACCELERATION:-none}" "${SINGLE_CELL_MPS:-off}" "${SINGLE_CELL_CUDA_LOWER_PRACH:-stage}" | tee "${log_dir}/local-knobs.log"
+-"${gnb_binary}" -c "${config_dir}/gnb0.yaml" --dryrun >"${log_dir}/gnb0-dryrun.log" 2>&1 || {
+-  tail -20 "${log_dir}/gnb0-dryrun.log" >&2; usage_error "gnb0 dry run failed"; }
+-
+ # CPU placement on spark-gb10 (big X925 5-9,15-19; little A725 0-4,10-14).
+ # Up to 8 UEs: the gNB sees eight CPUs (OCUDU needs >= 5: its worker pool is
+ # min(needed, CPUs - 3)), the broker one big core, the UEs share six, and
+@@ -228,6 +222,22 @@
+ cpus_gnb="${SINGLE_CELL_CPUS_GNB:-${cpus_gnb}}" cpus_broker="${SINGLE_CELL_CPUS_BROKER:-${cpus_broker}}"
+ cpus_ues="${SINGLE_CELL_CPUS_UES:-${cpus_ues}}" cpus_aux="${SINGLE_CELL_CPUS_AUX:-${cpus_aux}}"
+ 
++# Separate the continuously polling ZMQ radio from the sequential CUDA PHY worker.
++# Native masks apply when threads are created; no post-start taskset observer is needed.
++if [[ "${SINGLE_CELL_GNB_SEPARATE_RADIO:-1}" == "1" && "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" == "spark-gb10" && -n "${SINGLE_CELL_GNB_ACCELERATION:-}" && "${SINGLE_CELL_GNB_ACCELERATION}" != "disabled" ]]; then
++  "${sionna_python}" "${script_dir}/configure_gnb_affinity.py" \
++    --config "${config_dir}/gnb0.yaml" --allowed "${cpus_gnb}" \
++    --radio "${SINGLE_CELL_GNB_RU_CPUS:-}" --main "${SINGLE_CELL_GNB_MAIN_POOL_CPUS:-}" \
++    --report "${log_dir}/gnb-affinity.json" || usage_error "cannot configure disjoint gNB radio/PHY CPU masks"
++fi
++printf 'event=local_knobs ue_rx_sleep=%s log_level=%s pcap=%s broker_env=%s ue_phy_threads=%s gnb_main_pool=%s quiet_logs=%s gnb_binary=%s rx_to_tx_max_ms=%s gnb_acceleration=%s mps=%s lower_prach=%s\n' "${SINGLE_CELL_UE_RX_SLEEP:-true}" \
++  "${SINGLE_CELL_LOG_LEVEL:-default}" "${SINGLE_CELL_PCAP:-on}" "${OCG_BROKER_SPIN:-unset}" "${SINGLE_CELL_UE_PHY_THREADS:-3}" "${SINGLE_CELL_GNB_MAIN_POOL:-auto}" "${SINGLE_CELL_QUIET_LOGS:-0}" \
++  "${gnb_binary}" "${OCUDU_LPHY_RX_TO_TX_MAX_MS:-unset}" "${SINGLE_CELL_GNB_ACCELERATION:-none}" "${SINGLE_CELL_MPS:-off}" "${SINGLE_CELL_CUDA_LOWER_PRACH:-stage}" | tee "${log_dir}/local-knobs.log"
++gnb_dryrun_pin=()
++[[ -z "${cpus_gnb}" ]] || gnb_dryrun_pin=(taskset -c "${cpus_gnb}")
++"${gnb_dryrun_pin[@]}" "${gnb_binary}" -c "${config_dir}/gnb0.yaml" --dryrun >"${log_dir}/gnb0-dryrun.log" 2>&1 || {
++  tail -20 "${log_dir}/gnb0-dryrun.log" >&2; usage_error "gnb0 dry run failed"; }
++
+ /usr/bin/python3 - "${report_dir}/run-parameters.json" "${policy}" "${ue_count}" "${profile}" "${seed}" "${awgn}" \
+   "${tx_power_ul}" "${tx_power_dl}" "${gnb_rx_gain}" "${scenario}" "${channel_bundle}" "${traffic_bundle}" \
+   "${OCUDU_NATIVE_PLATFORM_PROFILE:-none}" "${cpus_gnb}" "${cpus_broker}" "${cpus_ues}" "${cpus_aux}" \

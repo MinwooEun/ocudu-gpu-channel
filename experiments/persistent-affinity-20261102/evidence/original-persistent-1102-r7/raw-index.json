@@ -1,0 +1,29 @@
+{
+  "remote_case": "/workspace/gpuch/one-ue-realtime-20261030/u1/original-persistent-1102-r7",
+  "files": [
+    {
+      "file": "raw/pacing/gnb0.csv",
+      "size": 1400
+    },
+    {
+      "file": "raw/pacing/ue0.csv",
+      "size": 1512
+    },
+    {
+      "file": "raw/wire/gnb-3426542.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/srsue-3426902.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/gnb-3426722.wire",
+      "size": 64000064
+    },
+    {
+      "file": "raw/wire/ocudu-gpu-channel-3426691.wire",
+      "size": 96000064
+    }
+  ]
+}

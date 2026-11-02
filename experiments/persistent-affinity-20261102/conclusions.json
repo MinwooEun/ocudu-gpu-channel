@@ -1,0 +1,81 @@
+{
+  "status": "Persistent native gNB CPU separation deployed to the active Spark CUDA benchmark launcher",
+  "deployment": {
+    "launcher": "/workspace/gpuch/profile-20261028/ranb/use_cases/ran_benchmark/run-single-cell-policy.sh",
+    "launcher_sha256": "f139bea2e53e19fd67210e9d166f07114040811cb2dd141aed29f53f2889f27c",
+    "original_sha256": "c04f99dad5cda133bab98fa1d61eb64b3790661757dd1a01b74669ba1aaac588",
+    "helper": "/workspace/gpuch/profile-20261028/ranb/use_cases/ran_benchmark/configure_gnb_affinity.py",
+    "helper_sha256": "ecab77251cf5747d38c5ad96e3ae8725cabfa2b8906fc647667aced5e554d0e6",
+    "default_enabled": "Spark CUDA benchmark, SINGLE_CELL_GNB_SEPARATE_RADIO defaults to 1",
+    "control_override": "SINGLE_CELL_GNB_SEPARATE_RADIO=0",
+    "original_binary_unchanged": true
+  },
+  "scope": "Default for Spark CUDA runs of this single-cell launcher; other launch paths and non-Spark platforms are not modified.",
+  "configuration": {
+    "radio": [
+      6
+    ],
+    "phy_and_main": [
+      5,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "allocated": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "main_pool_workers": 5,
+    "wire_format": "unchanged",
+    "binary_hashes_unchanged": true,
+    "frozen_input_hashes_unchanged": true,
+    "application": "Written into native config before dryrun and worker creation; persists across launches without a pinning observer"
+  },
+  "validation": {
+    "final_case": "original-persistent-1102-r7",
+    "connectivity": "passed",
+    "valid_segments": 30,
+    "affinity_checks": 339,
+    "affinity_audit_s": 67.85866038,
+    "post_warmup": {
+      "radio_s": 29.9,
+      "wall_s": 29.899959399,
+      "ratio": 1.0000013578948204,
+      "loss_us": -40.60099999847466,
+      "rebase_count": 0,
+      "rebase_sum_us": 0.0,
+      "largest_rebases": []
+    },
+    "intermediate": "r5/r6 confirmed default startup/restart masks but used auto-sized four-worker pools. r5 retained 2.715 ms loss; r6 had zero rebases. Final helper preserves the original five workers.",
+    "excluded": "r1 was not deployed because initial copies lacked write permission; r2/r3/r4 failed preflight for variable-order/schema/dryrun-affinity mistakes. Preserved and excluded from final deployment validation."
+  },
+  "meaning_of_ratio": {
+    "formula": "(processed IQ samples / configured sample rate) / measured wall time",
+    "not_success_fraction": true,
+    "above_one": "Finite-window endpoint phase, batching/catch-up and timestamp-read latency can make radio and elapsed time differ slightly. Floating-point roundoff is not the primary explanation.",
+    "prior_example": {
+      "radio_s": 29.9,
+      "wall_s": 29.899999395,
+      "ratio": 1.0000000202341142,
+      "difference_us": 0.605
+    },
+    "final_example": {
+      "radio_s": 29.9,
+      "wall_s": 29.899959399,
+      "ratio": 1.0000013578948204,
+      "difference_us": 40.601
+    },
+    "claude_channel_function_ratio": "completed calls divided by calls expected at real-time cadence within the wall-time window; denominator is not attempted calls."
+  },
+  "limits": "Final deployment was checked on one UE, one cell, 20 MHz, 23.04 MS/s, 1x1 with 10 s warmup and 30 s measurement. This is not a guarantee of zero misses for every run or larger scale.",
+  "cleanup": "All owned benchmark and observer processes stopped. Persistent launcher/helper remain installed. HTML unchanged."
+}
